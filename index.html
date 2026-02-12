@@ -14,6 +14,74 @@
         .header { text-align: center; color: white; margin-bottom: 30px; }
         .header h1 { font-size: 1.8em; }
         .admin-badge { display: inline-block; background: #FFD700; color: #333; padding: 5px 15px; border-radius: 20px; font-size: 0.9em; font-weight: bold; margin-left: 10px; }
+        
+        /* Class Indicator */
+        .class-indicator {
+            background: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            margin: 20px auto;
+            max-width: 500px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            display: none;
+        }
+        .class-indicator.active {
+            display: block;
+        }
+        .class-indicator h3 {
+            color: #6a1b9a;
+            font-size: 1.2em;
+            margin-bottom: 8px;
+        }
+        .class-indicator .class-name {
+            color: #c44569;
+            font-size: 1.5em;
+            font-weight: bold;
+        }
+        
+        /* Admin Dashboard */
+        .admin-dashboard {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        .dashboard-title {
+            color: #c44569;
+            font-size: 1.8em;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+            transition: transform 0.3s;
+        }
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+        .stat-number {
+            font-size: 3em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .stat-label {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+        
         .tabs { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
         .tab { padding: 12px 24px; background: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: 600; transition: all 0.3s; }
         .tab:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
@@ -134,6 +202,11 @@
         
         <div class="header"><h1>🎭 Spurthi Youth Fest 2026 🎭<span id="userBadge"></span></h1></div>
         
+        <!-- Class Indicator (shown when class is selected) -->
+        <div class="class-indicator" id="classIndicator">
+            <h3>📚 You are enrolling for:</h3>
+            <div class="class-name" id="selectedClassName"></div>
+        </div>
 
         
         <!-- Firebase Status Indicator -->
@@ -144,7 +217,8 @@
         
         <div class="tabs">
             <button class="tab active" onclick="switchTab('enroll')">📝 Enroll</button>
-            <button class="tab admin-only" onclick="switchTab('master')" style="display:none;">📊 Master</button>
+            <button class="tab admin-only" onclick="switchTab('dashboard')" style="display:none;">📊 Dashboard</button>
+            <button class="tab admin-only" onclick="switchTab('master')" style="display:none;">📋 Master</button>
             <button class="tab admin-only" onclick="switchTab('eventwise')" style="display:none;">🎭 Events</button>
             <button class="tab" onclick="switchTab('admin')">🔐 Admin</button>
         </div>
@@ -230,6 +304,33 @@
                 </div>
             </div>
             
+            <!-- Admin Dashboard Section -->
+            <div id="dashboardSection" class="form-section">
+                <div class="admin-dashboard">
+                    <h2 class="dashboard-title">📊 Master Enrollment Sheet (All Classes)</h2>
+                    
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-number" id="totalEnrollments">0</div>
+                            <div class="stat-label">Total Enrollments</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number" id="activeClasses">0</div>
+                            <div class="stat-label">Active Classes</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number" id="activeSports">0</div>
+                            <div class="stat-label">Active Events</div>
+                        </div>
+                    </div>
+                    
+                    <div style="background: #f5f5f5; padding: 20px; border-radius: 8px;">
+                        <h3 style="color: #6a1b9a; margin-bottom: 15px;">📈 Breakdown by Class</h3>
+                        <div id="classBreakdown"></div>
+                    </div>
+                </div>
+            </div>
+            
             <!-- Admin Login -->
             <div id="adminSection" class="form-section">
                 <h2 style="color: #c44569; margin-bottom: 20px;">Admin Login</h2>
@@ -263,6 +364,22 @@
                 <h2 style="color: #c44569; margin-bottom: 20px;">Event-wise Enrollments</h2>
                 <button class="btn" onclick="downloadEvents()">📥 Download</button>
                 <div id="eventsContainer" style="margin-top: 20px;"></div>
+            </div>
+        </div>
+        
+        <!-- General Rules and Regulations (Bottom of Page) -->
+        <div style="background: white; border-radius: 12px; padding: 25px; margin-top: 30px; box-shadow: 0 4px 20px rgba(0,0,0,0.1);">
+            <h2 style="color: #c44569; margin-bottom: 15px; text-align: center;">📋 General Rules and Regulations</h2>
+            <div style="background: #fff3cd; border-left: 4px solid #ff9800; padding: 15px; border-radius: 6px; margin-bottom: 15px;">
+                <p style="margin: 0; color: #856404; font-weight: 600;">Event Coordinators: Lalitha S K & Priyanka V</p>
+            </div>
+            <div style="background: #f9f9f9; padding: 20px; border-radius: 8px;">
+                <ol style="margin: 0; padding-left: 20px; line-height: 1.8;">
+                    <li style="margin-bottom: 12px;"><strong>Last date for registration</strong> with one time Refundable amount <strong style="color: #c44569;">₹1,500/-</strong> on or before <strong>23rd February, Monday within 3:30 PM</strong>.</li>
+                    <li style="margin-bottom: 12px;"><strong>Last date for submission of Music and Work Organising batch</strong> on or before <strong>7th March, Saturday</strong>.</li>
+                    <li style="margin-bottom: 12px;">Students arriving late (Event and for the Class registration on the date of event) or absent for the event will be fined <strong style="color: #f44336;">₹500/- per day</strong>.</li>
+                    <li style="margin-bottom: 12px;">Teams not submitting Music, or any other assignments with respect to the event, on date and time, will lead into <strong style="color: #f44336;">non-refund of deposit ₹1,500/-</strong>.</li>
+                </ol>
             </div>
         </div>
     </div>
@@ -388,12 +505,26 @@
             document.getElementById(t+'Section').classList.add('active');
             if (t==='master' && isAdmin) updateMaster();
             else if (t==='eventwise' && isAdmin) updateEvents();
+            else if (t==='dashboard' && isAdmin) updateDashboard();
+        }
+
+        function updateClassIndicator() {
+            const indicator = document.getElementById('classIndicator');
+            const className = document.getElementById('selectedClassName');
+            
+            if (selClass) {
+                className.textContent = selClass;
+                indicator.classList.add('active');
+            } else {
+                indicator.classList.remove('active');
+            }
         }
 
         function goToStep2() {
             const c = document.getElementById('classYear').value;
             if (!c) { showErr('Select class'); return; }
             selClass = c;
+            updateClassIndicator();
             document.getElementById('step1').style.display = 'none';
             document.getElementById('step2').style.display = 'block';
             updateEventAvailability();
@@ -401,6 +532,8 @@
         }
 
         function backToStep1() {
+            selClass = '';
+            updateClassIndicator();
             document.getElementById('step2').style.display = 'none';
             document.getElementById('step1').style.display = 'block';
             scroll(0,0);
@@ -619,6 +752,48 @@
             download(csv, cl.replace(/[^a-zA-Z0-9]/g,'_')+'_enrollments.csv');
         }
 
+        // Admin Dashboard
+        function updateDashboard() {
+            // Calculate statistics
+            const totalEnrollments = all.length;
+            
+            // Count active classes (classes with at least one enrollment)
+            const activeClassesSet = new Set();
+            all.forEach(e => activeClassesSet.add(e.classYear));
+            const activeClasses = activeClassesSet.size;
+            
+            // Count active events (events with at least one enrollment)
+            const activeSportsSet = new Set();
+            all.forEach(e => activeSportsSet.add(e.event));
+            const activeSports = activeSportsSet.size;
+            
+            // Update stats display
+            document.getElementById('totalEnrollments').textContent = totalEnrollments;
+            document.getElementById('activeClasses').textContent = activeClasses;
+            document.getElementById('activeSports').textContent = activeSports;
+            
+            // Class breakdown
+            const classStats = {};
+            classes.forEach(c => classStats[c] = 0);
+            all.forEach(e => {
+                if (classStats[e.classYear] !== undefined) {
+                    classStats[e.classYear]++;
+                }
+            });
+            
+            let breakdownHTML = '<table style="width: 100%;"><thead><tr><th>Class</th><th>Enrollments</th><th>Percentage</th></tr></thead><tbody>';
+            classes.forEach(c => {
+                const count = classStats[c];
+                const percentage = totalEnrollments > 0 ? ((count / totalEnrollments) * 100).toFixed(1) : 0;
+                if (count > 0) {
+                    breakdownHTML += '<tr><td><strong>'+c+'</strong></td><td>'+count+'</td><td>'+percentage+'%</td></tr>';
+                }
+            });
+            breakdownHTML += '</tbody></table>';
+            
+            document.getElementById('classBreakdown').innerHTML = breakdownHTML;
+        }
+
         function openEdit(id) {
             const e = all.find(x => x.id===id);
             if (!e) return;
@@ -700,6 +875,11 @@
                 all = [];
                 snap.forEach(ch => { const d = ch.val(); d.id = ch.key; all.push(d); });
                 all.sort((a,b) => b.timestamp-a.timestamp);
+                
+                // Update dashboard if admin is viewing it
+                if (isAdmin && document.getElementById('dashboardSection').classList.contains('active')) {
+                    updateDashboard();
+                }
             });
         }
 
