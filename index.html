@@ -307,7 +307,7 @@
             <!-- Admin Dashboard Section -->
             <div id="dashboardSection" class="form-section">
                 <div class="admin-dashboard">
-                    <h2 class="dashboard-title">📊 Master Enrollment Sheet (All Classes)</h2>
+                    <h2 class="dashboard-title" id="dashboardTitle">📊 Master Enrollment Sheet (All Classes)</h2>
                     
                     <div class="stats-grid">
                         <div class="stat-card">
@@ -331,14 +331,14 @@
                 </div>
             </div>
             
-            <!-- Admin Login -->
+            <!-- Admin/CR Login -->
             <div id="adminSection" class="form-section">
                 <h2 style="color: #c44569; margin-bottom: 20px;">Admin Login</h2>
                 <div id="adminMessage" class="message"></div>
-                <input type="password" id="adminPassword" placeholder="Password" style="max-width: 300px; margin-bottom: 10px;">
+                <input type="password" id="adminPassword" placeholder="Enter Password or Class Name" style="max-width: 300px; margin-bottom: 10px;">
                 <div>
                     <button class="btn" onclick="adminLogin()">Login</button>
-                    <button class="btn btn-secondary" onclick="adminLogout()" id="logoutBtn" style="display:none; margin-left: 10px;">Logout</button>
+                    <button class="btn btn-secondary" onclick="logout()" id="logoutBtn" style="display:none; margin-left: 10px;">Logout</button>
                 </div>
             </div>
             
@@ -351,6 +351,12 @@
                     <button class="btn" onclick="clearFilters()">Clear</button>
                     <button class="btn" onclick="downloadMaster()">📥 Download</button>
                 </div>
+                
+                <!-- Summary Statistics -->
+                <div id="filterSummary" style="display: none; background: #f0f8ff; border: 2px solid #2196F3; border-radius: 8px; padding: 20px; margin-bottom: 20px;">
+                    <div id="summaryContent"></div>
+                </div>
+                
                 <div style="overflow-x: auto;">
                     <table>
                         <thead><tr><th>Sl</th><th>Name</th><th>Phone</th><th>Class</th><th>Event</th><th>Role</th><th>Details</th><th>Actions</th></tr></thead>
@@ -484,12 +490,16 @@
             'Social Awareness Skit': {size:'8 Members',count:8,role:true,cause:true,allow:false,maxPerClass:1},
             'Solo Dance': {size:'Individual',count:1,role:false,allow:true,maxPerClass:5},
             'Group Dance': {size:'5-8 Members',count:5,role:true,allow:false,maxPerClass:1},
-            'Nukkad Natak': {size:'8-10 Members',count:8,role:true,cause:true,causeLabel:'Different Cause',allow:false,maxPerClass:1}
+            'Nukkad Natak': {size:'8-10 Members',count:8,role:true,cause:true,causeLabel:'Different Cause',allow:false,maxPerClass:1},
+            'Case Analysis': {size:'2 Members',count:2,role:true,allow:false,maxPerClass:1}
         };
 
         const classes = ['1st B.Com','2nd B.Com','3rd B.Com','1ST BCA','2ND BCA A SEC','2ND BCA B SEC','3RD BCA A SEC','3RD BCA B SEC','3RD BCA C SEC','2ND BBA','3RD BBA'];
         const ADMIN = 'admin123';
-        let isAdmin = localStorage.getItem('isAdmin')==='true', all = [], selClass = '', selEvent = '', selCfg = null, editId = null;
+        let isAdmin = localStorage.getItem('isAdmin')==='true';
+        let isCR = localStorage.getItem('isCR')==='true';
+        let crClass = localStorage.getItem('crClass') || '';
+        let all = [], selClass = '', selEvent = '', selCfg = null, editId = null;
 
         document.addEventListener('DOMContentLoaded', function() {
             populateEvents();
@@ -576,7 +586,14 @@
             const cfg = events[eventName];
             if (!cfg) return 0;
             
-            // Count unique teams (by grouping members)
+            // For individual events with multiple allowed (like Case Analysis, Solo Dance), count unique students
+            if (cfg.count === 1) {
+                const uniquePhones = new Set();
+                enrollments.forEach(e => uniquePhones.add(e.phone));
+                return uniquePhones.size;
+            }
+            
+            // For team events, count unique teams by grouping members
             const uniquePhones = new Set();
             enrollments.forEach(e => uniquePhones.add(e.phone));
             
@@ -754,17 +771,31 @@
 
         // Admin Dashboard
         function updateDashboard() {
+            // Update dashboard title based on login type
+            const dashboardTitle = document.getElementById('dashboardTitle');
+            if (isCR && crClass) {
+                dashboardTitle.textContent = '📊 ' + crClass + ' - Enrollment Dashboard';
+            } else {
+                dashboardTitle.textContent = '📊 Master Enrollment Sheet (All Classes)';
+            }
+            
+            // Filter data based on login type
+            let filteredData = all;
+            if (isCR && crClass) {
+                filteredData = all.filter(e => e.classYear === crClass);
+            }
+            
             // Calculate statistics
-            const totalEnrollments = all.length;
+            const totalEnrollments = filteredData.length;
             
             // Count active classes (classes with at least one enrollment)
             const activeClassesSet = new Set();
-            all.forEach(e => activeClassesSet.add(e.classYear));
+            filteredData.forEach(e => activeClassesSet.add(e.classYear));
             const activeClasses = activeClassesSet.size;
             
             // Count active events (events with at least one enrollment)
             const activeSportsSet = new Set();
-            all.forEach(e => activeSportsSet.add(e.event));
+            filteredData.forEach(e => activeSportsSet.add(e.event));
             const activeSports = activeSportsSet.size;
             
             // Update stats display
@@ -774,18 +805,19 @@
             
             // Class breakdown
             const classStats = {};
-            classes.forEach(c => classStats[c] = 0);
-            all.forEach(e => {
+            const classesToShow = isCR && crClass ? [crClass] : classes;
+            classesToShow.forEach(c => classStats[c] = 0);
+            filteredData.forEach(e => {
                 if (classStats[e.classYear] !== undefined) {
                     classStats[e.classYear]++;
                 }
             });
             
             let breakdownHTML = '<table style="width: 100%;"><thead><tr><th>Class</th><th>Enrollments</th><th>Percentage</th></tr></thead><tbody>';
-            classes.forEach(c => {
+            classesToShow.forEach(c => {
                 const count = classStats[c];
                 const percentage = totalEnrollments > 0 ? ((count / totalEnrollments) * 100).toFixed(1) : 0;
-                if (count > 0) {
+                if (count > 0 || (isCR && crClass === c)) {
                     breakdownHTML += '<tr><td><strong>'+c+'</strong></td><td>'+count+'</td><td>'+percentage+'%</td></tr>';
                 }
             });
@@ -837,17 +869,46 @@
         }
 
         function adminLogin() {
-            const pw = document.getElementById('adminPassword').value;
-            if (pw===ADMIN) { isAdmin = true; localStorage.setItem('isAdmin','true'); updateAdminUI(); showAdminMsg('Success!','success'); }
-            else showAdminMsg('Wrong!','error');
+            const pw = document.getElementById('adminPassword').value.trim();
+            
+            // Check if it's admin password
+            if (pw === ADMIN) { 
+                isAdmin = true; 
+                isCR = false;
+                crClass = '';
+                localStorage.setItem('isAdmin','true'); 
+                localStorage.removeItem('isCR');
+                localStorage.removeItem('crClass');
+                updateAdminUI(); 
+                showAdminMsg('Login successful!','success'); 
+            }
+            // Check if it's a valid class name
+            else if (classes.includes(pw)) {
+                isAdmin = false;
+                isCR = true;
+                crClass = pw;
+                localStorage.removeItem('isAdmin');
+                localStorage.setItem('isCR','true');
+                localStorage.setItem('crClass', pw);
+                updateAdminUI();
+                showAdminMsg('Login successful!','success');
+            }
+            else {
+                showAdminMsg('Invalid password or class name!','error');
+            }
+            
             document.getElementById('adminPassword').value = '';
         }
 
-        function adminLogout() {
+        function logout() {
             isAdmin = false;
+            isCR = false;
+            crClass = '';
             localStorage.removeItem('isAdmin');
+            localStorage.removeItem('isCR');
+            localStorage.removeItem('crClass');
             updateAdminUI();
-            showAdminMsg('Logged out!','success');
+            showAdminMsg('Logged out successfully!','success');
         }
 
         function updateAdminUI() {
@@ -855,6 +916,10 @@
                 document.querySelectorAll('.admin-only').forEach(x => x.style.display='block');
                 document.getElementById('logoutBtn').style.display='inline-block';
                 document.getElementById('userBadge').innerHTML='<span class="admin-badge">ADMIN</span>';
+            } else if (isCR) {
+                document.querySelectorAll('.admin-only').forEach(x => x.style.display='block');
+                document.getElementById('logoutBtn').style.display='inline-block';
+                document.getElementById('userBadge').innerHTML='<span class="admin-badge" style="background:#2196F3;">' + crClass + '</span>';
             } else {
                 document.querySelectorAll('.admin-only').forEach(x => x.style.display='none');
                 document.getElementById('logoutBtn').style.display='none';
@@ -892,13 +957,149 @@
 
         function updateMaster() {
             const body = document.getElementById('masterBody');
-            const cf = document.getElementById('filterClass').value;
-            const ef = document.getElementById('filterEvent').value;
+            let cf = document.getElementById('filterClass').value;
+            let ef = document.getElementById('filterEvent').value;
+            
+            // If logged in as CR, auto-filter by their class
+            if (isCR && crClass) {
+                cf = crClass;
+                document.getElementById('filterClass').value = crClass;
+                document.getElementById('filterClass').disabled = true;
+            } else {
+                document.getElementById('filterClass').disabled = false;
+            }
+            
             const filt = all.filter(e => (!cf || e.classYear===cf) && (!ef || e.event===ef));
-            if (filt.length===0) { body.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:40px">No data</td></tr>'; return; }
+            
+            // Update summary statistics
+            updateFilterSummary(cf, ef);
+            
+            if (filt.length===0) { 
+                body.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:40px">No data</td></tr>'; 
+                return; 
+            }
             let h = '';
             filt.forEach((e,i) => h += '<tr><td>'+(i+1)+'</td><td>'+e.name+'</td><td>'+e.phone+'</td><td>'+e.classYear+'</td><td>'+e.event+'</td><td>'+e.role+'</td><td>'+getDet(e)+'</td><td><button class="edit-btn" onclick="openEdit(\''+e.id+'\')">Edit</button> <button class="delete-btn" onclick="confirmDel(\''+e.id+'\',\''+e.name+'\')">Delete</button></td></tr>');
             body.innerHTML = h;
+        }
+        
+        function updateFilterSummary(selectedClass, selectedEvent) {
+            const summaryDiv = document.getElementById('filterSummary');
+            const summaryContent = document.getElementById('summaryContent');
+            
+            // If no filter is selected, hide summary
+            if (!selectedClass && !selectedEvent) {
+                summaryDiv.style.display = 'none';
+                return;
+            }
+            
+            summaryDiv.style.display = 'block';
+            let html = '';
+            
+            // When Event is selected - show class enrollment status
+            if (selectedEvent && !selectedClass) {
+                const enrolledClasses = [];
+                const notEnrolledClasses = [];
+                
+                classes.forEach(cls => {
+                    const hasEnrollment = all.some(e => e.event === selectedEvent && e.classYear === cls);
+                    if (hasEnrollment) {
+                        const count = all.filter(e => e.event === selectedEvent && e.classYear === cls).length;
+                        enrolledClasses.push({name: cls, count: count});
+                    } else {
+                        notEnrolledClasses.push(cls);
+                    }
+                });
+                
+                html += '<h3 style="color:#2196F3;margin-bottom:15px;">📊 Summary for Event: <strong>' + selectedEvent + '</strong></h3>';
+                html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">';
+                
+                // Enrolled Classes
+                html += '<div style="background:white;padding:15px;border-radius:6px;">';
+                html += '<h4 style="color:#4CAF50;margin-bottom:10px;">✅ Enrolled Classes (' + enrolledClasses.length + ')</h4>';
+                if (enrolledClasses.length > 0) {
+                    html += '<ul style="list-style:none;padding:0;margin:0;">';
+                    enrolledClasses.forEach(cls => {
+                        html += '<li style="padding:5px 0;border-bottom:1px solid #eee;">• ' + cls.name + ' <span style="color:#666;">(' + cls.count + ' students)</span></li>';
+                    });
+                    html += '</ul>';
+                } else {
+                    html += '<p style="color:#999;font-style:italic;">No classes enrolled yet</p>';
+                }
+                html += '</div>';
+                
+                // Not Enrolled Classes
+                html += '<div style="background:white;padding:15px;border-radius:6px;">';
+                html += '<h4 style="color:#f44336;margin-bottom:10px;">❌ Not Enrolled Classes (' + notEnrolledClasses.length + ')</h4>';
+                if (notEnrolledClasses.length > 0) {
+                    html += '<ul style="list-style:none;padding:0;margin:0;">';
+                    notEnrolledClasses.forEach(cls => {
+                        html += '<li style="padding:5px 0;border-bottom:1px solid #eee;">• ' + cls + '</li>';
+                    });
+                    html += '</ul>';
+                } else {
+                    html += '<p style="color:#999;font-style:italic;">All classes have enrolled!</p>';
+                }
+                html += '</div>';
+                html += '</div>';
+            }
+            
+            // When Class is selected - show event enrollment status
+            if (selectedClass && !selectedEvent) {
+                const enrolledEvents = [];
+                const pendingEvents = [];
+                
+                Object.keys(events).forEach(evt => {
+                    const hasEnrollment = all.some(e => e.classYear === selectedClass && e.event === evt);
+                    if (hasEnrollment) {
+                        const count = all.filter(e => e.classYear === selectedClass && e.event === evt).length;
+                        enrolledEvents.push({name: evt, count: count});
+                    } else {
+                        pendingEvents.push(evt);
+                    }
+                });
+                
+                html += '<h3 style="color:#2196F3;margin-bottom:15px;">📊 Summary for Class: <strong>' + selectedClass + '</strong></h3>';
+                html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">';
+                
+                // Enrolled Events
+                html += '<div style="background:white;padding:15px;border-radius:6px;">';
+                html += '<h4 style="color:#4CAF50;margin-bottom:10px;">✅ Enrolled Events (' + enrolledEvents.length + ')</h4>';
+                if (enrolledEvents.length > 0) {
+                    html += '<ul style="list-style:none;padding:0;margin:0;">';
+                    enrolledEvents.forEach(evt => {
+                        html += '<li style="padding:5px 0;border-bottom:1px solid #eee;">• ' + evt.name + ' <span style="color:#666;">(' + evt.count + ' students)</span></li>';
+                    });
+                    html += '</ul>';
+                } else {
+                    html += '<p style="color:#999;font-style:italic;">No events enrolled yet</p>';
+                }
+                html += '</div>';
+                
+                // Pending Events
+                html += '<div style="background:white;padding:15px;border-radius:6px;">';
+                html += '<h4 style="color:#FF9800;margin-bottom:10px;">⏳ Pending Events (' + pendingEvents.length + ')</h4>';
+                if (pendingEvents.length > 0) {
+                    html += '<ul style="list-style:none;padding:0;margin:0;">';
+                    pendingEvents.forEach(evt => {
+                        html += '<li style="padding:5px 0;border-bottom:1px solid #eee;">• ' + evt + '</li>';
+                    });
+                    html += '</ul>';
+                } else {
+                    html += '<p style="color:#999;font-style:italic;">All events completed!</p>';
+                }
+                html += '</div>';
+                html += '</div>';
+            }
+            
+            // When both Class and Event are selected
+            if (selectedClass && selectedEvent) {
+                const count = all.filter(e => e.classYear === selectedClass && e.event === selectedEvent).length;
+                html += '<h3 style="color:#2196F3;margin-bottom:10px;">📊 Filtered View</h3>';
+                html += '<p style="margin:0;"><strong>Class:</strong> ' + selectedClass + ' | <strong>Event:</strong> ' + selectedEvent + ' | <strong>Total Students:</strong> ' + count + '</p>';
+            }
+            
+            summaryContent.innerHTML = html;
         }
 
         function updateEvents() {
@@ -922,8 +1123,13 @@
         }
 
         function clearFilters() {
-            document.getElementById('filterClass').value = '';
-            document.getElementById('filterEvent').value = '';
+            // CR can only clear event filter, not class filter
+            if (isCR && crClass) {
+                document.getElementById('filterEvent').value = '';
+            } else {
+                document.getElementById('filterClass').value = '';
+                document.getElementById('filterEvent').value = '';
+            }
             updateMaster();
         }
 
