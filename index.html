@@ -125,10 +125,23 @@
         .modal-header { font-size: 1.5em; color: #c44569; margin-bottom: 20px; text-align: center; }
         .modal-icon { font-size: 4em; margin-bottom: 20px; text-align: center; }
         .modal-buttons { margin-top: 20px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
-        th { background: linear-gradient(135deg, #c44569 0%, #6a1b9a 100%); color: white; font-weight: 600; }
+        /* Table Wrapper for Horizontal Scroll */
+        .table-wrapper {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            margin-top: 20px;
+        }
+        table { width: 100%; border-collapse: collapse; min-width: 600px; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; white-space: nowrap; }
+        th { background: linear-gradient(135deg, #c44569 0%, #6a1b9a 100%); color: white; font-weight: 600; position: sticky; top: 0; z-index: 10; }
         tr:hover { background: #f5f5f5; }
+        
+        /* Mobile Responsive Table */
+        @media (max-width: 768px) {
+            table { min-width: 800px; font-size: 14px; }
+            th, td { padding: 8px 6px; }
+            .btn-small { padding: 4px 8px; font-size: 12px; }
+        }
         .edit-btn { background: #2196F3; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; margin-right: 5px; }
         .edit-btn:hover { background: #1976D2; }
         .delete-btn { background: #f44336; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; }
@@ -1251,13 +1264,13 @@
             }
             
             // Show detailed table
-            h += '<table><thead><tr><th>Sl</th><th>Name</th><th>Phone</th><th>Event</th><th>Role</th><th>Details</th><th>Actions</th></tr></thead><tbody>';
+            h += '<div class="table-wrapper"><table><thead><tr><th>Sl</th><th>Name</th><th>Phone</th><th>Event</th><th>Role</th><th>Details</th><th>Actions</th></tr></thead><tbody>';
             classEnr.forEach((e,i) => {
                 h += '<tr><td>'+(i+1)+'</td><td>'+e.name+'</td><td>'+e.phone+'</td><td>'+e.event+'</td><td>'+e.role+'</td><td>'+getDet(e)+'</td>';
                 h += '<td><button class="edit-btn" data-key="'+e.id+'" onclick="editEnrollmentByKey(this.getAttribute(\'data-key\'))">Edit</button>';
                 h += '<button class="delete-btn" data-key="'+e.id+'" data-name="'+e.name+'" data-event="'+e.event+'" onclick="deleteEnrollmentByKey(this.getAttribute(\'data-key\'), this.getAttribute(\'data-name\'), this.getAttribute(\'data-event\'))">Delete</button></td></tr>';
             });
-            h += '</tbody></table></div>';
+            h += '</tbody></table></div></div>';
             cont.innerHTML = h;
             
             console.log('=== Enrollment display complete ===');
@@ -1649,13 +1662,13 @@
                 cont.innerHTML = '<p style="text-align:center;padding:40px;color:#999">No enrollments yet</p>';
             } else {
                 console.log('Building table with', filtered.length, 'rows');
-                let html = '<table><thead><tr><th>Sl</th><th>Name</th><th>Phone</th><th>Event</th><th>Role</th><th>Details</th><th>Actions</th></tr></thead><tbody>';
+                let html = '<div class="table-wrapper"><table><thead><tr><th>Sl</th><th>Name</th><th>Phone</th><th>Event</th><th>Role</th><th>Details</th><th>Actions</th></tr></thead><tbody>';
                 filtered.forEach((e,i) => {
                     html += '<tr><td>'+(i+1)+'</td><td>'+e.name+'</td><td>'+e.phone+'</td><td>'+e.event+'</td><td>'+e.role+'</td><td>'+getDet(e)+'</td>';
                     html += '<td><button class="edit-btn" data-key="'+e.id+'" onclick="editEnrollmentByKey(this.getAttribute(\'data-key\'))">Edit</button>';
                     html += '<button class="delete-btn" data-key="'+e.id+'" data-name="'+e.name+'" data-event="'+e.event+'" onclick="deleteEnrollmentByKey(this.getAttribute(\'data-key\'), this.getAttribute(\'data-name\'), this.getAttribute(\'data-event\'))">Delete</button></td></tr>';
                 });
-                html += '</tbody></table>';
+                html += '</tbody></table></div>';
                 cont.innerHTML = html;
             }
             
@@ -1782,13 +1795,13 @@
                     return;
                 }
                 
-                let html = '<table><thead><tr><th>Sl</th><th>Name</th><th>Phone</th><th>Class</th><th>Event</th><th>Role</th><th>Details</th><th>Actions</th></tr></thead><tbody>';
+                let html = '<div class="table-wrapper"><table><thead><tr><th>Sl</th><th>Name</th><th>Phone</th><th>Class</th><th>Event</th><th>Role</th><th>Details</th><th>Actions</th></tr></thead><tbody>';
                 filtered.forEach((e,i) => {
                     html += '<tr><td>'+(i+1)+'</td><td>'+e.name+'</td><td>'+e.phone+'</td><td>'+e.classYear+'</td><td>'+e.event+'</td><td>'+e.role+'</td><td>'+getDet(e)+'</td>';
                     html += '<td><button class="edit-btn" data-key="'+e.id+'" onclick="editEnrollmentByKey(this.getAttribute(\'data-key\'))">Edit</button>';
                     html += '<button class="delete-btn" data-key="'+e.id+'" data-name="'+e.name+'" data-event="'+e.event+'" onclick="deleteEnrollmentByKey(this.getAttribute(\'data-key\'), this.getAttribute(\'data-name\'), this.getAttribute(\'data-event\'))">Delete</button></td></tr>';
                 });
-                html += '</tbody></table>';
+                html += '</tbody></table></div>';
                 cont.innerHTML = html;
             }, 10); // Small delay to ensure dropdown has updated
         }
@@ -1914,9 +1927,9 @@
                 classes.forEach(cl => {
                     const clEnr = evEnr.filter(e => e.classYear===cl);
                     if (clEnr.length===0) return;
-                    h += '<div style="background:white;padding:15px;border-radius:6px;margin-bottom:15px"><h4 style="color:#6a1b9a;margin-bottom:10px">'+cl+' ('+clEnr.length+')</h4><table><thead><tr><th>Sl</th><th>Name</th><th>Phone</th><th>Role</th><th>Details</th></tr></thead><tbody>';
+                    h += '<div style="background:white;padding:15px;border-radius:6px;margin-bottom:15px"><h4 style="color:#6a1b9a;margin-bottom:10px">'+cl+' ('+clEnr.length+')</h4><div class="table-wrapper"><table><thead><tr><th>Sl</th><th>Name</th><th>Phone</th><th>Role</th><th>Details</th></tr></thead><tbody>';
                     clEnr.forEach((e,i) => h += '<tr><td>'+(i+1)+'</td><td>'+e.name+'</td><td>'+e.phone+'</td><td>'+e.role+'</td><td>'+getDet(e)+'</td></tr>');
-                    h += '</tbody></table></div>';
+                    h += '</tbody></table></div></div>';
                 });
                 h += '</div>';
             });
@@ -2225,7 +2238,7 @@
         }
 
         function renderJurySheet(enrolledClasses, criteria) {
-            let html = '<div class="marks-table"><table><thead><tr>';
+            let html = '<div class="table-wrapper"><div class="marks-table"><table><thead><tr>';
             html += '<th>Class</th><th>Theme/Topic</th>';
             criteria.forEach((crit, i) => {
                 html += '<th>'+crit+'<br><small>(10 marks)</small></th>';
@@ -2243,7 +2256,7 @@
                 html += '<td class="total-marks" id="total-'+cls.replace(/\s+/g, '-')+'">0</td></tr>';
             });
             
-            html += '</tbody></table></div>';
+            html += '</tbody></table></div></div>';
             
             document.getElementById('jurySheetContainer').innerHTML = html;
             
@@ -2696,7 +2709,7 @@
             
             // Show marks detail only for super admin and jury
             if (isSuperAdmin || isJury) {
-                html += '<table><thead><tr><th>Rank</th><th>Class</th><th>'+jury1Name+' Total</th><th>'+jury2Name+' Total</th><th>Average</th><th>Status</th></tr></thead><tbody>';
+                html += '<div class="table-wrapper"><table><thead><tr><th>Rank</th><th>Class</th><th>'+jury1Name+' Total</th><th>'+jury2Name+' Total</th><th>Average</th><th>Status</th></tr></thead><tbody>';
                 
                 results.forEach((r, i) => {
                     const rank = i + 1;
@@ -2713,7 +2726,7 @@
                     html += '</tr>';
                 });
                 
-                html += '</tbody></table>';
+                html += '</tbody></table></div>';
             } else {
                 // For regular admins, show only final results (no marks)
                 results.forEach((r, i) => {
