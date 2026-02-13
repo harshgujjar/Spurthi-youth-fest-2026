@@ -14,6 +14,8 @@
         .header { text-align: center; color: white; margin-bottom: 30px; }
         .header h1 { font-size: 1.8em; }
         .admin-badge { display: inline-block; background: #FFD700; color: #333; padding: 5px 15px; border-radius: 20px; font-size: 0.9em; font-weight: bold; margin-left: 10px; }
+        .super-admin-badge { display: inline-block; background: #FF6B6B; color: white; padding: 5px 15px; border-radius: 20px; font-size: 0.9em; font-weight: bold; margin-left: 10px; }
+        .jury-badge { display: inline-block; background: #4ECDC4; color: white; padding: 5px 15px; border-radius: 20px; font-size: 0.9em; font-weight: bold; margin-left: 10px; }
         
         /* Class Indicator */
         .class-indicator {
@@ -91,8 +93,8 @@
         .form-section.active { display: block; }
         .form-group { margin-bottom: 20px; }
         label { display: block; margin-bottom: 8px; font-weight: 600; color: #333; }
-        input, select { width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 6px; font-size: 16px; transition: border-color 0.3s; }
-        input:focus, select:focus { outline: none; border-color: #c44569; }
+        input, select, textarea { width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 6px; font-size: 16px; transition: border-color 0.3s; }
+        input:focus, select:focus, textarea:focus { outline: none; border-color: #c44569; }
         .event-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px; margin: 20px 0; }
         .event-card { padding: 20px; border: 3px solid #ddd; border-radius: 12px; cursor: pointer; transition: all 0.3s; background: white; position: relative; }
         .event-card:hover { border-color: #c44569; transform: translateY(-3px); box-shadow: 0 6px 20px rgba(196, 69, 105, 0.3); }
@@ -111,6 +113,9 @@
         .btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
         .btn-secondary { background: #666; }
         .btn-small { padding: 6px 12px; font-size: 14px; }
+        .btn-success { background: #4CAF50; }
+        .btn-danger { background: #f44336; }
+        .btn-info { background: #2196F3; }
         .message { padding: 15px; border-radius: 6px; margin-bottom: 20px; display: none; }
         .message.show { display: block; }
         .message.success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
@@ -129,9 +134,97 @@
         .filter-section { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
         .filter-section select { flex: 1; min-width: 200px; }
         .admin-only { display: none; }
+        .super-admin-only { display: none; }
+        .jury-only { display: none; }
         .student-section { background: #f0f0f0; padding: 20px; border-radius: 8px; margin-bottom: 30px; }
         .cr-section { background: #e3f2fd; padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 2px solid #2196F3; }
-        @media (max-width: 768px) { .event-grid { grid-template-columns: 1fr; } .filter-section { flex-direction: column; } }
+        
+        /* Jury Sheet Styles */
+        .criteria-input-group {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border: 2px solid #ddd;
+        }
+        .criteria-input-group input {
+            margin-bottom: 10px;
+        }
+        .remove-criteria-btn {
+            background: #f44336;
+            color: white;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .marks-table {
+            overflow-x: auto;
+        }
+        .marks-input {
+            width: 80px;
+            padding: 8px;
+            border: 2px solid #ddd;
+            border-radius: 4px;
+            text-align: center;
+        }
+        .marks-input:focus {
+            border-color: #4CAF50;
+        }
+        .total-marks {
+            font-weight: bold;
+            color: #c44569;
+            font-size: 1.2em;
+        }
+        .winner-badge {
+            background: #FFD700;
+            color: #333;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            display: inline-block;
+            margin-left: 10px;
+        }
+        .runner-badge {
+            background: #C0C0C0;
+            color: #333;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            display: inline-block;
+            margin-left: 10px;
+        }
+        .jury-password-section {
+            background: #fff3cd;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 2px solid #ffc107;
+        }
+        .results-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .rank-1 {
+            border-left: 5px solid #FFD700;
+        }
+        .rank-2 {
+            border-left: 5px solid #C0C0C0;
+        }
+        .rank-3 {
+            border-left: 5px solid #CD7F32;
+        }
+        
+        @media (max-width: 768px) { 
+            .event-grid { grid-template-columns: 1fr; } 
+            .filter-section { flex-direction: column; }
+            .marks-input { width: 60px; }
+        }
+        
         /* Firebase Status Indicator */
         .firebase-status {
             position: fixed;
@@ -196,218 +289,348 @@
 </head>
 <body>
     <div class="container">
-        <!-- BANNER IMAGE - Replace src with your base64 data -->
+        <!-- ============================================ -->
+        <!-- TO CHANGE BANNER IMAGE:                      -->
+        <!-- Replace "banner.gif?v=5" with your file      -->
+        <!-- Supported: .gif, .png, .jpg                  -->
+        <!-- ============================================ -->
         <img src="banner.gif?v=5" class="banner">
-        <!-- TO EMBED YOUR BANNER: See SETUP_INSTRUCTIONS.txt -->
         
-        <div class="header"><h1>🎭 Spurthi Youth Fest 2026 🎭<span id="userBadge"></span></h1></div>
-        
-        <!-- Class Indicator (shown when class is selected) -->
-        <div class="class-indicator" id="classIndicator">
-            <h3>📚 You are enrolling for:</h3>
-            <div class="class-name" id="selectedClassName"></div>
+        <div class="header">
+            <h1>🎉 SPURTHI YOUTH FEST 2026 🎉</h1>
+            <p id="userInfo"></p>
         </div>
 
-        
-        <!-- Firebase Status Indicator -->
-        <div class="firebase-status" id="firebaseStatus">
-            <div class="status-dot status-checking" id="statusDot"></div>
-            <span id="statusText">Checking...</span>
-        </div>
-        
-        <div class="tabs">
-            <button class="tab active" onclick="switchTab('enroll')">📝 Enroll</button>
-            <button class="tab admin-only" onclick="switchTab('dashboard')" style="display:none;">📊 Dashboard</button>
-            <button class="tab admin-only" onclick="switchTab('master')" style="display:none;">📋 Master</button>
-            <button class="tab admin-only" onclick="switchTab('eventwise')" style="display:none;">🎭 Events</button>
-            <button class="tab" onclick="switchTab('admin')">🔐 Admin</button>
-        </div>
-        
-        <div class="content">
-            <!-- Enrollment Section -->
-            <div id="enrollSection" class="form-section active">
-                <h2 style="color: #c44569; margin-bottom: 20px;">Student Enrollment</h2>
-                
-                <!-- Student Search & Edit -->
-                <div class="student-section">
-                    <h3 style="color: #6a1b9a; margin-bottom: 10px;">📱 Manage Your Enrollments</h3>
-                    <p style="margin-bottom: 10px;">Enter your phone number:</p>
-                    <div style="display: flex; gap: 10px; margin-bottom: 15px;">
-                        <input type="tel" id="studentPhone" placeholder="10 digits" maxlength="10" style="max-width: 250px;">
-                        <button class="btn btn-small" onclick="searchStudent()">Search</button>
-                        <button class="btn btn-secondary btn-small" onclick="clearStudentSearch()">Clear</button>
-                    </div>
-                    <div id="studentResults"></div>
+        <!-- Login/Logout Section (Visible to all) -->
+        <div class="content" id="loginSection">
+            <h2 style="text-align:center;color:#c44569;margin-bottom:25px">Login</h2>
+            <div class="form-group">
+                <label>Select User Type:</label>
+                <select id="userType" onchange="handleUserTypeChange()">
+                    <option value="">-- Select --</option>
+                    <option value="student">Student</option>
+                    <option value="cr">Class Representative (CR)</option>
+                    <option value="admin">Admin</option>
+                    <option value="superadmin">Super Admin</option>
+                    <option value="jury">Jury</option>
+                </select>
+            </div>
+            
+            <!-- Student Login -->
+            <div id="studentLogin" style="display:none">
+                <div class="form-group">
+                    <label>Class:</label>
+                    <select id="studentClass"></select>
                 </div>
-                
-                <!-- CR Section -->
-                <div class="cr-section">
-                    <h3 style="color: #1976D2; margin-bottom: 10px;">👥 Class Representative Mode</h3>
-                    <p style="margin-bottom: 10px;">View and download your class enrollments:</p>
-                    <div style="display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap;">
-                        <select id="crClass" style="max-width: 300px;">
-                            <option value="">-- Select Your Class --</option>
-                            <option value="1st B.Com">1st B.Com</option>
-                            <option value="2nd B.Com">2nd B.Com</option>
-                            <option value="3rd B.Com">3rd B.Com</option>
-                            <option value="1ST BCA">1ST BCA</option>
-                            <option value="2ND BCA A SEC">2ND BCA A SEC</option>
-                            <option value="2ND BCA B SEC">2ND BCA B SEC</option>
-                            <option value="3RD BCA A SEC">3RD BCA A SEC</option>
-                            <option value="3RD BCA B SEC">3RD BCA B SEC</option>
-                            <option value="3RD BCA C SEC">3RD BCA C SEC</option>
-                            <option value="2ND BBA">2ND BBA</option>
-                            <option value="3RD BBA">3RD BBA</option>
-                        </select>
-                        <button class="btn btn-small" onclick="viewClassEnrollments()">View</button>
-                        <button class="btn btn-small" onclick="downloadClassReport()">📥 Download</button>
-                    </div>
-                    <div id="crResults"></div>
+                <button class="btn" onclick="studentLogin()">Login as Student</button>
+            </div>
+            
+            <!-- CR Login -->
+            <div id="crLogin" style="display:none">
+                <div class="form-group">
+                    <label>Class:</label>
+                    <select id="crClass"></select>
                 </div>
-                
-                <div id="enrollMessage" class="message"></div>
-                
-                <!-- Step 1: Select Class -->
-                <div id="step1">
-                    <h3 style="margin-bottom: 15px;">Step 1: Select Your Class</h3>
-                    <select id="classYear" style="font-size: 1.1em;">
-                        <option value="">-- Choose Class --</option>
-                        <option value="1st B.Com">1st B.Com</option>
-                        <option value="2nd B.Com">2nd B.Com</option>
-                        <option value="3rd B.Com">3rd B.Com</option>
-                        <option value="1ST BCA">1ST BCA</option>
-                        <option value="2ND BCA A SEC">2ND BCA A SEC</option>
-                        <option value="2ND BCA B SEC">2ND BCA B SEC</option>
-                        <option value="3RD BCA A SEC">3RD BCA A SEC</option>
-                        <option value="3RD BCA B SEC">3RD BCA B SEC</option>
-                        <option value="3RD BCA C SEC">3RD BCA C SEC</option>
-                        <option value="2ND BBA">2ND BBA</option>
-                        <option value="3RD BBA">3RD BBA</option>
+                <button class="btn" onclick="crLogin()">Login as CR</button>
+            </div>
+            
+            <!-- Admin Login -->
+            <div id="adminLogin" style="display:none">
+                <div class="form-group">
+                    <label>Admin Password:</label>
+                    <input type="password" id="adminPassword" placeholder="Enter admin password">
+                </div>
+                <button class="btn" onclick="adminLogin()">Login as Admin</button>
+            </div>
+            
+            <!-- Super Admin Login -->
+            <div id="superAdminLogin" style="display:none">
+                <div class="form-group">
+                    <label>Super Admin Password:</label>
+                    <input type="password" id="superAdminPassword" placeholder="Enter super admin password">
+                </div>
+                <button class="btn" onclick="superAdminLogin()">Login as Super Admin</button>
+            </div>
+            
+            <!-- Jury Login -->
+            <div id="juryLogin" style="display:none">
+                <div class="form-group">
+                    <label>Select Event:</label>
+                    <select id="juryEvent"></select>
+                </div>
+                <div class="form-group">
+                    <label>Jury Password:</label>
+                    <input type="password" id="juryPassword" placeholder="Enter jury password for this event">
+                </div>
+                <div class="form-group">
+                    <label>Jury Number (1 or 2):</label>
+                    <select id="juryNumber">
+                        <option value="">-- Select --</option>
+                        <option value="1">Jury 1</option>
+                        <option value="2">Jury 2</option>
                     </select>
-                    <button class="btn" onclick="goToStep2()" style="margin-top: 15px;">Next →</button>
                 </div>
-                
-                <!-- Step 2: Select Event -->
-                <div id="step2" style="display: none;">
-                    <button class="btn btn-secondary" onclick="backToStep1()">← Back</button>
-                    <h3 style="margin: 20px 0;">Step 2: Select Event</h3>
-                    <div class="event-grid" id="eventGrid"></div>
+                <button class="btn" onclick="juryLogin()">Login as Jury</button>
+            </div>
+        </div>
+
+        <!-- Student Enrollment Section -->
+        <div class="student-section" id="studentSection" style="display:none">
+            <button class="btn btn-secondary" onclick="logout()" style="float:right">Logout</button>
+            <h2 style="color:#c44569;margin-bottom:20px">Student Enrollment</h2>
+            <div id="enrollMessage" class="message"></div>
+            
+            <div class="class-indicator" id="classIndicator">
+                <h3>You are enrolling for</h3>
+                <div class="class-name" id="currentClassName"></div>
+            </div>
+
+            <!-- View Class Enrollments Section -->
+            <div style="background:#e3f2fd;padding:20px;border-radius:8px;margin-bottom:20px;border:2px solid #2196F3;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;">
+                    <h3 style="color:#1976D2;margin:0;">📊 Your Class Enrollments</h3>
+                    <button class="btn btn-small" onclick="toggleEnrollmentView()" id="toggleEnrollmentBtn">
+                        Hide Details
+                    </button>
                 </div>
-                
-                <!-- Step 3: Team Details -->
-                <div id="step3" style="display: none;">
-                    <button class="btn btn-secondary" onclick="backToStep2()">← Back</button>
-                    <h3 style="margin: 20px 0;" id="step3Title">Step 3: Enter Details</h3>
-                    <div id="teamContainer"></div>
-                    <div id="extraContainer"></div>
-                    <button class="btn" onclick="submitForm()" id="submitBtn">Submit ✓</button>
+                <div id="studentEnrollmentResults"></div>
+            </div>
+
+            <div class="form-group">
+                <label>Select Event to Enroll:</label>
+                <div class="event-grid" id="eventCardsContainer"></div>
+            </div>
+
+            <div id="enrollmentForm" style="display:none">
+                <div id="enrollmentFormContent"></div>
+                <button class="btn" onclick="submitEnrollment()">Submit Enrollment</button>
+                <button class="btn btn-secondary" onclick="cancelEnrollment()">Cancel</button>
+            </div>
+        </div>
+
+        <!-- CR Section -->
+        <div class="cr-section" id="crSection" style="display:none">
+            <button class="btn btn-secondary" onclick="logout()" style="float:right">Logout</button>
+            <h2 style="color:#2196F3;margin-bottom:20px">Class Representative Dashboard</h2>
+            <div id="crMessage" class="message"></div>
+            
+            <div class="class-indicator active">
+                <h3>Managing Class</h3>
+                <div class="class-name" id="crClassName"></div>
+            </div>
+
+            <div class="tabs">
+                <button class="tab active" onclick="showCRTab('crEnroll')">Enroll Students</button>
+                <button class="tab" onclick="showCRTab('crView')">View Enrollments</button>
+            </div>
+
+            <div id="crEnroll" class="form-section active">
+                <h3 style="margin-bottom:20px">Enroll Students for Your Class</h3>
+                <div class="form-group">
+                    <label>Select Event:</label>
+                    <div class="event-grid" id="crEventCardsContainer"></div>
+                </div>
+
+                <div id="crEnrollmentForm" style="display:none">
+                    <div id="crEnrollmentFormContent"></div>
+                    <button class="btn" onclick="submitCREnrollment()">Submit Enrollment</button>
+                    <button class="btn btn-secondary" onclick="cancelCREnrollment()">Cancel</button>
                 </div>
             </div>
-            
-            <!-- Admin Dashboard Section -->
-            <div id="dashboardSection" class="form-section">
-                <div class="admin-dashboard">
-                    <h2 class="dashboard-title" id="dashboardTitle">📊 Master Enrollment Sheet (All Classes)</h2>
-                    
-                    <div class="stats-grid">
-                        <div class="stat-card">
-                            <div class="stat-number" id="totalEnrollments">0</div>
-                            <div class="stat-label">Total Enrollments</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-number" id="activeClasses">0</div>
-                            <div class="stat-label">Active Classes</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-number" id="activeSports">0</div>
-                            <div class="stat-label">Active Events</div>
-                        </div>
-                    </div>
-                    
-                    <div style="background: #f5f5f5; padding: 20px; border-radius: 8px;">
-                        <h3 style="color: #6a1b9a; margin-bottom: 15px;">📈 Breakdown by Class</h3>
-                        <div id="classBreakdown"></div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Admin/CR Login -->
-            <div id="adminSection" class="form-section">
-                <h2 style="color: #c44569; margin-bottom: 20px;">Admin Login</h2>
-                <div id="adminMessage" class="message"></div>
-                <input type="password" id="adminPassword" placeholder="Enter Password or Class Name" style="max-width: 300px; margin-bottom: 10px;">
-                <div>
-                    <button class="btn" onclick="adminLogin()">Login</button>
-                    <button class="btn btn-secondary" onclick="logout()" id="logoutBtn" style="display:none; margin-left: 10px;">Logout</button>
-                </div>
-            </div>
-            
-            <!-- Master Sheet -->
-            <div id="masterSection" class="form-section">
-                <h2 style="color: #c44569; margin-bottom: 20px;">Master Sheet</h2>
+
+            <div id="crView" class="form-section">
+                <h3 style="margin-bottom:20px">Your Class Enrollments</h3>
                 <div class="filter-section">
-                    <select id="filterClass" onchange="updateMaster()"><option value="">All Classes</option></select>
-                    <select id="filterEvent" onchange="updateMaster()"><option value="">All Events</option></select>
-                    <button class="btn" onclick="clearFilters()">Clear</button>
-                    <button class="btn" onclick="downloadMaster()">📥 Download</button>
+                    <select id="crFilterEvent" onchange="updateCRView()">
+                        <option value="">All Events</option>
+                    </select>
+                    <button class="btn btn-small" onclick="clearCRFilters()">Clear Filters</button>
+                    <button class="btn btn-small btn-success" onclick="downloadCREnrollments()">📥 Download Enrollments</button>
                 </div>
-                
-                <!-- Summary Statistics -->
-                <div id="filterSummary" style="display: none; background: #f0f8ff; border: 2px solid #2196F3; border-radius: 8px; padding: 20px; margin-bottom: 20px;">
-                    <div id="summaryContent"></div>
-                </div>
-                
-                <div style="overflow-x: auto;">
-                    <table>
-                        <thead><tr><th>Sl</th><th>Name</th><th>Phone</th><th>Class</th><th>Event</th><th>Role</th><th>Details</th><th>Actions</th></tr></thead>
-                        <tbody id="masterBody"><tr><td colspan="8" style="text-align: center; padding: 40px;">Loading...</td></tr></tbody>
-                    </table>
-                </div>
+                <div id="crSummary" style="margin-bottom:20px"></div>
+                <div id="crEnrollmentsContainer"></div>
             </div>
+        </div>
+
+        <!-- Admin Section -->
+        <div class="admin-only" id="adminSection">
+            <button class="btn btn-secondary" onclick="logout()" style="float:right">Logout</button>
             
-            <!-- Event-wise View -->
-            <div id="eventwiseSection" class="form-section">
-                <h2 style="color: #c44569; margin-bottom: 20px;">Event-wise Enrollments</h2>
-                <button class="btn" onclick="downloadEvents()">📥 Download</button>
-                <div id="eventsContainer" style="margin-top: 20px;"></div>
+            <!-- Admin Dashboard -->
+            <div class="admin-dashboard">
+                <h2 class="dashboard-title">📊 Admin Dashboard</h2>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalStudents">0</div>
+                        <div class="stat-label">Total Students</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalEvents">0</div>
+                        <div class="stat-label">Active Events</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalClasses">0</div>
+                        <div class="stat-label">Classes</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalEnrollments">0</div>
+                        <div class="stat-label">Total Enrollments</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tabs">
+                <button class="tab active" onclick="showTab('master')">Master List</button>
+                <button class="tab" onclick="showTab('events')">By Events</button>
+                <button class="tab super-admin-only" onclick="showTab('jurySetup')">Jury Setup</button>
+                <button class="tab" onclick="showTab('results')" id="resultsTab">Results</button>
+            </div>
+
+            <div class="content">
+                <!-- Master List Tab -->
+                <div id="master" class="form-section active">
+                    <h2 style="color:#c44569;margin-bottom:20px">Master Enrollment List</h2>
+                    <div class="filter-section">
+                        <select id="filterClass" onchange="updateMaster()">
+                            <option value="">All Classes</option>
+                        </select>
+                        <select id="filterEvent" onchange="updateMaster()">
+                            <option value="">All Events</option>
+                        </select>
+                        <button class="btn btn-small" onclick="clearFilters()">Clear Filters</button>
+                        <button class="btn btn-small btn-success" onclick="downloadMaster()">📥 Download CSV</button>
+                    </div>
+                    <div id="summaryInfo" style="background:#e3f2fd;padding:15px;border-radius:8px;margin-bottom:20px"></div>
+                    <div id="masterContainer"></div>
+                </div>
+
+                <!-- Events Tab -->
+                <div id="events" class="form-section">
+                    <h2 style="color:#c44569;margin-bottom:20px">Enrollments by Events</h2>
+                    <button class="btn btn-small btn-success" onclick="downloadEvents()" style="margin-bottom:20px">📥 Download CSV</button>
+                    <div id="eventsContainer"></div>
+                </div>
+
+                <!-- Jury Setup Tab (Super Admin Only) -->
+                <div id="jurySetup" class="form-section super-admin-only">
+                    <h2 style="color:#c44569;margin-bottom:20px">Jury Setup & Criteria Management</h2>
+                    
+                    <div class="form-group">
+                        <label>Select Event:</label>
+                        <select id="setupEventSelect" onchange="loadEventSetup()">
+                            <option value="">-- Select Event --</option>
+                        </select>
+                    </div>
+                    
+                    <div id="eventSetupContainer" style="display:none">
+                        <div class="jury-password-section">
+                            <h3 style="color:#6a1b9a;margin-bottom:15px">👥 Jury Details</h3>
+                            
+                            <div style="background:#f0f0f0;padding:15px;border-radius:8px;margin-bottom:15px">
+                                <h4 style="color:#6a1b9a;margin-bottom:10px">Jury 1</h4>
+                                <div class="form-group">
+                                    <label>Jury 1 Name:</label>
+                                    <input type="text" id="jury1Name" placeholder="e.g., Dr. Smith, Prof. John">
+                                </div>
+                                <div class="form-group">
+                                    <label>Jury 1 Password:</label>
+                                    <input type="text" id="jury1Password" placeholder="Set password for Jury 1">
+                                </div>
+                            </div>
+                            
+                            <div style="background:#f0f0f0;padding:15px;border-radius:8px;margin-bottom:15px">
+                                <h4 style="color:#6a1b9a;margin-bottom:10px">Jury 2</h4>
+                                <div class="form-group">
+                                    <label>Jury 2 Name:</label>
+                                    <input type="text" id="jury2Name" placeholder="e.g., Dr. Jane, Prof. Mary">
+                                </div>
+                                <div class="form-group">
+                                    <label>Jury 2 Password:</label>
+                                    <input type="text" id="jury2Password" placeholder="Set password for Jury 2">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <h3 style="color:#6a1b9a;margin:20px 0 15px">📋 Evaluation Criteria (5 criteria, 10 marks each)</h3>
+                        <div id="criteriaContainer"></div>
+                        <button class="btn btn-small btn-info" onclick="addCriterion()" style="margin-top:10px">+ Add Criterion</button>
+                        
+                        <div style="margin-top:30px">
+                            <button class="btn btn-success" onclick="saveEventSetup()">Save Setup</button>
+                        </div>
+                        
+                        <div id="setupMessage" class="message" style="margin-top:20px"></div>
+                    </div>
+                </div>
+
+                <!-- Results Tab -->
+                <div id="results" class="form-section">
+                    <h2 style="color:#c44569;margin-bottom:20px">Event Results</h2>
+                    
+                    <div class="form-group">
+                        <label>Select Event:</label>
+                        <div style="display:flex;gap:10px;">
+                            <select id="resultsEventSelect" onchange="loadEventResults()" style="flex:1">
+                                <option value="">-- Select Event --</option>
+                            </select>
+                            <button class="btn btn-small" onclick="loadEventResults()" style="white-space:nowrap">🔄 Refresh</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Super Admin Only: Publish/Unpublish Results -->
+                    <div class="super-admin-only" style="margin:20px 0;padding:15px;background:#fff3cd;border-radius:8px;border:2px solid #ffc107">
+                        <h3 style="color:#6a1b9a;margin-bottom:10px">📢 Results Management</h3>
+                        <p style="color:#666;margin-bottom:15px;font-size:14px">Publish or unpublish results for the selected event.</p>
+                        <div style="display:flex;gap:10px;flex-wrap:wrap">
+                            <button class="btn btn-danger" onclick="publishResults()">✅ Publish Results to Admins</button>
+                            <button class="btn btn-secondary" onclick="unpublishResults()">❌ Unpublish Results</button>
+                        </div>
+                    </div>
+                    
+                    <div id="resultsContainer"></div>
+                </div>
             </div>
         </div>
-        
-        <!-- General Rules and Regulations (Bottom of Page) -->
-        <div style="background: white; border-radius: 12px; padding: 25px; margin-top: 30px; box-shadow: 0 4px 20px rgba(0,0,0,0.1);">
-            <h2 style="color: #c44569; margin-bottom: 15px; text-align: center;">📋 General Rules and Regulations</h2>
-            <div style="background: #fff3cd; border-left: 4px solid #ff9800; padding: 15px; border-radius: 6px; margin-bottom: 15px;">
-                <p style="margin: 0; color: #856404; font-weight: 600;">Event Coordinators: Lalitha S K & Priyanka V</p>
-            </div>
-            <div style="background: #f9f9f9; padding: 20px; border-radius: 8px;">
-                <ol style="margin: 0; padding-left: 20px; line-height: 1.8;">
-                    <li style="margin-bottom: 12px;"><strong>Last date for registration</strong> with one time Refundable amount <strong style="color: #c44569;">₹1,500/-</strong> on or before <strong>23rd February, Monday within 3:30 PM</strong>.</li>
-                    <li style="margin-bottom: 12px;"><strong>Last date for submission of Music and Work Organising batch</strong> on or before <strong>7th March, Saturday</strong>.</li>
-                    <li style="margin-bottom: 12px;">Students arriving late (Event and for the Class registration on the date of event) or absent for the event will be fined <strong style="color: #f44336;">₹500/- per day</strong>.</li>
-                    <li style="margin-bottom: 12px;">Teams not submitting Music, or any other assignments with respect to the event, on date and time, will lead into <strong style="color: #f44336;">non-refund of deposit ₹1,500/-</strong>.</li>
-                </ol>
+
+        <!-- Jury Section -->
+        <div class="jury-only" id="jurySection">
+            <button class="btn btn-secondary" onclick="logout()" style="float:right">Logout</button>
+            
+            <div class="content">
+                <h2 style="color:#c44569;margin-bottom:20px" id="juryEventTitle">Jury Evaluation Sheet</h2>
+                <p style="margin-bottom:20px;color:#666" id="juryInfo"></p>
+                
+                <div id="juryMessage" class="message"></div>
+                
+                <div style="margin-bottom:20px;text-align:center">
+                    <button class="btn btn-info" onclick="loadJurySheet()" style="margin-right:10px">🔄 Reload Sheet</button>
+                    <button class="btn btn-secondary" onclick="showEnrollmentDebug()">📊 Show Enrollments</button>
+                </div>
+                
+                <div id="jurySheetContainer"></div>
+                
+                <div style="margin-top:30px;text-align:center">
+                    <button class="btn btn-success" onclick="saveMarks()">💾 Save Marks</button>
+                    <button class="btn btn-info" onclick="markAsCompleted()" style="margin-left:10px">✅ Mark as Completed</button>
+                </div>
             </div>
         </div>
     </div>
-    
-    <!-- Success Modal -->
-    <div id="successModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-icon">✅</div>
-            <h2 style="color: #4CAF50; text-align: center;">Success!</h2>
-            <p id="successMsg" style="text-align: center; margin: 20px 0; font-size: 1.1em;"></p>
-            <div class="modal-buttons" id="successBtns"></div>
-        </div>
+
+    <!-- Firebase Status Indicator -->
+    <div class="firebase-status">
+        <div class="status-dot status-disconnected" id="statusDot"></div>
+        <span id="statusText">Connecting...</span>
     </div>
-    
-    <!-- Edit Modal -->
-    <div id="editModal" class="modal">
+
+    <!-- Confirmation Modal -->
+    <div id="confirmModal" class="modal">
         <div class="modal-content">
-            <h2 class="modal-header">Edit Enrollment</h2>
-            <div id="editForm"></div>
+            <div class="modal-icon">⚠️</div>
+            <div class="modal-header" id="modalMessage"></div>
             <div class="modal-buttons">
-                <button class="btn" onclick="saveEdit()">Save</button>
-                <button class="btn btn-secondary" onclick="closeEdit()">Cancel</button>
+                <button class="btn btn-success" onclick="confirmAction()">Yes, Proceed</button>
+                <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
             </div>
         </div>
     </div>
@@ -474,8 +697,8 @@
             }, 1000);
         }
 
-
-        // Event Configurations with max limits
+        // Global Variables
+        const classes = ['1st B.Com','2nd B.Com','3rd B.Com','1ST BCA','2ND BCA A SEC','2ND BCA B SEC','3RD BCA A SEC','3RD BCA B SEC','3RD BCA C SEC','2ND BBA','3RD BBA'];
         const events = {
             'Pod Casting': {size:'Individual',count:1,role:false,topic:true,topicLabel:'Topic',allow:false,maxPerClass:1},
             'Mime': {size:'6 Members',count:6,role:true,topic:true,topicLabel:'Theme',allow:false,maxPerClass:1},
@@ -494,551 +717,1074 @@
             'Case Analysis': {size:'2 Members',count:2,role:true,allow:false,maxPerClass:1}
         };
 
-        const classes = ['1st B.Com','2nd B.Com','3rd B.Com','1ST BCA','2ND BCA A SEC','2ND BCA B SEC','3RD BCA A SEC','3RD BCA B SEC','3RD BCA C SEC','2ND BBA','3RD BBA'];
-        const ADMIN = 'admin123';
-        let isAdmin = localStorage.getItem('isAdmin')==='true';
-        let isCR = localStorage.getItem('isCR')==='true';
-        let crClass = localStorage.getItem('crClass') || '';
-        let all = [], selClass = '', selEvent = '', selCfg = null, editId = null;
+        let all = [];
+        let currentUser = null;
+        let studentClass = null;
+        let crClass = null;
+        let isAdmin = false;
+        let isSuperAdmin = false;
+        let isCR = false;
+        let isJury = false;
+        let juryEvent = null;
+        let juryNumber = null;
+        let selectedEvent = null;
+        let adminPassword = 'admin123';
+        let superAdminPassword = 'superadmin123';
 
-        document.addEventListener('DOMContentLoaded', function() {
-            populateEvents();
-            populateFilters();
-            updateAdminUI();
+        // Initialize
+        window.onload = function() {
+            populateClassSelects();
+            populateEventSelects();
             loadData();
-        });
-
-        function switchTab(t) {
-            document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
-            document.querySelectorAll('.form-section').forEach(x => x.classList.remove('active'));
-            event.target.classList.add('active');
-            document.getElementById(t+'Section').classList.add('active');
-            if (t==='master' && isAdmin) updateMaster();
-            else if (t==='eventwise' && isAdmin) updateEvents();
-            else if (t==='dashboard' && isAdmin) updateDashboard();
-        }
-
-        function updateClassIndicator() {
-            const indicator = document.getElementById('classIndicator');
-            const className = document.getElementById('selectedClassName');
             
-            if (selClass) {
-                className.textContent = selClass;
-                indicator.classList.add('active');
-            } else {
-                indicator.classList.remove('active');
-            }
-        }
-
-        function goToStep2() {
-            const c = document.getElementById('classYear').value;
-            if (!c) { showErr('Select class'); return; }
-            selClass = c;
-            updateClassIndicator();
-            document.getElementById('step1').style.display = 'none';
-            document.getElementById('step2').style.display = 'block';
-            updateEventAvailability();
-            scroll(0,0);
-        }
-
-        function backToStep1() {
-            selClass = '';
-            updateClassIndicator();
-            document.getElementById('step2').style.display = 'none';
-            document.getElementById('step1').style.display = 'block';
-            scroll(0,0);
-        }
-
-        function updateEventAvailability() {
-            const cards = document.querySelectorAll('.event-card');
-            cards.forEach(function(card) {
-                const eventName = card.dataset.event;
-                const cfg = events[eventName];
-                const enrolled = countEnrolledTeams(selClass, eventName);
-                
-                card.classList.remove('full');
-                const statusEl = card.querySelector('.event-status');
-                if (statusEl) statusEl.remove();
-                
-                const status = document.createElement('div');
-                status.className = 'event-status';
-                
-                if (enrolled >= cfg.maxPerClass) {
-                    card.classList.add('full');
-                    card.onclick = function() { showErr('This event is full for your class!'); };
-                    status.className += ' status-full';
-                    status.textContent = '🔒 FULL';
-                } else if (cfg.allow) {
-                    const remaining = cfg.maxPerClass - enrolled;
-                    status.className += remaining <= 2 ? ' status-limited' : ' status-available';
-                    status.textContent = remaining + ' slots left';
+            // Firebase connection status
+            const connectedRef = db.ref('.info/connected');
+            connectedRef.on('value', (snap) => {
+                const dot = document.getElementById('statusDot');
+                const text = document.getElementById('statusText');
+                if (snap.val() === true) {
+                    dot.className = 'status-dot status-connected';
+                    text.textContent = 'Connected';
                 } else {
-                    status.className += ' status-available';
-                    status.textContent = '✅ Available';
-                }
-                
-                card.appendChild(status);
-            });
-        }
-
-        function countEnrolledTeams(className, eventName) {
-            const enrollments = all.filter(e => e.classYear === className && e.event === eventName);
-            const cfg = events[eventName];
-            if (!cfg) return 0;
-            
-            // For individual events with multiple allowed (like Case Analysis, Solo Dance), count unique students
-            if (cfg.count === 1) {
-                const uniquePhones = new Set();
-                enrollments.forEach(e => uniquePhones.add(e.phone));
-                return uniquePhones.size;
-            }
-            
-            // For team events, count unique teams by grouping members
-            const uniquePhones = new Set();
-            enrollments.forEach(e => uniquePhones.add(e.phone));
-            
-            // Estimate teams
-            return Math.ceil(uniquePhones.size / cfg.count);
-        }
-
-        function selectEvent(e) {
-            const cfg = events[e];
-            const enrolled = countEnrolledTeams(selClass, e);
-            
-            if (enrolled >= cfg.maxPerClass) {
-                showErr('This event is already full for your class!');
-                return;
-            }
-            
-            selEvent = e;
-            selCfg = cfg;
-            setTimeout(function() {
-                document.getElementById('step2').style.display = 'none';
-                document.getElementById('step3').style.display = 'block';
-                document.getElementById('step3Title').textContent = 'Step 3: '+e;
-                genInputs();
-                scroll(0,0);
-            }, 200);
-        }
-
-        function backToStep2() {
-            document.getElementById('step3').style.display = 'none';
-            document.getElementById('step2').style.display = 'block';
-            scroll(0,0);
-        }
-
-        function populateEvents() {
-            const g = document.getElementById('eventGrid');
-            g.innerHTML = '';
-            Object.keys(events).forEach(function(e) {
-                const cfg = events[e];
-                const card = document.createElement('div');
-                card.className = 'event-card';
-                card.dataset.event = e;
-                card.onclick = function() { selectEvent(e); };
-                card.innerHTML = '<div class="event-title">'+e+'</div><div class="event-size">'+cfg.size+'</div>';
-                g.appendChild(card);
-            });
-        }
-
-        function genInputs() {
-            const tc = document.getElementById('teamContainer');
-            const ec = document.getElementById('extraContainer');
-            const cfg = selCfg;
-            
-            let h = '<div style="background:#f9f9f9;padding:20px;border-radius:8px;margin:20px 0"><h3 style="color:#c44569;margin-bottom:20px">Team Members ('+cfg.count+')</h3>';
-            for (let i=0; i<cfg.count; i++) {
-                const role = cfg.role ? (i===0?'Captain':'Member '+(i+1)) : 'Participant '+(i+1);
-                h += '<div class="team-member-box"><div class="member-header">'+role+'</div>';
-                h += '<div class="form-group"><label>Name *</label><input type="text" id="n'+i+'" required></div>';
-                h += '<div class="form-group"><label>Phone *</label><input type="tel" id="p'+i+'" required maxlength="10"></div></div>';
-            }
-            h += '</div>';
-            tc.innerHTML = h;
-            
-            let e = '<div style="background:#fff3cd;padding:20px;border-radius:8px;margin:20px 0"><h3 style="color:#856404;margin-bottom:20px">Event Details</h3>';
-            if (cfg.topic) e += '<div class="form-group"><label>'+(cfg.topicLabel||'Topic')+' *</label><input type="text" id="topic" required></div>';
-            if (cfg.prod) e += '<div class="form-group"><label>Product *</label><input type="text" id="product" required></div>';
-            if (cfg.cause) e += '<div class="form-group"><label>'+(cfg.causeLabel||'Cause')+' *</label><input type="text" id="cause" required></div>';
-            if (cfg.lang) e += '<div class="form-group"><label>Languages</label><div><label style="display:inline-block;margin-right:15px"><input type="checkbox" id="lEn" checked disabled> English</label><label style="display:inline-block;margin-right:15px"><input type="checkbox" id="lKn"> Kannada</label><label style="display:inline-block"><input type="checkbox" id="lHi"> Hindi</label></div></div>';
-            if (cfg.show) e += '<div class="form-group"><label>Showstopper *</label><input type="text" id="show" required></div>';
-            e += '</div>';
-            ec.innerHTML = e;
-        }
-
-        function submitForm() {
-            const btn = document.getElementById('submitBtn');
-            btn.disabled = true;
-            btn.textContent = 'Submitting...';
-            
-            const members = [];
-            for (let i=0; i<selCfg.count; i++) {
-                const n = document.getElementById('n'+i).value.trim();
-                const p = document.getElementById('p'+i).value.trim();
-                if (!n || !p) { showErr('Fill all fields'); btn.disabled = false; btn.textContent = 'Submit ✓'; return; }
-                if (p.length!==10 || !/^\d{10}$/.test(p)) { showErr('Invalid phone: '+n); btn.disabled = false; btn.textContent = 'Submit ✓'; return; }
-                members.push({name:n,phone:p,role:selCfg.role?(i===0?'Captain':'Member'):'Participant'});
-            }
-            
-            const base = {classYear:selClass,event:selEvent,timestamp:Date.now()};
-            if (selCfg.topic) { const t = document.getElementById('topic'); if (!t||!t.value.trim()) { showErr('Enter topic'); btn.disabled = false; btn.textContent = 'Submit ✓'; return; } base.topic = t.value.trim(); }
-            if (selCfg.prod) { const pr = document.getElementById('product'); if (!pr||!pr.value.trim()) { showErr('Enter product'); btn.disabled = false; btn.textContent = 'Submit ✓'; return; } base.product = pr.value.trim(); }
-            if (selCfg.cause) { const c = document.getElementById('cause'); if (!c||!c.value.trim()) { showErr('Enter cause'); btn.disabled = false; btn.textContent = 'Submit ✓'; return; } base.cause = c.value.trim(); }
-            if (selCfg.lang) { const langs = ['English']; const kn = document.getElementById('lKn'); const hi = document.getElementById('lHi'); if (kn&&kn.checked) langs.push('Kannada'); if (hi&&hi.checked) langs.push('Hindi'); base.languages = langs.join(', '); }
-            if (selCfg.show) { const s = document.getElementById('show'); if (!s||!s.value.trim()) { showErr('Enter showstopper'); btn.disabled = false; btn.textContent = 'Submit ✓'; return; } base.showstopper = s.value.trim(); }
-            
-            const promises = members.map(m => ref.push(Object.assign({},base,{name:m.name,phone:m.phone,role:m.role})));
-            Promise.all(promises).then(function() {
-                btn.disabled = false;
-                btn.textContent = 'Submit ✓';
-                showSuccessModal(members.length);
-            }).catch(function(er) {
-                showErr('Error: '+er.message);
-                btn.disabled = false;
-                btn.textContent = 'Submit ✓';
-            });
-        }
-
-        function showSuccessModal(cnt) {
-            const modal = document.getElementById('successModal');
-            const msg = document.getElementById('successMsg');
-            const btns = document.getElementById('successBtns');
-            msg.textContent = 'Enrolled '+cnt+' member(s) for '+selEvent+'!';
-            btns.innerHTML = selCfg.allow ? '<button class="btn" onclick="addMore()">Add Another</button><button class="btn btn-secondary" onclick="done()">Done</button>' : '<button class="btn" onclick="done()">Continue</button>';
-            modal.style.display = 'block';
-        }
-
-        function addMore() {
-            document.getElementById('successModal').style.display = 'none';
-            for (let i=0; i<selCfg.count; i++) {
-                const n = document.getElementById('n'+i); const p = document.getElementById('p'+i);
-                if (n) n.value = ''; if (p) p.value = '';
-            }
-            ['topic','product','cause','show'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
-            const kn = document.getElementById('lKn'); const hi = document.getElementById('lHi');
-            if (kn) kn.checked = false; if (hi) hi.checked = false;
-            scroll(0,0);
-        }
-
-        function done() {
-            document.getElementById('successModal').style.display = 'none';
-            document.getElementById('step3').style.display = 'none';
-            document.getElementById('step2').style.display = 'block';
-            updateEventAvailability();
-            scroll(0,0);
-        }
-
-        // Student Search & Edit
-        function searchStudent() {
-            const phone = document.getElementById('studentPhone').value.trim();
-            if (!phone || phone.length!==10) { showErr('Enter valid 10-digit phone'); return; }
-            const mine = all.filter(x => x.phone===phone);
-            const cont = document.getElementById('studentResults');
-            if (mine.length===0) { cont.innerHTML = '<p style="color:#666;padding:15px;background:white;border-radius:6px;margin-top:10px">No enrollments found</p>'; return; }
-            let h = '<div style="background:white;border-radius:6px;padding:15px;margin-top:10px"><h4>Your Enrollments ('+mine.length+')</h4><table style="font-size:14px"><thead><tr><th>Name</th><th>Class</th><th>Event</th><th>Role</th><th>Actions</th></tr></thead><tbody>';
-            mine.forEach(e => h += '<tr><td>'+e.name+'</td><td>'+e.classYear+'</td><td>'+e.event+'</td><td>'+e.role+'</td><td><button class="edit-btn" onclick="openEdit(\''+e.id+'\')">Edit</button> <button class="delete-btn" onclick="confirmDel(\''+e.id+'\',\''+e.name+'\')">Delete</button></td></tr>');
-            h += '</tbody></table></div>';
-            cont.innerHTML = h;
-        }
-
-        function clearStudentSearch() {
-            document.getElementById('studentPhone').value = '';
-            document.getElementById('studentResults').innerHTML = '';
-        }
-
-        // CR Functions
-        function viewClassEnrollments() {
-            const cl = document.getElementById('crClass').value;
-            if (!cl) { showErr('Select your class'); return; }
-            const classEnr = all.filter(e => e.classYear === cl);
-            const cont = document.getElementById('crResults');
-            if (classEnr.length === 0) { cont.innerHTML = '<p style="color:#666;padding:15px;background:white;border-radius:6px;margin-top:10px">No enrollments for this class</p>'; return; }
-            let h = '<div style="background:white;border-radius:6px;padding:15px;margin-top:10px"><h4>'+cl+' Enrollments ('+classEnr.length+')</h4><table><thead><tr><th>Name</th><th>Phone</th><th>Event</th><th>Role</th><th>Details</th></tr></thead><tbody>';
-            classEnr.forEach(e => h += '<tr><td>'+e.name+'</td><td>'+e.phone+'</td><td>'+e.event+'</td><td>'+e.role+'</td><td>'+getDet(e)+'</td></tr>');
-            h += '</tbody></table></div>';
-            cont.innerHTML = h;
-        }
-
-        function downloadClassReport() {
-            const cl = document.getElementById('crClass').value;
-            if (!cl) { alert('Select class'); return; }
-            const classEnr = all.filter(e => e.classYear === cl);
-            if (classEnr.length === 0) { alert('No data'); return; }
-            let csv = 'Name,Phone,Event,Role,Details\n';
-            classEnr.forEach(e => csv += '"'+e.name+'","'+e.phone+'","'+e.event+'","'+e.role+'","'+getDet(e).replace(/<br>/g,' | ')+'"\n');
-            download(csv, cl.replace(/[^a-zA-Z0-9]/g,'_')+'_enrollments.csv');
-        }
-
-        // Admin Dashboard
-        function updateDashboard() {
-            // Update dashboard title based on login type
-            const dashboardTitle = document.getElementById('dashboardTitle');
-            if (isCR && crClass) {
-                dashboardTitle.textContent = '📊 ' + crClass + ' - Enrollment Dashboard';
-            } else {
-                dashboardTitle.textContent = '📊 Master Enrollment Sheet (All Classes)';
-            }
-            
-            // Filter data based on login type
-            let filteredData = all;
-            if (isCR && crClass) {
-                filteredData = all.filter(e => e.classYear === crClass);
-            }
-            
-            // Calculate statistics
-            const totalEnrollments = filteredData.length;
-            
-            // Count active classes (classes with at least one enrollment)
-            const activeClassesSet = new Set();
-            filteredData.forEach(e => activeClassesSet.add(e.classYear));
-            const activeClasses = activeClassesSet.size;
-            
-            // Count active events (events with at least one enrollment)
-            const activeSportsSet = new Set();
-            filteredData.forEach(e => activeSportsSet.add(e.event));
-            const activeSports = activeSportsSet.size;
-            
-            // Update stats display
-            document.getElementById('totalEnrollments').textContent = totalEnrollments;
-            document.getElementById('activeClasses').textContent = activeClasses;
-            document.getElementById('activeSports').textContent = activeSports;
-            
-            // Class breakdown
-            const classStats = {};
-            const classesToShow = isCR && crClass ? [crClass] : classes;
-            classesToShow.forEach(c => classStats[c] = 0);
-            filteredData.forEach(e => {
-                if (classStats[e.classYear] !== undefined) {
-                    classStats[e.classYear]++;
+                    dot.className = 'status-dot status-disconnected';
+                    text.textContent = 'Disconnected';
                 }
             });
-            
-            let breakdownHTML = '<table style="width: 100%;"><thead><tr><th>Class</th><th>Enrollments</th><th>Percentage</th></tr></thead><tbody>';
-            classesToShow.forEach(c => {
-                const count = classStats[c];
-                const percentage = totalEnrollments > 0 ? ((count / totalEnrollments) * 100).toFixed(1) : 0;
-                if (count > 0 || (isCR && crClass === c)) {
-                    breakdownHTML += '<tr><td><strong>'+c+'</strong></td><td>'+count+'</td><td>'+percentage+'%</td></tr>';
+        };
+
+        function populateClassSelects() {
+            const selects = ['studentClass','crClass','filterClass'];
+            selects.forEach(id => {
+                const sel = document.getElementById(id);
+                if (sel) {
+                    classes.forEach(c => {
+                        const opt = document.createElement('option');
+                        opt.value = c;
+                        opt.textContent = c;
+                        sel.appendChild(opt);
+                    });
                 }
             });
-            breakdownHTML += '</tbody></table>';
-            
-            document.getElementById('classBreakdown').innerHTML = breakdownHTML;
         }
 
-        function openEdit(id) {
-            const e = all.find(x => x.id===id);
-            if (!e) return;
-            editId = id;
-            let h = '<div class="form-group"><label>Name</label><input type="text" id="eName" value="'+e.name+'"></div>';
-            h += '<div class="form-group"><label>Phone</label><input type="tel" id="ePhone" value="'+e.phone+'" maxlength="10"></div>';
-            h += '<div class="form-group"><label>Class</label><select id="eClass">';
-            classes.forEach(c => h += '<option value="'+c+'"'+(c===e.classYear?' selected':'')+'>'+c+'</option>');
-            h += '</select></div><div class="form-group"><label>Role</label><input type="text" id="eRole" value="'+e.role+'"></div>';
-            if (e.topic) h += '<div class="form-group"><label>Topic</label><input type="text" id="eTopic" value="'+e.topic+'"></div>';
-            if (e.product) h += '<div class="form-group"><label>Product</label><input type="text" id="eProduct" value="'+e.product+'"></div>';
-            if (e.cause) h += '<div class="form-group"><label>Cause</label><input type="text" id="eCause" value="'+e.cause+'"></div>';
-            if (e.languages) h += '<div class="form-group"><label>Languages</label><input type="text" id="eLangs" value="'+e.languages+'"></div>';
-            if (e.showstopper) h += '<div class="form-group"><label>Showstopper</label><input type="text" id="eShow" value="'+e.showstopper+'"></div>';
-            document.getElementById('editForm').innerHTML = h;
-            document.getElementById('editModal').style.display = 'block';
-        }
-
-        function saveEdit() {
-            if (!editId) return;
-            const upd = { name: document.getElementById('eName').value.trim(), phone: document.getElementById('ePhone').value.trim(), classYear: document.getElementById('eClass').value, role: document.getElementById('eRole').value.trim() };
-            [{id:'eTopic',key:'topic'},{id:'eProduct',key:'product'},{id:'eCause',key:'cause'},{id:'eLangs',key:'languages'},{id:'eShow',key:'showstopper'}].forEach(f => { const el = document.getElementById(f.id); if (el) upd[f.key] = el.value.trim(); });
-            ref.child(editId).update(upd).then(function() {
-                closeEdit();
-                showOk('Updated!');
-                clearStudentSearch();
-            }).catch(er => showErr('Error: '+er.message));
-        }
-
-        function closeEdit() {
-            document.getElementById('editModal').style.display = 'none';
-            editId = null;
-        }
-
-        function confirmDel(id, name) {
-            if (!confirm('Delete '+name+'?')) return;
-            ref.child(id).remove().then(function() {
-                showOk('Deleted!');
-                clearStudentSearch();
-            }).catch(er => showErr('Error: '+er.message));
-        }
-
-        function adminLogin() {
-            const pw = document.getElementById('adminPassword').value.trim();
-            
-            // Check if it's admin password
-            if (pw === ADMIN) { 
-                isAdmin = true; 
-                isCR = false;
-                crClass = '';
-                localStorage.setItem('isAdmin','true'); 
-                localStorage.removeItem('isCR');
-                localStorage.removeItem('crClass');
-                updateAdminUI(); 
-                showAdminMsg('Login successful!','success'); 
-            }
-            // Check if it's a valid class name
-            else if (classes.includes(pw)) {
-                isAdmin = false;
-                isCR = true;
-                crClass = pw;
-                localStorage.removeItem('isAdmin');
-                localStorage.setItem('isCR','true');
-                localStorage.setItem('crClass', pw);
-                updateAdminUI();
-                showAdminMsg('Login successful!','success');
-            }
-            else {
-                showAdminMsg('Invalid password or class name!','error');
-            }
-            
-            document.getElementById('adminPassword').value = '';
-        }
-
-        function logout() {
-            isAdmin = false;
-            isCR = false;
-            crClass = '';
-            localStorage.removeItem('isAdmin');
-            localStorage.removeItem('isCR');
-            localStorage.removeItem('crClass');
-            updateAdminUI();
-            showAdminMsg('Logged out successfully!','success');
-        }
-
-        function updateAdminUI() {
-            if (isAdmin) {
-                document.querySelectorAll('.admin-only').forEach(x => x.style.display='block');
-                document.getElementById('logoutBtn').style.display='inline-block';
-                document.getElementById('userBadge').innerHTML='<span class="admin-badge">ADMIN</span>';
-            } else if (isCR) {
-                document.querySelectorAll('.admin-only').forEach(x => x.style.display='block');
-                document.getElementById('logoutBtn').style.display='inline-block';
-                document.getElementById('userBadge').innerHTML='<span class="admin-badge" style="background:#2196F3;">' + crClass + '</span>';
-            } else {
-                document.querySelectorAll('.admin-only').forEach(x => x.style.display='none');
-                document.getElementById('logoutBtn').style.display='none';
-                document.getElementById('userBadge').innerHTML='';
-            }
-        }
-
-        function showAdminMsg(msg,type) {
-            const d = document.getElementById('adminMessage');
-            d.className = 'message '+type+' show';
-            d.textContent = msg;
-            setTimeout(() => d.classList.remove('show'), 3000);
+        function populateEventSelects() {
+            const selects = ['filterEvent','crFilterEvent','setupEventSelect','resultsEventSelect','juryEvent'];
+            selects.forEach(id => {
+                const sel = document.getElementById(id);
+                if (sel) {
+                    Object.keys(events).forEach(e => {
+                        const opt = document.createElement('option');
+                        opt.value = e;
+                        opt.textContent = e;
+                        sel.appendChild(opt);
+                    });
+                }
+            });
         }
 
         function loadData() {
-            if (!ref) return;
             ref.on('value', snap => {
-                all = [];
-                snap.forEach(ch => { const d = ch.val(); d.id = ch.key; all.push(d); });
-                all.sort((a,b) => b.timestamp-a.timestamp);
+                console.log('=== FIREBASE DATA LOADED (listener) ===');
+                console.log('Snapshot exists?', snap.exists());
                 
-                // Update dashboard if admin is viewing it
-                if (isAdmin && document.getElementById('dashboardSection').classList.contains('active')) {
-                    updateDashboard();
+                all = [];
+                let childCount = 0;
+                if (snap.exists()) {
+                    snap.forEach(child => {
+                        childCount++;
+                        const data = {id: child.key, ...child.val()};
+                        console.log('Child #' + childCount + ':', child.key, '→', data.classYear, '-', data.event, '-', data.name);
+                        all.push(data);
+                    });
+                }
+                
+                console.log('Total children loaded:', childCount);
+                console.log('All array length:', all.length);
+                
+                // Show class breakdown
+                const classCounts = {};
+                all.forEach(e => {
+                    if (!classCounts[e.classYear]) classCounts[e.classYear] = 0;
+                    classCounts[e.classYear]++;
+                });
+                console.log('Data by class:', classCounts);
+                
+                if (isAdmin || isSuperAdmin) {
+                    updateStats();
+                    updateMaster();
+                    updateEvents();
+                }
+                if (isCR) {
+                    updateCRView();
+                }
+                // Update student view when data changes
+                if (studentClass && document.getElementById('studentSection').style.display === 'block') {
+                    renderEventCards();
                 }
             });
         }
 
-        function populateFilters() {
-            const cf = document.getElementById('filterClass');
-            const ef = document.getElementById('filterEvent');
-            classes.forEach(c => { const o = document.createElement('option'); o.value = c; o.textContent = c; cf.appendChild(o); });
-            Object.keys(events).forEach(e => { const o = document.createElement('option'); o.value = e; o.textContent = e; ef.appendChild(o); });
+        function handleUserTypeChange() {
+            const type = document.getElementById('userType').value;
+            document.getElementById('studentLogin').style.display = type === 'student' ? 'block' : 'none';
+            document.getElementById('crLogin').style.display = type === 'cr' ? 'block' : 'none';
+            document.getElementById('adminLogin').style.display = type === 'admin' ? 'block' : 'none';
+            document.getElementById('superAdminLogin').style.display = type === 'superadmin' ? 'block' : 'none';
+            document.getElementById('juryLogin').style.display = type === 'jury' ? 'block' : 'none';
         }
 
-        function updateMaster() {
-            const body = document.getElementById('masterBody');
-            let cf = document.getElementById('filterClass').value;
-            let ef = document.getElementById('filterEvent').value;
+        function studentLogin() {
+            const cls = document.getElementById('studentClass').value;
+            if (!cls) { alert('Please select your class'); return; }
+            studentClass = cls;
+            currentUser = 'Student';
             
-            // If logged in as CR, auto-filter by their class
-            if (isCR && crClass) {
-                cf = crClass;
-                document.getElementById('filterClass').value = crClass;
-                document.getElementById('filterClass').disabled = true;
-            } else {
-                document.getElementById('filterClass').disabled = false;
-            }
+            document.getElementById('userInfo').innerHTML = 'Logged in as: <span class="admin-badge">Student - '+cls+'</span>';
+            document.getElementById('loginSection').style.display = 'none';
+            document.getElementById('studentSection').style.display = 'block';
+            document.getElementById('currentClassName').textContent = cls;
+            document.getElementById('classIndicator').classList.add('active');
             
-            const filt = all.filter(e => (!cf || e.classYear===cf) && (!ef || e.event===ef));
+            // Force reload data from Firebase and then render
+            console.log('=== STUDENT LOGIN ===');
+            console.log('Selected class:', cls);
+            console.log('Firebase ref path:', ref.toString());
             
-            // Update summary statistics
-            updateFilterSummary(cf, ef);
-            
-            if (filt.length===0) { 
-                body.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:40px">No data</td></tr>'; 
-                return; 
-            }
-            let h = '';
-            filt.forEach((e,i) => h += '<tr><td>'+(i+1)+'</td><td>'+e.name+'</td><td>'+e.phone+'</td><td>'+e.classYear+'</td><td>'+e.event+'</td><td>'+e.role+'</td><td>'+getDet(e)+'</td><td><button class="edit-btn" onclick="openEdit(\''+e.id+'\')">Edit</button> <button class="delete-btn" onclick="confirmDel(\''+e.id+'\',\''+e.name+'\')">Delete</button></td></tr>');
-            body.innerHTML = h;
+            ref.once('value').then(snap => {
+                console.log('Snapshot exists?', snap.exists());
+                
+                all = [];
+                if (snap.exists()) {
+                    snap.forEach(child => {
+                        const data = {id: child.key, ...child.val()};
+                        all.push(data);
+                    });
+                }
+                
+                console.log('Total records loaded:', all.length);
+                
+                // Log first few records
+                if (all.length > 0) {
+                    console.log('Sample records:');
+                    all.slice(0, 3).forEach((rec, i) => {
+                        console.log(`  [${i}] Class: "${rec.classYear}" | Event: "${rec.event}" | Name: "${rec.name}"`);
+                    });
+                }
+                
+                // Show all unique classes in database
+                const uniqueClasses = [...new Set(all.map(e => e.classYear))];
+                console.log('Unique classes in database:', uniqueClasses);
+                
+                // Filter for this class
+                const classRecords = all.filter(e => e.classYear === cls);
+                console.log(`Records matching "${cls}":`, classRecords.length);
+                
+                if (classRecords.length > 0) {
+                    console.log('Matching records:', classRecords);
+                }
+                
+                // Render cards and view enrollments
+                renderEventCards();
+                viewStudentClassEnrollments();
+                
+            }).catch(err => {
+                console.error('Firebase read error:', err);
+                alert('Error loading data: ' + err.message);
+            });
         }
-        
-        function updateFilterSummary(selectedClass, selectedEvent) {
-            const summaryDiv = document.getElementById('filterSummary');
-            const summaryContent = document.getElementById('summaryContent');
+
+        function crLogin() {
+            const cls = document.getElementById('crClass').value;
+            if (!cls) { alert('Please select your class'); return; }
             
-            // If no filter is selected, hide summary
-            if (!selectedClass && !selectedEvent) {
-                summaryDiv.style.display = 'none';
+            crClass = cls;
+            isCR = true;
+            currentUser = 'CR';
+            document.getElementById('userInfo').innerHTML = 'Logged in as: <span class="admin-badge">CR - '+cls+'</span>';
+            document.getElementById('loginSection').style.display = 'none';
+            document.getElementById('crSection').style.display = 'block';
+            document.getElementById('crClassName').textContent = cls;
+            
+            // Force reload data from Firebase and then render
+            console.log('=== CR LOGIN ===');
+            console.log('Selected class:', cls);
+            console.log('Firebase ref path:', ref.toString());
+            
+            ref.once('value').then(snap => {
+                console.log('Snapshot exists?', snap.exists());
+                
+                all = [];
+                if (snap.exists()) {
+                    snap.forEach(child => {
+                        const data = {id: child.key, ...child.val()};
+                        all.push(data);
+                    });
+                }
+                
+                console.log('Total records loaded:', all.length);
+                
+                // Log first few records
+                if (all.length > 0) {
+                    console.log('Sample records:');
+                    all.slice(0, 3).forEach((rec, i) => {
+                        console.log(`  [${i}] Class: "${rec.classYear}" | Event: "${rec.event}" | Name: "${rec.name}"`);
+                    });
+                }
+                
+                // Show all unique classes in database
+                const uniqueClasses = [...new Set(all.map(e => e.classYear))];
+                console.log('Unique classes in database:', uniqueClasses);
+                
+                // Filter for this class
+                const classRecords = all.filter(e => e.classYear === cls);
+                console.log(`Records matching "${cls}":`, classRecords.length);
+                
+                if (classRecords.length > 0) {
+                    console.log('Matching records:', classRecords);
+                }
+                
+                renderCREventCards();
+                updateCREventFilter();
+                updateCRView();
+                
+            }).catch(err => {
+                console.error('Firebase read error:', err);
+                alert('Error loading data: ' + err.message);
+            });
+        }
+
+        function adminLogin() {
+            const pwd = document.getElementById('adminPassword').value;
+            if (pwd !== adminPassword) { alert('Invalid admin password'); return; }
+            
+            isAdmin = true;
+            currentUser = 'Admin';
+            document.getElementById('userInfo').innerHTML = 'Logged in as: <span class="admin-badge">Admin</span>';
+            document.getElementById('loginSection').style.display = 'none';
+            document.getElementById('adminSection').style.display = 'block';
+            
+            // Show only basic tabs for admin
+            document.querySelectorAll('.super-admin-only').forEach(el => el.style.display = 'none');
+            
+            // Check if any results are published and show/hide Results tab
+            checkResultsPublished();
+            
+            // Manually trigger data load from Firebase and update displays
+            ref.once('value', snap => {
+                all = [];
+                if (snap.exists()) {
+                    snap.forEach(child => {
+                        const data = {id: child.key, ...child.val()};
+                        all.push(data);
+                    });
+                }
+                updateStats();
+                updateMaster();
+                updateEvents();
+            });
+        }
+
+        function superAdminLogin() {
+            const pwd = document.getElementById('superAdminPassword').value;
+            if (pwd !== superAdminPassword) { alert('Invalid super admin password'); return; }
+            
+            isAdmin = true;
+            isSuperAdmin = true;
+            currentUser = 'Super Admin';
+            document.getElementById('userInfo').innerHTML = 'Logged in as: <span class="super-admin-badge">Super Admin</span>';
+            document.getElementById('loginSection').style.display = 'none';
+            document.getElementById('adminSection').style.display = 'block';
+            
+            // Show all tabs including super admin tabs
+            document.querySelectorAll('.super-admin-only:not(.form-section)').forEach(el => el.style.display = 'block');
+            
+            // Super admin always sees Results tab
+            document.getElementById('resultsTab').style.display = 'block';
+            
+            // Manually trigger data load from Firebase and update displays
+            ref.once('value', snap => {
+                all = [];
+                if (snap.exists()) {
+                    snap.forEach(child => {
+                        const data = {id: child.key, ...child.val()};
+                        all.push(data);
+                    });
+                }
+                updateStats();
+                updateMaster();
+                updateEvents();
+            });
+        }
+
+        function juryLogin() {
+            const event = document.getElementById('juryEvent').value;
+            const pwd = document.getElementById('juryPassword').value;
+            const num = document.getElementById('juryNumber').value;
+            
+            if (!event || !pwd || !num) {
+                alert('Please fill all fields');
                 return;
             }
             
-            summaryDiv.style.display = 'block';
-            let html = '';
+            // Load jury setup to get password and name
+            db.ref('jurySetup/'+event).once('value').then(snap => {
+                const setup = snap.val();
+                if (!setup) {
+                    alert('Event setup not found. Contact super admin.');
+                    return;
+                }
+                
+                const juryPassword = setup['jury'+num+'Password'];
+                const juryName = setup['jury'+num+'Name'] || 'Jury ' + num;
+                
+                if (juryPassword === pwd) {
+                    isJury = true;
+                    juryEvent = event;
+                    juryNumber = num;
+                    currentUser = 'Jury';
+                    
+                    document.getElementById('userInfo').innerHTML = 'Logged in as: <span class="jury-badge">'+juryName+' - '+event+'</span>';
+                    document.getElementById('loginSection').style.display = 'none';
+                    document.getElementById('jurySection').style.display = 'block';
+                    document.getElementById('juryEventTitle').textContent = 'Jury Evaluation - ' + event;
+                    document.getElementById('juryInfo').textContent = 'You are ' + juryName + ' for ' + event;
+                    
+                    loadJurySheet();
+                } else {
+                    alert('Invalid jury password for this event');
+                }
+            }).catch(err => {
+                alert('Error loading jury setup: ' + err.message);
+            });
+        }
+
+        function reloadStudentData() {
+            console.log('=== RELOADING DATA FROM FIREBASE ===');
+            const statusText = document.getElementById('debugStatusText');
+            if (statusText) statusText.innerHTML = '🔄 Reloading data from Firebase...';
             
-            // When Event is selected - show class enrollment status
-            if (selectedEvent && !selectedClass) {
+            ref.once('value', snap => {
+                console.log('Firebase snapshot exists?', snap.exists());
+                console.log('Firebase snapshot:', snap.val());
+                
+                all = [];
+                let childCount = 0;
+                if (snap.exists()) {
+                    snap.forEach(child => {
+                        childCount++;
+                        const data = {id: child.key, ...child.val()};
+                        console.log('Loading child #' + childCount + ':', child.key, data);
+                        all.push(data);
+                    });
+                }
+                
+                console.log('✅ Data reloaded!');
+                console.log('Total children processed:', childCount);
+                console.log('Total records in "all" array:', all.length);
+                console.log('All data:', all);
+                
+                // Show breakdown by class
+                const classCounts = {};
+                all.forEach(e => {
+                    if (!classCounts[e.classYear]) classCounts[e.classYear] = 0;
+                    classCounts[e.classYear]++;
+                });
+                console.log('Records by class:', classCounts);
+                
+                if (statusText) statusText.innerHTML = '✅ Data reloaded! Total records: ' + all.length + ' | Classes: ' + Object.keys(classCounts).length;
+                
+                // Also update event cards
+                renderEventCards();
+                
+                let msg = 'Data reloaded!\n\n';
+                msg += 'Total records: ' + all.length + '\n';
+                msg += 'Classes found: ' + Object.keys(classCounts).join(', ') + '\n\n';
+                msg += 'Now click "View Enrollments" or "Show All DB Data"';
+                alert(msg);
+            }).catch(err => {
+                console.error('Firebase error:', err);
+                alert('Error loading data: ' + err.message);
+                if (statusText) statusText.innerHTML = '❌ Error: ' + err.message;
+            });
+        }
+        
+        function showAllDatabaseData() {
+            console.log('=== SHOWING ALL DATABASE DATA ===');
+            const cont = document.getElementById('studentEnrollmentResults');
+            
+            if (all.length === 0) {
+                cont.innerHTML = '<div style="background:#ffebee;color:#c62828;padding:15px;border-radius:6px;border:2px solid #c62828;"><strong>⚠️ NO DATA IN DATABASE</strong><br>The "all" array is empty. Try clicking "Reload Data" first.</div>';
+                return;
+            }
+            
+            // Group by class
+            const classCounts = {};
+            all.forEach(e => {
+                if (!classCounts[e.classYear]) classCounts[e.classYear] = [];
+                classCounts[e.classYear].push(e);
+            });
+            
+            let html = '<div style="background:#fff;border-radius:6px;padding:15px;border:2px solid #9c27b0;">';
+            html += '<h4 style="color:#9c27b0;margin-bottom:15px;">🗄️ Complete Database View (Total: ' + all.length + ' records)</h4>';
+            
+            Object.keys(classCounts).sort().forEach(cls => {
+                const enrollments = classCounts[cls];
+                const isYourClass = cls === studentClass;
+                
+                html += '<div style="background:' + (isYourClass ? '#e8f5e9' : '#f5f5f5') + ';padding:12px;border-radius:6px;margin-bottom:10px;border:2px solid ' + (isYourClass ? '#4CAF50' : '#ccc') + ';">';
+                html += '<h5 style="color:' + (isYourClass ? '#2e7d32' : '#333') + ';margin-bottom:8px;">';
+                html += (isYourClass ? '👉 ' : '') + '"' + cls + '" (' + enrollments.length + ' enrollments)' + (isYourClass ? ' ← YOUR CLASS' : '');
+                html += '</h5>';
+                
+                html += '<table style="width:100%;font-size:12px;"><thead><tr><th>Name</th><th>Phone</th><th>Event</th><th>Role</th></tr></thead><tbody>';
+                enrollments.forEach(e => {
+                    html += '<tr><td>' + e.name + '</td><td>' + e.phone + '</td><td>' + e.event + '</td><td>' + e.role + '</td></tr>';
+                });
+                html += '</tbody></table></div>';
+            });
+            
+            html += '</div>';
+            cont.innerHTML = html;
+        }
+
+        function toggleEnrollmentView() {
+            const resultsDiv = document.getElementById('studentEnrollmentResults');
+            const btn = document.getElementById('toggleEnrollmentBtn');
+            
+            if (resultsDiv.style.display === 'none') {
+                resultsDiv.style.display = 'block';
+                btn.textContent = 'Hide Details';
+            } else {
+                resultsDiv.style.display = 'none';
+                btn.textContent = 'Show Details';
+            }
+        }
+
+        function viewStudentClassEnrollments() {
+            console.log('=== Loading class enrollments ===');
+            console.log('Student Class:', studentClass);
+            console.log('All enrollments count:', all.length);
+            
+            const cont = document.getElementById('studentEnrollmentResults');
+            
+            if (!studentClass) { 
+                console.error('ERROR: Student class not set!');
+                cont.innerHTML = '<div style="background:#ffebee;color:#c62828;padding:15px;border-radius:6px;border:2px solid #c62828;"><strong>Error:</strong> Student class not set. Please log out and log in again.</div>';
+                return; 
+            }
+            
+            console.log('Filtering enrollments for class:', studentClass);
+            const classEnr = all.filter(e => e.classYear === studentClass);
+            console.log('Filtered enrollments count:', classEnr.length);
+            
+            if (classEnr.length === 0) {
+                cont.innerHTML = '<div style="background:#fff3cd;color:#856404;padding:15px;border-radius:6px;border:2px solid #ffc107;text-align:center;"><h4 style="margin-bottom:10px;">No Enrollments Yet</h4><p style="margin:0;">Your class has not enrolled in any events yet.</p></div>';
+                return; 
+            }
+            
+            // Group by event
+            const eventGroups = {};
+            classEnr.forEach(e => {
+                if (!eventGroups[e.event]) eventGroups[e.event] = [];
+                eventGroups[e.event].push(e);
+            });
+            
+            console.log('Event groups:', eventGroups);
+            
+            let h = '<div style="background:white;border-radius:6px;padding:15px;border:2px solid #4CAF50;">';
+            h += '<h4 style="color:#c44569;margin-bottom:15px;">✅ ' + studentClass + ' - Total Enrollments: ' + classEnr.length + '</h4>';
+            
+            // Show summary by event
+            h += '<div style="margin-bottom:20px;">';
+            h += '<h5 style="color:#2196F3;margin-bottom:10px;">📊 Enrolled Events:</h5>';
+            h += '<div style="display:flex;flex-wrap:wrap;gap:10px;">';
+            Object.keys(eventGroups).forEach(evt => {
+                h += '<span style="background:#4CAF50;color:white;padding:8px 15px;border-radius:20px;font-size:14px;font-weight:600;">' + evt + ' (' + eventGroups[evt].length + ')</span>';
+            });
+            h += '</div></div>';
+            
+            // Show detailed table
+            h += '<table><thead><tr><th>Sl</th><th>Name</th><th>Phone</th><th>Event</th><th>Role</th><th>Details</th></tr></thead><tbody>';
+            classEnr.forEach((e,i) => h += '<tr><td>'+(i+1)+'</td><td>'+e.name+'</td><td>'+e.phone+'</td><td>'+e.event+'</td><td>'+e.role+'</td><td>'+getDet(e)+'</td></tr>');
+            h += '</tbody></table></div>';
+            cont.innerHTML = h;
+            
+            console.log('=== Enrollment display complete ===');
+        }
+
+        function logout() {
+            studentClass = null;
+            crClass = null;
+            isAdmin = false;
+            isSuperAdmin = false;
+            isCR = false;
+            isJury = false;
+            juryEvent = null;
+            juryNumber = null;
+            currentUser = null;
+            
+            document.getElementById('userInfo').innerHTML = '';
+            document.getElementById('loginSection').style.display = 'block';
+            document.getElementById('studentSection').style.display = 'none';
+            document.getElementById('crSection').style.display = 'none';
+            document.getElementById('adminSection').style.display = 'none';
+            document.getElementById('jurySection').style.display = 'none';
+            document.getElementById('userType').value = '';
+            handleUserTypeChange();
+        }
+
+        function renderEventCards() {
+            const cont = document.getElementById('eventCardsContainer');
+            cont.innerHTML = '';
+            Object.keys(events).forEach(ev => {
+                const cfg = events[ev];
+                const enrolled = all.filter(e => e.event===ev && e.classYear===studentClass).length;
+                
+                // Calculate enrolled teams/participants
+                const enrolledCount = cfg.count === 1 ? enrolled : Math.ceil(enrolled / cfg.count);
+                const remaining = cfg.maxPerClass - enrolledCount;
+                const isFull = remaining <= 0;
+                
+                const card = document.createElement('div');
+                card.className = 'event-card' + (isFull ? ' full' : '');
+                card.innerHTML = '<div class="event-title">'+ev+'</div><div class="event-size">'+cfg.size+'</div><div class="event-status '+(isFull?'status-full':(remaining<=1?'status-limited':'status-available'))+'">'+enrolledCount+'/'+cfg.maxPerClass+' enrolled</div>';
+                if (!isFull) card.onclick = () => startEnrollment(ev);
+                cont.appendChild(card);
+            });
+        }
+
+        function renderCREventCards() {
+            const cont = document.getElementById('crEventCardsContainer');
+            cont.innerHTML = '';
+            Object.keys(events).forEach(ev => {
+                const cfg = events[ev];
+                const enrolled = all.filter(e => e.event===ev && e.classYear===crClass).length;
+                
+                // Calculate enrolled teams/participants
+                const enrolledCount = cfg.count === 1 ? enrolled : Math.ceil(enrolled / cfg.count);
+                const remaining = cfg.maxPerClass - enrolledCount;
+                const isFull = remaining <= 0;
+                
+                const card = document.createElement('div');
+                card.className = 'event-card' + (isFull ? ' full' : '');
+                card.innerHTML = '<div class="event-title">'+ev+'</div><div class="event-size">'+cfg.size+'</div><div class="event-status '+(isFull?'status-full':(remaining<=1?'status-limited':'status-available'))+'">'+enrolledCount+'/'+cfg.maxPerClass+' enrolled</div>';
+                if (!isFull) card.onclick = () => startCREnrollment(ev);
+                cont.appendChild(card);
+            });
+        }
+
+        function startEnrollment(ev) {
+            selectedEvent = ev;
+            const cfg = events[ev];
+            const enrolled = all.filter(e => e.event===ev && e.classYear===studentClass).length;
+            
+            // Calculate how many teams/participants are already enrolled
+            const enrolledCount = cfg.count === 1 ? enrolled : Math.ceil(enrolled / cfg.count);
+            const remaining = cfg.maxPerClass - enrolledCount;
+            
+            if (remaining <= 0) { alert('Event is full for your class'); return; }
+            
+            let html = '<h3 style="color:#c44569;margin-bottom:20px">Enroll for: '+ev+'</h3>';
+            html += '<p style="margin-bottom:20px;color:#666">'+cfg.size+' | Already Enrolled: '+enrolledCount+' / '+cfg.maxPerClass+'</p>';
+            
+            // Generate input fields based on team size
+            for (let i = 0; i < cfg.count; i++) {
+                const roleLabel = cfg.role ? (i === 0 ? 'Captain' : 'Member '+(i+1)) : 'Participant '+(i+1);
+                html += '<div class="team-member-box"><div class="member-header">'+roleLabel+'</div>';
+                html += '<div class="form-group"><label>Name:</label><input type="text" id="name'+i+'" placeholder="Enter full name"></div>';
+                html += '<div class="form-group"><label>Phone Number:</label><input type="tel" id="phone'+i+'" placeholder="10-digit mobile number" maxlength="10"></div>';
+                html += '</div>';
+            }
+            
+            // Event-specific fields
+            if (cfg.topic) {
+                html += '<div class="form-group"><label>'+cfg.topicLabel+':</label><input type="text" id="topic" placeholder="Enter '+cfg.topicLabel.toLowerCase()+'"></div>';
+            }
+            if (cfg.prod) {
+                html += '<div class="form-group"><label>Product Name:</label><input type="text" id="product" placeholder="What product will you advertise?"></div>';
+            }
+            if (cfg.cause) {
+                html += '<div class="form-group"><label>'+(cfg.causeLabel || 'Cause')+':</label><input type="text" id="cause" placeholder="Enter cause/theme"></div>';
+            }
+            if (cfg.lang) {
+                html += '<div class="form-group"><label>Languages:</label><div><label style="display:inline-block;margin-right:15px"><input type="checkbox" id="langEn" checked disabled> English</label><label style="display:inline-block;margin-right:15px"><input type="checkbox" id="langKn"> Kannada</label><label style="display:inline-block"><input type="checkbox" id="langHi"> Hindi</label></div></div>';
+            }
+            if (cfg.show) {
+                html += '<div class="form-group"><label>Showstopper Name:</label><input type="text" id="showstopper" placeholder="Name of showstopper"></div>';
+            }
+            
+            document.getElementById('enrollmentFormContent').innerHTML = html;
+            document.getElementById('eventCardsContainer').style.display = 'none';
+            document.getElementById('enrollmentForm').style.display = 'block';
+        }
+
+        function submitEnrollment() {
+            const cfg = events[selectedEvent];
+            const members = [];
+            
+            // Collect all team members
+            for (let i = 0; i < cfg.count; i++) {
+                const name = document.getElementById('name'+i).value.trim();
+                const phone = document.getElementById('phone'+i).value.trim();
+                
+                if (!name || !phone) { 
+                    alert('Please fill all team member fields'); 
+                    return; 
+                }
+                if (!/^\d{10}$/.test(phone)) { 
+                    alert('Please enter valid 10-digit phone number for '+name); 
+                    return; 
+                }
+                
+                const role = cfg.role ? (i === 0 ? 'Captain' : 'Member') : 'Participant';
+                members.push({name: name, phone: phone, role: role});
+            }
+            
+            // Base data for all members
+            const baseData = {
+                classYear: studentClass,
+                event: selectedEvent,
+                timestamp: Date.now()
+            };
+            
+            // Add event-specific fields
+            if (cfg.topic) {
+                const topic = document.getElementById('topic');
+                if (!topic || !topic.value.trim()) {
+                    alert('Please enter '+cfg.topicLabel);
+                    return;
+                }
+                baseData.topic = topic.value.trim();
+            }
+            
+            if (cfg.prod) {
+                const product = document.getElementById('product');
+                if (!product || !product.value.trim()) {
+                    alert('Please enter product name');
+                    return;
+                }
+                baseData.product = product.value.trim();
+            }
+            
+            if (cfg.cause) {
+                const cause = document.getElementById('cause');
+                if (!cause || !cause.value.trim()) {
+                    alert('Please enter '+(cfg.causeLabel || 'cause'));
+                    return;
+                }
+                baseData.cause = cause.value.trim();
+            }
+            
+            if (cfg.lang) {
+                const langs = ['English'];
+                const kn = document.getElementById('langKn');
+                const hi = document.getElementById('langHi');
+                if (kn && kn.checked) langs.push('Kannada');
+                if (hi && hi.checked) langs.push('Hindi');
+                baseData.languages = langs.join(', ');
+            }
+            
+            if (cfg.show) {
+                const show = document.getElementById('showstopper');
+                if (!show || !show.value.trim()) {
+                    alert('Please enter showstopper name');
+                    return;
+                }
+                baseData.showstopper = show.value.trim();
+            }
+            
+            // Submit all members
+            const promises = members.map(m => {
+                const data = {...baseData, name: m.name, phone: m.phone, role: m.role};
+                return ref.push(data);
+            });
+            
+            Promise.all(promises).then(() => {
+                showOk('Successfully enrolled '+members.length+' member(s) for '+selectedEvent+'!');
+                cancelEnrollment();
+            }).catch(err => showErr('Error: '+err.message));
+        }
+
+        function cancelEnrollment() {
+            selectedEvent = null;
+            document.getElementById('enrollmentForm').style.display = 'none';
+            document.getElementById('eventCardsContainer').style.display = 'grid';
+        }
+
+        // CR Functions
+        function startCREnrollment(ev) {
+            selectedEvent = ev;
+            const cfg = events[ev];
+            const enrolled = all.filter(e => e.event===ev && e.classYear===crClass).length;
+            
+            // Calculate how many teams/participants are already enrolled
+            const enrolledCount = cfg.count === 1 ? enrolled : Math.ceil(enrolled / cfg.count);
+            const remaining = cfg.maxPerClass - enrolledCount;
+            
+            if (remaining <= 0) { alert('Event is full for your class'); return; }
+            
+            let html = '<h3 style="color:#c44569;margin-bottom:20px">Enroll Students for: '+ev+'</h3>';
+            html += '<p style="margin-bottom:20px;color:#666">Class: '+crClass+' | '+cfg.size+' | Enrolled: '+enrolledCount+' / '+cfg.maxPerClass+'</p>';
+            
+            // Generate input fields based on team size
+            for (let i = 0; i < cfg.count; i++) {
+                const roleLabel = cfg.role ? (i === 0 ? 'Captain' : 'Member '+(i+1)) : 'Participant '+(i+1);
+                html += '<div class="team-member-box"><div class="member-header">'+roleLabel+'</div>';
+                html += '<div class="form-group"><label>Name:</label><input type="text" id="crName'+i+'" placeholder="Enter student full name"></div>';
+                html += '<div class="form-group"><label>Phone Number:</label><input type="tel" id="crPhone'+i+'" placeholder="10-digit mobile number" maxlength="10"></div>';
+                html += '</div>';
+            }
+            
+            // Event-specific fields
+            if (cfg.topic) {
+                html += '<div class="form-group"><label>'+cfg.topicLabel+':</label><input type="text" id="crTopic" placeholder="Enter '+cfg.topicLabel.toLowerCase()+'"></div>';
+            }
+            if (cfg.prod) {
+                html += '<div class="form-group"><label>Product Name:</label><input type="text" id="crProduct" placeholder="What product will they advertise?"></div>';
+            }
+            if (cfg.cause) {
+                html += '<div class="form-group"><label>'+(cfg.causeLabel || 'Cause')+':</label><input type="text" id="crCause" placeholder="Enter cause/theme"></div>';
+            }
+            if (cfg.lang) {
+                html += '<div class="form-group"><label>Languages:</label><div><label style="display:inline-block;margin-right:15px"><input type="checkbox" id="crLangEn" checked disabled> English</label><label style="display:inline-block;margin-right:15px"><input type="checkbox" id="crLangKn"> Kannada</label><label style="display:inline-block"><input type="checkbox" id="crLangHi"> Hindi</label></div></div>';
+            }
+            if (cfg.show) {
+                html += '<div class="form-group"><label>Showstopper Name:</label><input type="text" id="crShowstopper" placeholder="Name of showstopper"></div>';
+            }
+            
+            document.getElementById('crEnrollmentFormContent').innerHTML = html;
+            document.getElementById('crEventCardsContainer').style.display = 'none';
+            document.getElementById('crEnrollmentForm').style.display = 'block';
+        }
+
+        function submitCREnrollment() {
+            const cfg = events[selectedEvent];
+            const members = [];
+            
+            // Collect all team members
+            for (let i = 0; i < cfg.count; i++) {
+                const name = document.getElementById('crName'+i).value.trim();
+                const phone = document.getElementById('crPhone'+i).value.trim();
+                
+                if (!name || !phone) { 
+                    alert('Please fill all team member fields'); 
+                    return; 
+                }
+                if (!/^\d{10}$/.test(phone)) { 
+                    alert('Please enter valid 10-digit phone number for '+name); 
+                    return; 
+                }
+                
+                const role = cfg.role ? (i === 0 ? 'Captain' : 'Member') : 'Participant';
+                members.push({name: name, phone: phone, role: role});
+            }
+            
+            // Base data for all members
+            const baseData = {
+                classYear: crClass,
+                event: selectedEvent,
+                enrolledBy: 'CR',
+                timestamp: Date.now()
+            };
+            
+            // Add event-specific fields
+            if (cfg.topic) {
+                const topic = document.getElementById('crTopic');
+                if (!topic || !topic.value.trim()) {
+                    alert('Please enter '+cfg.topicLabel);
+                    return;
+                }
+                baseData.topic = topic.value.trim();
+            }
+            
+            if (cfg.prod) {
+                const product = document.getElementById('crProduct');
+                if (!product || !product.value.trim()) {
+                    alert('Please enter product name');
+                    return;
+                }
+                baseData.product = product.value.trim();
+            }
+            
+            if (cfg.cause) {
+                const cause = document.getElementById('crCause');
+                if (!cause || !cause.value.trim()) {
+                    alert('Please enter '+(cfg.causeLabel || 'cause'));
+                    return;
+                }
+                baseData.cause = cause.value.trim();
+            }
+            
+            if (cfg.lang) {
+                const langs = ['English'];
+                const kn = document.getElementById('crLangKn');
+                const hi = document.getElementById('crLangHi');
+                if (kn && kn.checked) langs.push('Kannada');
+                if (hi && hi.checked) langs.push('Hindi');
+                baseData.languages = langs.join(', ');
+            }
+            
+            if (cfg.show) {
+                const show = document.getElementById('crShowstopper');
+                if (!show || !show.value.trim()) {
+                    alert('Please enter showstopper name');
+                    return;
+                }
+                baseData.showstopper = show.value.trim();
+            }
+            
+            // Submit all members
+            const promises = members.map(m => {
+                const data = {...baseData, name: m.name, phone: m.phone, role: m.role};
+                return ref.push(data);
+            });
+            
+            Promise.all(promises).then(() => {
+                showCROk('Successfully enrolled '+members.length+' student(s) for '+selectedEvent+'!');
+                cancelCREnrollment();
+            }).catch(err => showCRErr('Error: '+err.message));
+        }
+
+        function cancelCREnrollment() {
+            selectedEvent = null;
+            document.getElementById('crEnrollmentForm').style.display = 'none';
+            document.getElementById('crEventCardsContainer').style.display = 'grid';
+        }
+
+        function showCRTab(tab) {
+            document.querySelectorAll('#crSection .tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('#crSection .form-section').forEach(s => s.classList.remove('active'));
+            event.target.classList.add('active');
+            document.getElementById(tab).classList.add('active');
+        }
+
+        function updateCREventFilter() {
+            const sel = document.getElementById('crFilterEvent');
+            sel.innerHTML = '<option value="">All Events</option>';
+            const enrolled = [...new Set(all.filter(e => e.classYear === crClass).map(e => e.event))];
+            enrolled.forEach(ev => {
+                const opt = document.createElement('option');
+                opt.value = ev;
+                opt.textContent = ev;
+                sel.appendChild(opt);
+            });
+        }
+
+        function updateCRView() {
+            console.log('=== updateCRView called ===');
+            console.log('crClass:', crClass);
+            console.log('all.length:', all.length);
+            
+            const filterEv = document.getElementById('crFilterEvent').value;
+            let filtered = all.filter(e => e.classYear === crClass);
+            
+            console.log('Filtered by class:', filtered.length);
+            
+            if (filterEv) {
+                filtered = filtered.filter(e => e.event === filterEv);
+                console.log('Filtered by event:', filtered.length);
+            }
+            
+            // Summary
+            let summary = '<h3 style="color:#2196F3;margin-bottom:10px">Your Class: <strong>'+crClass+'</strong></h3>';
+            summary += '<p><strong>Total Students Enrolled:</strong> '+filtered.length+'</p>';
+            if (filterEv) summary += '<p><strong>Event:</strong> '+filterEv+'</p>';
+            document.getElementById('crSummary').innerHTML = summary;
+            
+            // Table
+            const cont = document.getElementById('crEnrollmentsContainer');
+            if (filtered.length === 0) {
+                console.log('No enrollments found - showing empty message');
+                cont.innerHTML = '<p style="text-align:center;padding:40px;color:#999">No enrollments yet</p>';
+            } else {
+                console.log('Building table with', filtered.length, 'rows');
+                let html = '<table><thead><tr><th>Sl</th><th>Name</th><th>Phone</th><th>Event</th><th>Role</th><th>Details</th></tr></thead><tbody>';
+                filtered.forEach((e,i) => {
+                    html += '<tr><td>'+(i+1)+'</td><td>'+e.name+'</td><td>'+e.phone+'</td><td>'+e.event+'</td><td>'+e.role+'</td><td>'+getDet(e)+'</td></tr>';
+                });
+                html += '</tbody></table>';
+                cont.innerHTML = html;
+            }
+            
+            // Update CR event cards to show current enrollment counts
+            renderCREventCards();
+        }
+
+        function clearCRFilters() {
+            document.getElementById('crFilterEvent').value = '';
+            updateCRView();
+        }
+
+        function downloadCREnrollments() {
+            console.log('=== DOWNLOAD CR ENROLLMENTS ===');
+            console.log('CR Class:', crClass);
+            console.log('Total records in all:', all.length);
+            
+            if (!crClass) {
+                alert('Error: Class not set. Please log out and log in again.');
+                return;
+            }
+            
+            // Filter all enrollments for this CR's class
+            const classEnrollments = all.filter(e => e.classYear === crClass);
+            
+            console.log('Filtered enrollments for', crClass, ':', classEnrollments.length);
+            
+            if (classEnrollments.length === 0) {
+                alert('No enrollments to download for ' + crClass);
+                return;
+            }
+            
+            // Check if event filter is applied
+            const filterEv = document.getElementById('crFilterEvent').value;
+            let enrollmentsToDownload = classEnrollments;
+            
+            if (filterEv) {
+                enrollmentsToDownload = classEnrollments.filter(e => e.event === filterEv);
+                console.log('Filtered by event', filterEv, ':', enrollmentsToDownload.length);
+            }
+            
+            // Create CSV content
+            let csv = 'Sl,Name,Phone,Class,Event,Role,Details\n';
+            enrollmentsToDownload.forEach((e, i) => {
+                const details = getDet(e).replace(/<br>/g, ' | ').replace(/"/g, '""');
+                csv += `${i+1},"${e.name}","${e.phone}","${e.classYear}","${e.event}","${e.role}","${details}"\n`;
+            });
+            
+            // Generate filename
+            const filename = filterEv 
+                ? `${crClass}_${filterEv}_enrollments.csv`.replace(/\s+/g, '_')
+                : `${crClass}_all_enrollments.csv`.replace(/\s+/g, '_');
+            
+            console.log('Downloading', enrollmentsToDownload.length, 'records as', filename);
+            
+            // Download
+            download(csv, filename);
+            
+            showCROk(`Downloaded ${enrollmentsToDownload.length} enrollment(s) successfully!`);
+        }
+
+        function showCROk(msg) {
+            const d = document.getElementById('crMessage');
+            d.className = 'message success show';
+            d.textContent = '✓ '+msg;
+            setTimeout(() => d.classList.remove('show'), 5000);
+        }
+
+        function showCRErr(msg) {
+            const d = document.getElementById('crMessage');
+            d.className = 'message error show';
+            d.textContent = '✗ '+msg;
+            setTimeout(() => d.classList.remove('show'), 5000);
+        }
+
+        // Admin Functions
+        function showTab(tab) {
+            document.querySelectorAll('#adminSection .tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('#adminSection .form-section').forEach(s => s.classList.remove('active'));
+            event.target.classList.add('active');
+            document.getElementById(tab).classList.add('active');
+            
+            if (tab === 'results') {
+                loadResultsTab();
+            }
+        }
+
+        function updateStats() {
+            const uniqueStudents = new Set(all.map(e => e.phone)).size;
+            const uniqueClasses = new Set(all.map(e => e.classYear)).size;
+            const activeEvents = new Set(all.map(e => e.event)).size;
+            
+            document.getElementById('totalStudents').textContent = uniqueStudents;
+            document.getElementById('totalEvents').textContent = activeEvents;
+            document.getElementById('totalClasses').textContent = uniqueClasses;
+            document.getElementById('totalEnrollments').textContent = all.length;
+        }
+
+        function updateMaster() {
+            // Use setTimeout to ensure dropdown has updated
+            setTimeout(() => {
+                const filterCl = document.getElementById('filterClass') ? document.getElementById('filterClass').value : '';
+                const filterEv = document.getElementById('filterEvent') ? document.getElementById('filterEvent').value : '';
+                
+                let filtered = [...all]; // Create a copy
+                
+                if (filterCl) {
+                    filtered = filtered.filter(e => e.classYear === filterCl);
+                }
+                
+                if (filterEv) {
+                    filtered = filtered.filter(e => e.event === filterEv);
+                }
+                
+                updateSummary(filterCl, filterEv);
+                
+                const cont = document.getElementById('masterContainer');
+                if (!cont) {
+                    return;
+                }
+                
+                if (filtered.length === 0) {
+                    cont.innerHTML = '<p style="text-align:center;padding:40px;color:#999">No data available</p>';
+                    return;
+                }
+                
+                let html = '<table><thead><tr><th>Sl</th><th>Name</th><th>Phone</th><th>Class</th><th>Event</th><th>Role</th><th>Details</th></tr></thead><tbody>';
+                filtered.forEach((e,i) => {
+                    html += '<tr><td>'+(i+1)+'</td><td>'+e.name+'</td><td>'+e.phone+'</td><td>'+e.classYear+'</td><td>'+e.event+'</td><td>'+e.role+'</td><td>'+getDet(e)+'</td></tr>';
+                });
+                html += '</tbody></table>';
+                cont.innerHTML = html;
+            }, 10); // Small delay to ensure dropdown has updated
+        }
+
+        function updateSummary(selectedClass, selectedEvent) {
+            const summaryContent = document.getElementById('summaryInfo');
+            let html = '<h3 style="color:#2196F3;margin-bottom:15px">📊 Summary</h3>';
+            html += '<p><strong>Total Enrollments:</strong> '+all.length+'</p>';
+            
+            // When Event is selected (no class) - show class enrollment status
+            if (!selectedClass && selectedEvent) {
                 const enrolledClasses = [];
                 const notEnrolledClasses = [];
                 
                 classes.forEach(cls => {
-                    const hasEnrollment = all.some(e => e.event === selectedEvent && e.classYear === cls);
+                    const hasEnrollment = all.some(e => e.classYear === cls && e.event === selectedEvent);
                     if (hasEnrollment) {
-                        const count = all.filter(e => e.event === selectedEvent && e.classYear === cls).length;
+                        const count = all.filter(e => e.classYear === cls && e.event === selectedEvent).length;
                         enrolledClasses.push({name: cls, count: count});
                     } else {
                         notEnrolledClasses.push(cls);
                     }
                 });
                 
-                html += '<h3 style="color:#2196F3;margin-bottom:15px;">📊 Summary for Event: <strong>' + selectedEvent + '</strong></h3>';
                 html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">';
                 
-                // Enrolled Classes
-                html += '<div style="background:white;padding:15px;border-radius:6px;">';
-                html += '<h4 style="color:#4CAF50;margin-bottom:10px;">✅ Enrolled Classes (' + enrolledClasses.length + ')</h4>';
+                // Classes with Enrollments
+                html += '<div style="background:#d4edda;padding:15px;border-radius:6px;border:2px solid #28a745;">';
+                html += '<h4 style="color:#155724;margin-bottom:10px;">✅ Classes with Enrollments (' + enrolledClasses.length + ')</h4>';
                 if (enrolledClasses.length > 0) {
-                    html += '<ul style="list-style:none;padding:0;margin:0;">';
+                    html += '<div style="display:flex;flex-wrap:wrap;gap:8px;">';
                     enrolledClasses.forEach(cls => {
-                        html += '<li style="padding:5px 0;border-bottom:1px solid #eee;">• ' + cls.name + ' <span style="color:#666;">(' + cls.count + ' students)</span></li>';
+                        html += '<span style="background:#28a745;color:white;padding:6px 12px;border-radius:20px;font-size:14px;font-weight:600;">' + cls.name + ' (' + cls.count + ')</span>';
                     });
-                    html += '</ul>';
+                    html += '</div>';
                 } else {
-                    html += '<p style="color:#999;font-style:italic;">No classes enrolled yet</p>';
+                    html += '<p style="color:#666;font-style:italic;margin:0;">No classes enrolled yet</p>';
                 }
                 html += '</div>';
                 
-                // Not Enrolled Classes
-                html += '<div style="background:white;padding:15px;border-radius:6px;">';
-                html += '<h4 style="color:#f44336;margin-bottom:10px;">❌ Not Enrolled Classes (' + notEnrolledClasses.length + ')</h4>';
+                // Classes NOT Enrolled
+                html += '<div style="background:#f8d7da;padding:15px;border-radius:6px;border:2px solid #dc3545;">';
+                html += '<h4 style="color:#721c24;margin-bottom:10px;">❌ Classes NOT Enrolled (' + notEnrolledClasses.length + ')</h4>';
                 if (notEnrolledClasses.length > 0) {
-                    html += '<ul style="list-style:none;padding:0;margin:0;">';
+                    html += '<div style="display:flex;flex-wrap:wrap;gap:8px;">';
                     notEnrolledClasses.forEach(cls => {
-                        html += '<li style="padding:5px 0;border-bottom:1px solid #eee;">• ' + cls + '</li>';
+                        html += '<span style="background:#dc3545;color:white;padding:6px 12px;border-radius:20px;font-size:14px;font-weight:600;">' + cls + '</span>';
                     });
-                    html += '</ul>';
+                    html += '</div>';
                 } else {
-                    html += '<p style="color:#999;font-style:italic;">All classes have enrolled!</p>';
+                    html += '<p style="color:#666;font-style:italic;margin:0;">All classes have enrolled!</p>';
                 }
                 html += '</div>';
                 html += '</div>';
@@ -1123,13 +1869,8 @@
         }
 
         function clearFilters() {
-            // CR can only clear event filter, not class filter
-            if (isCR && crClass) {
-                document.getElementById('filterEvent').value = '';
-            } else {
-                document.getElementById('filterClass').value = '';
-                document.getElementById('filterEvent').value = '';
-            }
+            document.getElementById('filterClass').value = '';
+            document.getElementById('filterEvent').value = '';
             updateMaster();
         }
 
@@ -1174,6 +1915,934 @@
             URL.revokeObjectURL(url);
         }
 
+        // Jury Setup Functions (Super Admin Only)
+        function loadEventSetup() {
+            const event = document.getElementById('setupEventSelect').value;
+            if (!event) {
+                document.getElementById('eventSetupContainer').style.display = 'none';
+                return;
+            }
+            
+            document.getElementById('eventSetupContainer').style.display = 'block';
+            
+            // Load existing setup
+            db.ref('jurySetup/'+event).once('value').then(snap => {
+                const data = snap.val() || {};
+                
+                // Load jury names
+                document.getElementById('jury1Name').value = data.jury1Name || '';
+                document.getElementById('jury2Name').value = data.jury2Name || '';
+                
+                // Load jury passwords
+                document.getElementById('jury1Password').value = data.jury1Password || '';
+                document.getElementById('jury2Password').value = data.jury2Password || '';
+                
+                // Load criteria
+                const criteria = data.criteria || [];
+                renderCriteriaInputs(criteria);
+            });
+        }
+
+        function renderCriteriaInputs(criteria) {
+            const container = document.getElementById('criteriaContainer');
+            container.innerHTML = '';
+            
+            if (criteria.length === 0) {
+                criteria = ['', '', '', '', ''];  // Default 5 empty criteria
+            }
+            
+            criteria.forEach((crit, index) => {
+                const div = document.createElement('div');
+                div.className = 'criteria-input-group';
+                div.innerHTML = `
+                    <label>Criterion ${index + 1}:</label>
+                    <input type="text" class="criterion-input" data-index="${index}" value="${crit}" placeholder="e.g., Stage Presence, Creativity, Coordination">
+                    ${criteria.length > 5 ? '<button class="remove-criteria-btn" onclick="removeCriterion('+index+')">Remove</button>' : ''}
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function addCriterion() {
+            const inputs = document.querySelectorAll('.criterion-input');
+            const criteria = Array.from(inputs).map(inp => inp.value.trim());
+            criteria.push('');
+            renderCriteriaInputs(criteria);
+        }
+
+        function removeCriterion(index) {
+            const inputs = document.querySelectorAll('.criterion-input');
+            const criteria = Array.from(inputs).map(inp => inp.value.trim());
+            if (criteria.length <= 5) {
+                alert('Minimum 5 criteria required');
+                return;
+            }
+            criteria.splice(index, 1);
+            renderCriteriaInputs(criteria);
+        }
+
+        function saveEventSetup() {
+            const event = document.getElementById('setupEventSelect').value;
+            if (!event) return;
+            
+            const jury1Name = document.getElementById('jury1Name').value.trim();
+            const jury2Name = document.getElementById('jury2Name').value.trim();
+            const jury1Pwd = document.getElementById('jury1Password').value.trim();
+            const jury2Pwd = document.getElementById('jury2Password').value.trim();
+            
+            if (!jury1Pwd || !jury2Pwd) {
+                alert('Please set both jury passwords');
+                return;
+            }
+            
+            const inputs = document.querySelectorAll('.criterion-input');
+            const criteria = Array.from(inputs).map(inp => inp.value.trim()).filter(c => c);
+            
+            if (criteria.length < 5) {
+                alert('Please add at least 5 criteria');
+                return;
+            }
+            
+            const setupData = {
+                jury1Name: jury1Name || 'Jury 1',
+                jury2Name: jury2Name || 'Jury 2',
+                jury1Password: jury1Pwd,
+                jury2Password: jury2Pwd,
+                criteria: criteria,
+                resultsPublished: false
+            };
+            
+            db.ref('jurySetup/'+event).set(setupData).then(() => {
+                showSetupMessage('Setup saved successfully!', 'success');
+            }).catch(err => {
+                showSetupMessage('Error: '+err.message, 'error');
+            });
+        }
+
+        function publishResults() {
+            const event = document.getElementById('resultsEventSelect').value;
+            if (!event) {
+                alert('Please select an event first');
+                return;
+            }
+            
+            if (confirm('Publish results to all admins for '+event+'?')) {
+                db.ref('jurySetup/'+event+'/resultsPublished').set(true).then(() => {
+                    alert('✅ Results published to admins for ' + event + '!');
+                    // Show Results tab for all admins
+                    updateResultsTabVisibility();
+                });
+            }
+        }
+
+        function unpublishResults() {
+            const event = document.getElementById('resultsEventSelect').value;
+            if (!event) {
+                alert('Please select an event first');
+                return;
+            }
+            
+            if (confirm('Unpublish results for '+event+'?')) {
+                db.ref('jurySetup/'+event+'/resultsPublished').set(false).then(() => {
+                    alert('Results unpublished for ' + event);
+                    // Check if any other results are published, hide tab if none
+                    updateResultsTabVisibility();
+                });
+            }
+        }
+
+        function checkResultsPublished() {
+            // For super admin, always show Results tab
+            if (isSuperAdmin) {
+                document.getElementById('resultsTab').style.display = 'block';
+                return;
+            }
+            
+            // For regular admin, check if any event has published results
+            db.ref('jurySetup').once('value').then(snap => {
+                let hasPublished = false;
+                if (snap.exists()) {
+                    snap.forEach(eventSnap => {
+                        if (eventSnap.val().resultsPublished === true) {
+                            hasPublished = true;
+                        }
+                    });
+                }
+                
+                const resultsTab = document.getElementById('resultsTab');
+                if (resultsTab) {
+                    resultsTab.style.display = hasPublished ? 'block' : 'none';
+                }
+            });
+        }
+        
+        function updateResultsTabVisibility() {
+            // This is called after publish/unpublish to update tab visibility
+            checkResultsPublished();
+        }
+
+        function showSetupMessage(msg, type) {
+            const d = document.getElementById('setupMessage');
+            d.className = 'message '+type+' show';
+            d.textContent = (type === 'success' ? '✓ ' : '✗ ') + msg;
+            setTimeout(() => d.classList.remove('show'), 5000);
+        }
+
+        // Jury Functions
+        function loadJurySheet() {
+            console.log('=== LOADING JURY SHEET ===');
+            console.log('juryEvent:', juryEvent);
+            console.log('Current all array length:', all.length);
+            console.log('Firebase ref path:', ref.toString());
+            
+            // Show loading message
+            document.getElementById('jurySheetContainer').innerHTML = '<p style="text-align:center;padding:40px;color:#666;">Loading enrollments...</p>';
+            
+            // First ensure we have the latest enrollment data
+            console.log('Fetching from Firebase...');
+            ref.once('value').then(snap => {
+                console.log('Firebase snapshot received');
+                console.log('Snapshot exists:', snap.exists());
+                console.log('Snapshot numChildren:', snap.numChildren());
+                
+                all = [];
+                if (snap.exists()) {
+                    let count = 0;
+                    snap.forEach(child => {
+                        count++;
+                        const enrollment = {id: child.key, ...child.val()};
+                        all.push(enrollment);
+                        if (count <= 5) {
+                            console.log('Enrollment ' + count + ':', enrollment);
+                        }
+                    });
+                    console.log('Total enrollments loaded:', count);
+                } else {
+                    console.log('No enrollments found in Firebase!');
+                }
+                
+                console.log('Loaded enrollments, all array length:', all.length);
+                console.log('First 3 enrollments:', all.slice(0, 3));
+                
+                // Filter for current event
+                const eventEnrollments = all.filter(e => {
+                    console.log('Checking enrollment:', e.event, '===', juryEvent, '?', e.event === juryEvent);
+                    return e.event === juryEvent;
+                });
+                console.log('Enrollments for event "' + juryEvent + '":', eventEnrollments.length);
+                console.log('Event enrollments:', eventEnrollments);
+                
+                // Now get jury setup
+                return db.ref('jurySetup/'+juryEvent).once('value');
+            }).then(snap => {
+                const setup = snap.val();
+                console.log('Jury setup:', setup);
+                
+                if (!setup || !setup.criteria) {
+                    document.getElementById('jurySheetContainer').innerHTML = '<p style="text-align:center;padding:40px;color:#999">Event setup not complete. Contact super admin.</p>';
+                    return;
+                }
+                
+                // Get enrolled classes for this event
+                const enrolledClasses = [...new Set(all.filter(e => e.event === juryEvent).map(e => e.classYear))];
+                
+                console.log('Enrolled classes for', juryEvent, ':', enrolledClasses);
+                console.log('Total classes found:', enrolledClasses.length);
+                
+                if (enrolledClasses.length === 0) {
+                    let debugInfo = '<p style="text-align:center;padding:40px;">';
+                    debugInfo += '<strong style="color:#f44336;">No classes enrolled for this event yet.</strong><br><br>';
+                    debugInfo += '<span style="color:#666;">Event: ' + juryEvent + '<br>';
+                    debugInfo += 'Total enrollments in database: ' + all.length + '<br>';
+                    debugInfo += 'Enrollments for this event: ' + all.filter(e => e.event === juryEvent).length + '</span><br><br>';
+                    debugInfo += '<button class="btn btn-info" onclick="showEnrollmentDebug()">🔍 Debug Enrollments</button>';
+                    debugInfo += '</p>';
+                    document.getElementById('jurySheetContainer').innerHTML = debugInfo;
+                    return;
+                }
+                
+                renderJurySheet(enrolledClasses, setup.criteria);
+                loadExistingMarks();
+            }).catch(err => {
+                console.error('Error loading jury sheet:', err);
+                document.getElementById('jurySheetContainer').innerHTML = '<p style="text-align:center;padding:40px;color:red;">Error loading jury sheet: ' + err.message + '</p>';
+            });
+        }
+
+        function renderJurySheet(enrolledClasses, criteria) {
+            let html = '<div class="marks-table"><table><thead><tr>';
+            html += '<th>Class</th><th>Theme/Topic</th>';
+            criteria.forEach((crit, i) => {
+                html += '<th>'+crit+'<br><small>(10 marks)</small></th>';
+            });
+            html += '<th>Total</th></tr></thead><tbody>';
+            
+            enrolledClasses.forEach(cls => {
+                const classEnrollments = all.filter(e => e.event === juryEvent && e.classYear === cls);
+                const theme = classEnrollments.length > 0 ? getDet(classEnrollments[0]) : '-';
+                
+                html += '<tr><td><strong>'+cls+'</strong></td><td>'+theme+'</td>';
+                criteria.forEach((crit, i) => {
+                    html += '<td><input type="number" class="marks-input" data-class="'+cls+'" data-criterion="'+i+'" min="0" max="10" step="0.5" placeholder="0-10"></td>';
+                });
+                html += '<td class="total-marks" id="total-'+cls.replace(/\s+/g, '-')+'">0</td></tr>';
+            });
+            
+            html += '</tbody></table></div>';
+            
+            document.getElementById('jurySheetContainer').innerHTML = html;
+            
+            // Add event listeners for auto-calculation
+            document.querySelectorAll('.marks-input').forEach(inp => {
+                inp.addEventListener('input', function() {
+                    const cls = this.dataset.class;
+                    calculateTotal(cls);
+                });
+            });
+        }
+
+        function loadExistingMarks() {
+            const dbPath = 'juryMarks/' + juryEvent + '/jury' + juryNumber;
+            console.log('=== LOADING EXISTING MARKS ===');
+            console.log('Loading marks from:', dbPath);
+            console.log('juryEvent:', juryEvent);
+            console.log('juryNumber:', juryNumber);
+            
+            db.ref(dbPath).once('value').then(snap => {
+                const marks = snap.val();
+                console.log('Loaded marks data:', JSON.stringify(marks, null, 2));
+                
+                if (!marks) {
+                    console.log('No existing marks found');
+                    return;
+                }
+                
+                // Check if this is test data (has 'test' property instead of class data)
+                if (marks.test !== undefined) {
+                    console.warn('⚠️ TEST DATA DETECTED in database!');
+                    console.warn('Path contains test data instead of actual marks');
+                    console.warn('You should clear this test data from Firebase Console');
+                    showJuryMessage('Warning: Test data found in database. Clear it before saving real marks.', 'error');
+                    return;
+                }
+                
+                // Check what's in the database
+                console.log('Database keys:', Object.keys(marks));
+                
+                // Check what inputs are available
+                const allInputs = document.querySelectorAll('.marks-input');
+                console.log('Total inputs found:', allInputs.length);
+                allInputs.forEach(inp => {
+                    console.log('Input found - class:', inp.dataset.class, 'criterion:', inp.dataset.criterion);
+                });
+                
+                let marksLoaded = 0;
+                
+                Object.keys(marks).forEach(sanitizedCls => {
+                    console.log('Processing class from database:', sanitizedCls);
+                    
+                    if (marks[sanitizedCls] && marks[sanitizedCls].marks && Array.isArray(marks[sanitizedCls].marks)) {
+                        console.log('Marks array for', sanitizedCls, ':', marks[sanitizedCls].marks);
+                        
+                        // Get the original class name if available, otherwise use the sanitized one
+                        const originalCls = marks[sanitizedCls].originalClassName || sanitizedCls;
+                        console.log('Original class name:', originalCls);
+                        
+                        marks[sanitizedCls].marks.forEach((mark, i) => {
+                            // Try to find input using original class name first
+                            let selector = '.marks-input[data-class="'+originalCls+'"][data-criterion="'+i+'"]';
+                            let inp = document.querySelector(selector);
+                            
+                            // If not found, try sanitized class name
+                            if (!inp) {
+                                selector = '.marks-input[data-class="'+sanitizedCls+'"][data-criterion="'+i+'"]';
+                                inp = document.querySelector(selector);
+                            }
+                            
+                            console.log('Looking for input with selector:', selector);
+                            
+                            if (inp) {
+                                inp.value = mark;
+                                marksLoaded++;
+                                console.log('✓ Set mark for', originalCls, 'criterion', i, ':', mark);
+                            } else {
+                                console.warn('✗ Input NOT found for class:', originalCls, '(sanitized:', sanitizedCls, ') criterion:', i);
+                            }
+                        });
+                        calculateTotal(originalCls);
+                    } else {
+                        console.warn('Invalid marks structure for class:', sanitizedCls, marks[sanitizedCls]);
+                    }
+                });
+                
+                if (marksLoaded > 0) {
+                    showJuryMessage('Previous marks loaded successfully ('+marksLoaded+' marks)', 'success');
+                } else {
+                    showJuryMessage('No previous marks found to load', 'error');
+                }
+            }).catch(err => {
+                console.error('Error loading marks:', err);
+                showJuryMessage('Error loading marks: ' + err.message, 'error');
+            });
+        }
+
+        function calculateTotal(cls) {
+            const inputs = document.querySelectorAll('.marks-input[data-class="'+cls+'"]');
+            let total = 0;
+            inputs.forEach(inp => {
+                const val = parseFloat(inp.value) || 0;
+                total += val;
+            });
+            const totalCell = document.getElementById('total-'+cls.replace(/\s+/g, '-'));
+            if (totalCell) totalCell.textContent = total.toFixed(1);
+        }
+
+        function sanitizeKey(key) {
+            // Replace characters that Firebase doesn't allow in keys
+            // . $ # [ ] / and control characters
+            return key.replace(/[.#$\[\]\/]/g, '_');
+        }
+
+        function saveMarks() {
+            console.log('=== SAVE MARKS STARTED ===');
+            console.log('juryEvent:', juryEvent);
+            console.log('juryNumber:', juryNumber);
+            console.log('Database connected:', isConnected);
+            
+            if (!juryEvent || !juryNumber) {
+                alert('Error: Jury session not initialized. Please log in again.');
+                return;
+            }
+            
+            if (!isConnected) {
+                alert('Error: Not connected to Firebase database. Please check your internet connection.');
+                return;
+            }
+            
+            const marksData = {};
+            let inputCount = 0;
+            
+            // First, organize marks by class
+            document.querySelectorAll('.marks-input').forEach(inp => {
+                inputCount++;
+                const cls = inp.dataset.class;
+                const sanitizedCls = sanitizeKey(cls); // Sanitize class name for Firebase
+                const critIndex = parseInt(inp.dataset.criterion);
+                const val = parseFloat(inp.value) || 0;
+                
+                if (!marksData[sanitizedCls]) {
+                    marksData[sanitizedCls] = { 
+                        marks: {}, 
+                        completed: false,
+                        originalClassName: cls // Store original name
+                    };
+                }
+                marksData[sanitizedCls].marks[critIndex] = val;
+            });
+            
+            // Convert marks object to array to ensure proper structure
+            Object.keys(marksData).forEach(cls => {
+                const marksObj = marksData[cls].marks;
+                const marksArray = [];
+                const maxIndex = Math.max(...Object.keys(marksObj).map(k => parseInt(k)));
+                
+                // Fill array with all marks
+                for (let i = 0; i <= maxIndex; i++) {
+                    marksArray[i] = marksObj[i] !== undefined ? marksObj[i] : 0;
+                }
+                
+                marksData[cls].marks = marksArray;
+            });
+            
+            console.log('Marks inputs found:', inputCount);
+            console.log('Marks data to save:', JSON.stringify(marksData, null, 2));
+            
+            if (inputCount === 0) {
+                alert('No marks data found. Please refresh the page and try again.');
+                return;
+            }
+            
+            // Show saving indicator
+            showJuryMessage('Saving marks...', 'success');
+            
+            // Use raw event name (do not encode)
+            const dbPath = 'juryMarks/' + juryEvent + '/jury' + juryNumber;
+            console.log('Event name:', juryEvent);
+            console.log('Saving to Firebase path:', dbPath);
+            console.log('Full database URL:', db.ref(dbPath).toString());
+            
+            // CRITICAL FIX: First check if there's test data and clear it
+            db.ref(dbPath).once('value').then(snap => {
+                const existingData = snap.val();
+                
+                // Check if test data exists
+                if (existingData && existingData.test !== undefined) {
+                    console.warn('⚠️ Test data detected! Clearing before save...');
+                    showJuryMessage('Clearing test data...', 'success');
+                    // First delete the entire node to clear test data
+                    return db.ref(dbPath).remove();
+                }
+                
+                return Promise.resolve();
+            }).then(() => {
+                console.log('Now saving actual marks data...');
+                // Now save the actual marks data
+                return db.ref(dbPath).set(marksData);
+            }).then(() => {
+                console.log('✓ Firebase .set() resolved successfully');
+                
+                // Immediately verify the save
+                return db.ref(dbPath).once('value');
+            }).then(snap => {
+                const savedData = snap.val();
+                console.log('✓ Verification read successful');
+                console.log('Data in database:', JSON.stringify(savedData, null, 2));
+                
+                if (savedData && savedData.test === undefined) {
+                    // Check that we have actual class data, not test data
+                    const hasRealData = Object.keys(savedData).some(key => 
+                        savedData[key] && savedData[key].marks && Array.isArray(savedData[key].marks)
+                    );
+                    
+                    if (hasRealData) {
+                        showJuryMessage('Marks saved successfully!', 'success');
+                        alert('✅ SUCCESS!\n\nMarks saved and verified in database.\n\n' + 
+                              'Classes saved: ' + Object.keys(savedData).length + '\n\n' +
+                              'Path: juryMarks/' + juryEvent + '/jury' + juryNumber);
+                    } else {
+                        console.error('✗ VERIFICATION FAILED: Data saved but structure is wrong');
+                        showJuryMessage('Warning: Data saved but structure may be incorrect', 'error');
+                    }
+                } else if (savedData && savedData.test !== undefined) {
+                    console.error('✗ TEST DATA STILL EXISTS after save attempt');
+                    showJuryMessage('Error: Test data blocking saves. Please clear manually.', 'error');
+                    alert('⚠️ TEST DATA PROBLEM!\n\nTest data is still in the database.\n\n' +
+                          'Please manually delete from Firebase Console:\n' +
+                          'juryMarks > Solo Dance > jury1 > test');
+                } else {
+                    console.error('✗ VERIFICATION FAILED: Data is null after save');
+                    showJuryMessage('Warning: Save completed but verification failed', 'error');
+                    alert('⚠️ WARNING!\n\nSave appeared successful but data could not be verified.\n\n' +
+                          'Possible issue: Firebase security rules may be blocking reads.\n\n' +
+                          'Please check Firebase Console > Realtime Database > Rules');
+                }
+            }).catch(err => {
+                console.error('✗ FIREBASE ERROR:', err);
+                console.error('Error code:', err.code);
+                console.error('Error message:', err.message);
+                
+                let errorMsg = '❌ SAVE FAILED!\n\n';
+                
+                if (err.code === 'PERMISSION_DENIED' || err.message.includes('permission')) {
+                    errorMsg += 'ERROR: Permission Denied\n\n';
+                    errorMsg += 'Firebase security rules are blocking the save.\n\n';
+                    errorMsg += 'SOLUTION:\n';
+                    errorMsg += '1. Go to Firebase Console\n';
+                    errorMsg += '2. Realtime Database > Rules\n';
+                    errorMsg += '3. Set rules to allow writes\n\n';
+                    errorMsg += 'See browser console for details.';
+                    
+                    console.log('%c FIREBASE RULES FIX NEEDED ', 'background: red; color: white; font-size: 16px; font-weight: bold;');
+                    console.log('Your current Firebase rules are blocking writes to: ' + dbPath);
+                    console.log('\nTo fix this, update your Firebase Realtime Database Rules to:');
+                    console.log('{\n  "rules": {\n    ".read": true,\n    ".write": true\n  }\n}');
+                    console.log('\nOR for better security:');
+                    console.log('{\n  "rules": {\n    "juryMarks": {\n      ".read": true,\n      ".write": true\n    },\n    "jurySetup": {\n      ".read": true,\n      ".write": true\n    },\n    "youthfest-enrollments": {\n      ".read": true,\n      ".write": true\n    }\n  }\n}');
+                } else {
+                    errorMsg += 'Error: ' + err.message + '\n\n';
+                        errorMsg += 'Code: ' + err.code + '\n\n';
+                        errorMsg += 'Check browser console for details.';
+                    }
+                    
+                    showJuryMessage('Error: ' + err.message, 'error');
+                    alert(errorMsg);
+                });
+        }
+
+        function markAsCompleted() {
+            if (!confirm('Mark evaluation as completed? You can still edit marks later.')) return;
+            
+            const marksData = {};
+            
+            // First, organize marks by class
+            document.querySelectorAll('.marks-input').forEach(inp => {
+                const cls = inp.dataset.class;
+                const sanitizedCls = sanitizeKey(cls); // Sanitize class name
+                const critIndex = parseInt(inp.dataset.criterion);
+                const val = parseFloat(inp.value) || 0;
+                
+                if (!marksData[sanitizedCls]) {
+                    marksData[sanitizedCls] = { 
+                        marks: {}, 
+                        completed: true,
+                        originalClassName: cls
+                    };
+                }
+                marksData[sanitizedCls].marks[critIndex] = val;
+            });
+            
+            // Convert marks object to array to ensure proper structure
+            Object.keys(marksData).forEach(cls => {
+                const marksObj = marksData[cls].marks;
+                const marksArray = [];
+                const maxIndex = Math.max(...Object.keys(marksObj).map(k => parseInt(k)));
+                
+                // Fill array with all marks
+                for (let i = 0; i <= maxIndex; i++) {
+                    marksArray[i] = marksObj[i] !== undefined ? marksObj[i] : 0;
+                }
+                
+                marksData[cls].marks = marksArray;
+            });
+            
+            const dbPath = 'juryMarks/' + juryEvent + '/jury' + juryNumber;
+            
+            db.ref(dbPath).set(marksData).then(() => {
+                showJuryMessage('Evaluation marked as completed!', 'success');
+                alert('✅ Evaluation marked as completed!\n\nYour marks are now final.');
+            }).catch(err => {
+                showJuryMessage('Error: '+err.message, 'error');
+                alert('❌ Error: '+err.message);
+            });
+        }
+
+        function showJuryMessage(msg, type) {
+            const d = document.getElementById('juryMessage');
+            d.className = 'message '+type+' show';
+            d.textContent = (type === 'success' ? '✓ ' : '✗ ') + msg;
+            setTimeout(() => d.classList.remove('show'), 5000);
+            scroll(0,0);
+        }
+
+        // Results Functions
+        function loadResultsTab() {
+            // Populate event select for results
+            const sel = document.getElementById('resultsEventSelect');
+            sel.innerHTML = '<option value="">-- Select Event --</option>';
+            
+            db.ref('jurySetup').once('value').then(snap => {
+                if (!snap.exists()) return;
+                
+                snap.forEach(child => {
+                    const event = child.key;
+                    const setup = child.val();
+                    
+                    // For super admin, show all events
+                    // For admin, show only published events
+                    if (isSuperAdmin || setup.resultsPublished) {
+                        const opt = document.createElement('option');
+                        opt.value = event;
+                        opt.textContent = event + (setup.resultsPublished ? ' ✓' : '');
+                        sel.appendChild(opt);
+                    }
+                });
+            });
+        }
+
+        function loadEventResults() {
+            const event = document.getElementById('resultsEventSelect').value;
+            console.log('Loading results for event:', event);
+            
+            if (!event) {
+                document.getElementById('resultsContainer').innerHTML = '';
+                return;
+            }
+            
+            // Load jury setup to get names and publication status
+            db.ref('jurySetup/'+event).once('value').then(setupSnap => {
+                const setup = setupSnap.val() || {};
+                console.log('Results published status:', setup.resultsPublished);
+                
+                if (!isSuperAdmin && !setup.resultsPublished) {
+                    document.getElementById('resultsContainer').innerHTML = '<p style="text-align:center;padding:40px;color:#999">Results not yet published by super admin.</p>';
+                    return;
+                }
+                
+                const jury1Name = setup.jury1Name || 'Jury 1';
+                const jury2Name = setup.jury2Name || 'Jury 2';
+                
+                // Load marks from both juries using raw event name
+                console.log('Loading marks from both juries...');
+                Promise.all([
+                    db.ref('juryMarks/'+event+'/jury1').once('value'),
+                    db.ref('juryMarks/'+event+'/jury2').once('value')
+                ]).then(([jury1Snap, jury2Snap]) => {
+                    const jury1Marks = jury1Snap.val() || {};
+                    const jury2Marks = jury2Snap.val() || {};
+                    
+                    console.log('Jury 1 Marks:', jury1Marks);
+                    console.log('Jury 2 Marks:', jury2Marks);
+                    
+                    displayResults(event, jury1Marks, jury2Marks, jury1Name, jury2Name);
+                });
+            });
+        }
+
+        function displayResults(event, jury1Marks, jury2Marks, jury1Name, jury2Name) {
+            // Default names if not provided
+            jury1Name = jury1Name || 'Jury 1';
+            jury2Name = jury2Name || 'Jury 2';
+            
+            console.log('=== DISPLAY RESULTS DEBUG ===');
+            console.log('Jury 1 Marks:', jury1Marks);
+            console.log('Jury 2 Marks:', jury2Marks);
+            
+            const allClasses = new Set([...Object.keys(jury1Marks), ...Object.keys(jury2Marks)]);
+            
+            if (allClasses.size === 0) {
+                document.getElementById('resultsContainer').innerHTML = '<p style="text-align:center;padding:40px;color:#999">No marks submitted yet.</p>';
+                return;
+            }
+            
+            // Calculate totals and averages
+            const results = [];
+            allClasses.forEach(sanitizedCls => {
+                const j1 = jury1Marks[sanitizedCls];
+                const j2 = jury2Marks[sanitizedCls];
+                
+                console.log('Class:', sanitizedCls);
+                console.log('  Jury1 data:', j1);
+                console.log('  Jury1 completed?:', j1 && j1.completed);
+                console.log('  Jury2 data:', j2);
+                console.log('  Jury2 completed?:', j2 && j2.completed);
+                
+                // Get original class name if available
+                const displayCls = (j1 && j1.originalClassName) || 
+                                  (j2 && j2.originalClassName) || 
+                                  sanitizedCls;
+                
+                let j1Total = 0;
+                let j2Total = 0;
+                
+                if (j1 && j1.marks) {
+                    j1Total = j1.marks.reduce((sum, m) => sum + (m || 0), 0);
+                }
+                if (j2 && j2.marks) {
+                    j2Total = j2.marks.reduce((sum, m) => sum + (m || 0), 0);
+                }
+                
+                const avgTotal = (j1Total + j2Total) / 2;
+                
+                results.push({
+                    class: displayCls,  // Use original name for display
+                    jury1Total: j1Total,
+                    jury2Total: j2Total,
+                    average: avgTotal,
+                    jury1Completed: j1 && j1.completed,
+                    jury2Completed: j2 && j2.completed
+                });
+            });
+            
+            // Sort by average (descending)
+            results.sort((a, b) => b.average - a.average);
+            
+            // Display results
+            let html = '<h3 style="color:#c44569;margin-bottom:20px">Results for '+event+'</h3>';
+            
+            // Show marks detail only for super admin and jury
+            if (isSuperAdmin || isJury) {
+                html += '<table><thead><tr><th>Rank</th><th>Class</th><th>'+jury1Name+' Total</th><th>'+jury2Name+' Total</th><th>Average</th><th>Status</th></tr></thead><tbody>';
+                
+                results.forEach((r, i) => {
+                    const rank = i + 1;
+                    const badge = rank === 1 ? '<span class="winner-badge">🏆 Winner</span>' : 
+                                 rank === 2 ? '<span class="runner-badge">🥈 Runner Up</span>' : '';
+                    
+                    html += '<tr class="rank-'+(rank <= 3 ? rank : '')+'">';
+                    html += '<td><strong>'+rank+'</strong></td>';
+                    html += '<td><strong>'+r.class+'</strong> '+badge+'</td>';
+                    html += '<td>'+r.jury1Total.toFixed(1)+(r.jury1Completed ? ' ✓' : '')+'</td>';
+                    html += '<td>'+r.jury2Total.toFixed(1)+(r.jury2Completed ? ' ✓' : '')+'</td>';
+                    html += '<td><strong>'+r.average.toFixed(1)+'</strong></td>';
+                    html += '<td>'+(r.jury1Completed && r.jury2Completed ? '✅ Complete' : '⏳ In Progress')+'</td>';
+                    html += '</tr>';
+                });
+                
+                html += '</tbody></table>';
+            } else {
+                // For regular admins, show only final results (no marks)
+                results.forEach((r, i) => {
+                    const rank = i + 1;
+                    html += '<div class="results-card rank-'+rank+'">';
+                    html += '<h3 style="color:#c44569;">Rank '+rank+': '+r.class;
+                    if (rank === 1) html += ' <span class="winner-badge">🏆 Winner</span>';
+                    if (rank === 2) html += ' <span class="runner-badge">🥈 Runner Up</span>';
+                    html += '</h3>';
+                    html += '<p style="color:#666;margin-top:10px">Final Score: <strong>'+r.average.toFixed(1)+'</strong></p>';
+                    html += '</div>';
+                });
+            }
+            
+            document.getElementById('resultsContainer').innerHTML = html;
+        }
+
+        function clearTestData() {
+            if (!confirm('Clear test data from Firebase?\n\nThis will ONLY delete:\n- juryMarks/TEST/*\n\nYour actual marks will NOT be affected.')) {
+                return;
+            }
+            
+            console.log('=== CLEARING TEST DATA ===');
+            
+            // Only clear the TEST node - DO NOT touch the actual jury path
+            db.ref('juryMarks/TEST').remove()
+            .then(() => {
+                console.log('✓ Test data cleared');
+                showJuryMessage('Test data cleared successfully! Your actual marks are safe.', 'success');
+                alert('✅ Test data cleared!\n\nYour actual marks are safe and untouched.');
+            }).catch(err => {
+                console.error('Error clearing test data:', err);
+                showJuryMessage('Error clearing test data: ' + err.message, 'error');
+            });
+        }
+
+        function debugLoadMarks() {
+            console.log('=== DEBUG LOAD MARKS ===');
+            console.log('juryEvent:', juryEvent);
+            console.log('juryNumber:', juryNumber);
+            
+            const dbPath = 'juryMarks/' + juryEvent + '/jury' + juryNumber;
+            console.log('Database path:', dbPath);
+            
+            // First check what's in the database
+            db.ref(dbPath).once('value').then(snap => {
+                const data = snap.val();
+                console.log('Raw database data:', data);
+                console.log('Data as JSON:', JSON.stringify(data, null, 2));
+                
+                // Check all inputs on the page
+                const inputs = document.querySelectorAll('.marks-input');
+                console.log('Total inputs on page:', inputs.length);
+                
+                const inputDetails = [];
+                inputs.forEach((inp, idx) => {
+                    inputDetails.push({
+                        index: idx,
+                        class: inp.dataset.class,
+                        criterion: inp.dataset.criterion,
+                        value: inp.value
+                    });
+                });
+                console.table(inputDetails);
+                
+                // Show a detailed report
+                let report = '=== DEBUG REPORT ===\n\n';
+                report += 'Database Path: ' + dbPath + '\n\n';
+                report += 'Database Content:\n' + JSON.stringify(data, null, 2) + '\n\n';
+                report += 'Total Inputs Found: ' + inputs.length + '\n\n';
+                report += 'Input Details:\n';
+                inputDetails.forEach(inp => {
+                    report += `  [${inp.index}] Class: "${inp.class}", Criterion: ${inp.criterion}, Value: ${inp.value}\n`;
+                });
+                
+                console.log(report);
+                alert(report);
+                
+            }).catch(err => {
+                console.error('Debug load error:', err);
+                alert('Debug load failed: ' + err.message);
+            });
+        }
+
+        function showEnrollmentDebug() {
+            console.log('=== ENROLLMENT DEBUG ===');
+            console.log('Current juryEvent:', juryEvent);
+            console.log('All array length:', all.length);
+            console.log('All enrollments:', all);
+            
+            // Filter for current event
+            const eventEnrollments = all.filter(e => e.event === juryEvent);
+            console.log('Enrollments for', juryEvent, ':', eventEnrollments);
+            
+            // Get unique classes
+            const classes = [...new Set(eventEnrollments.map(e => e.classYear))];
+            console.log('Unique classes:', classes);
+            
+            // Build report
+            let report = '=== ENROLLMENT DEBUG REPORT ===\n\n';
+            report += 'Event: ' + juryEvent + '\n';
+            report += 'Total enrollments in database: ' + all.length + '\n';
+            report += 'Enrollments for this event: ' + eventEnrollments.length + '\n';
+            report += 'Unique classes: ' + classes.join(', ') + '\n\n';
+            
+            report += 'Detailed Enrollments:\n';
+            eventEnrollments.forEach((e, i) => {
+                report += `${i+1}. Class: ${e.classYear}, Name: ${e.name}, Phone: ${e.phone}\n`;
+            });
+            
+            if (eventEnrollments.length === 0) {
+                report += '\n⚠️ NO ENROLLMENTS FOUND!\n';
+                report += 'This means either:\n';
+                report += '1. No one has enrolled for this event yet\n';
+                report += '2. The enrollments are not being loaded from Firebase\n';
+                report += '3. The event name doesn\'t match\n';
+            }
+            
+            console.log(report);
+            alert(report);
+        }
+
+        function testFirebaseWrite() {
+            console.log('=== TESTING FIREBASE WRITE ===');
+            console.log('Testing write to: juryMarks/TEST/test');
+            
+            const testData = {
+                timestamp: new Date().toISOString(),
+                message: 'This is a test write',
+                juryEvent: juryEvent,
+                juryNumber: juryNumber
+            };
+            
+            console.log('Test data:', testData);
+            
+            // Test 1: Try writing to test path
+            db.ref('juryMarks/TEST/test').set(testData)
+                .then(() => {
+                    console.log('✓ TEST WRITE SUCCESSFUL');
+                    
+                    // Verify by reading back
+                    return db.ref('juryMarks/TEST/test').once('value');
+                })
+                .then(snap => {
+                    const readData = snap.val();
+                    console.log('✓ TEST READ SUCCESSFUL');
+                    console.log('Data read back:', readData);
+                    
+                    if (readData) {
+                        alert('✅ FIREBASE TEST PASSED!\n\n' +
+                              'Firebase is working correctly.\n' +
+                              'Write: SUCCESS\n' +
+                              'Read: SUCCESS\n\n' +
+                              'Check Firebase Console - you should see:\n' +
+                              'juryMarks > TEST > test\n\n' +
+                              'The issue must be in the saveMarks function.');
+                              
+                        // Now test the actual save path
+                        console.log('Now testing actual save path...');
+                        const actualPath = 'juryMarks/' + juryEvent + '/jury' + juryNumber;
+                        console.log('Actual path:', actualPath);
+                        
+                        return db.ref(actualPath).set({test: 'actual path test'});
+                    } else {
+                        throw new Error('Read returned null');
+                    }
+                })
+                .then(() => {
+                    console.log('✓ ACTUAL PATH WRITE SUCCESSFUL');
+                    alert('✅ Both tests passed! Check the console and Firebase database.');
+                })
+                .catch(err => {
+                    console.error('✗ TEST FAILED:', err);
+                    console.error('Error code:', err.code);
+                    console.error('Error message:', err.message);
+                    
+                    alert('❌ FIREBASE TEST FAILED!\n\n' +
+                          'Error: ' + err.message + '\n' +
+                          'Code: ' + err.code + '\n\n' +
+                          'This means Firebase rules may still be blocking writes.\n' +
+                          'Check browser console for details.');
+                });
+        }
+
         function showOk(msg) {
             const d = document.getElementById('enrollMessage');
             d.className = 'message success show';
@@ -1194,5 +2863,44 @@
             if (event.target.classList.contains('modal')) event.target.style.display = 'none';
         }
     </script>
+    
+    <!-- Footer -->
+    <footer style="background: white; border-radius: 12px; padding: 0.1px 25px; margin-top: 30px; box-shadow: 0 4px 20px rgba(0,0,0,0.1);">
+        <div style="display: flex; justify-content: space-between; align-items: center; gap: 20px; flex-wrap: wrap;">
+            
+            <!-- ================================================== -->
+            <!-- TO CHANGE LEFT LOGO:                               -->
+            <!-- Replace "davan_logo.png" with your image file      -->
+            <!-- Supported: .png, .jpg, .gif                        -->
+            <!-- ================================================== -->
+            <img src="davan_logo.png" alt="Davan Logo" style="height: 50px; width: auto;">
+            
+            <!-- Center Text -->
+            <div style="text-align: center; flex: 1;">
+                <p style="color: #6a1b9a; font-size: 0.9em; margin-bottom: 10px;">
+                    © 2026 Davan Institute of Advanced Management Studies
+                </p>
+                
+                <!-- ============================================ -->
+                <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
+                <!-- ============================================ -->
+                <p style="color: #666; font-size: 0.85em; margin-bottom: 5px;">
+                    <strong>Version:</strong> 1.0 | <strong>Last Updated:</strong> February 13, 2026
+                </p>
+                <!-- ============================================ -->
+                
+                <p style="color: #c44569; font-size: 0.85em; font-weight: 600;">
+                    Built by Harsha Gujjar, Director - Davan College
+                </p>
+            </div>
+            
+            <!-- ================================================== -->
+            <!-- TO CHANGE RIGHT LOGO:                              -->
+            <!-- Replace "davan_logo_2026.gif" with your image file -->
+            <!-- Supported: .png, .jpg, .gif                        -->
+            <!-- ================================================== -->
+            <img src="davan_logo_2026.gif" alt="Spurthi Davan Logo" style="height: 180px; width: auto;">
+        </div>
+    </footer>
 </body>
 </html>
