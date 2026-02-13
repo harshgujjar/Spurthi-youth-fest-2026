@@ -130,7 +130,9 @@
         th { background: linear-gradient(135deg, #c44569 0%, #6a1b9a 100%); color: white; font-weight: 600; }
         tr:hover { background: #f5f5f5; }
         .edit-btn { background: #2196F3; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; margin-right: 5px; }
+        .edit-btn:hover { background: #1976D2; }
         .delete-btn { background: #f44336; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; }
+        .delete-btn:hover { background: #d32f2f; }
         .filter-section { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
         .filter-section select { flex: 1; min-width: 200px; }
         .admin-only { display: none; }
@@ -374,39 +376,6 @@
             </div>
         </div>
 
-        <!-- Rules and Regulations Section - Visible on Login Page -->
-        <div class="content" style="margin-top:30px;">
-            <h3 style="color:#c44569;text-align:center;margin-bottom:20px;">📋 General Rules and Regulations</h3>
-            
-            <div style="text-align:center;margin-bottom:20px;">
-                <button class="btn btn-info" style="opacity:0.7;cursor:not-allowed;" disabled>
-                    📥 Download Complete Rules & Regulations PDF (coming soon)
-                </button>
-            </div>
-
-            <div style="background:#fffbea;border-left:4px solid #f39c12;padding:15px;margin-bottom:20px;border-radius:4px;">
-                <p style="margin:0;color:#856404;font-weight:600;">Event Coordinators: Lalitha S K & Priyanka V</p>
-            </div>
-
-            <div style="line-height:1.8;color:#333;">
-                <p style="margin-bottom:15px;">
-                    <strong>1. Last date for registration</strong> with one time Refundable amount <strong style="color:#c44569;">₹1,500/-</strong> on or before <strong style="color:#c44569;">23rd February, Monday within 3:30 PM.</strong>
-                </p>
-                
-                <p style="margin-bottom:15px;">
-                    <strong>2. Last date for submission of Music and Work Organising batch</strong> on or before <strong style="color:#c44569;">7th March, Saturday.</strong>
-                </p>
-                
-                <p style="margin-bottom:15px;">
-                    <strong>3.</strong> Students arriving late (Event and for the Class registration on the date of event) or absent for the event will be fined <strong style="color:#c44569;">₹500/- per day.</strong>
-                </p>
-                
-                <p style="margin-bottom:0;">
-                    <strong>4.</strong> Teams not submitting Music or any other assignments with respect to the event, on date and time, will lead into <strong style="color:#c44569;">non-refund of deposit ₹1,500/-.</strong>
-                </p>
-            </div>
-        </div>
-
         <!-- Student Enrollment Section -->
         <div class="student-section" id="studentSection" style="display:none">
             <button class="btn btn-secondary" onclick="logout()" style="float:right">Logout</button>
@@ -426,6 +395,15 @@
                         Hide Details
                     </button>
                 </div>
+                
+                <!-- Event Filter -->
+                <div class="form-group" style="margin-bottom:15px;">
+                    <label>Filter by Event:</label>
+                    <select id="studentEventFilter" onchange="viewStudentClassEnrollments()">
+                        <option value="">All Events</option>
+                    </select>
+                </div>
+                
                 <div id="studentEnrollmentResults"></div>
             </div>
 
@@ -438,39 +416,6 @@
                 <div id="enrollmentFormContent"></div>
                 <button class="btn" onclick="submitEnrollment()">Submit Enrollment</button>
                 <button class="btn btn-secondary" onclick="cancelEnrollment()">Cancel</button>
-            </div>
-
-            <!-- Rules and Regulations Section - Moved to Bottom -->
-            <div style="background:white;padding:25px;border-radius:12px;margin-top:30px;box-shadow:0 4px 20px rgba(0,0,0,0.1);">
-                <h3 style="color:#c44569;text-align:center;margin-bottom:20px;">📋 General Rules and Regulations</h3>
-                
-                <div style="text-align:center;margin-bottom:20px;">
-                    <button class="btn btn-info" style="opacity:0.7;cursor:not-allowed;" disabled>
-                        📥 Download Complete Rules & Regulations PDF (coming soon)
-                    </button>
-                </div>
-
-                <div style="background:#fffbea;border-left:4px solid #f39c12;padding:15px;margin-bottom:20px;border-radius:4px;">
-                    <p style="margin:0;color:#856404;font-weight:600;">Event Coordinators: Lalitha S K & Priyanka V</p>
-                </div>
-
-                <div style="line-height:1.8;color:#333;">
-                    <p style="margin-bottom:15px;">
-                        <strong>1. Last date for registration</strong> with one time Refundable amount <strong style="color:#c44569;">₹1,500/-</strong> on or before <strong style="color:#c44569;">23rd February, Monday within 3:30 PM.</strong>
-                    </p>
-                    
-                    <p style="margin-bottom:15px;">
-                        <strong>2. Last date for submission of Music and Work Organising batch</strong> on or before <strong style="color:#c44569;">7th March, Saturday.</strong>
-                    </p>
-                    
-                    <p style="margin-bottom:15px;">
-                        <strong>3.</strong> Students arriving late (Event and for the Class registration on the date of event) or absent for the event will be fined <strong style="color:#c44569;">₹500/- per day.</strong>
-                    </p>
-                    
-                    <p style="margin-bottom:0;">
-                        <strong>4.</strong> Teams not submitting Music or any other assignments with respect to the event, on date and time, will lead into <strong style="color:#c44569;">non-refund of deposit ₹1,500/-.</strong>
-                    </p>
-                </div>
             </div>
         </div>
 
@@ -697,6 +642,18 @@
             <div class="modal-buttons">
                 <button class="btn btn-success" onclick="confirmAction()">Yes, Proceed</button>
                 <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Enrollment Modal -->
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">✏️ Edit Enrollment</div>
+            <div id="editFormContainer"></div>
+            <div class="modal-buttons">
+                <button class="btn btn-success" onclick="saveEdit()">Save Changes</button>
+                <button class="btn btn-secondary" onclick="closeEditModal()">Cancel</button>
             </div>
         </div>
     </div>
@@ -1240,11 +1197,33 @@
             }
             
             console.log('Filtering enrollments for class:', studentClass);
-            const classEnr = all.filter(e => e.classYear === studentClass);
+            let classEnr = all.filter(e => e.classYear === studentClass);
             console.log('Filtered enrollments count:', classEnr.length);
             
+            // Populate event filter dropdown
+            const eventFilter = document.getElementById('studentEventFilter');
+            const currentFilter = eventFilter.value;
+            
+            // Get unique events from class enrollments
+            const uniqueEvents = [...new Set(classEnr.map(e => e.event))].sort();
+            
+            // Update dropdown options
+            eventFilter.innerHTML = '<option value="">All Events</option>';
+            uniqueEvents.forEach(evt => {
+                const option = document.createElement('option');
+                option.value = evt;
+                option.textContent = evt;
+                if (evt === currentFilter) option.selected = true;
+                eventFilter.appendChild(option);
+            });
+            
+            // Filter by selected event
+            if (currentFilter) {
+                classEnr = classEnr.filter(e => e.event === currentFilter);
+            }
+            
             if (classEnr.length === 0) {
-                cont.innerHTML = '<div style="background:#fff3cd;color:#856404;padding:15px;border-radius:6px;border:2px solid #ffc107;text-align:center;"><h4 style="margin-bottom:10px;">No Enrollments Yet</h4><p style="margin:0;">Your class has not enrolled in any events yet.</p></div>';
+                cont.innerHTML = '<div style="background:#fff3cd;color:#856404;padding:15px;border-radius:6px;border:2px solid #ffc107;text-align:center;"><h4 style="margin-bottom:10px;">No Enrollments</h4><p style="margin:0;">' + (currentFilter ? 'No enrollments found for ' + currentFilter : 'Your class has not enrolled in any events yet.') + '</p></div>';
                 return; 
             }
             
@@ -1258,20 +1237,26 @@
             console.log('Event groups:', eventGroups);
             
             let h = '<div style="background:white;border-radius:6px;padding:15px;border:2px solid #4CAF50;">';
-            h += '<h4 style="color:#c44569;margin-bottom:15px;">✅ ' + studentClass + ' - Total Enrollments: ' + classEnr.length + '</h4>';
+            h += '<h4 style="color:#c44569;margin-bottom:15px;">✅ ' + studentClass + (currentFilter ? ' - ' + currentFilter : '') + ' - Total: ' + classEnr.length + '</h4>';
             
-            // Show summary by event
-            h += '<div style="margin-bottom:20px;">';
-            h += '<h5 style="color:#2196F3;margin-bottom:10px;">📊 Enrolled Events:</h5>';
-            h += '<div style="display:flex;flex-wrap:wrap;gap:10px;">';
-            Object.keys(eventGroups).forEach(evt => {
-                h += '<span style="background:#4CAF50;color:white;padding:8px 15px;border-radius:20px;font-size:14px;font-weight:600;">' + evt + ' (' + eventGroups[evt].length + ')</span>';
-            });
-            h += '</div></div>';
+            // Show summary by event (only if showing all events)
+            if (!currentFilter) {
+                h += '<div style="margin-bottom:20px;">';
+                h += '<h5 style="color:#2196F3;margin-bottom:10px;">📊 Enrolled Events:</h5>';
+                h += '<div style="display:flex;flex-wrap:wrap;gap:10px;">';
+                Object.keys(eventGroups).forEach(evt => {
+                    h += '<span style="background:#4CAF50;color:white;padding:8px 15px;border-radius:20px;font-size:14px;font-weight:600;">' + evt + ' (' + eventGroups[evt].length + ')</span>';
+                });
+                h += '</div></div>';
+            }
             
             // Show detailed table
-            h += '<table><thead><tr><th>Sl</th><th>Name</th><th>Phone</th><th>Event</th><th>Role</th><th>Details</th></tr></thead><tbody>';
-            classEnr.forEach((e,i) => h += '<tr><td>'+(i+1)+'</td><td>'+e.name+'</td><td>'+e.phone+'</td><td>'+e.event+'</td><td>'+e.role+'</td><td>'+getDet(e)+'</td></tr>');
+            h += '<table><thead><tr><th>Sl</th><th>Name</th><th>Phone</th><th>Event</th><th>Role</th><th>Details</th><th>Actions</th></tr></thead><tbody>';
+            classEnr.forEach((e,i) => {
+                h += '<tr><td>'+(i+1)+'</td><td>'+e.name+'</td><td>'+e.phone+'</td><td>'+e.event+'</td><td>'+e.role+'</td><td>'+getDet(e)+'</td>';
+                h += '<td><button class="edit-btn" data-key="'+e.id+'" onclick="editEnrollmentByKey(this.getAttribute(\'data-key\'))">Edit</button>';
+                h += '<button class="delete-btn" data-key="'+e.id+'" data-name="'+e.name+'" data-event="'+e.event+'" onclick="deleteEnrollmentByKey(this.getAttribute(\'data-key\'), this.getAttribute(\'data-name\'), this.getAttribute(\'data-event\'))">Delete</button></td></tr>';
+            });
             h += '</tbody></table></div>';
             cont.innerHTML = h;
             
@@ -1664,9 +1649,11 @@
                 cont.innerHTML = '<p style="text-align:center;padding:40px;color:#999">No enrollments yet</p>';
             } else {
                 console.log('Building table with', filtered.length, 'rows');
-                let html = '<table><thead><tr><th>Sl</th><th>Name</th><th>Phone</th><th>Event</th><th>Role</th><th>Details</th></tr></thead><tbody>';
+                let html = '<table><thead><tr><th>Sl</th><th>Name</th><th>Phone</th><th>Event</th><th>Role</th><th>Details</th><th>Actions</th></tr></thead><tbody>';
                 filtered.forEach((e,i) => {
-                    html += '<tr><td>'+(i+1)+'</td><td>'+e.name+'</td><td>'+e.phone+'</td><td>'+e.event+'</td><td>'+e.role+'</td><td>'+getDet(e)+'</td></tr>';
+                    html += '<tr><td>'+(i+1)+'</td><td>'+e.name+'</td><td>'+e.phone+'</td><td>'+e.event+'</td><td>'+e.role+'</td><td>'+getDet(e)+'</td>';
+                    html += '<td><button class="edit-btn" data-key="'+e.id+'" onclick="editEnrollmentByKey(this.getAttribute(\'data-key\'))">Edit</button>';
+                    html += '<button class="delete-btn" data-key="'+e.id+'" data-name="'+e.name+'" data-event="'+e.event+'" onclick="deleteEnrollmentByKey(this.getAttribute(\'data-key\'), this.getAttribute(\'data-name\'), this.getAttribute(\'data-event\'))">Delete</button></td></tr>';
                 });
                 html += '</tbody></table>';
                 cont.innerHTML = html;
@@ -1795,9 +1782,11 @@
                     return;
                 }
                 
-                let html = '<table><thead><tr><th>Sl</th><th>Name</th><th>Phone</th><th>Class</th><th>Event</th><th>Role</th><th>Details</th></tr></thead><tbody>';
+                let html = '<table><thead><tr><th>Sl</th><th>Name</th><th>Phone</th><th>Class</th><th>Event</th><th>Role</th><th>Details</th><th>Actions</th></tr></thead><tbody>';
                 filtered.forEach((e,i) => {
-                    html += '<tr><td>'+(i+1)+'</td><td>'+e.name+'</td><td>'+e.phone+'</td><td>'+e.classYear+'</td><td>'+e.event+'</td><td>'+e.role+'</td><td>'+getDet(e)+'</td></tr>';
+                    html += '<tr><td>'+(i+1)+'</td><td>'+e.name+'</td><td>'+e.phone+'</td><td>'+e.classYear+'</td><td>'+e.event+'</td><td>'+e.role+'</td><td>'+getDet(e)+'</td>';
+                    html += '<td><button class="edit-btn" data-key="'+e.id+'" onclick="editEnrollmentByKey(this.getAttribute(\'data-key\'))">Edit</button>';
+                    html += '<button class="delete-btn" data-key="'+e.id+'" data-name="'+e.name+'" data-event="'+e.event+'" onclick="deleteEnrollmentByKey(this.getAttribute(\'data-key\'), this.getAttribute(\'data-name\'), this.getAttribute(\'data-event\'))">Delete</button></td></tr>';
                 });
                 html += '</tbody></table>';
                 cont.innerHTML = html;
@@ -2909,6 +2898,201 @@
                 });
         }
 
+        // Edit and Delete Functions
+        let editingKey = null;
+        let editingData = null;
+
+        // Wrapper functions to handle calls from data attributes
+        function editEnrollmentByKey(key) {
+            editEnrollment(key);
+        }
+
+        function deleteEnrollmentByKey(key, name, event) {
+            deleteEnrollment(key, name, event);
+        }
+
+        function editEnrollment(key) {
+            console.log('Editing enrollment:', key);
+            console.log('All enrollments:', all);
+            console.log('Looking for key:', key);
+            
+            editingKey = key;
+            
+            // Find the enrollment data - search by id field
+            const enrollment = all.find(e => e.id === key);
+            
+            if (!enrollment) {
+                console.error('Enrollment not found!');
+                console.log('Available IDs:', all.map(e => e.id));
+                alert('Error: Enrollment not found. Please refresh the page and try again.');
+                return;
+            }
+            
+            editingData = enrollment;
+            console.log('Enrollment data:', enrollment);
+            
+            // Build edit form based on event type
+            const eventConfig = events[enrollment.event];
+            const isTeamEvent = eventConfig && eventConfig.count > 1;
+            
+            let formHtml = '<div class="form-group">';
+            formHtml += '<label>Name:</label>';
+            formHtml += '<input type="text" id="editName" value="' + enrollment.name + '" required>';
+            formHtml += '</div>';
+            
+            formHtml += '<div class="form-group">';
+            formHtml += '<label>Phone:</label>';
+            formHtml += '<input type="tel" id="editPhone" value="' + enrollment.phone + '" required>';
+            formHtml += '</div>';
+            
+            formHtml += '<div class="form-group">';
+            formHtml += '<label>Class Year:</label>';
+            formHtml += '<input type="text" id="editClass" value="' + enrollment.classYear + '" readonly>';
+            formHtml += '</div>';
+            
+            formHtml += '<div class="form-group">';
+            formHtml += '<label>Event:</label>';
+            formHtml += '<input type="text" value="' + enrollment.event + '" readonly>';
+            formHtml += '</div>';
+            
+            formHtml += '<div class="form-group">';
+            formHtml += '<label>Role:</label>';
+            formHtml += '<input type="text" value="' + enrollment.role + '" readonly>';
+            formHtml += '</div>';
+            
+            // Add team members if it's a team event
+            if (isTeamEvent && enrollment.teamMembers) {
+                for (let i = 0; i < enrollment.teamMembers.length; i++) {
+                    const member = enrollment.teamMembers[i];
+                    formHtml += '<div class="team-member-box">';
+                    formHtml += '<div class="member-header">Team Member ' + (i + 1) + '</div>';
+                    formHtml += '<div class="form-group">';
+                    formHtml += '<label>Name:</label>';
+                    formHtml += '<input type="text" id="editTeamName' + i + '" value="' + member.name + '" required>';
+                    formHtml += '</div>';
+                    formHtml += '<div class="form-group">';
+                    formHtml += '<label>Phone:</label>';
+                    formHtml += '<input type="tel" id="editTeamPhone' + i + '" value="' + member.phone + '" required>';
+                    formHtml += '</div>';
+                    formHtml += '</div>';
+                }
+            }
+            
+            document.getElementById('editFormContainer').innerHTML = formHtml;
+            document.getElementById('editModal').style.display = 'block';
+        }
+
+        function closeEditModal() {
+            document.getElementById('editModal').style.display = 'none';
+            editingKey = null;
+            editingData = null;
+        }
+
+        function saveEdit() {
+            if (!editingKey || !editingData) {
+                alert('Error: No enrollment selected');
+                return;
+            }
+            
+            // Get updated values
+            const updatedName = document.getElementById('editName').value.trim();
+            const updatedPhone = document.getElementById('editPhone').value.trim();
+            
+            if (!updatedName || !updatedPhone) {
+                alert('Please fill in all required fields');
+                return;
+            }
+            
+            // Validate phone
+            if (!/^\d{10}$/.test(updatedPhone)) {
+                alert('Please enter a valid 10-digit phone number');
+                return;
+            }
+            
+            // Build updated enrollment object
+            const updatedEnrollment = {
+                ...editingData,
+                name: updatedName,
+                phone: updatedPhone
+            };
+            
+            // Update team members if applicable
+            const eventConfig = events[editingData.event];
+            if (eventConfig && eventConfig.count > 1 && editingData.teamMembers) {
+                updatedEnrollment.teamMembers = [];
+                for (let i = 0; i < editingData.teamMembers.length; i++) {
+                    const memberName = document.getElementById('editTeamName' + i).value.trim();
+                    const memberPhone = document.getElementById('editTeamPhone' + i).value.trim();
+                    
+                    if (!memberName || !memberPhone) {
+                        alert('Please fill in all team member details');
+                        return;
+                    }
+                    
+                    if (!/^\d{10}$/.test(memberPhone)) {
+                        alert('Please enter valid 10-digit phone numbers for all team members');
+                        return;
+                    }
+                    
+                    updatedEnrollment.teamMembers.push({
+                        name: memberName,
+                        phone: memberPhone
+                    });
+                }
+            }
+            
+            // Save to Firebase
+            ref.child(editingKey).set(updatedEnrollment)
+                .then(() => {
+                    showOk('Enrollment updated successfully!');
+                    closeEditModal();
+                    loadData(); // Reload data
+                    
+                    // Refresh the appropriate view
+                    if (studentClass) {
+                        viewStudentClassEnrollments();
+                    }
+                    if (isCR) {
+                        updateCRView();
+                    }
+                })
+                .catch(err => {
+                    console.error('Error updating enrollment:', err);
+                    showErr('Failed to update enrollment: ' + err.message);
+                });
+        }
+
+        function deleteEnrollment(key, name, event) {
+            // Find the enrollment data - search by id field
+            const enrollment = all.find(e => e.id === key);
+            if (!enrollment) {
+                alert('Error: Enrollment not found');
+                return;
+            }
+            
+            if (!confirm('Are you sure you want to delete the enrollment for ' + name + ' in ' + event + '?')) {
+                return;
+            }
+            
+            ref.child(key).remove()
+                .then(() => {
+                    showOk('Enrollment deleted successfully!');
+                    loadData(); // Reload data
+                    
+                    // Refresh the appropriate view
+                    if (studentClass) {
+                        viewStudentClassEnrollments();
+                    }
+                    if (isCR) {
+                        updateCRView();
+                    }
+                })
+                .catch(err => {
+                    console.error('Error deleting enrollment:', err);
+                    showErr('Failed to delete enrollment: ' + err.message);
+                });
+        }
+
         function showOk(msg) {
             const d = document.getElementById('enrollMessage');
             d.className = 'message success show';
@@ -2930,40 +3114,111 @@
         }
     </script>
     
+    <!-- ============================================ -->
+    <!-- RULES AND REGULATIONS SECTION                -->
+    <!-- TO EDIT: Just change the text below          -->
+    <!-- TO ADD PDF: Replace "rules.pdf" with your    -->
+    <!-- PDF file name and upload it to same folder   -->
+    <!-- ============================================ -->
+    <div class="content" style="margin-bottom:30px;margin-top:40px;padding:40px 30px;">
+        <div style="text-align:center;margin-bottom:30px;">
+            <h2 style="color:#c44569;margin-bottom:20px;">📋 General Rules and Regulations</h2>
+            
+            <!-- ============================================ -->
+            <!-- TO ADD/REMOVE PDF LINK:                      -->
+            <!-- Delete the entire line below to remove link  -->
+            <!-- Or change "rules.pdf" to your PDF filename   -->
+            <!-- ============================================ -->
+            <a href="rules.pdf" target="_blank" style="display:inline-block;background:linear-gradient(135deg, #c44569 0%, #6a1b9a 100%);color:white;padding:12px 30px;border-radius:8px;text-decoration:none;font-weight:600;margin-bottom:20px;">
+                📄 Download Complete Rules & Regulations PDF (Coming Soon)
+            </a>
+        </div>
+
+        <!-- ============================================ -->
+        <!-- TO EDIT COORDINATOR NAMES:                   -->
+        <!-- Change the names below                       -->
+        <!-- ============================================ -->
+        <div style="background:#fff3cd;padding:20px;border-radius:8px;border-left:5px solid #ffc107;margin-bottom:20px;">
+            <p style="margin:0;color:#856404;font-weight:600;">Event Coordinators: Lalitha S K & Priyanka V</p>
+        </div>
+
+        <!-- ============================================ -->
+        <!-- TO EDIT RULES: Change the text below         -->
+        <!-- Keep the HTML tags as they are               -->
+        <!-- ============================================ -->
+        <div style="background:white;padding:25px;border-radius:8px;border:2px solid #e0e0e0;">
+            <ol style="line-height:1.8;color:#333;">
+                <!-- Rule 1 -->
+                <li style="margin-bottom:15px;">
+                    <strong>Last date for registration</strong> with one time Refundable amount 
+                    <span style="color:#c44569;font-weight:bold;">₹1,500/-</span> 
+                    on or before 
+                    <span style="color:#c44569;font-weight:bold;">23rd February, Monday within 3:30 PM</span>.
+                </li>
+                
+                <!-- Rule 2 -->
+                <li style="margin-bottom:15px;">
+                    <strong>Last date for submission of Music and Work Organising batch</strong> 
+                    on or before 
+                    <span style="color:#c44569;font-weight:bold;">7th March, Saturday</span>.
+                </li>
+                
+                <!-- Rule 3 -->
+                <li style="margin-bottom:15px;">
+                    Students arriving late (Event and for the Class registration on the date of event) 
+                    or absent for the event will be fined 
+                    <span style="color:#c44569;font-weight:bold;">₹500/- per day</span>.
+                </li>
+                
+                <!-- Rule 4 -->
+                <li style="margin-bottom:15px;">
+                    Teams not submitting Music, or any other assignments with respect to the event, 
+                    on date and time, will lead into 
+                    <span style="color:#c44569;font-weight:bold;">non-refund of deposit ₹1,500/-</span>.
+                </li>
+            </ol>
+        </div>
+    </div>
+    <!-- ============================================ -->
+    <!-- END OF RULES SECTION                         -->
+    <!-- ============================================ -->
+    
     <!-- Footer -->
-    <footer style="background: white; border-radius: 12px; padding: 20px 15px; margin-top: 50px; box-shadow: 0 4px 20px rgba(0,0,0,0.1);">
-        <div style="display: flex; flex-direction: column; align-items: center; gap: 15px;">
+    <footer style="background: white; border-radius: 12px; padding: 25px; margin-top: 30px; box-shadow: 0 4px 20px rgba(0,0,0,0.1);">
+        <div style="text-align: center;">
             
             <!-- ================================================== -->
-            <!-- TOP: CIRCULAR LOGO (Right logo moved to top)      -->
+            <!-- CIRCULAR LOGO (Top)                                -->
+            <!-- Replace "davan_logo_2026.gif" with your image file -->
             <!-- ================================================== -->
-            <img src="davan_logo_2026.gif" alt="Spurthi Davan Logo" style="height: 200px; width: auto; max-width: 200px;">
-            
-            <!-- ================================================== -->
-            <!-- MIDDLE: TEXT CONTENT                               -->
-            <!-- ================================================== -->
-            <div style="text-align: center; width: 100%;">
-                <p style="color: #6a1b9a; font-size: 0.85em; margin-bottom: 8px; line-height: 1.5;">
-                    © 2026 Davan Institute of Advanced Management Studies
-                </p>
-                
-                <!-- ============================================ -->
-                <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
-                <!-- ============================================ -->
-                <p style="color: #666; font-size: 0.75em; margin-bottom: 8px; line-height: 1.4;">
-                    <strong>Version:</strong> 1.0 | <strong>Last Updated:</strong> February 13, 2026
-                </p>
-                <!-- ============================================ -->
-                
-                <p style="color: #c44569; font-size: 0.75em; font-weight: 600; margin-bottom: 0;">
-                    Built by Harsha Gujjar, Director - Davan College
-                </p>
+            <div style="margin-bottom: 0px;">
+                <img src="davan_logo_2026.gif" alt="Spurthi Davan Logo" style="height: 200px; width: auto; display: inline-block;">
             </div>
             
+            <p style="color: #6a1b9a; font-size: 0.9em; margin-bottom: 8px;">
+                © 2026 Davan Institute of Advanced Management Studies
+            </p>
+            
+            <!-- ============================================ -->
+            <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
+            <!-- ============================================ -->
+            <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;">
+                <strong>Version:</strong> 1.0 | <strong>Last Updated:</strong> February 13, 2026
+            </p>
+            <!-- ============================================ -->
+            
+            <p style="color: #c44569; font-size: 0.85em; font-weight: 600; margin-bottom: 8px;">
+                Built by Harsha Gujjar, Director - Davan College
+            </p>
+            
             <!-- ================================================== -->
-            <!-- BOTTOM: TEXT LOGO (Left logo moved to bottom)      -->
+            <!-- TEXT LOGO (Below "Built by" line)                  -->
+            <!-- Replace "davan_logo.png" with your image file      -->
             <!-- ================================================== -->
-            <img src="davan_logo.png" alt="Davan Logo" style="height: 50px; width: auto; max-width: 200px;">
+            <div style="margin-top: 5px;">
+                <img src="davan_logo.png" alt="Davan Text Logo" style="height: 40px; width: auto; display: inline-block;">
+            </div>
+            
         </div>
     </footer>
 </body>
