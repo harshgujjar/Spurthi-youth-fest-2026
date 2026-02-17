@@ -1407,12 +1407,36 @@
                     <!-- Winners Sub-Tab -->
                     <div id="quizWinnersContent" class="form-section">
                         <h3 style="color:#6a1b9a;margin-bottom:20px">🏆 Declare Today's Winners</h3>
-                        
-                        <div style="background:#fff3cd;padding:20px;border-radius:10px;margin-bottom:25px">
-                            <p style="margin:0;color:#856404"><strong>ℹ️ How it works:</strong> System randomly selects winner & runner-up from students who got BOTH questions correct.</p>
+
+                        <!-- ── AUTO-DECLARATION PANEL ── -->
+                        <div style="background:linear-gradient(135deg,#1a0030 0%,#3d0060 100%);border-radius:14px;padding:20px 22px;margin-bottom:22px;border:2px solid rgba(255,215,0,0.3)">
+                            <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap">
+                                <span style="font-size:1.7em">⏰</span>
+                                <div style="flex:1">
+                                    <h4 style="color:#ffd700;margin:0;font-size:1em">Auto-Declaration at 11:30 PM</h4>
+                                    <p style="color:rgba(255,255,255,0.65);font-size:12px;margin:3px 0 0">If no manual declaration is done, winners are auto-selected at 11:30 PM daily.</p>
+                                </div>
+                                <label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin:0">
+                                    <div style="position:relative;width:48px;height:26px">
+                                        <input type="checkbox" id="autoDeclarToggle" onchange="saveAutoDeclarSetting()" style="opacity:0;width:0;height:0;position:absolute">
+                                        <span id="autoDeclarSlider" style="position:absolute;inset:0;background:#555;border-radius:26px;transition:0.3s;cursor:pointer"></span>
+                                        <span id="autoDeclarThumb" style="position:absolute;left:3px;top:3px;width:20px;height:20px;background:white;border-radius:50%;transition:0.3s;pointer-events:none"></span>
+                                    </div>
+                                    <span id="autoDeclarLabel" style="color:#ffd700;font-weight:700;font-size:13px;white-space:nowrap">OFF</span>
+                                </label>
+                            </div>
+                            <div id="autoDeclarStatus" style="background:rgba(255,255,255,0.07);border-radius:8px;padding:10px 14px;font-size:12.5px;color:rgba(255,255,255,0.75)">
+                                🔴 Auto-declaration is <strong style="color:#ff6b6b">disabled</strong>. Toggle ON to enable.
+                            </div>
+                            <div id="autoDeclarCountdown" style="display:none;margin-top:10px;background:rgba(255,215,0,0.1);border-radius:8px;padding:10px 14px;font-size:13px;color:#ffd700;font-weight:600;text-align:center"></div>
+                        </div>
+
+                        <!-- ── HOW IT WORKS ── -->
+                        <div style="background:#fff3cd;padding:15px 20px;border-radius:10px;margin-bottom:22px">
+                            <p style="margin:0;color:#856404"><strong>ℹ️ How it works:</strong> System randomly selects winner &amp; runner-up from students who got BOTH questions correct.</p>
                         </div>
                         
-                        <div style="background:#f8f9fa;padding:20px;border-radius:10px;margin:20px 0">
+                        <div style="background:#f8f9fa;padding:20px;border-radius:10px;margin:0 0 20px">
                             <h4 style="margin-bottom:15px">📊 Statistics</h4>
                             <p><strong>Total:</strong> <span id="resultTotalPartAdmin">0</span></p>
                             <p><strong>Both Correct:</strong> <span id="resultBothCorrectAdmin">0</span></p>
@@ -1421,10 +1445,38 @@
                         
                         <!-- Eligible Students List -->
                         <div id="eligibleStudentsListAdmin"></div>
+
+                        <!-- ── ACTION BUTTONS ── -->
+                        <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:20px;margin-bottom:10px">
+                            <button class="btn btn-warning" onclick="selectQuizWinnersFromAdmin()" style="font-size:1em;padding:14px 22px">🎲 Select Winners (Random)</button>
+                            <button class="btn btn-info" onclick="toggleManualWinnerUI()" style="font-size:1em;padding:14px 22px" id="manualSelectToggleBtn">✋ Manual Select</button>
+                        </div>
+
+                        <!-- ── MANUAL SELECTION PANEL ── -->
+                        <div id="manualWinnerPanel" style="display:none;background:#f0f4ff;border:2px solid #667eea;border-radius:12px;padding:22px;margin-top:10px">
+                            <h4 style="color:#667eea;margin-bottom:16px">✋ Manual Winner Selection</h4>
+                            <p style="color:#555;font-size:13px;margin-bottom:18px">Choose winner and runner-up from eligible students (both questions correct).</p>
+                            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:18px">
+                                <div class="form-group" style="margin:0">
+                                    <label style="color:#667eea;font-weight:700">🏆 Winner</label>
+                                    <select id="manualWinnerSelect" style="border:2px solid #ffd700;border-radius:8px;padding:10px;margin-top:6px">
+                                        <option value="">-- Select Winner --</option>
+                                    </select>
+                                </div>
+                                <div class="form-group" style="margin:0">
+                                    <label style="color:#667eea;font-weight:700">🥈 Runner-Up</label>
+                                    <select id="manualRunnerSelect" style="border:2px solid #aaa;border-radius:8px;padding:10px;margin-top:6px">
+                                        <option value="">-- Select Runner-Up --</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div style="display:flex;gap:10px;flex-wrap:wrap">
+                                <button class="btn btn-success" onclick="declareManualWinners()" style="padding:12px 24px">✅ Declare These Winners</button>
+                                <button class="btn btn-secondary" onclick="toggleManualWinnerUI()" style="padding:12px 20px">✖ Cancel</button>
+                            </div>
+                        </div>
                         
-                        <button class="btn btn-warning" onclick="selectQuizWinnersFromAdmin()" style="font-size:1.1em;padding:16px">🎲 Select Winners (Random)</button>
-                        
-                        <div id="winnersDisplayAdmin" style="display:none;margin-top:30px"></div>
+                        <div id="winnersDisplayAdmin" style="display:none;margin-top:25px"></div>
                     </div>
                     
                     <!-- Edit Quiz Dates Sub-Tab (Super Admin Only) -->
@@ -2967,7 +3019,6 @@
                 loadResultsTab();
             }
             if (tab === 'quizManagement') {
-                window.scrollTo({ top: 0, behavior: 'smooth' });
                 loadQuizManagementStats();
                 showQuizManagementTab('questions');
                 initializeDateSelector();
@@ -5827,6 +5878,8 @@ Davan Institute Team`;
             } else if (tab === 'winners') {
                 document.getElementById('quizWinnersContent').classList.add('active');
                 loadQuizResultsAdmin();
+                // Init auto-declaration toggle state
+                if (typeof initAutoDeclarScheduler === 'function') initAutoDeclarScheduler();
             } else if (tab === 'editdates') {
                 document.getElementById('quizEditDatesContent').classList.add('active');
                 loadQuizzesForDateEdit();
@@ -6924,6 +6977,9 @@ Davan Institute Team`;
         function displayEligibleStudentsList(students) {
             const container = document.getElementById('eligibleStudentsListAdmin');
             if (!container) return;
+            // Cache for manual select dropdowns
+            _eligibleCache = students;
+            if (_manualPanelOpen) populateManualSelects();
             
             if (students.length === 0) {
                 container.innerHTML = '<p style="color:#999;font-style:italic;text-align:center;padding:20px">No students with both correct answers yet</p>';
@@ -6936,13 +6992,14 @@ Davan Institute Team`;
             let html = '<div style="margin-top:20px">';
             html += '<h4 style="color:#28a745;margin-bottom:15px">✅ Eligible Students (Both Questions Correct)</h4>';
             html += '<div style="background:white;border-radius:10px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.1)">';
-            html += '<table style="width:100%;border-collapse:collapse">';
+            html += '<div style="overflow-x:auto;-webkit-overflow-scrolling:touch;">';
+            html += '<table style="width:100%;border-collapse:collapse;min-width:400px">';
             html += '<thead><tr style="background:#28a745;color:white">';
-            html += '<th style="padding:12px;text-align:left">#</th>';
-            html += '<th style="padding:12px;text-align:left">Name</th>';
-            html += '<th style="padding:12px;text-align:left">Class</th>';
-            html += '<th style="padding:12px;text-align:left">Time Taken</th>';
-            html += '<th style="padding:12px;text-align:left">Submitted At</th>';
+            html += '<th style="padding:10px 8px;text-align:left;white-space:nowrap">#</th>';
+            html += '<th style="padding:10px 8px;text-align:left;white-space:nowrap">Name</th>';
+            html += '<th style="padding:10px 8px;text-align:left;white-space:nowrap">Class</th>';
+            html += '<th style="padding:10px 8px;text-align:left;white-space:nowrap">Time Taken</th>';
+            html += '<th style="padding:10px 8px;text-align:left;white-space:nowrap">Submitted At</th>';
             html += '</tr></thead><tbody>';
             
             students.forEach((student, index) => {
@@ -6955,15 +7012,15 @@ Davan Institute Team`;
                 const timeTaken = Math.floor(student.time / 60) + 'm ' + (student.time % 60) + 's';
                 
                 html += `<tr style="background:${bgColor}">`;
-                html += `<td style="padding:12px;border-bottom:1px solid #e9ecef">${index + 1}</td>`;
-                html += `<td style="padding:12px;border-bottom:1px solid #e9ecef;font-weight:600">${student.name}</td>`;
-                html += `<td style="padding:12px;border-bottom:1px solid #e9ecef">${student.class}</td>`;
-                html += `<td style="padding:12px;border-bottom:1px solid #e9ecef">${timeTaken}</td>`;
-                html += `<td style="padding:12px;border-bottom:1px solid #e9ecef">${submittedTime}</td>`;
+                html += `<td style="padding:10px 8px;border-bottom:1px solid #e9ecef;white-space:nowrap">${index + 1}</td>`;
+                html += `<td style="padding:10px 8px;border-bottom:1px solid #e9ecef;font-weight:600;word-break:break-word;max-width:140px">${student.name}</td>`;
+                html += `<td style="padding:10px 8px;border-bottom:1px solid #e9ecef;white-space:nowrap">${student.class}</td>`;
+                html += `<td style="padding:10px 8px;border-bottom:1px solid #e9ecef;white-space:nowrap">${timeTaken}</td>`;
+                html += `<td style="padding:10px 8px;border-bottom:1px solid #e9ecef;white-space:nowrap">${submittedTime}</td>`;
                 html += '</tr>';
             });
             
-            html += '</tbody></table></div></div>';
+            html += '</tbody></table></div></div></div>';
             container.innerHTML = html;
         }
         
@@ -7033,9 +7090,215 @@ Davan Institute Team`;
             html += `<p><strong>Email:</strong> ${data.runnerUp.email}</p>`;
             html += `<p><strong>Class:</strong> ${data.runnerUp.class}</p>`;
             html += `<p><strong>Score:</strong> ${data.runnerUp.score}/2</p></div>`;
-            html += `<p style="text-align:center;margin-top:20px;color:#666"><small>Declared: ${new Date(data.declaredAt).toLocaleString()}</small></p></div>`;
+            const declaredBy = data.declaredBy || 'Admin';
+            const modeTag = data.autoSelected
+                ? '<span style="background:#6a1b9a;color:#ffd700;padding:2px 10px;border-radius:12px;font-size:12px;margin-left:6px">⏰ Auto-declared</span>'
+                : (data.manualSelected
+                    ? '<span style="background:#2196F3;color:white;padding:2px 10px;border-radius:12px;font-size:12px;margin-left:6px">✋ Manual</span>'
+                    : '<span style="background:#28a745;color:white;padding:2px 10px;border-radius:12px;font-size:12px;margin-left:6px">🎲 Random</span>');
+            html += `<p style="text-align:center;margin-top:20px;color:#666"><small>Declared: ${new Date(data.declaredAt).toLocaleString()} by ${declaredBy}</small>${modeTag}</p></div>`;
             div.innerHTML = html;
             div.style.display = 'block';
+        }
+
+        // ============================================
+        // AUTO-DECLARATION SCHEDULER (11:30 PM daily)
+        // ============================================
+        let _autoDeclarInterval = null;
+        let _eligibleCache = []; // populated when winners tab loads
+
+        function saveAutoDeclarSetting() {
+            const enabled = document.getElementById('autoDeclarToggle').checked;
+            try { localStorage.setItem('quizAutoDeclar', enabled ? '1' : '0'); } catch(e){}
+            applyAutoDeclarUI(enabled);
+            if (enabled) {
+                startAutoDeclarScheduler();
+            } else {
+                stopAutoDeclarScheduler();
+            }
+        }
+
+        function applyAutoDeclarUI(enabled) {
+            const slider = document.getElementById('autoDeclarSlider');
+            const thumb  = document.getElementById('autoDeclarThumb');
+            const label  = document.getElementById('autoDeclarLabel');
+            const status = document.getElementById('autoDeclarStatus');
+            const countdown = document.getElementById('autoDeclarCountdown');
+            if (!slider) return;
+            if (enabled) {
+                slider.style.background = '#28a745';
+                thumb.style.left = '25px';
+                label.textContent = 'ON';
+                status.innerHTML = '🟢 Auto-declaration is <strong style="color:#a5ffb8">enabled</strong>. Winners will be auto-selected at <strong style="color:#ffd700">11:30 PM</strong> if not declared manually.';
+                countdown.style.display = 'block';
+                updateAutoDeclarCountdown();
+            } else {
+                slider.style.background = '#555';
+                thumb.style.left = '3px';
+                label.textContent = 'OFF';
+                status.innerHTML = '🔴 Auto-declaration is <strong style="color:#ff6b6b">disabled</strong>. Toggle ON to enable.';
+                countdown.style.display = 'none';
+            }
+        }
+
+        function updateAutoDeclarCountdown() {
+            const el = document.getElementById('autoDeclarCountdown');
+            if (!el || !document.getElementById('autoDeclarToggle').checked) return;
+            const now = new Date();
+            const target = new Date();
+            target.setHours(23, 30, 0, 0);
+            if (now >= target) {
+                el.textContent = '⏰ 11:30 PM has passed for today. Auto-declaration ran (or no eligible students).';
+                return;
+            }
+            const diff = Math.floor((target - now) / 1000);
+            const h = Math.floor(diff / 3600);
+            const m = Math.floor((diff % 3600) / 60);
+            const s = diff % 60;
+            el.textContent = `⏳ Auto-declaration in: ${String(h).padStart(2,'0')}h ${String(m).padStart(2,'0')}m ${String(s).padStart(2,'0')}s`;
+        }
+
+        function startAutoDeclarScheduler() {
+            stopAutoDeclarScheduler();
+            _autoDeclarInterval = setInterval(async () => {
+                if (!document.getElementById('autoDeclarToggle') || !document.getElementById('autoDeclarToggle').checked) return;
+                updateAutoDeclarCountdown();
+                const now = new Date();
+                // Trigger between 23:30:00 and 23:30:59
+                if (now.getHours() === 23 && now.getMinutes() === 30) {
+                    await runAutoDeclaration();
+                }
+            }, 1000);
+        }
+
+        function stopAutoDeclarScheduler() {
+            if (_autoDeclarInterval) { clearInterval(_autoDeclarInterval); _autoDeclarInterval = null; }
+        }
+
+        async function runAutoDeclaration() {
+            const today = getQuizToday();
+            // Check if results already declared for today
+            try {
+                const existing = await db.ref(`quizResults/${today}`).once('value');
+                if (existing.exists()) {
+                    console.log('[AutoDeclar] Results already declared for', today, '— skipping.');
+                    return;
+                }
+                const snap = await db.ref(`quizSubmissions/${today}`).once('value');
+                const eligible = [];
+                snap.forEach(child => {
+                    if (child.val().score === 2) eligible.push(child.val());
+                });
+                if (eligible.length < 2) {
+                    console.log('[AutoDeclar] Not enough eligible students (' + eligible.length + ').');
+                    const statusEl = document.getElementById('autoDeclarStatus');
+                    if (statusEl) statusEl.innerHTML = '⚠️ Auto-declaration ran at 11:30 PM but <strong>not enough eligible students</strong> (need at least 2).';
+                    return;
+                }
+                const shuffled = eligible.sort(() => 0.5 - Math.random());
+                const winner   = shuffled[0];
+                const runnerUp = shuffled[1];
+                const data = {
+                    winner:       { name: winner.studentName,   email: winner.studentEmail,   class: winner.studentClass,   score: winner.score },
+                    runnerUp:     { name: runnerUp.studentName, email: runnerUp.studentEmail, class: runnerUp.studentClass, score: runnerUp.score },
+                    declaredAt:   new Date().toISOString(),
+                    declaredBy:   'System (Auto 11:30 PM)',
+                    totalEligible: eligible.length,
+                    autoSelected: true
+                };
+                await db.ref(`quizResults/${today}`).set(data);
+                console.log('[AutoDeclar] Winners saved for', today);
+                // Send emails silently
+                try { await sendQuizEmail(winner.studentEmail,   '🏆 You Won Quiz!', `Dear ${winner.studentName},\n\nCongratulations! You are the WINNER of today's Quiz!\n\nDavan Institute`); } catch(e){}
+                try { await sendQuizEmail(runnerUp.studentEmail, '🥈 Runner-Up!',    `Dear ${runnerUp.studentName},\n\nCongratulations! You are today's RUNNER-UP!\n\nDavan Institute`); } catch(e){}
+                // Update UI if winners tab is visible
+                displayQuizWinnersAdmin(data);
+                const statusEl = document.getElementById('autoDeclarStatus');
+                if (statusEl) statusEl.innerHTML = `✅ Auto-declared at 11:30 PM — <strong style="color:#a5ffb8">${winner.studentName}</strong> (Winner) &amp; <strong style="color:#ffd700">${runnerUp.studentName}</strong> (Runner-Up).`;
+            } catch(e) {
+                console.error('[AutoDeclar] Error:', e);
+            }
+        }
+
+        function initAutoDeclarScheduler() {
+            let enabled = false;
+            try { enabled = localStorage.getItem('quizAutoDeclar') === '1'; } catch(e){}
+            const toggle = document.getElementById('autoDeclarToggle');
+            if (toggle) {
+                toggle.checked = enabled;
+                applyAutoDeclarUI(enabled);
+                if (enabled) startAutoDeclarScheduler();
+            }
+        }
+
+        // ============================================
+        // MANUAL WINNER SELECTION
+        // ============================================
+        let _manualPanelOpen = false;
+
+        function toggleManualWinnerUI() {
+            _manualPanelOpen = !_manualPanelOpen;
+            const panel = document.getElementById('manualWinnerPanel');
+            const btn   = document.getElementById('manualSelectToggleBtn');
+            if (!panel) return;
+            if (_manualPanelOpen) {
+                panel.style.display = 'block';
+                btn.textContent = '✖ Close Manual Select';
+                populateManualSelects();
+            } else {
+                panel.style.display = 'none';
+                btn.textContent = '✋ Manual Select';
+            }
+        }
+
+        function populateManualSelects() {
+            const winSel = document.getElementById('manualWinnerSelect');
+            const runSel = document.getElementById('manualRunnerSelect');
+            if (!winSel || !runSel) return;
+            // Use _eligibleCache built when winners tab loads
+            winSel.innerHTML = '<option value="">-- Select Winner --</option>';
+            runSel.innerHTML = '<option value="">-- Select Runner-Up --</option>';
+            _eligibleCache.forEach((s, i) => {
+                const label = `${s.name} (${s.class})`;
+                winSel.innerHTML += `<option value="${i}">${label}</option>`;
+                runSel.innerHTML += `<option value="${i}">${label}</option>`;
+            });
+        }
+
+        async function declareManualWinners() {
+            const winIdx = parseInt(document.getElementById('manualWinnerSelect').value);
+            const runIdx = parseInt(document.getElementById('manualRunnerSelect').value);
+            if (isNaN(winIdx) || isNaN(runIdx)) {
+                alert('⚠️ Please select both winner and runner-up.');
+                return;
+            }
+            if (winIdx === runIdx) {
+                alert('⚠️ Winner and runner-up must be different students.');
+                return;
+            }
+            const winner   = _eligibleCache[winIdx];
+            const runnerUp = _eligibleCache[runIdx];
+            if (!winner || !runnerUp) { alert('⚠️ Invalid selection.'); return; }
+            if (!confirm(`Declare:\n🏆 Winner: ${winner.name}\n🥈 Runner-Up: ${runnerUp.name}\n\nProceed?`)) return;
+            const today = getQuizToday();
+            const data = {
+                winner:       { name: winner.name,   email: winner.email,   class: winner.class,   score: 2 },
+                runnerUp:     { name: runnerUp.name, email: runnerUp.email, class: runnerUp.class, score: 2 },
+                declaredAt:   new Date().toISOString(),
+                declaredBy:   'Super Admin (Manual)',
+                totalEligible: _eligibleCache.length,
+                manualSelected: true
+            };
+            try {
+                await db.ref(`quizResults/${today}`).set(data);
+                try { await sendQuizEmail(winner.email,   '🏆 You Won Quiz!', `Dear ${winner.name},\n\nCongratulations! You are the WINNER!\n\nDavan Institute`); } catch(e){}
+                try { await sendQuizEmail(runnerUp.email, '🥈 Runner-Up!',    `Dear ${runnerUp.name},\n\nCongratulations! You are the RUNNER-UP!\n\nDavan Institute`); } catch(e){}
+                showQuizMsg('quizAdminMessage', '✅ Manual winners declared!', 'success');
+                displayQuizWinnersAdmin(data);
+                toggleManualWinnerUI(); // close panel
+            } catch(e) {
+                alert('❌ Error saving: ' + e.message);
+            }
         }
         
         // ============================================
