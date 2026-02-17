@@ -6,7 +6,8 @@
     <title>Spurthi Youth Fest 2026 - Daily Quiz Competition</title>
     
     <!-- Favicon -->
-    <link rel="icon" type="image/gif" href="davan_logo_2026.gif">
+    <link rel="icon" type="image/png" href="davan_degree1.png">
+    <link rel="apple-touch-icon" href="davan_degree1.png">
     
     <!-- Open Graph / WhatsApp / Facebook Meta Tags -->
     <meta property="og:title" content="Spurthi Youth Fest 2026 - Daily Quiz Competition">
@@ -831,7 +832,7 @@
                 
                 <div class="form-group">
                     <label>Phone Number:</label>
-                    <input type="tel" id="quizLoginPhone" placeholder="Enter 10-digit phone number" maxlength="10" onkeydown="if(event.key==='Enter') loginQuizStudent()">
+                    <input type="tel" id="quizLoginPhone" placeholder="Enter 10-digit phone number" maxlength="10" inputmode="numeric" pattern="[0-9]*" autocomplete="tel" onkeydown="if(event.key==='Enter') loginQuizStudent()">
                 </div>
                 <div class="form-group">
                     <label>Password:</label>
@@ -879,8 +880,15 @@
 
             <div id="enrollmentForm" style="display:none">
                 <div id="enrollmentFormContent"></div>
-                <button class="btn" onclick="submitEnrollment()">Submit Enrollment</button>
-                <button class="btn btn-secondary" onclick="cancelEnrollment()">Cancel</button>
+                <div id="enrollBtnsNormal">
+                    <button class="btn" onclick="submitEnrollment(false)">Submit Enrollment</button>
+                    <button class="btn btn-secondary" onclick="cancelEnrollment()">Cancel</button>
+                </div>
+                <div id="enrollBtnsOneAtATime" style="display:none">
+                    <button class="btn btn-success" onclick="submitEnrollment(true)" style="margin-right:10px">✅ Submit & Add Another</button>
+                    <button class="btn" onclick="submitEnrollment(false)">✔ Submit & Finish</button>
+                    <button class="btn btn-secondary" onclick="cancelEnrollment()">Cancel</button>
+                </div>
             </div>
         </div>
 
@@ -910,8 +918,15 @@
 
                 <div id="crEnrollmentForm" style="display:none">
                     <div id="crEnrollmentFormContent"></div>
-                    <button class="btn" onclick="submitCREnrollment()">Submit Enrollment</button>
-                    <button class="btn btn-secondary" onclick="cancelCREnrollment()">Cancel</button>
+                    <div id="crEnrollBtnsNormal">
+                        <button class="btn" onclick="submitCREnrollment(false)">Submit Enrollment</button>
+                        <button class="btn btn-secondary" onclick="cancelCREnrollment()">Cancel</button>
+                    </div>
+                    <div id="crEnrollBtnsOneAtATime" style="display:none">
+                        <button class="btn btn-success" onclick="submitCREnrollment(true)" style="margin-right:10px">✅ Submit & Add Another</button>
+                        <button class="btn" onclick="submitCREnrollment(false)">✔ Submit & Finish</button>
+                        <button class="btn btn-secondary" onclick="cancelCREnrollment()">Cancel</button>
+                    </div>
                 </div>
             </div>
 
@@ -1133,17 +1148,6 @@
                 <div id="quizManagement" class="form-section">
                     <h2 style="color:#c44569;margin-bottom:25px">📝 Daily Quiz Competition Management</h2>
                     
-                    <!-- Date Selector for Quiz Creation -->
-                    <div style="background:#fff3cd;padding:20px;border-radius:10px;margin-bottom:25px;border-left:5px solid #ffc107">
-                        <div class="form-group" style="margin-bottom:0">
-                            <label for="quizDateSelector" style="font-size:1.1em;color:#856404;margin-bottom:10px"><strong>📅 Select Date for Quiz:</strong></label>
-                            <input type="date" id="quizDateSelector" style="max-width:300px;border:2px solid #ffc107" required onchange="loadQuizForSelectedDate()">
-                            <p style="color:#856404;font-size:14px;margin-top:10px;margin-bottom:0">
-                                <strong>Note:</strong> Select a date to create/edit quiz questions. Students will see this quiz automatically on the selected date. If no quiz is created for a date, students won't see any quiz that day.
-                            </p>
-                        </div>
-                    </div>
-                    
                     <div class="stats-grid" style="margin-bottom:30px">
                         <div class="stat-card">
                             <div class="stat-number" id="quizTotalStudents">0</div>
@@ -1172,11 +1176,14 @@
                     
                     <!-- Questions Sub-Tab -->
                     <div id="quizQuestionsContent" class="form-section active">
+                        <!-- Date Selector moved here for easier access -->
+                        <div style="background:#fff3cd;padding:18px 20px;border-radius:10px;margin-bottom:22px;border-left:5px solid #ffc107;display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+                            <label for="quizDateSelector" style="font-size:1em;color:#856404;font-weight:700;margin:0;white-space:nowrap">📅 Select Date for Quiz:</label>
+                            <input type="date" id="quizDateSelector" style="border:2px solid #ffc107;border-radius:8px;padding:8px 12px;font-size:1em;color:#333;background:white;flex-shrink:0" required onchange="loadQuizForSelectedDate()">
+                            <p style="color:#856404;font-size:13px;margin:0;flex:1;min-width:200px"><strong>Note:</strong> Select a date to create/edit quiz questions. Students will see this quiz automatically on the selected date.</p>
+                        </div>
                         <h3 style="color:#6a1b9a;margin-bottom:20px" id="quizQuestionsHeading">Create Quiz (2 Questions)</h3>
                         
-                        <div style="background:#d1ecf1;padding:15px;border-radius:8px;margin-bottom:25px;border-left:4px solid #17a2b8">
-                            <p style="margin:0;color:#0c5460"><strong>📧 Email:</strong> <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="70141106111e131f1c1c151715404230171d11191c5e131f1d">[email&#160;protected]</a> | <strong>Status:</strong> ✅ Active</p>
-                        </div>
                         
                         <div style="background:#f8f9fa;padding:20px;border-radius:10px;margin-bottom:30px">
                             <h4 style="color:#667eea;margin-bottom:15px">Question 1</h4>
@@ -1954,20 +1961,20 @@
         // Global Variables
         const classes = ['1st B.Com','2nd B.Com','3rd B.Com','1ST BCA','2ND BCA A SEC','2ND BCA B SEC','3RD BCA A SEC','3RD BCA B SEC','3RD BCA C SEC','2ND BBA','3RD BBA','Faculty/Principal/Vice-Principal/Staff','Others'];
         const events = {
-            'Pod Casting': {size:'Individual',count:1,role:false,topic:true,topicLabel:'Topic',allow:false,maxPerClass:1},
+            'Pod Casting': {size:'Individual',count:1,role:false,topic:true,topicLabel:'Topic',allow:false,maxPerClass:3},
             'Mime': {size:'6 Members',count:6,role:true,topic:true,topicLabel:'Theme',allow:false,maxPerClass:1},
             'Interdisciplinary': {size:'5 Members',count:5,role:true,topic:true,topicLabel:'Topic',allow:false,maxPerClass:1},
-            'Ramp Walk': {size:'10+5 Members',count:15,role:true,topic:true,topicLabel:'Theme',show:true,allow:false,maxPerClass:1},
+            'Ramp Walk': {size:'Individual members',count:0,role:true,topic:true,topicLabel:'Theme',show:true,allow:false,maxPerClass:999,pctMax:30,dynamicCount:true},
             'Quiz': {size:'6 Members',count:6,role:true,allow:false,maxPerClass:1},
-            'Vlog': {size:'3 Members',count:3,role:true,topic:true,topicLabel:'Topic',allow:true,maxPerClass:2},
+            'Vlog': {size:'3 Members',count:3,role:true,topic:true,topicLabel:'Topic',allow:true,maxPerClass:3,vlogTopics:['Travel Vlog','Educational Vlog','Event Vlog','Shops Vlog'],multiTeam:true},
             'YouTube Advertisement': {size:'8 Members',count:8,role:true,prod:true,allow:false,maxPerClass:1},
             'Mad Ads': {size:'8 Members',count:8,role:true,topic:true,topicLabel:'Topic',allow:false,maxPerClass:1},
-            'Hand Writing': {size:'Individual',count:1,role:false,lang:true,allow:false,maxPerClass:1},
-            'Best of Waste': {size:'2 Members',count:2,role:true,allow:true,maxPerClass:999},
+            'Hand Writing': {size:'Individual',count:1,role:false,lang:true,allow:false,maxPerClass:999,pctMax:15,oneAtATime:true},
+            'Best out of Waste': {size:'2 Members (or Individual)',count:2,role:true,allow:true,maxPerClass:999,pctMax:10,allowIndividual:true},
             'Social Awareness Skit': {size:'8 Members',count:8,role:true,cause:true,allow:false,maxPerClass:1},
-            'Solo Dance': {size:'Individual',count:1,role:false,allow:true,maxPerClass:5},
-            'Group Dance': {size:'5-8 Members',count:5,role:true,allow:false,maxPerClass:1},
-            'Nukkad Natak': {size:'8-10 Members',count:8,role:true,cause:true,causeLabel:'Different Cause',allow:false,maxPerClass:1},
+            'Talent Hunt': {size:'Individual',count:1,role:false,talent:true,allow:true,maxPerClass:6,oneAtATime:true},
+            'Group Dance': {size:'5-8 Members',count:5,role:true,allow:false,maxPerClass:1,minCount:5,maxCount:8},
+            'Nukkad Natak': {size:'8 to 30% of class',count:8,role:true,cause:true,causeLabel:'Different Cause',allow:false,maxPerClass:1,pctMax:30,dynamicCount:true,minCount:8,camera:true},
             'Case Analysis': {size:'2 Members',count:2,role:true,allow:false,maxPerClass:1}
         };
 
@@ -2085,7 +2092,14 @@
                 }
                 // Update student view when data changes
                 if (studentClass && document.getElementById('studentSection').style.display === 'block') {
-                    renderEventCards();
+                    if (!window._classStrengths) {
+                        db.ref('leaderboardConfig/classStrengths').once('value').then(s => {
+                            window._classStrengths = s.val() || {};
+                            renderEventCards();
+                        }).catch(() => renderEventCards());
+                    } else {
+                        renderEventCards();
+                    }
                 }
             });
         }
@@ -2118,6 +2132,7 @@
             }
             
             if (type === 'dailyquiz') {
+                fetchServerTimeOffset(); // pre-fetch server time offset early
                 populateQuizClasses();
                 checkPublicQuizStatus();
             }
@@ -2173,8 +2188,15 @@
                     console.log('Matching records:', classRecords);
                 }
                 
-                // Render cards and view enrollments
-                renderEventCards();
+                // Render cards and view enrollments (load class strengths for pctMax events first)
+                if (!window._classStrengths) {
+                    db.ref('leaderboardConfig/classStrengths').once('value').then(s => {
+                        window._classStrengths = s.val() || {};
+                        renderEventCards();
+                    }).catch(() => renderEventCards());
+                } else {
+                    renderEventCards();
+                }
                 viewStudentClassEnrollments();
                 
             }).catch(err => {
@@ -2240,7 +2262,14 @@
                     console.log('Matching records:', classRecords);
                 }
                 
-                renderCREventCards();
+                if (!window._classStrengths) {
+                    db.ref('leaderboardConfig/classStrengths').once('value').then(s => {
+                        window._classStrengths = s.val() || {};
+                        renderCREventCards();
+                    }).catch(() => renderCREventCards());
+                } else {
+                    renderCREventCards();
+                }
                 updateCREventFilter();
                 updateCRView();
                 
@@ -2571,21 +2600,57 @@
             handleUserTypeChange();
         }
 
+
+        // Returns the effective maxPerClass for an event, factoring in pctMax + class strengths
+        // classStr = { 'className': strength } from leaderboardConfig/classStrengths (Firebase)
+        // We cache it in window._classStrengths
+        function getEffectiveMax(cfg, cls) {
+            if (!cfg.pctMax) return cfg.maxPerClass;
+            const strengths = window._classStrengths || {};
+            // Firebase sanitises class name keys (dots/slashes → _)
+            const key = cls ? cls.replace(/[.\[\]#$\/]/g, '_') : '';
+            const strength = strengths[key] || strengths[cls] || 0;
+            if (!strength) return cfg.maxPerClass; // fallback if not set
+            const pctVal = Math.floor(strength * cfg.pctMax / 100);
+            return Math.max(cfg.minCount || 1, pctVal);
+        }
+
+        // Load class strengths once and cache; call renderEventCards after
+        function effMaxForSubmit(cfg) {
+            // Used during submit when _currentEnrollCount might be stale
+            const strengths = window._classStrengths || {};
+            if (!cfg.pctMax) return cfg.maxPerClass;
+            // Try to find strength from current context
+            const cls = window.currentCRClass || studentClass || '';
+            const key = cls.replace(/[.[\]#$\/]/g, '_');
+            const strength = strengths[key] || strengths[cls] || 0;
+            return strength ? Math.max(1, Math.floor(strength * cfg.pctMax / 100)) : 1;
+        }
+
+        async function loadClassStrengthsAndRender(renderFn) {
+            try {
+                const snap = await db.ref('leaderboardConfig/classStrengths').once('value');
+                window._classStrengths = snap.val() || {};
+            } catch(e) {
+                window._classStrengths = {};
+            }
+            renderFn();
+        }
+
         function renderEventCards() {
             const cont = document.getElementById('eventCardsContainer');
             cont.innerHTML = '';
             Object.keys(events).forEach(ev => {
                 const cfg = events[ev];
                 const enrolled = all.filter(e => e.event===ev && e.classYear===studentClass).length;
-                
-                // Calculate enrolled teams/participants
-                const enrolledCount = cfg.count === 1 ? enrolled : Math.ceil(enrolled / cfg.count);
-                const remaining = cfg.maxPerClass - enrolledCount;
+                const effMax = getEffectiveMax(cfg, studentClass);
+                const enrolledCount = cfg.allowIndividual ? enrolled : (cfg.count === 1 ? enrolled : Math.ceil(enrolled / cfg.count));
+                const remaining = effMax - enrolledCount;
                 const isFull = remaining <= 0;
-                
                 const card = document.createElement('div');
                 card.className = 'event-card' + (isFull ? ' full' : '');
-                card.innerHTML = '<div class="event-title">'+ev+'</div><div class="event-size">'+cfg.size+'</div><div class="event-status '+(isFull?'status-full':(remaining<=1?'status-limited':'status-available'))+'">'+enrolledCount+'/'+cfg.maxPerClass+' enrolled</div>';
+                const label = cfg.pctMax ? `${enrolledCount}/${effMax} enrolled <span style="font-size:11px;opacity:0.8">(${cfg.pctMax}% of class)</span>` : `${enrolledCount}/${effMax} enrolled`;
+                card.innerHTML = '<div class="event-title">'+ev+'</div><div class="event-size">'+cfg.size+'</div><div class="event-status '+(isFull?'status-full':(remaining<=1?'status-limited':'status-available'))+'">'+label+'</div>';
                 if (!isFull) card.onclick = () => startEnrollment(ev);
                 cont.appendChild(card);
             });
@@ -2597,46 +2662,78 @@
             Object.keys(events).forEach(ev => {
                 const cfg = events[ev];
                 const enrolled = all.filter(e => e.event===ev && e.classYear===crClass).length;
-                
-                // Calculate enrolled teams/participants
-                const enrolledCount = cfg.count === 1 ? enrolled : Math.ceil(enrolled / cfg.count);
-                const remaining = cfg.maxPerClass - enrolledCount;
+                const effMax = getEffectiveMax(cfg, crClass);
+                const enrolledCount = cfg.allowIndividual ? enrolled : (cfg.count === 1 ? enrolled : Math.ceil(enrolled / cfg.count));
+                const remaining = effMax - enrolledCount;
                 const isFull = remaining <= 0;
-                
                 const card = document.createElement('div');
                 card.className = 'event-card' + (isFull ? ' full' : '');
-                card.innerHTML = '<div class="event-title">'+ev+'</div><div class="event-size">'+cfg.size+'</div><div class="event-status '+(isFull?'status-full':(remaining<=1?'status-limited':'status-available'))+'">'+enrolledCount+'/'+cfg.maxPerClass+' enrolled</div>';
+                const label = cfg.pctMax ? `${enrolledCount}/${effMax} enrolled <span style="font-size:11px;opacity:0.8">(${cfg.pctMax}% of class)</span>` : `${enrolledCount}/${effMax} enrolled`;
+                card.innerHTML = '<div class="event-title">'+ev+'</div><div class="event-size">'+cfg.size+'</div><div class="event-status '+(isFull?'status-full':(remaining<=1?'status-limited':'status-available'))+'">'+label+'</div>';
                 if (!isFull) card.onclick = () => startCREnrollment(ev);
                 cont.appendChild(card);
             });
         }
 
-        function startEnrollment(ev) {
+        async function startEnrollment(ev) {
             selectedEvent = ev;
             const cfg = events[ev];
             const enrolled = all.filter(e => e.event===ev && e.classYear===studentClass).length;
             
             // Calculate how many teams/participants are already enrolled
-            const enrolledCount = cfg.count === 1 ? enrolled : Math.ceil(enrolled / cfg.count);
-            const remaining = cfg.maxPerClass - enrolledCount;
+            const effMax = getEffectiveMax(cfg, studentClass);
+            const enrolledCount = cfg.allowIndividual ? enrolled : (cfg.count === 1 ? enrolled : Math.ceil(enrolled / cfg.count));
+            const remaining = effMax - enrolledCount;
             
             if (remaining <= 0) { alert('Event is full for your class'); return; }
             
-            let html = '<h3 style="color:#c44569;margin-bottom:20px">Enroll for: '+ev+'</h3>';
-            html += '<p style="margin-bottom:20px;color:#666">'+cfg.size+' | Already Enrolled: '+enrolledCount+' / '+cfg.maxPerClass+'</p>';
+            const maxLabel = cfg.pctMax ? `${effMax} (${cfg.pctMax}% of class strength)` : effMax;
+            let html = '<button class="btn btn-secondary" onclick="cancelEnrollment()" style="margin-bottom:18px;padding:8px 20px">← Back to Events</button>';
+            html += '<h3 style="color:#c44569;margin-bottom:12px">Enroll for: '+ev+'</h3>';
+            html += '<p style="margin-bottom:20px;color:#666">'+cfg.size+' | Already Enrolled: '+enrolledCount+' / '+maxLabel+'</p>';
+            if (cfg.minCount && cfg.pctMax && cfg.dynamicCount) {
+                html += '<div style="background:#e3f2fd;border:1px solid #1565c0;border-radius:8px;padding:12px 16px;margin-bottom:16px;color:#0d47a1"><strong>📋 Team Size Rules:</strong> Minimum <strong>'+cfg.minCount+' members</strong> required. Maximum is <strong>'+cfg.pctMax+'% of your class strength</strong> ('+effMax+' members).</div>';
+            }
             
+            // For dynamicCount events (like Ramp Walk), use effMax as member count
+            const actualCount = cfg.dynamicCount ? effMax : cfg.count;
+            window._currentEnrollCount = actualCount; // store for submitEnrollment
+
             // Generate input fields based on team size
-            for (let i = 0; i < cfg.count; i++) {
+            for (let i = 0; i < actualCount; i++) {
                 const roleLabel = cfg.role ? (i === 0 ? 'Captain' : 'Member '+(i+1)) : 'Participant '+(i+1);
                 html += '<div class="team-member-box"><div class="member-header">'+roleLabel+'</div>';
                 html += '<div class="form-group"><label>Name:</label><input type="text" id="name'+i+'" placeholder="Enter full name"></div>';
                 html += '<div class="form-group"><label>Phone Number:</label><input type="tel" id="phone'+i+'" placeholder="10-digit mobile number" maxlength="10"></div>';
                 html += '</div>';
             }
+            // Dynamic add-member button (e.g. Group Dance: min 5, max 8)
+            if (cfg.maxCount && actualCount < cfg.maxCount) {
+                window._dynMemberCount = actualCount;
+                window._dynMemberMax = cfg.maxCount;
+                window._dynMemberRole = cfg.role;
+                html += '<div id="dynMemberContainer"></div>';
+                html += '<button type="button" id="dynAddMemberBtn" class="btn btn-secondary" style="margin-bottom:18px" onclick="dynAddMember()">➕ Add Member (' + actualCount + '/' + cfg.maxCount + ' max)</button>';
+            }
             
             // Event-specific fields
             if (cfg.topic) {
-                html += '<div class="form-group"><label>'+cfg.topicLabel+':</label><input type="text" id="topic" placeholder="Enter '+cfg.topicLabel.toLowerCase()+'"></div>';
+                if (cfg.vlogTopics) {
+                    // Fetch already-taken topics from Firebase for this class & event
+                    const takenTopics = new Set();
+                    try {
+                        const snapT = await db.ref('youthfest-enrollments').orderByChild('event').equalTo(ev).once('value');
+                        snapT.forEach(c => { const d = c.val(); if (d.classYear === studentClass && d.topic) takenTopics.add(d.topic); });
+                    } catch(e) {}
+                    let opts = '<option value="">-- Select Topic --</option>';
+                    cfg.vlogTopics.forEach(t => {
+                        const taken = takenTopics.has(t);
+                        opts += `<option value="${t}" ${taken ? 'disabled style="color:#aaa"' : ''}>${t}${taken ? ' (already taken)' : ''}</option>`;
+                    });
+                    html += '<div class="form-group"><label>🎬 Vlog Topic: <span style="color:red">*</span></label><select id="topic">'+opts+'</select><p style="font-size:12px;color:#856404;margin-top:6px">⚠️ Each team must choose a different topic. Greyed-out topics are already taken by your class.</p></div>';
+                } else {
+                    html += '<div class="form-group"><label>'+cfg.topicLabel+':</label><input type="text" id="topic" placeholder="Enter '+cfg.topicLabel.toLowerCase()+'"></div>';
+                }
             }
             if (cfg.prod) {
                 html += '<div class="form-group"><label>Product Name:</label><input type="text" id="product" placeholder="What product will you advertise?"></div>';
@@ -2644,24 +2741,95 @@
             if (cfg.cause) {
                 html += '<div class="form-group"><label>'+(cfg.causeLabel || 'Cause')+':</label><input type="text" id="cause" placeholder="Enter cause/theme"></div>';
             }
+            if (cfg.camera) {
+                html += '<div class="team-member-box" style="border-left:4px solid #e67e22;background:#fff8f0"><div class="member-header" style="background:linear-gradient(135deg,#e67e22,#f39c12)">📹 Camera Person</div>';
+                html += '<div class="form-group"><label>Name: <span style="color:red">*</span></label><input type="text" id="cameraName" placeholder="Enter camera person full name"></div>';
+                html += '<div class="form-group"><label>Phone Number: <span style="color:red">*</span></label><input type="tel" id="cameraPhone" placeholder="10-digit mobile number" maxlength="10"></div>';
+                html += '<p style="font-size:12px;color:#856404;margin-top:6px;padding:6px;background:#fff3cd;border-radius:4px">⚠️ Camera person is not a performer — not counted in the team size.</p>';
+                html += '</div>';
+            }
             if (cfg.lang) {
                 html += '<div class="form-group"><label>Languages:</label><div><label style="display:inline-block;margin-right:15px"><input type="checkbox" id="langEn" checked disabled> English</label><label style="display:inline-block;margin-right:15px"><input type="checkbox" id="langKn"> Kannada</label><label style="display:inline-block"><input type="checkbox" id="langHi"> Hindi</label></div></div>';
             }
             if (cfg.show) {
                 html += '<div class="form-group"><label>Showstopper Name:</label><input type="text" id="showstopper" placeholder="Name of showstopper"></div>';
             }
+            if (cfg.talent) {
+                html += '<div class="form-group"><label>🎭 Talent Type: <span style="color:red">*</span></label><select id="talentType"><option value="">-- Select Talent --</option><option>Classical Dance</option><option>Folk Dance</option><option>Western Dance</option><option>Freestyle Dance</option><option>Singing</option><option>Instrumental Music</option><option>Mimicry</option><option>Standup Comedy</option><option>Magic</option><option>Acrobatics / Gymnastics</option><option>Mono Act</option><option>Beatboxing</option><option>Other</option></select></div><div class="form-group" id="talentOtherDiv" style="display:none"><label>Specify Talent:</label><input type="text" id="talentOther" placeholder="Describe your talent"></div>';
+            }
             
+            // Best out of Waste: individual/team toggle
+            if (cfg.allowIndividual) {
+                const pctLabel = cfg.pctMax ? ` (${cfg.pctMax}% of class = ${effMax} participants)` : '';
+                const toggleHtml = `<div class="form-group" style="background:#f0f4ff;border:2px solid #667eea;border-radius:10px;padding:15px;margin-bottom:18px">
+                    <label style="font-weight:700;color:#667eea;font-size:1.05em">♻️ Participation Type${pctLabel}:</label>
+                    <div style="margin-top:10px;display:flex;gap:15px;flex-wrap:wrap">
+                        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;background:white;padding:10px 18px;border-radius:8px;border:2px solid #667eea;font-weight:600">
+                            <input type="radio" name="bowType" value="team" id="bowTeam" checked onchange="bowToggleMember(2)"> 👥 Team (2 Members)
+                        </label>
+                        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;background:white;padding:10px 18px;border-radius:8px;border:2px solid #c44569;font-weight:600">
+                            <input type="radio" name="bowType" value="individual" id="bowIndividual" onchange="bowToggleMember(1)"> 🧑 Individual
+                        </label>
+                    </div>
+                    <p style="margin-top:8px;font-size:12px;color:#856404;background:#fff3cd;padding:8px;border-radius:6px">⚠️ 10% of your class can participate. Each person (team or individual) counts against this limit.</p>
+                </div>`;
+                html = html.replace('<div class="team-member-box">', toggleHtml + '<div class="team-member-box" id="bowMember0">');
+                let second = false;
+                html = html.replace(/<div class="team-member-box">/g, (m) => {
+                    if (!second) { second = true; return m; }
+                    return '<div class="team-member-box" id="bowMember1">';
+                });
+            }
+
+            // For oneAtATime, show correct sequential participant number
+            if (cfg.oneAtATime) {
+                const participantNum = enrolledCount + 1;
+                html = html.replace('Participant 1', 'Participant ' + participantNum);
+                document.getElementById('enrollBtnsNormal').style.display = 'none';
+                document.getElementById('enrollBtnsOneAtATime').style.display = 'block';
+            } else if (cfg.multiTeam && remaining > 1) {
+                document.getElementById('enrollBtnsNormal').style.display = 'none';
+                document.getElementById('enrollBtnsOneAtATime').style.display = 'block';
+                const addBtn = document.querySelector('#enrollBtnsOneAtATime button:first-child');
+                const finBtn = document.querySelector('#enrollBtnsOneAtATime button:nth-child(2)');
+                if (addBtn) addBtn.textContent = '✅ Submit Team & Add Next Team';
+                if (finBtn) finBtn.textContent = '✔ Submit Team & Finish';
+                const teamNum = enrolledCount + 1;
+                html = '<div style="background:#e8f5e9;border:2px solid #4caf50;border-radius:10px;padding:12px 18px;margin-bottom:18px;text-align:center"><strong style="color:#1b5e20">📋 Adding Team ' + teamNum + ' of ' + effMax + ' (max for your class)</strong></div>' + html;
+            } else {
+                document.getElementById('enrollBtnsNormal').style.display = 'block';
+                document.getElementById('enrollBtnsOneAtATime').style.display = 'none';
+                const addBtn = document.querySelector('#enrollBtnsOneAtATime button:first-child');
+                const finBtn = document.querySelector('#enrollBtnsOneAtATime button:nth-child(2)');
+                if (addBtn) addBtn.textContent = '✅ Submit & Add Another';
+                if (finBtn) finBtn.textContent = '✔ Submit & Finish';
+            }
+
             document.getElementById('enrollmentFormContent').innerHTML = html;
+            if (cfg.talent) {
+                const ts = document.getElementById('talentType');
+                if (ts) ts.addEventListener('change', function(){ document.getElementById('talentOtherDiv').style.display = this.value === 'Other' ? 'block' : 'none'; });
+            }
             document.getElementById('eventCardsContainer').style.display = 'none';
             document.getElementById('enrollmentForm').style.display = 'block';
         }
 
-        function submitEnrollment() {
+        function bowToggleMember(count) {
+            const m1 = document.getElementById('bowMember1');
+            if (m1) m1.style.display = count === 2 ? 'block' : 'none';
+        }
+
+        function submitEnrollment(addAnother) {
             const cfg = events[selectedEvent];
             const members = [];
             
-            // Collect all team members
-            for (let i = 0; i < cfg.count; i++) {
+            // Collect all team members (use dynamic count for Ramp Walk)
+            let submitCount = cfg.dynamicCount ? (window._currentEnrollCount || effMaxForSubmit(cfg)) : (cfg.maxCount ? (window._dynMemberCount || cfg.count) : cfg.count);
+            if (cfg.allowIndividual) {
+                const bowRadio = document.querySelector('input[name="bowType"]:checked');
+                submitCount = (bowRadio && bowRadio.value === 'individual') ? 1 : 2;
+            }
+            for (let i = 0; i < submitCount; i++) {
                 const name = document.getElementById('name'+i).value.trim();
                 const phone = document.getElementById('phone'+i).value.trim();
                 
@@ -2688,11 +2856,17 @@
             // Add event-specific fields
             if (cfg.topic) {
                 const topic = document.getElementById('topic');
-                if (!topic || !topic.value.trim()) {
-                    alert('Please enter '+cfg.topicLabel);
+                const topicVal = topic ? topic.value.trim() : '';
+                if (!topicVal) {
+                    alert(cfg.vlogTopics ? 'Please select a Vlog topic' : 'Please enter '+cfg.topicLabel);
                     return;
                 }
-                baseData.topic = topic.value.trim();
+                // Double-check vlog topic isn't taken (race condition guard)
+                if (cfg.vlogTopics) {
+                    const alreadyTaken = all.filter(e => e.event === selectedEvent && e.classYear === studentClass && e.topic === topicVal).length > 0;
+                    if (alreadyTaken) { alert('⚠️ This topic was just taken by another team! Please go back and select a different topic.'); return; }
+                }
+                baseData.topic = topicVal;
             }
             
             if (cfg.prod) {
@@ -2712,6 +2886,18 @@
                 }
                 baseData.cause = cause.value.trim();
             }
+            if (cfg.camera) {
+                const camName = document.getElementById('cameraName');
+                const camPhone = document.getElementById('cameraPhone');
+                if (!camName || !camName.value.trim()) { alert('Please enter the camera person name'); return; }
+                if (!camPhone || !/^\d{10}$/.test(camPhone.value.trim())) { alert('Please enter a valid 10-digit phone number for the camera person'); return; }
+                baseData.cameraName = camName.value.trim();
+                baseData.cameraPhone = camPhone.value.trim();
+            }
+            if (cfg.minCount && !cfg.maxCount && members.length < cfg.minCount) {
+                alert('Minimum ' + cfg.minCount + ' members required for ' + selectedEvent);
+                return;
+            }
             
             if (cfg.lang) {
                 const langs = ['English'];
@@ -2720,6 +2906,18 @@
                 if (kn && kn.checked) langs.push('Kannada');
                 if (hi && hi.checked) langs.push('Hindi');
                 baseData.languages = langs.join(', ');
+            }
+            if (cfg.talent) {
+                const talentSel = document.getElementById('talentType');
+                const talentVal = talentSel ? talentSel.value.trim() : '';
+                if (!talentVal) { alert('Please select a talent type'); return; }
+                if (talentVal === 'Other') {
+                    const otherVal = document.getElementById('talentOther') ? document.getElementById('talentOther').value.trim() : '';
+                    if (!otherVal) { alert('Please specify your talent'); return; }
+                    baseData.talentType = otherVal;
+                } else {
+                    baseData.talentType = talentVal;
+                }
             }
             
             if (cfg.show) {
@@ -2737,45 +2935,137 @@
                 return ref.push(data);
             });
             
+            // Validate minCount before submitting
+            if (cfg.minCount && members.length < cfg.minCount) {
+                alert('Minimum ' + cfg.minCount + ' members required for ' + selectedEvent + '. Please add at least ' + cfg.minCount + ' members.');
+                return;
+            }
+
             Promise.all(promises).then(() => {
-                showOk('Successfully enrolled '+members.length+' member(s) for '+selectedEvent+'!');
-                cancelEnrollment();
+                const eventName = selectedEvent;
+                if (addAnother) {
+                    showOk('✅ Participant enrolled! Form ready for next participant.');
+                    // Re-open form for same event — data reloads from Firebase
+                    setTimeout(() => startEnrollment(eventName), 400);
+                } else {
+                    showOk('Successfully enrolled '+members.length+' member(s) for '+eventName+'!');
+                    cancelEnrollment();
+                }
             }).catch(err => showErr('Error: '+err.message));
+        }
+
+        // Dynamic add-member for variable-size teams (e.g. Group Dance 5-8)
+        function dynAddMember() {
+            const current = window._dynMemberCount || 0;
+            const max = window._dynMemberMax || current;
+            if (current >= max) return;
+            const idx = current;
+            const roleLabel = window._dynMemberRole ? 'Member ' + (idx + 1) : 'Participant ' + (idx + 1);
+            const box = document.createElement('div');
+            box.className = 'team-member-box';
+            box.id = 'dynBox' + idx;
+            box.innerHTML = '<div class="member-header">' + roleLabel + '</div>' +
+                '<div class="form-group"><label>Name:</label><input type="text" id="name' + idx + '" placeholder="Enter full name"></div>' +
+                '<div class="form-group"><label>Phone Number:</label><input type="tel" id="phone' + idx + '" placeholder="10-digit mobile number" maxlength="10"></div>';
+            document.getElementById('dynMemberContainer').appendChild(box);
+            window._dynMemberCount = idx + 1;
+            const btn = document.getElementById('dynAddMemberBtn');
+            if (btn) {
+                if (window._dynMemberCount >= max) {
+                    btn.style.display = 'none';
+                } else {
+                    btn.textContent = '➕ Add Member (' + window._dynMemberCount + '/' + max + ' max)';
+                }
+            }
+        }
+
+        function crDynAddMember() {
+            const current = window._crDynMemberCount || 0;
+            const max = window._crDynMemberMax || current;
+            if (current >= max) return;
+            const idx = current;
+            const roleLabel = window._crDynMemberRole ? 'Member ' + (idx + 1) : 'Participant ' + (idx + 1);
+            const box = document.createElement('div');
+            box.className = 'team-member-box';
+            box.id = 'crDynBox' + idx;
+            box.innerHTML = '<div class="member-header">' + roleLabel + '</div>' +
+                '<div class="form-group"><label>Name:</label><input type="text" id="crName' + idx + '" placeholder="Enter student full name"></div>' +
+                '<div class="form-group"><label>Phone Number:</label><input type="tel" id="crPhone' + idx + '" placeholder="10-digit mobile number" maxlength="10"></div>';
+            document.getElementById('crDynMemberContainer').appendChild(box);
+            window._crDynMemberCount = idx + 1;
+            const btn = document.getElementById('crDynAddMemberBtn');
+            if (btn) {
+                if (window._crDynMemberCount >= max) {
+                    btn.style.display = 'none';
+                } else {
+                    btn.textContent = '➕ Add Member (' + window._crDynMemberCount + '/' + max + ' max)';
+                }
+            }
         }
 
         function cancelEnrollment() {
             selectedEvent = null;
             document.getElementById('enrollmentForm').style.display = 'none';
             document.getElementById('eventCardsContainer').style.display = 'grid';
+            document.getElementById('eventCardsContainer').scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
 
         // CR Functions
-        function startCREnrollment(ev) {
+        async function startCREnrollment(ev) {
             selectedEvent = ev;
             const cfg = events[ev];
             const enrolled = all.filter(e => e.event===ev && e.classYear===crClass).length;
             
-            // Calculate how many teams/participants are already enrolled
+            const effMax = getEffectiveMax(cfg, crClass);
             const enrolledCount = cfg.count === 1 ? enrolled : Math.ceil(enrolled / cfg.count);
-            const remaining = cfg.maxPerClass - enrolledCount;
+            const remaining = effMax - enrolledCount;
             
             if (remaining <= 0) { alert('Event is full for your class'); return; }
             
-            let html = '<h3 style="color:#c44569;margin-bottom:20px">Enroll Students for: '+ev+'</h3>';
-            html += '<p style="margin-bottom:20px;color:#666">Class: '+crClass+' | '+cfg.size+' | Enrolled: '+enrolledCount+' / '+cfg.maxPerClass+'</p>';
+            const maxLabel = cfg.pctMax ? `${effMax} (${cfg.pctMax}% of class strength)` : effMax;
+            let html = '<button class="btn btn-secondary" onclick="cancelCREnrollment()" style="margin-bottom:18px;padding:8px 20px">← Back to Events</button>';
+            html += '<h3 style="color:#c44569;margin-bottom:12px">Enroll Students for: '+ev+'</h3>';
+            html += '<p style="margin-bottom:20px;color:#666">Class: '+crClass+' | '+cfg.size+' | Enrolled: '+enrolledCount+' / '+maxLabel+'</p>';
+            if (cfg.minCount && cfg.pctMax && cfg.dynamicCount) {
+                html += '<div style="background:#e3f2fd;border:1px solid #1565c0;border-radius:8px;padding:12px 16px;margin-bottom:16px;color:#0d47a1"><strong>📋 Team Size Rules:</strong> Minimum <strong>'+cfg.minCount+' members</strong> required. Maximum is <strong>'+cfg.pctMax+'% of your class strength</strong> ('+effMax+' members).</div>';
+            }
             
             // Generate input fields based on team size
-            for (let i = 0; i < cfg.count; i++) {
+            const crActualCount = cfg.dynamicCount ? effMax : cfg.count;
+            window._currentCREnrollCount = crActualCount;
+            for (let i = 0; i < crActualCount; i++) {
                 const roleLabel = cfg.role ? (i === 0 ? 'Captain' : 'Member '+(i+1)) : 'Participant '+(i+1);
                 html += '<div class="team-member-box"><div class="member-header">'+roleLabel+'</div>';
                 html += '<div class="form-group"><label>Name:</label><input type="text" id="crName'+i+'" placeholder="Enter student full name"></div>';
                 html += '<div class="form-group"><label>Phone Number:</label><input type="tel" id="crPhone'+i+'" placeholder="10-digit mobile number" maxlength="10"></div>';
                 html += '</div>';
             }
+            // Dynamic add-member button for CR (e.g. Group Dance: min 5, max 8)
+            if (cfg.maxCount && crActualCount < cfg.maxCount) {
+                window._crDynMemberCount = crActualCount;
+                window._crDynMemberMax = cfg.maxCount;
+                window._crDynMemberRole = cfg.role;
+                html += '<div id="crDynMemberContainer"></div>';
+                html += '<button type="button" id="crDynAddMemberBtn" class="btn btn-secondary" style="margin-bottom:18px" onclick="crDynAddMember()">➕ Add Member (' + crActualCount + '/' + cfg.maxCount + ' max)</button>';
+            }
             
             // Event-specific fields
             if (cfg.topic) {
-                html += '<div class="form-group"><label>'+cfg.topicLabel+':</label><input type="text" id="crTopic" placeholder="Enter '+cfg.topicLabel.toLowerCase()+'"></div>';
+                if (cfg.vlogTopics) {
+                    const takenTopics = new Set();
+                    try {
+                        const snapT = await db.ref('youthfest-enrollments').orderByChild('event').equalTo(ev).once('value');
+                        snapT.forEach(c => { const d = c.val(); if (d.classYear === crClass && d.topic) takenTopics.add(d.topic); });
+                    } catch(e) {}
+                    let opts = '<option value="">-- Select Topic --</option>';
+                    cfg.vlogTopics.forEach(t => {
+                        const taken = takenTopics.has(t);
+                        opts += `<option value="${t}" ${taken ? 'disabled style="color:#aaa"' : ''}>${t}${taken ? ' (already taken)' : ''}</option>`;
+                    });
+                    html += '<div class="form-group"><label>🎬 Vlog Topic: <span style="color:red">*</span></label><select id="crTopic">'+opts+'</select><p style="font-size:12px;color:#856404;margin-top:6px">⚠️ Each team must choose a different topic. Greyed-out topics are already taken by your class.</p></div>';
+                } else {
+                    html += '<div class="form-group"><label>'+cfg.topicLabel+':</label><input type="text" id="crTopic" placeholder="Enter '+cfg.topicLabel.toLowerCase()+'"></div>';
+                }
             }
             if (cfg.prod) {
                 html += '<div class="form-group"><label>Product Name:</label><input type="text" id="crProduct" placeholder="What product will they advertise?"></div>';
@@ -2783,24 +3073,93 @@
             if (cfg.cause) {
                 html += '<div class="form-group"><label>'+(cfg.causeLabel || 'Cause')+':</label><input type="text" id="crCause" placeholder="Enter cause/theme"></div>';
             }
+            if (cfg.camera) {
+                html += '<div class="team-member-box" style="border-left:4px solid #e67e22;background:#fff8f0"><div class="member-header" style="background:linear-gradient(135deg,#e67e22,#f39c12)">📹 Camera Person</div>';
+                html += '<div class="form-group"><label>Name: <span style="color:red">*</span></label><input type="text" id="crCameraName" placeholder="Enter camera person full name"></div>';
+                html += '<div class="form-group"><label>Phone Number: <span style="color:red">*</span></label><input type="tel" id="crCameraPhone" placeholder="10-digit mobile number" maxlength="10"></div>';
+                html += '<p style="font-size:12px;color:#856404;margin-top:6px;padding:6px;background:#fff3cd;border-radius:4px">⚠️ Camera person is not a performer — not counted in the team size.</p>';
+                html += '</div>';
+            }
             if (cfg.lang) {
                 html += '<div class="form-group"><label>Languages:</label><div><label style="display:inline-block;margin-right:15px"><input type="checkbox" id="crLangEn" checked disabled> English</label><label style="display:inline-block;margin-right:15px"><input type="checkbox" id="crLangKn"> Kannada</label><label style="display:inline-block"><input type="checkbox" id="crLangHi"> Hindi</label></div></div>';
             }
             if (cfg.show) {
                 html += '<div class="form-group"><label>Showstopper Name:</label><input type="text" id="crShowstopper" placeholder="Name of showstopper"></div>';
             }
+            if (cfg.talent) {
+                html += '<div class="form-group"><label>🎭 Talent Type: <span style="color:red">*</span></label><select id="crTalentType"><option value="">-- Select Talent --</option><option>Classical Dance</option><option>Folk Dance</option><option>Western Dance</option><option>Freestyle Dance</option><option>Singing</option><option>Instrumental Music</option><option>Mimicry</option><option>Standup Comedy</option><option>Magic</option><option>Acrobatics / Gymnastics</option><option>Mono Act</option><option>Beatboxing</option><option>Other</option></select></div><div class="form-group" id="crTalentOtherDiv" style="display:none"><label>Specify Talent:</label><input type="text" id="crTalentOther" placeholder="Describe your talent"></div>';
+            }
             
+            if (cfg.allowIndividual) {
+                const pctLabel = cfg.pctMax ? ` (${cfg.pctMax}% of class = ${effMax} participants)` : '';
+                const toggleHtml = `<div class="form-group" style="background:#f0f4ff;border:2px solid #667eea;border-radius:10px;padding:15px;margin-bottom:18px">
+                    <label style="font-weight:700;color:#667eea;font-size:1.05em">♻️ Participation Type${pctLabel}:</label>
+                    <div style="margin-top:10px;display:flex;gap:15px;flex-wrap:wrap">
+                        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;background:white;padding:10px 18px;border-radius:8px;border:2px solid #667eea;font-weight:600">
+                            <input type="radio" name="crBowType" value="team" id="crBowTeam" checked onchange="crBowToggleMember(2)"> 👥 Team (2 Members)
+                        </label>
+                        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;background:white;padding:10px 18px;border-radius:8px;border:2px solid #c44569;font-weight:600">
+                            <input type="radio" name="crBowType" value="individual" id="crBowIndividual" onchange="crBowToggleMember(1)"> 🧑 Individual
+                        </label>
+                    </div>
+                    <p style="margin-top:8px;font-size:12px;color:#856404;background:#fff3cd;padding:8px;border-radius:6px">⚠️ 10% of your class can participate. Each person counts against this limit.</p>
+                </div>`;
+                html = html.replace('<div class="team-member-box">', toggleHtml + '<div class="team-member-box" id="crBowMember0">');
+                let second = false;
+                html = html.replace(/<div class="team-member-box">/g, (m) => {
+                    if (!second) { second = true; return m; }
+                    return '<div class="team-member-box" id="crBowMember1">';
+                });
+            }
+
+            if (cfg.oneAtATime) {
+                const participantNum = enrolledCount + 1;
+                html = html.replace('Participant 1', 'Participant ' + participantNum);
+                document.getElementById('crEnrollBtnsNormal').style.display = 'none';
+                document.getElementById('crEnrollBtnsOneAtATime').style.display = 'block';
+            } else if (cfg.multiTeam && remaining > 1) {
+                document.getElementById('crEnrollBtnsNormal').style.display = 'none';
+                document.getElementById('crEnrollBtnsOneAtATime').style.display = 'block';
+                const addBtn = document.querySelector('#crEnrollBtnsOneAtATime button:first-child');
+                const finBtn = document.querySelector('#crEnrollBtnsOneAtATime button:nth-child(2)');
+                if (addBtn) addBtn.textContent = '✅ Submit Team & Add Next Team';
+                if (finBtn) finBtn.textContent = '✔ Submit Team & Finish';
+                const teamNum = enrolledCount + 1;
+                html = '<div style="background:#e8f5e9;border:2px solid #4caf50;border-radius:10px;padding:12px 18px;margin-bottom:18px;text-align:center"><strong style="color:#1b5e20">📋 Adding Team ' + teamNum + ' of ' + effMax + ' (max for your class)</strong></div>' + html;
+            } else {
+                document.getElementById('crEnrollBtnsNormal').style.display = 'block';
+                document.getElementById('crEnrollBtnsOneAtATime').style.display = 'none';
+                const addBtn = document.querySelector('#crEnrollBtnsOneAtATime button:first-child');
+                const finBtn = document.querySelector('#crEnrollBtnsOneAtATime button:nth-child(2)');
+                if (addBtn) addBtn.textContent = '✅ Submit & Add Another';
+                if (finBtn) finBtn.textContent = '✔ Submit & Finish';
+            }
+
             document.getElementById('crEnrollmentFormContent').innerHTML = html;
+            if (cfg.talent) {
+                const ts = document.getElementById('crTalentType');
+                if (ts) ts.addEventListener('change', function(){ document.getElementById('crTalentOtherDiv').style.display = this.value === 'Other' ? 'block' : 'none'; });
+            }
             document.getElementById('crEventCardsContainer').style.display = 'none';
             document.getElementById('crEnrollmentForm').style.display = 'block';
         }
 
-        function submitCREnrollment() {
+        function crBowToggleMember(count) {
+            const m1 = document.getElementById('crBowMember1');
+            if (m1) m1.style.display = count === 2 ? 'block' : 'none';
+        }
+
+        function submitCREnrollment(addAnother) {
             const cfg = events[selectedEvent];
             const members = [];
             
-            // Collect all team members
-            for (let i = 0; i < cfg.count; i++) {
+            // Collect all team members (use dynamic count for Ramp Walk)
+            let crSubmitCount = cfg.dynamicCount ? (window._currentCREnrollCount || 1) : (cfg.maxCount ? (window._crDynMemberCount || cfg.count) : cfg.count);
+            if (cfg.allowIndividual) {
+                const crBowRadio = document.querySelector('input[name="crBowType"]:checked');
+                crSubmitCount = (crBowRadio && crBowRadio.value === 'individual') ? 1 : 2;
+            }
+            for (let i = 0; i < crSubmitCount; i++) {
                 const name = document.getElementById('crName'+i).value.trim();
                 const phone = document.getElementById('crPhone'+i).value.trim();
                 
@@ -2828,11 +3187,16 @@
             // Add event-specific fields
             if (cfg.topic) {
                 const topic = document.getElementById('crTopic');
-                if (!topic || !topic.value.trim()) {
-                    alert('Please enter '+cfg.topicLabel);
+                const topicVal = topic ? topic.value.trim() : '';
+                if (!topicVal) {
+                    alert(cfg.vlogTopics ? 'Please select a Vlog topic' : 'Please enter '+cfg.topicLabel);
                     return;
                 }
-                baseData.topic = topic.value.trim();
+                if (cfg.vlogTopics) {
+                    const alreadyTaken = all.filter(e => e.event === selectedEvent && e.classYear === crClass && e.topic === topicVal).length > 0;
+                    if (alreadyTaken) { alert('⚠️ This topic was just taken by another team! Please go back and select a different topic.'); return; }
+                }
+                baseData.topic = topicVal;
             }
             
             if (cfg.prod) {
@@ -2852,6 +3216,18 @@
                 }
                 baseData.cause = cause.value.trim();
             }
+            if (cfg.camera) {
+                const camName = document.getElementById('crCameraName');
+                const camPhone = document.getElementById('crCameraPhone');
+                if (!camName || !camName.value.trim()) { alert('Please enter the camera person name'); return; }
+                if (!camPhone || !/^\d{10}$/.test(camPhone.value.trim())) { alert('Please enter a valid 10-digit phone number for the camera person'); return; }
+                baseData.cameraName = camName.value.trim();
+                baseData.cameraPhone = camPhone.value.trim();
+            }
+            if (cfg.minCount && !cfg.maxCount && members.length < cfg.minCount) {
+                alert('Minimum ' + cfg.minCount + ' members required for ' + selectedEvent);
+                return;
+            }
             
             if (cfg.lang) {
                 const langs = ['English'];
@@ -2860,6 +3236,18 @@
                 if (kn && kn.checked) langs.push('Kannada');
                 if (hi && hi.checked) langs.push('Hindi');
                 baseData.languages = langs.join(', ');
+            }
+            if (cfg.talent) {
+                const talentSel = document.getElementById('crTalentType');
+                const talentVal = talentSel ? talentSel.value.trim() : '';
+                if (!talentVal) { alert('Please select a talent type'); return; }
+                if (talentVal === 'Other') {
+                    const otherVal = document.getElementById('crTalentOther') ? document.getElementById('crTalentOther').value.trim() : '';
+                    if (!otherVal) { alert('Please specify your talent'); return; }
+                    baseData.talentType = otherVal;
+                } else {
+                    baseData.talentType = talentVal;
+                }
             }
             
             if (cfg.show) {
@@ -2877,9 +3265,21 @@
                 return ref.push(data);
             });
             
+            // Validate minCount before submitting
+            if (cfg.minCount && members.length < cfg.minCount) {
+                alert('Minimum ' + cfg.minCount + ' members required for ' + selectedEvent + '. Please add at least ' + cfg.minCount + ' members.');
+                return;
+            }
+
             Promise.all(promises).then(() => {
-                showCROk('Successfully enrolled '+members.length+' student(s) for '+selectedEvent+'!');
-                cancelCREnrollment();
+                const eventName = selectedEvent;
+                if (addAnother) {
+                    showCROk('✅ Participant enrolled! Form ready for next participant.');
+                    setTimeout(() => startCREnrollment(eventName), 400);
+                } else {
+                    showCROk('Successfully enrolled '+members.length+' student(s) for '+eventName+'!');
+                    cancelCREnrollment();
+                }
             }).catch(err => showCRErr('Error: '+err.message));
         }
 
@@ -2887,6 +3287,7 @@
             selectedEvent = null;
             document.getElementById('crEnrollmentForm').style.display = 'none';
             document.getElementById('crEventCardsContainer').style.display = 'grid';
+            document.getElementById('crEventCardsContainer').scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
 
         function showCRTab(tab) {
@@ -3244,6 +3645,8 @@
             if (e.cause) d.push('Cause: '+e.cause);
             if (e.languages) d.push('Languages: '+e.languages);
             if (e.showstopper) d.push('Showstopper: '+e.showstopper);
+            if (e.talentType) d.push('Talent: '+e.talentType);
+            if (e.cameraName) d.push('📹 Camera: '+e.cameraName+(e.cameraPhone ? ' ('+e.cameraPhone+')' : ''));
             return d.length>0 ? d.join('<br>') : '-';
         }
 
@@ -4424,18 +4827,44 @@
         // ==================== QUIZ COMPETITION FUNCTIONS ====================
         
         // Quiz Utility Functions
+        // ── SERVER-TIME OFFSET (fetched once, reused everywhere) ──────────────
+        let _serverTimeOffsetMs = 0;
+        let _serverOffsetFetched = false;
+
+        async function fetchServerTimeOffset() {
+            if (_serverOffsetFetched) return;
+            try {
+                const snap = await db.ref('.info/serverTimeOffset').once('value');
+                _serverTimeOffsetMs = snap.val() || 0;
+                _serverOffsetFetched = true;
+                console.log('[ServerTime] Offset:', _serverTimeOffsetMs, 'ms');
+            } catch (e) {
+                console.warn('[ServerTime] Could not fetch offset:', e);
+                _serverTimeOffsetMs = 0;
+                _serverOffsetFetched = true;
+            }
+        }
+
+        function getServerNow() {
+            return new Date(Date.now() + _serverTimeOffsetMs);
+        }
+
         function getQuizToday() {
-            // Get local date in YYYY-MM-DD format (not UTC)
-            const now = new Date();
-            const year = now.getFullYear();
+            const now = getServerNow();
+            const year  = now.getFullYear();
             const month = String(now.getMonth() + 1).padStart(2, '0');
-            const day = String(now.getDate()).padStart(2, '0');
+            const day   = String(now.getDate()).padStart(2, '0');
             return `${year}-${month}-${day}`;
+        }
+
+        async function getQuizTodayServer() {
+            await fetchServerTimeOffset();
+            return getQuizToday();
         }
         
         // Check public quiz status (before login)
         async function checkPublicQuizStatus() {
-            const today = getQuizToday();
+            const today = await getQuizTodayServer();
             const messageDiv = document.getElementById('publicQuizMessage');
             
             console.log('=== checkPublicQuizStatus START ===');
@@ -4526,7 +4955,9 @@
             if (!el) return;
             el.className = `message ${type} show`;
             el.textContent = msg;
-            setTimeout(() => el.classList.remove('show'), 5000);
+            // Errors stay visible for 10s on mobile; success fades after 5s
+            const delay = type === 'error' ? 10000 : 5000;
+            setTimeout(() => el.classList.remove('show'), delay);
         }
         
         function populateQuizClasses() {
@@ -4676,23 +5107,6 @@
                     }
                 }
                 
-                // Step 5: Log to Firebase
-                console.log('\n--- STEP 5: Logging to Firebase ---');
-                const emailLog = {
-                    debugId: debugId,
-                    to: to,
-                    subject: subject,
-                    body: body,
-                    sentAt: new Date().toISOString(),
-                    from: 'davancollege02@gmail.com',
-                    status: emailSent ? 'sent' : 'failed',
-                    emailjsStatus: emailSent ? 'success' : (emailError || 'unknown'),
-                    emailjsResponse: emailJSResponse ? JSON.stringify(emailJSResponse) : null,
-                    password: body.match(/Password: (.+)/)?.[1] || 'N/A'
-                };
-                
-                await db.ref('quizEmailLogs').push(emailLog);
-                console.log('✅ Email details logged to Firebase');
                 
                 console.log('\n========================================');
                 console.log(`📧 EMAIL DEBUG #${debugId} END`);
@@ -4707,7 +5121,6 @@
                 } else {
                     console.log('\n📧 Troubleshooting steps:');
                     console.log('1. Review error details above');
-                    console.log('2. Check Firebase > quizEmailLogs for detailed log');
                     console.log('3. Verify EmailJS credentials in dashboard');
                     console.log('4. Check EmailJS service connection status');
                 }
@@ -4860,7 +5273,6 @@ Davan Institute Team`;
                 console.log(`📧 EMAIL DEBUG INFO:`);
                 console.log(`   Intended recipient: ${email}`);
                 console.log(`   Check if email arrived at: ${email}`);
-                console.log(`   If not, check Firebase > quizEmailLogs`);
                 console.log(`   Look for "to" field to verify correct email`);
                 console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
             } catch (err) {
@@ -4900,31 +5312,45 @@ Davan Institute Team`;
         
         // Student Login
         async function loginQuizStudent() {
-            const phone = document.getElementById('quizLoginPhone').value.trim();
+            // Sanitize: strip spaces, dashes, +91 prefix, any non-digit chars
+            let rawPhone = document.getElementById('quizLoginPhone').value.trim();
+            rawPhone = rawPhone.replace(/[\s\-\(\)]/g, '');        // remove spaces/dashes/brackets
+            if (rawPhone.startsWith('+91')) rawPhone = rawPhone.slice(3);
+            if (rawPhone.startsWith('91') && rawPhone.length === 12) rawPhone = rawPhone.slice(2);
+            const phone = rawPhone.replace(/\D/g, '');              // keep only digits
+
             const password = document.getElementById('quizLoginPassword').value.trim();
             
             console.log('=== STUDENT LOGIN START ===');
-            console.log('Phone:', phone);
+            console.log('Phone (sanitized):', phone);
             console.log('Password length:', password.length);
             
             if (!phone || !password) {
                 showQuizMsg('quizMessage', 'Please enter phone number and password!', 'error');
+                document.getElementById('quizMessage').scrollIntoView({ behavior: 'smooth', block: 'center' });
                 return;
             }
             
             if (phone.length !== 10) {
-                showQuizMsg('quizMessage', 'Please enter valid 10-digit phone number!', 'error');
+                showQuizMsg('quizMessage', `Invalid phone number (got ${phone.length} digits, need 10). Please check and try again.`, 'error');
+                document.getElementById('quizMessage').scrollIntoView({ behavior: 'smooth', block: 'center' });
                 return;
             }
             
             try {
+                // Show loading state on button
+                const loginBtn = document.querySelector('#dailyQuizLogin .btn-success');
+                if (loginBtn) { loginBtn.disabled = true; loginBtn.textContent = '⏳ Logging in...'; }
+
                 const studRef = db.ref('quizStudents');
                 const snap = await studRef.orderByChild('phone').equalTo(phone).once('value');
                 
                 console.log('Student lookup result:', snap.exists());
                 
                 if (!snap.exists()) {
-                    showQuizMsg('quizMessage', 'Phone number not registered!', 'error');
+                    showQuizMsg('quizMessage', '❌ Phone number not registered! Please register first.', 'error');
+                    document.getElementById('quizMessage').scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    if (loginBtn) { loginBtn.disabled = false; loginBtn.innerHTML = '🚀 Login to Quiz'; }
                     return;
                 }
                 
@@ -4944,7 +5370,9 @@ Davan Institute Team`;
                 
                 if (studentData.password !== password) {
                     console.log('Password mismatch');
-                    showQuizMsg('quizMessage', 'Incorrect password!', 'error');
+                    showQuizMsg('quizMessage', '❌ Incorrect password! Check your password and try again.', 'error');
+                    document.getElementById('quizMessage').scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    if (loginBtn) { loginBtn.disabled = false; loginBtn.innerHTML = '🚀 Login to Quiz'; }
                     return;
                 }
                 
@@ -4984,7 +5412,10 @@ Davan Institute Team`;
             } catch (err) {
                 console.error('Login error:', err);
                 console.error('Error stack:', err.stack);
-                showQuizMsg('quizMessage', 'Login failed. Try again.', 'error');
+                showQuizMsg('quizMessage', '❌ Login failed. Please check your connection and try again.', 'error');
+                document.getElementById('quizMessage').scrollIntoView({ behavior: 'smooth', block: 'center' });
+                const loginBtn = document.querySelector('#dailyQuizLogin .btn-success');
+                if (loginBtn) { loginBtn.disabled = false; loginBtn.innerHTML = '🚀 Login to Quiz'; }
             }
         }
         
@@ -5034,7 +5465,7 @@ Davan Institute Team`;
         
         // Check Quiz Status
         async function checkQuizTodayStatus() {
-            const today = getQuizToday();
+            const today = await getQuizTodayServer();
             console.log('╔═══════════════════════════════════════════════════════════╗');
             console.log('║          INTENSIVE DEBUG: checkQuizTodayStatus            ║');
             console.log('╚═══════════════════════════════════════════════════════════╝');
@@ -5213,7 +5644,7 @@ Davan Institute Team`;
         
         // Start Quiz
         async function startQuiz() {
-            const today = getQuizToday();
+            const today = await getQuizTodayServer();
             
             try {
                 const qRef = db.ref(`quizQuestions/${today}`);
@@ -5385,7 +5816,7 @@ Davan Institute Team`;
                 submitBtn.style.cursor = 'not-allowed';
             }
             
-            const today = getQuizToday();
+            const today = await getQuizTodayServer();
             
             try {
                 // BLOCK: Check Firebase if student already submitted today
