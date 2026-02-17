@@ -1820,6 +1820,23 @@
                         <div class="message success show">
                             <strong>✅ Quiz Completed!</strong> You have successfully submitted today's quiz. Results will be announced soon.
                         </div>
+                        <div style="background:#f3e5f5;border:2px solid #9c27b0;border-radius:12px;padding:18px 22px;margin-top:16px">
+                            <h4 style="color:#6a1b9a;margin:0 0 12px 0;font-size:1.05em">&#128197; Next Quiz Schedule</h4>
+                            <div style="display:flex;flex-wrap:wrap;gap:12px">
+                                <div style="background:white;border-radius:8px;padding:10px 18px;flex:1;min-width:150px;border-left:4px solid #4caf50;text-align:center">
+                                    <div style="color:#666;font-size:0.78em;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Next Quiz Starts At</div>
+                                    <div style="color:#2e7d32;font-weight:800;font-size:1.1em" id="nextQuizStartTime">Loading...</div>
+                                </div>
+                                <div style="background:white;border-radius:8px;padding:10px 18px;flex:1;min-width:150px;border-left:4px solid #f44336;text-align:center">
+                                    <div style="color:#666;font-size:0.78em;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Next Quiz Ends At</div>
+                                    <div style="color:#c62828;font-weight:800;font-size:1.1em" id="nextQuizEndTime">Loading...</div>
+                                </div>
+                                <div style="background:white;border-radius:8px;padding:10px 18px;flex:1;min-width:150px;border-left:4px solid #9c27b0;text-align:center">
+                                    <div style="color:#666;font-size:0.78em;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Starts In</div>
+                                    <div style="color:#6a1b9a;font-weight:800;font-size:1.1em" id="nextQuizCountdown">--:--:--</div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     
                     <div id="quizResultsSection" style="display:none">
@@ -4890,7 +4907,25 @@
                 
                 if (!isPublished) {
                     // Quiz exists but not published - students can login and take it
-                    messageDiv.innerHTML = '<div class="quiz-available-banner"><div class="trophy-icon">🏆</div><h3>✅ Today\'s Quiz is Available!</h3><p style="margin:0;color:#155724;font-size:1.15em">Login below to participate and win exciting prizes!</p><p style="margin-top:10px;color:#28a745;font-weight:600">⚡ Be the fastest to answer correctly!</p></div>';
+                    messageDiv.innerHTML = '<div class="quiz-available-banner"><div class="trophy-icon">🏆</div><h3>✅ Today\'s Quiz is Available!</h3><p style="margin:0;color:#155724;font-size:1.15em">Login below to participate and win exciting prizes!</p><p style="margin-top:10px;color:#28a745;font-weight:600">⚡ Be the fastest to answer correctly!</p><div style="margin-top:14px;background:rgba(255,255,255,0.7);border-radius:10px;padding:10px 15px;display:inline-block;border:2px solid #28a745"><span style="color:#856404;font-weight:700;font-size:0.95em">⏳ Quiz ends in: </span><span id="publicQuizCountdown" style="color:#c0392b;font-weight:800;font-size:1.15em;letter-spacing:1px">--:--:--</span><span style="color:#666;font-size:0.82em;margin-left:6px">(closes at 11:59 PM today)</span></div></div>';
+                    // Start countdown to 11:59 PM today
+                    (function startPublicCountdown() {
+                        function updatePublicCountdown() {
+                            const el = document.getElementById('publicQuizCountdown');
+                            if (!el) return;
+                            const now = new Date();
+                            const end = new Date();
+                            end.setHours(23, 59, 59, 0);
+                            const diff = end - now;
+                            if (diff <= 0) { el.textContent = 'CLOSED'; el.style.color = '#c0392b'; return; }
+                            const h = Math.floor(diff / 3600000);
+                            const m = Math.floor((diff % 3600000) / 60000);
+                            const s = Math.floor((diff % 60000) / 1000);
+                            el.textContent = String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+                            setTimeout(updatePublicCountdown, 1000);
+                        }
+                        updatePublicCountdown();
+                    })();
                     return;
                 }
                 
@@ -5590,6 +5625,29 @@ Davan Institute Team`;
                     document.getElementById('quizCompletedSection').style.display = 'block';
                     document.getElementById('quizStatus').innerHTML = '<div style="background:#d1ecf1;padding:15px;border-radius:8px"><p style="margin:0;color:#0c5460">✅ You have completed today\'s quiz!</p></div>';
                     
+                    // Start next-quiz countdown when quiz is completed
+                    (function startNextQuizCountdown() {
+                        if (window._nextQuizCdInterval) clearInterval(window._nextQuizCdInterval);
+                        function updateNextQuiz() {
+                            const now = new Date();
+                            const tomorrow = new Date(now);
+                            tomorrow.setDate(tomorrow.getDate() + 1);
+                            const dayStr = tomorrow.toLocaleDateString('en-IN', {weekday:'short', day:'numeric', month:'short'});
+                            const s = document.getElementById('nextQuizStartTime');
+                            const e = document.getElementById('nextQuizEndTime');
+                            const c = document.getElementById('nextQuizCountdown');
+                            if (s) s.textContent = dayStr + ' · 12:00 AM';
+                            if (e) e.textContent = dayStr + ' · 11:59 PM';
+                            const midnight = new Date(now); midnight.setHours(24,0,0,0);
+                            const diff = midnight - now;
+                            if (diff > 0) {
+                                const h = Math.floor(diff/3600000), m = Math.floor((diff%3600000)/60000), sec = Math.floor((diff%60000)/1000);
+                                if (c) c.textContent = String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')+':'+String(sec).padStart(2,'0');
+                            } else { if (c) c.textContent = 'Now!'; }
+                        }
+                        updateNextQuiz();
+                        window._nextQuizCdInterval = setInterval(updateNextQuiz, 1000);
+                    })();
                     const resRef = db.ref(`quizResults/${today}`);
                     const resSnap = await resRef.once('value');
                     
