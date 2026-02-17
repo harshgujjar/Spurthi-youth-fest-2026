@@ -3,7 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Spurthi Youth Fest 2026</title>
+    <title>Spurthi Youth Fest 2026 - Daily Quiz Competition</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/gif" href="davan_logo_2026.gif">
+    
+    <!-- Open Graph / WhatsApp Meta Tags -->
+    <meta property="og:title" content="Spurthi Youth Fest 2026 - Daily Quiz Competition">
+    <meta property="og:description" content="🎓 Join our exciting Daily Quiz Competition! Answer 2 questions daily and win prizes. Register now for ₹1,500 (Refundable)">
+    <meta property="og:image" content="https://harshgujjar.github.io/Spurthi-youth-fest-2026/davan_logo_2026.gif">
+    <meta property="og:url" content="https://harshgujjar.github.io/Spurthi-youth-fest-2026/">
+    <meta property="og:type" content="website">
+    
+    <!-- Twitter Card Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Spurthi Youth Fest 2026 - Daily Quiz">
+    <meta name="twitter:description" content="🎓 Join our Daily Quiz Competition and win prizes!">
+    <meta name="twitter:image" content="https://harshgujjar.github.io/Spurthi-youth-fest-2026/davan_logo_2026.gif">
+    
+    <!-- Additional Meta Tags -->
+    <meta name="description" content="Spurthi Youth Fest 2026 Daily Quiz Competition - Test your knowledge, win prizes! By Davan Institute of Advanced Management Studies">
+    <meta name="keywords" content="Spurthi, Youth Fest, Quiz, Competition, Davan Institute, College Fest, Student Competition">
+    <meta name="author" content="Davan Institute of Advanced Management Studies">
+    
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
     <!-- EmailJS for sending actual emails -->
@@ -708,7 +730,7 @@
             <div id="adminLogin" style="display:none">
                 <div class="form-group">
                     <label>Admin Password:</label>
-                    <input type="password" id="adminPassword" placeholder="Enter admin password">
+                    <input type="password" id="adminPassword" placeholder="Enter admin password" onkeydown="if(event.key==='Enter') adminLogin()">
                 </div>
                 <button class="btn" onclick="adminLogin()">Login as Admin</button>
             </div>
@@ -717,7 +739,7 @@
             <div id="superAdminLogin" style="display:none">
                 <div class="form-group">
                     <label>Super Admin Password:</label>
-                    <input type="password" id="superAdminPassword" placeholder="Enter super admin password">
+                    <input type="password" id="superAdminPassword" placeholder="Enter super admin password" onkeydown="if(event.key==='Enter') superAdminLogin()">
                 </div>
                 <button class="btn" onclick="superAdminLogin()">Login as Super Admin</button>
             </div>
@@ -730,7 +752,7 @@
                 </div>
                 <div class="form-group">
                     <label>Jury Password:</label>
-                    <input type="password" id="juryPassword" placeholder="Enter jury password for this event">
+                    <input type="password" id="juryPassword" placeholder="Enter jury password for this event" onkeydown="if(event.key==='Enter') juryLogin()">
                 </div>
                 <div class="form-group">
                     <label>Jury Number (1 or 2):</label>
@@ -800,11 +822,11 @@
                 
                 <div class="form-group">
                     <label>Phone Number:</label>
-                    <input type="tel" id="quizLoginPhone" placeholder="Enter 10-digit phone number" maxlength="10">
+                    <input type="tel" id="quizLoginPhone" placeholder="Enter 10-digit phone number" maxlength="10" onkeydown="if(event.key==='Enter') loginQuizStudent()">
                 </div>
                 <div class="form-group">
                     <label>Password:</label>
-                    <input type="password" id="quizLoginPassword" placeholder="Enter password">
+                    <input type="password" id="quizLoginPassword" placeholder="Enter password" onkeydown="if(event.key==='Enter') loginQuizStudent()">
                 </div>
                 <button class="btn btn-success" onclick="loginQuizStudent()">🚀 Login to Quiz</button>
             </div>
@@ -1277,6 +1299,9 @@
                             <p><strong>Eligible:</strong> <span id="resultEligibleAdmin">0</span></p>
                         </div>
                         
+                        <!-- Eligible Students List -->
+                        <div id="eligibleStudentsListAdmin"></div>
+                        
                         <button class="btn btn-warning" onclick="selectQuizWinnersFromAdmin()" style="font-size:1.1em;padding:16px">🎲 Select Winners (Random)</button>
                         
                         <div id="winnersDisplayAdmin" style="display:none;margin-top:30px"></div>
@@ -1362,11 +1387,14 @@
         
         <!-- Quiz Student Dashboard -->
         <div id="quizStudentDashboard" style="display:none">
-            <button class="btn btn-secondary" onclick="logout()" style="float:right">Logout</button>
-            <h2 style="color:#c44569;margin-bottom:20px">
-                🎓 Daily Quiz Competition
-                <span id="quizStudentNameBadge" class="badge" style="background:#28a745;color:white;padding:8px 15px;border-radius:20px;font-size:0.8em;margin-left:10px"></span>
-            </h2>
+            <!-- Fixed header bar -->
+            <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:20px">
+                <h2 style="color:#fff;margin:0;font-size:clamp(1em,3vw,1.4em);display:flex;align-items:center;gap:10px;text-shadow:1px 1px 3px rgba(0,0,0,0.5)">
+                    🎓 <span>Daily Quiz Competition</span>
+                    <span id="quizStudentNameBadge" class="badge" style="background:#28a745;color:white;padding:6px 14px;border-radius:20px;font-size:0.75em;white-space:nowrap"></span>
+                </h2>
+                <button class="btn btn-secondary" onclick="logout()" style="white-space:nowrap;flex-shrink:0">Logout</button>
+            </div>
             <div id="quizStudentMessage" class="message"></div>
             
             <div class="content">
@@ -2604,6 +2632,8 @@
                 loadResultsTab();
             }
             if (tab === 'quizManagement') {
+                // Scroll to top when opening Quiz Management
+                window.scrollTo({ top: 0, behavior: 'smooth' });
                 loadQuizManagementStats();
                 showQuizManagementTab('questions');
                 initializeDateSelector(); // Initialize date selector with today's date
@@ -4519,18 +4549,15 @@ Davan Institute Team`;
                 console.log('Hiding login section');
                 const loginSection = document.getElementById('loginSection');
                 loginSection.style.display = 'none';
-                console.log('loginSection display after hiding:', loginSection.style.display);
                 
                 // Show student dashboard
-                console.log('Showing student dashboard');
                 const dashboard = document.getElementById('quizStudentDashboard');
                 dashboard.style.display = 'block';
-                console.log('quizStudentDashboard display after showing:', dashboard.style.display);
-                console.log('quizStudentDashboard computed style:', window.getComputedStyle(dashboard).display);
-                console.log('Is dashboard visible?', dashboard.offsetParent !== null);
+                
+                // Scroll to top immediately on login
+                window.scrollTo({ top: 0, behavior: 'instant' });
                 
                 // Set student info
-                console.log('Setting student info in UI');
                 document.getElementById('quizStudentName').textContent = studentData.name;
                 document.getElementById('quizStudentNameBadge').textContent = studentData.name;
                 document.getElementById('quizStudentEmail').textContent = studentData.email;
@@ -4657,13 +4684,21 @@ Davan Institute Team`;
                 
                 console.log('   Submission exists:', subSnap.exists());
                 
+                let studentAlreadySubmitted = false;
+                let studentSubmission = null;
+                
                 if (subSnap.exists()) {
-                    console.log('✅ Student HAS submitted - showing completed section');
-                    let submission = null;
                     subSnap.forEach(child => {
-                        submission = child.val();
-                        console.log('   Submission data:', JSON.stringify(submission, null, 2));
+                        if (child.val().studentKey === quizCurrentUser.key) {
+                            studentAlreadySubmitted = true;
+                            studentSubmission = child.val();
+                        }
                     });
+                }
+                
+                if (studentAlreadySubmitted) {
+                    console.log('✅ Student HAS submitted - showing completed section');
+                    console.log('   Submission data:', JSON.stringify(studentSubmission, null, 2));
                     
                     document.getElementById('quizCompletedSection').style.display = 'block';
                     document.getElementById('quizStatus').innerHTML = '<div style="background:#d1ecf1;padding:15px;border-radius:8px"><p style="margin:0;color:#0c5460">✅ You have completed today\'s quiz!</p></div>';
@@ -4676,14 +4711,14 @@ Davan Institute Team`;
                         console.log('   Results data:', JSON.stringify(results, null, 2));
                         
                         let html = '<div style="background:#f8f9fa;padding:20px;border-radius:10px">';
-                        html += `<p><strong>Your Score:</strong> ${submission.score}/2</p>`;
-                        html += `<p><strong>Submitted:</strong> ${new Date(submission.submittedAt).toLocaleString()}</p>`;
+                        html += `<p><strong>Your Score:</strong> ${studentSubmission.score}/2</p>`;
+                        html += `<p><strong>Submitted:</strong> ${new Date(studentSubmission.submittedAt).toLocaleString()}</p>`;
                         
                         if (results.winner && results.winner.email === quizCurrentUser.email) {
                             html += '<div style="background:#d4edda;color:#155724;padding:15px;border-radius:8px;margin-top:15px"><strong>🏆 CONGRATULATIONS! You are the WINNER!</strong></div>';
                         } else if (results.runnerUp && results.runnerUp.email === quizCurrentUser.email) {
                             html += '<div style="background:#d1ecf1;color:#0c5460;padding:15px;border-radius:8px;margin-top:15px"><strong>🥈 CONGRATULATIONS! You are the RUNNER-UP!</strong></div>';
-                        } else if (submission.score === 2) {
+                        } else if (studentSubmission.score === 2) {
                             html += '<div style="background:#d1ecf1;color:#0c5460;padding:15px;border-radius:8px;margin-top:15px"><strong>✅ Great job! Both answers correct!</strong></div>';
                         }
                         
@@ -4695,17 +4730,8 @@ Davan Institute Team`;
                     }
                 } else {
                     console.log('✅ Student has NOT submitted yet - SHOWING QUIZ!');
-                    console.log('');
-                    console.log('🎯 FINAL DECISION: Making quiz available');
-                    console.log('   Setting quizStatus to "Ready" message...');
                     document.getElementById('quizStatus').innerHTML = '<div style="background:#d4edda;padding:15px;border-radius:8px"><p style="margin:0;color:#155724"><strong>✅ Ready!</strong> Today\'s quiz is available. Click below to start.</p></div>';
-                    console.log('   ✅ quizStatus updated');
-                    
-                    console.log('   Setting quizStartSection display to "block"...');
                     document.getElementById('quizStartSection').style.display = 'block';
-                    console.log('   ✅ quizStartSection display is now:', document.getElementById('quizStartSection').style.display);
-                    
-                    console.log('');
                     console.log('✅ QUIZ SHOULD NOW BE VISIBLE TO USER!');
                 }
                 
@@ -4877,7 +4903,14 @@ Davan Institute Team`;
         }
         
         // Submit Quiz
+        let quizSubmitting = false; // Flag to prevent double submission
+
         async function submitQuizAnswers() {
+            // BLOCK: Prevent double submission
+            if (quizSubmitting) {
+                return;
+            }
+            
             const q1 = document.querySelector('input[name="qq1"]:checked');
             const q2 = document.querySelector('input[name="qq2"]:checked');
             
@@ -4886,9 +4919,44 @@ Davan Institute Team`;
                 return;
             }
             
+            // Immediately disable submit button and set flag
+            quizSubmitting = true;
+            const submitBtn = document.querySelector('.quiz-submit-btn');
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.textContent = '⏳ Submitting...';
+                submitBtn.style.opacity = '0.6';
+                submitBtn.style.cursor = 'not-allowed';
+            }
+            
             const today = getQuizToday();
             
             try {
+                // BLOCK: Check Firebase if student already submitted today
+                const existingSnap = await db.ref(`quizSubmissions/${today}`).once('value');
+                if (existingSnap.exists()) {
+                    let alreadySubmitted = false;
+                    existingSnap.forEach(child => {
+                        if (child.val().studentKey === quizCurrentUser.key) {
+                            alreadySubmitted = true;
+                        }
+                    });
+                    if (alreadySubmitted) {
+                        showQuizMsg('quizPageMessage', '⚠️ You have already submitted today\'s quiz!', 'error');
+                        quizSubmitting = false;
+                        if (submitBtn) {
+                            submitBtn.disabled = true;
+                            submitBtn.textContent = '✅ Already Submitted';
+                        }
+                        setTimeout(() => {
+                            document.getElementById('quizPage').style.display = 'none';
+                            document.getElementById('quizStudentDashboard').style.display = 'block';
+                            checkQuizTodayStatus();
+                        }, 2000);
+                        return;
+                    }
+                }
+                
                 const qRef = db.ref(`quizQuestions/${today}`);
                 const snap = await qRef.once('value');
                 const questions = snap.val();
@@ -4915,12 +4983,22 @@ Davan Institute Team`;
                 showQuizSuccessModal(score);
                 
                 setTimeout(() => {
+                    quizSubmitting = false;
                     document.getElementById('quizPage').style.display = 'none';
                     document.getElementById('quizStudentDashboard').style.display = 'block';
+                    // Scroll to top so student sees the status
+                    window.scrollTo({ top: 0, behavior: 'instant' });
                     checkQuizTodayStatus();
                 }, 4000);
             } catch (err) {
                 console.error('Submit error:', err);
+                quizSubmitting = false;
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = '✅ Submit Quiz';
+                    submitBtn.style.opacity = '1';
+                    submitBtn.style.cursor = 'pointer';
+                }
                 showQuizMsg('quizPageMessage', 'Error submitting. Try again.', 'error');
             }
         }
@@ -5457,7 +5535,8 @@ Davan Institute Team`;
                     document.getElementById('quiz_q2Correct').value = data.q2.correct || '';
                     
                     showQuizMsg('quizAdminMessage', `✏️ Editing existing quiz for ${selectedDate}. Modify and save to update.`, 'success');
-                    displaySavedQuestionsPreview(data);
+                    // Don't show preview on initial load - only after save
+                    // displaySavedQuestionsPreview(data);
                 } else {
                     console.log('No quiz found for this date, clearing form');
                     
@@ -6028,8 +6107,7 @@ Davan Institute Team`;
             view.innerHTML = html;
             view.style.display = 'block';
             
-            // Scroll to preview
-            view.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            // Removed scroll - no automatic scrolling to preview
         }
         
         async function viewTodayQuestionsAdmin() {
@@ -6115,8 +6193,8 @@ Davan Institute Team`;
                 document.getElementById('quiz_q2OptD').value = q.q2.options.D;
                 document.getElementById('quiz_q2Correct').value = q.q2.correct;
                 
-                // Scroll to the form
-                document.getElementById('quiz_q1Text').scrollIntoView({ behavior: 'smooth', block: 'center' });
+                // Scroll to top instead of form center
+                window.scrollTo({ top: 0, behavior: 'smooth' });
                 
                 // Show message
                 showQuizMsg('quizAdminMessage', '✏️ Questions loaded for editing. Make changes and click Save.', 'success');
@@ -6187,14 +6265,29 @@ Davan Institute Team`;
                 }
                 
                 let total = 0, correct = 0;
+                const eligibleStudents = [];
+                
                 snap.forEach(child => {
                     total++;
-                    if (child.val().score === 2) correct++;
+                    const data = child.val();
+                    if (data.score === 2) {
+                        correct++;
+                        eligibleStudents.push({
+                            name: data.studentName,
+                            class: data.studentClass,
+                            email: data.studentEmail,
+                            time: data.timeTaken,
+                            submittedAt: data.submittedAt
+                        });
+                    }
                 });
                 
                 document.getElementById('resultTotalPartAdmin').textContent = total;
                 document.getElementById('resultBothCorrectAdmin').textContent = correct;
                 document.getElementById('resultEligibleAdmin').textContent = correct;
+                
+                // Display detailed list of eligible students
+                displayEligibleStudentsList(eligibleStudents);
                 
                 const resSnap = await db.ref(`quizResults/${today}`).once('value');
                 if (resSnap.exists()) {
@@ -6203,6 +6296,52 @@ Davan Institute Team`;
             } catch (err) {
                 console.error('Load results error:', err);
             }
+        }
+        
+        function displayEligibleStudentsList(students) {
+            const container = document.getElementById('eligibleStudentsListAdmin');
+            if (!container) return;
+            
+            if (students.length === 0) {
+                container.innerHTML = '<p style="color:#999;font-style:italic;text-align:center;padding:20px">No students with both correct answers yet</p>';
+                return;
+            }
+            
+            // Sort by submission time (fastest first)
+            students.sort((a, b) => new Date(a.submittedAt) - new Date(b.submittedAt));
+            
+            let html = '<div style="margin-top:20px">';
+            html += '<h4 style="color:#28a745;margin-bottom:15px">✅ Eligible Students (Both Questions Correct)</h4>';
+            html += '<div style="background:white;border-radius:10px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.1)">';
+            html += '<table style="width:100%;border-collapse:collapse">';
+            html += '<thead><tr style="background:#28a745;color:white">';
+            html += '<th style="padding:12px;text-align:left">#</th>';
+            html += '<th style="padding:12px;text-align:left">Name</th>';
+            html += '<th style="padding:12px;text-align:left">Class</th>';
+            html += '<th style="padding:12px;text-align:left">Time Taken</th>';
+            html += '<th style="padding:12px;text-align:left">Submitted At</th>';
+            html += '</tr></thead><tbody>';
+            
+            students.forEach((student, index) => {
+                const bgColor = index % 2 === 0 ? '#f8f9fa' : 'white';
+                const submittedTime = new Date(student.submittedAt).toLocaleTimeString('en-IN', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit'
+                });
+                const timeTaken = Math.floor(student.time / 60) + 'm ' + (student.time % 60) + 's';
+                
+                html += `<tr style="background:${bgColor}">`;
+                html += `<td style="padding:12px;border-bottom:1px solid #e9ecef">${index + 1}</td>`;
+                html += `<td style="padding:12px;border-bottom:1px solid #e9ecef;font-weight:600">${student.name}</td>`;
+                html += `<td style="padding:12px;border-bottom:1px solid #e9ecef">${student.class}</td>`;
+                html += `<td style="padding:12px;border-bottom:1px solid #e9ecef">${timeTaken}</td>`;
+                html += `<td style="padding:12px;border-bottom:1px solid #e9ecef">${submittedTime}</td>`;
+                html += '</tr>';
+            });
+            
+            html += '</tbody></table></div></div>';
+            container.innerHTML = html;
         }
         
         async function selectQuizWinnersFromAdmin() {
@@ -6921,7 +7060,7 @@ Davan Institute Team`;
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;">
-                <strong>Version:</strong> 2.0 (quiz) | <strong>Last Updated:</strong> February 17, 2026
+                <strong>Version:</strong> 2.0 (Quiz) | <strong>Last Updated:</strong> February 17, 2026
             </p>
             <!-- ============================================ -->
             
