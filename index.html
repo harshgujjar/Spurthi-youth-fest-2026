@@ -1764,9 +1764,28 @@
             <div id="quizStudentMessage" class="message"></div>
             
             <div class="content">
-                <h3 style="color:#6a1b9a;margin-bottom:20px">Welcome, <span id="quizStudentName"></span>!</h3>
-                <p style="margin-bottom:20px"><strong>Email:</strong> <span id="quizStudentEmail"></span> | <strong>Class:</strong> <span id="quizStudentClass"></span></p>
-                
+                <h3 style="color:#6a1b9a;margin-bottom:8px">Welcome, <span id="quizStudentName"></span>!</h3>
+                <p style="margin-bottom:16px"><strong>Email:</strong> <span id="quizStudentEmail"></span> | <strong>Class:</strong> <span id="quizStudentClass"></span></p>
+
+                <!-- Live Date & Time Banner -->
+                <div style="background:linear-gradient(135deg,#6a1b9a 0%,#c44569 100%);border-radius:12px;padding:16px 20px;margin-bottom:22px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;box-shadow:0 4px 15px rgba(106,27,154,0.3)">
+                    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+                        <div style="text-align:center;background:rgba(255,255,255,0.15);border-radius:10px;padding:10px 16px;min-width:80px">
+                            <div style="color:rgba(255,255,255,0.75);font-size:10px;text-transform:uppercase;letter-spacing:1px;margin-bottom:3px">Day</div>
+                            <div id="quizLiveDay" style="color:#fff;font-size:1.2em;font-weight:700"></div>
+                        </div>
+                        <div style="text-align:center;background:rgba(255,255,255,0.15);border-radius:10px;padding:10px 16px;min-width:110px">
+                            <div style="color:rgba(255,255,255,0.75);font-size:10px;text-transform:uppercase;letter-spacing:1px;margin-bottom:3px">Date</div>
+                            <div id="quizLiveDate" style="color:#ffd700;font-size:1.05em;font-weight:700"></div>
+                        </div>
+                        <div style="text-align:center;background:rgba(255,255,255,0.15);border-radius:10px;padding:10px 16px;min-width:95px">
+                            <div style="color:rgba(255,255,255,0.75);font-size:10px;text-transform:uppercase;letter-spacing:1px;margin-bottom:3px">Time</div>
+                            <div id="quizLiveTime" style="color:#a5ffb8;font-size:1.2em;font-weight:700;letter-spacing:1px"></div>
+                        </div>
+                    </div>
+                    <div id="quizLiveAmPm" style="color:rgba(255,255,255,0.85);font-size:0.85em;font-weight:600;text-align:right;line-height:1.6"></div>
+                </div>
+
                 <div id="quizStatusSection">
                     <div style="background:#fff3cd;padding:20px;border-radius:12px;margin-bottom:25px;border-left:5px solid #ffc107">
                         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px">
@@ -2537,6 +2556,7 @@
             quizUserRole = null;
             quizAntiCheatActive = false;
             if (quizTimerInterval) clearInterval(quizTimerInterval);
+            stopQuizLiveClock();
             
             document.getElementById('userInfo').innerHTML = '';
             document.getElementById('loginSection').style.display = 'block';
@@ -4945,6 +4965,9 @@ Davan Institute Team`;
                 const dashboard = document.getElementById('quizStudentDashboard');
                 dashboard.style.display = 'block';
                 
+                // Start live date/time clock
+                startQuizLiveClock();
+                
                 // Scroll to top immediately on login
                 window.scrollTo({ top: 0, behavior: 'instant' });
                 
@@ -4965,6 +4988,48 @@ Davan Institute Team`;
             }
         }
         
+        // ============================================
+        // LIVE DATE / TIME CLOCK FOR STUDENT DASHBOARD
+        // ============================================
+        let _quizClockInterval = null;
+
+        function startQuizLiveClock() {
+            stopQuizLiveClock();
+            function tick() {
+                const now = new Date();
+                const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+                const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+                const dayName  = days[now.getDay()];
+                const day      = now.getDate();
+                const month    = months[now.getMonth()];
+                const year     = now.getFullYear();
+
+                let hours   = now.getHours();
+                const mins  = String(now.getMinutes()).padStart(2, '0');
+                const secs  = String(now.getSeconds()).padStart(2, '0');
+                const ampm  = hours >= 12 ? 'PM' : 'AM';
+                hours = hours % 12 || 12;
+                const hStr  = String(hours).padStart(2, '0');
+
+                const dayEl  = document.getElementById('quizLiveDay');
+                const dateEl = document.getElementById('quizLiveDate');
+                const timeEl = document.getElementById('quizLiveTime');
+                const amEl   = document.getElementById('quizLiveAmPm');
+
+                if (dayEl)  dayEl.textContent  = dayName;
+                if (dateEl) dateEl.textContent  = `${day} ${month} ${year}`;
+                if (timeEl) timeEl.textContent  = `${hStr}:${mins}:${secs}`;
+                if (amEl)   amEl.innerHTML      = `${ampm}<br><span style="font-size:10px;opacity:0.7">IST</span>`;
+            }
+            tick();
+            _quizClockInterval = setInterval(tick, 1000);
+        }
+
+        function stopQuizLiveClock() {
+            if (_quizClockInterval) { clearInterval(_quizClockInterval); _quizClockInterval = null; }
+        }
+
         // Regular Quiz Admin login removed - Only Super Admin Dashboard is used
         
         // Check Quiz Status
