@@ -8,18 +8,26 @@
     <!-- Favicon -->
     <link rel="icon" type="image/gif" href="davan_logo_2026.gif">
     
-    <!-- Open Graph / WhatsApp Meta Tags -->
+    <!-- Open Graph / WhatsApp / Facebook Meta Tags -->
     <meta property="og:title" content="Spurthi Youth Fest 2026 - Daily Quiz Competition">
     <meta property="og:description" content="🎓 Join our exciting Daily Quiz Competition! Answer 2 questions daily and win prizes. Register now for ₹1,500 (Refundable)">
-    <meta property="og:image" content="https://harshgujjar.github.io/Spurthi-youth-fest-2026/davan_logo_2026.gif">
+    <meta property="og:image" content="https://harshgujjar.github.io/Spurthi-youth-fest-2026/og_image.png">
+    <meta property="og:image:secure_url" content="https://harshgujjar.github.io/Spurthi-youth-fest-2026/og_image.png">
+    <meta property="og:image:type" content="image/png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="Spurthi Youth Fest 2026 - Daily Quiz Competition by Davan Institute">
     <meta property="og:url" content="https://harshgujjar.github.io/Spurthi-youth-fest-2026/">
     <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Spurthi Youth Fest 2026">
+    <meta property="og:locale" content="en_IN">
     
     <!-- Twitter Card Meta Tags -->
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Spurthi Youth Fest 2026 - Daily Quiz">
-    <meta name="twitter:description" content="🎓 Join our Daily Quiz Competition and win prizes!">
-    <meta name="twitter:image" content="https://harshgujjar.github.io/Spurthi-youth-fest-2026/davan_logo_2026.gif">
+    <meta name="twitter:title" content="Spurthi Youth Fest 2026 - Daily Quiz Competition">
+    <meta name="twitter:description" content="🎓 Join our Daily Quiz Competition! Answer 2 questions daily and win prizes. Register now for ₹1,500 (Refundable)">
+    <meta name="twitter:image" content="https://harshgujjar.github.io/Spurthi-youth-fest-2026/og_image.png">
+    <meta name="twitter:image:alt" content="Spurthi Youth Fest 2026 - Daily Quiz Competition by Davan Institute">
     
     <!-- Additional Meta Tags -->
     <meta name="description" content="Spurthi Youth Fest 2026 Daily Quiz Competition - Test your knowledge, win prizes! By Davan Institute of Advanced Management Studies">
@@ -411,6 +419,7 @@
         .tab:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
         .tab.active { background: linear-gradient(135deg, #c44569 0%, #6a1b9a 100%); color: white; }
         .content { background: white; border-radius: 12px; padding: 30px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+        #adminContentBox.lb-active { background: transparent; box-shadow: none; padding: 0; }
         .form-section { display: none; }
         .form-section.active { display: block; }
         .form-group { margin-bottom: 20px; }
@@ -889,6 +898,7 @@
             <div class="tabs">
                 <button class="tab active" onclick="showCRTab('crEnroll')">Enroll Students</button>
                 <button class="tab" onclick="showCRTab('crView')">View Enrollments</button>
+                <button class="tab" onclick="showCRTab('crQuizStats');loadCRQuizStats()">🧠 Quiz Stats</button>
             </div>
 
             <div id="crEnroll" class="form-section active">
@@ -916,6 +926,66 @@
                 </div>
                 <div id="crSummary" style="margin-bottom:20px"></div>
                 <div id="crEnrollmentsContainer"></div>
+            </div>
+
+            <!-- ── CR QUIZ STATS TAB ──────────────────────────────────────────── -->
+            <div id="crQuizStats" class="form-section">
+                <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:18px">
+                    <h3 style="color:#6a1b9a;margin:0">🧠 Online Quiz — Your Class Stats</h3>
+                    <div style="display:flex;gap:8px;align-items:center">
+                        <select id="crQsDateFilter" onchange="loadCRQuizStats()" style="padding:7px 12px;border:2px solid #6a1b9a;border-radius:8px;color:#3d0060;font-weight:600;background:white;outline:none">
+                            <option value="">— Select Date —</option>
+                        </select>
+                        <button class="btn btn-small btn-info" onclick="loadCRQuizStats()">🔄 Refresh</button>
+                    </div>
+                </div>
+
+                <!-- Info notice box — visible to CR -->
+                <div id="crQsInfoBox" style="background:#fffde7;border-radius:10px;padding:16px 18px;margin-bottom:16px;border-left:4px solid #ffc107">
+                    <h4 style="color:#856404;margin:0 0 5px;font-size:0.9em">📋 Quiz Participation Summary — <span id="crQsInfoDate">select a date</span></h4>
+                    <div id="crQsInfoText" style="color:#555;font-size:13px;line-height:1.75">Select a date above to see your class's quiz participation details.</div>
+                </div>
+
+                <!-- Stats cards for CR's class -->
+                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:18px" id="crQsCards">
+                    <div style="background:linear-gradient(135deg,#667eea,#764ba2);border-radius:10px;padding:16px;text-align:center">
+                        <div style="font-size:1.8em;font-weight:800;color:white" id="crQsTotal">—</div>
+                        <div style="color:rgba(255,255,255,0.8);font-size:12px;margin-top:4px">Participated</div>
+                    </div>
+                    <div style="background:linear-gradient(135deg,#28a745,#20c997);border-radius:10px;padding:16px;text-align:center">
+                        <div style="font-size:1.8em;font-weight:800;color:white" id="crQsCorrect">—</div>
+                        <div style="color:rgba(255,255,255,0.8);font-size:12px;margin-top:4px">Both Correct</div>
+                    </div>
+                    <div style="background:linear-gradient(135deg,#ffc107,#ff9800);border-radius:10px;padding:16px;text-align:center">
+                        <div style="font-size:1.8em;font-weight:800;color:white" id="crQsPartial">—</div>
+                        <div style="color:rgba(255,255,255,0.8);font-size:12px;margin-top:4px">Partial (1/2)</div>
+                    </div>
+                    <div style="background:linear-gradient(135deg,#c44569,#e91e63);border-radius:10px;padding:16px;text-align:center">
+                        <div style="font-size:1.8em;font-weight:800;color:white" id="crQsRate">—</div>
+                        <div style="color:rgba(255,255,255,0.8);font-size:12px;margin-top:4px">Accuracy Rate</div>
+                    </div>
+                </div>
+
+                <!-- Student list for CR's class on selected date -->
+                <div style="background:white;border-radius:10px;border:2px solid #e0c8f5;overflow:hidden">
+                    <div style="background:linear-gradient(135deg,#6a1b9a,#c44569);padding:12px 16px">
+                        <h4 style="color:white;margin:0;font-size:0.95em">Your Class Students — Quiz Submissions</h4>
+                    </div>
+                    <div class="table-wrapper" style="margin:0">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Student Name</th>
+                                    <th>Score</th>
+                                    <th>Time Taken</th>
+                                    <th>Submitted At</th>
+                                </tr>
+                            </thead>
+                            <tbody id="crQsTable"></tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -952,9 +1022,10 @@
                 <button class="tab super-admin-only" onclick="showTab('jurySetup')">Jury Setup</button>
                 <button class="tab" onclick="showTab('results')" id="resultsTab">Results</button>
                 <button class="tab super-admin-only" onclick="showTab('quizManagement')" id="quizManagementTab">📝 Quiz Management</button>
+                <button class="tab super-admin-only" onclick="showTab('leaderboardAdmin')" id="leaderboardAdminTab">🏆 Leaderboard</button>
             </div>
 
-            <div class="content">
+            <div class="content" id="adminContentBox">
                 <!-- Master List Tab -->
                 <div id="master" class="form-section active">
                     <h2 style="color:#c44569;margin-bottom:20px">Master Enrollment List</h2>
@@ -1262,9 +1333,58 @@
                     
                     <!-- Submissions Sub-Tab -->
                     <div id="quizSubmissionsContent" class="form-section">
-                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+
+                        <!-- ── DATE SELECTOR + CLASS BREAKDOWN ─────────────────────────── -->
+                        <div style="background:linear-gradient(135deg,#f3e5ff,#fce4ec);border-radius:14px;padding:20px 22px;margin-bottom:20px;border:2px solid #e0c8f5">
+                            <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:16px">
+                                <h3 style="color:#3d0060;margin:0;font-size:1.05em">📅 Class-wise Participation by Date</h3>
+                                <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+                                    <select id="qsDateFilter" onchange="loadClassStats()" style="padding:7px 12px;border:2px solid #6a1b9a;border-radius:8px;color:#3d0060;font-weight:600;background:white;outline:none">
+                                        <option value="">— Select Date —</option>
+                                    </select>
+                                    <button class="btn btn-small btn-info" onclick="loadClassStats()">🔄 Refresh</button>
+                                </div>
+                            </div>
+
+                            <!-- Summary pills -->
+                            <div id="qsSummaryPills" style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px">
+                                <span style="background:rgba(106,27,154,0.12);color:#4a148c;padding:5px 14px;border-radius:20px;font-size:12.5px;font-weight:600" id="qsPillTotal">Total: —</span>
+                                <span style="background:rgba(40,167,69,0.12);color:#155724;padding:5px 14px;border-radius:20px;font-size:12.5px;font-weight:600" id="qsPillCorrect">Both Correct: —</span>
+                                <span style="background:rgba(196,69,105,0.12);color:#7b1040;padding:5px 14px;border-radius:20px;font-size:12.5px;font-weight:600" id="qsPillClasses">Classes Participated: —</span>
+                            </div>
+
+                            <!-- Class breakdown table -->
+                            <div id="qsClassBreakdown">
+                                <p style="color:#999;font-size:13px;text-align:center;padding:12px">Select a date above to see class-wise breakdown</p>
+                            </div>
+                        </div>
+
+                        <!-- ── QUIZ INFO NOTICE BOX ─────────────────────────────────────── -->
+                        <div id="qsInfoBox" style="background:#fffde7;border-radius:10px;padding:16px 20px;margin-bottom:18px;border-left:4px solid #ffc107;display:none">
+                            <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px">
+                                <div style="flex:1">
+                                    <h4 style="color:#856404;margin:0 0 6px;font-size:0.95em">📋 Quiz Summary — <span id="qsInfoDate"></span></h4>
+                                    <div id="qsInfoText" style="color:#555;font-size:13px;line-height:1.7"></div>
+                                </div>
+                                <button onclick="copyQsInfo()" style="background:#ffc107;color:#1a0030;border:none;padding:5px 12px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:700;white-space:nowrap">📋 Copy</button>
+                            </div>
+                        </div>
+
+                        <!-- ── TODAY'S FULL SUBMISSIONS TABLE ──────────────────────────── -->
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px">
                             <h3 style="color:#6a1b9a;margin:0">Today's Quiz Submissions</h3>
-                            <button class="btn btn-info btn-small" onclick="loadQuizSubmissionsAdmin()">🔄 Refresh Submissions</button>
+                            <div style="display:flex;gap:8px;align-items:center">
+                                <select id="qsClassFilter" onchange="filterSubmissionsTable()" style="padding:6px 10px;border:1px solid #6a1b9a;border-radius:6px;font-size:13px;outline:none">
+                                    <option value="">All Classes</option>
+                                </select>
+                                <select id="qsScoreFilter" onchange="filterSubmissionsTable()" style="padding:6px 10px;border:1px solid #6a1b9a;border-radius:6px;font-size:13px;outline:none">
+                                    <option value="">All Scores</option>
+                                    <option value="2">Both Correct (2/2)</option>
+                                    <option value="1">One Correct (1/2)</option>
+                                    <option value="0">None Correct (0/2)</option>
+                                </select>
+                                <button class="btn btn-info btn-small" onclick="loadQuizSubmissionsAdmin()">🔄 Refresh</button>
+                            </div>
                         </div>
                         <div class="table-wrapper">
                             <table>
@@ -1355,7 +1475,201 @@
                     </div>
                 </div>
             </div>
+
+            <!-- ================================================ -->
+            <!-- LEADERBOARD ADMIN PANEL (Super Admin only)       -->
+            <!-- Accessed via the "🏆 Leaderboard" tab above      -->
+            <!-- ================================================ -->
+            <div id="leaderboardAdmin" class="form-section super-admin-only" style="margin-top:20px">
+                <h2 style="color:#ffd700;margin-bottom:12px;text-shadow:0 2px 8px rgba(0,0,0,0.4)">🏆 Leaderboard Management</h2>
+
+                <!-- ── WHO / WHAT detail banner ── -->
+                <div style="background:linear-gradient(135deg,#1a0030 0%,#3d0060 50%,#6a1b9a 100%);border-radius:14px;padding:22px 24px;margin-bottom:18px;border:2px solid rgba(255,215,0,0.35);box-shadow:0 6px 24px rgba(106,27,154,0.35)">
+                    <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
+                        <span style="font-size:2em">🏅</span>
+                        <div>
+                            <h3 style="color:#ffd700;margin:0;font-size:1.15em;letter-spacing:0.5px">Spurthi Youth Fest 2026 — Class of the Year</h3>
+                            <p style="color:rgba(255,255,255,0.7);margin:3px 0 0;font-size:12px">Davan Institute of Advanced Management Studies, Davangere</p>
+                        </div>
+                    </div>
+                    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin-bottom:14px">
+                        <div style="background:rgba(255,255,255,0.08);border-radius:8px;padding:10px 14px;border-left:3px solid #ffd700">
+                            <p style="color:#ffd700;font-size:11px;font-weight:700;margin:0 0 3px;text-transform:uppercase;letter-spacing:1px">Competition</p>
+                            <p style="color:#fff;font-size:13px;margin:0">11 Teams competing across 16 Events</p>
+                        </div>
+                        <div style="background:rgba(255,255,255,0.08);border-radius:8px;padding:10px 14px;border-left:3px solid #c44569">
+                            <p style="color:#ff8ab0;font-size:11px;font-weight:700;margin:0 0 3px;text-transform:uppercase;letter-spacing:1px">Event Period</p>
+                            <p style="color:#fff;font-size:13px;margin:0">1st to 18th March 2026</p>
+                        </div>
+                        <div style="background:rgba(255,255,255,0.08);border-radius:8px;padding:10px 14px;border-left:3px solid #4caf50">
+                            <p style="color:#a5d6a7;font-size:11px;font-weight:700;margin:0 0 3px;text-transform:uppercase;letter-spacing:1px">Points Sources</p>
+                            <p style="color:#fff;font-size:13px;margin:0">YF Reg · Quiz · Event Results · Custom</p>
+                        </div>
+                        <div style="background:rgba(255,255,255,0.08);border-radius:8px;padding:10px 14px;border-left:3px solid #2196f3">
+                            <p style="color:#90caf9;font-size:11px;font-weight:700;margin:0 0 3px;text-transform:uppercase;letter-spacing:1px">Declared By</p>
+                            <p style="color:#fff;font-size:13px;margin:0">Super Admin · Spurthi Youth Fest Committee</p>
+                        </div>
+                    </div>
+                    <p style="color:rgba(255,255,255,0.6);font-size:12px;margin:0;border-top:1px solid rgba(255,255,255,0.12);padding-top:10px">
+                        ⚠️ The leaderboard is <strong style="color:#ffd700">hidden from students</strong> until you publish it. Use the visibility toggle below to go live when results are final.
+                    </p>
+                </div>
+
+                <p style="color:#555;margin-bottom:15px;font-size:13px;background:#fff3cd;padding:10px 16px;border-radius:8px;border-left:4px solid #ffc107">
+                    ⚙️ Control what counts toward <strong style="color:#c44569">Class of the Year 2026</strong>. 
+                    Event results are pulled automatically when published. You can also add custom criteria and assign points manually.
+                </p>
+
+                <!-- ── PUBLISH TOGGLE ── -->
+                <div style="background:linear-gradient(135deg,#1a0030 0%,#6a1b9a 100%);padding:20px;border-radius:12px;margin-bottom:25px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:15px">
+                    <div>
+                        <h3 style="color:#fff;margin:0 0 5px">👁 Leaderboard Visibility</h3>
+                        <p style="color:rgba(255,255,255,0.75);margin:0;font-size:13px">When hidden, students cannot see the leaderboard at all. Publish only when you are ready.</p>
+                    </div>
+                    <div style="display:flex;gap:10px;align-items:center">
+                        <span id="lbVisibilityStatus" style="color:#ffd700;font-weight:700;font-size:1em">⏳ Checking…</span>
+                        <button id="lbPublishBtn" class="btn btn-success" onclick="toggleLeaderboardPublish()" style="min-width:160px">📢 Publish Leaderboard</button>
+                    </div>
+                </div>
+
+                <div id="lbAdminMessage" class="message"></div>
+
+                <!-- ── SECTION 1: Scoring Config ── -->
+                <div style="background:#f9f5ff;padding:20px;border-radius:12px;margin-bottom:25px;border:2px solid #e0d0ff">
+                    <h3 style="color:#6a1b9a;margin-bottom:15px">⚙️ Base Scoring Configuration</h3>
+                    <p style="color:#666;font-size:13px;margin-bottom:15px">These values control how automatic points are calculated. Changes save instantly and affect the public leaderboard.</p>
+                    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:15px">
+                        <div class="form-group" style="margin:0">
+                            <label>🎤 Youthfest Reg: pts per event enrolled</label>
+                            <input type="number" id="lbCfgYfPts" value="10" min="0" max="1000" style="border:2px solid #c44569">
+                        </div>
+                        <div class="form-group" style="margin:0">
+                            <label>🏆 Youthfest Winner: pts per event win</label>
+                            <input type="number" id="lbCfgWinPts" value="50" min="0" max="1000" style="border:2px solid #ffc107">
+                        </div>
+                        <div class="form-group" style="margin:0">
+                            <label>🥈 Youthfest Runner-Up: pts per event</label>
+                            <input type="number" id="lbCfgRunPts" value="30" min="0" max="1000" style="border:2px solid #6c757d">
+                        </div>
+                    </div>
+
+                    <!-- Quiz-specific scoring (new) -->
+                    <div style="margin-top:18px;padding:15px;background:#e8f5e9;border-radius:10px;border:2px solid #a5d6a7">
+                        <h4 style="color:#1b5e20;margin-bottom:12px">🧠 Quiz Competition — Points per Daily Quiz Day</h4>
+                        <p style="color:#333;font-size:12px;margin-bottom:14px">
+                            Quiz points are awarded <strong>per published quiz day only</strong> (Super Admin must publish winner).<br>
+                            Three criteria combine for each class on each published day:
+                        </p>
+                        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px">
+                            <div class="form-group" style="margin:0">
+                                <label style="color:#1b5e20">🥇 Quiz Daily Winner class gets (pts)</label>
+                                <input type="number" id="lbCfgQuizWinPts" value="20" min="0" max="500" style="border:2px solid #4caf50">
+                                <small style="color:#333">Flat bonus to the class of the declared daily winner</small>
+                            </div>
+                            <div class="form-group" style="margin:0">
+                                <label style="color:#1b5e20">🥈 Quiz Daily Runner-Up class gets (pts)</label>
+                                <input type="number" id="lbCfgQuizRunPts" value="10" min="0" max="500" style="border:2px solid #81c784">
+                                <small style="color:#333">Flat bonus to the class of the declared runner-up</small>
+                            </div>
+                            <div class="form-group" style="margin:0">
+                                <label style="color:#1b5e20">📊 Participation Rate bonus: max pts for 100% rate</label>
+                                <input type="number" id="lbCfgQuizMaxPts" value="10" min="0" max="100" style="border:2px solid #66bb6a">
+                                <small style="color:#333">Fair across class sizes — based on % of class that got max score</small>
+                            </div>
+                        </div>
+
+                        <!-- Class strength setup -->
+                        <div style="margin-top:14px;background:white;padding:14px;border-radius:8px;border:1px solid #a5d6a7">
+                            <h5 style="color:#1b5e20;margin:0 0 10px">🏫 Set Class Strength (for fair participation rate)</h5>
+                            <p style="color:#333;font-size:12px;margin-bottom:12px">
+                                Enter the total number of students in each class. The participation rate bonus is calculated as:<br>
+                                <strong style="color:#1b5e20">(Number of students who got max score in class ÷ Class Strength) × Max Pts</strong><br>
+                                This means a class of 35 and a class of 60 are judged equally fairly.
+                            </p>
+                            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px" id="lbClassStrengthGrid">
+                                <p style="color:#aaa;font-size:12px">Loading…</p>
+                            </div>
+                            <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:10px">
+                                <button class="btn btn-small btn-info" onclick="saveLbClassStrengths()">💾 Save Class Strengths</button>
+                                <span id="lbStrSaveMsg" style="display:none;background:#d4edda;color:#155724;border:1px solid #c3e6cb;padding:7px 14px;border-radius:6px;font-size:13px;font-weight:600">✅ Class strengths saved!</span>
+                                <span id="lbStrErrMsg"  style="display:none;background:#f8d7da;color:#721c24;border:1px solid #f5c6cb;padding:7px 14px;border-radius:6px;font-size:13px;font-weight:600"></span>
+                            </div>
+                        </div>
+
+                        <div style="margin-top:12px;background:#f1f8e9;padding:10px;border-radius:8px;border:1px solid #c5e1a5">
+                            <p style="margin:0;color:#33691e;font-size:12px">
+                                <strong>Example:</strong> Class "2ND BBA" has strength 35. On a quiz day, 7 students score max (2/2).<br>
+                                Participation rate = 7/35 = 20%. Bonus = 20% × 10 = <strong>2 pts</strong>.<br>
+                                Class "1ST BCA" has strength 60. 12 students score max = 12/60 = 20% → same 2 pts. ✅ Fair!
+                            </p>
+                        </div>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:15px">
+                        <button class="btn btn-success" onclick="saveLbConfig()">💾 Save Config</button>
+                        <span id="lbCfgSaveMsg" style="display:none;background:#d4edda;color:#155724;border:1px solid #c3e6cb;padding:7px 14px;border-radius:6px;font-size:13px;font-weight:600">✅ Config saved! Leaderboard updates in ≤60s</span>
+                        <span id="lbCfgErrMsg"  style="display:none;background:#f8d7da;color:#721c24;border:1px solid #f5c6cb;padding:7px 14px;border-radius:6px;font-size:13px;font-weight:600"></span>
+                    </div>
+                </div>
+
+                <!-- ── SECTION 2: Published Results Impact ── -->
+                <div style="background:#f0fff4;padding:20px;border-radius:12px;margin-bottom:25px;border:2px solid #b2dfdb">
+                    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:15px">
+                        <h3 style="color:#155724;margin:0">📢 Published Event Results → Points</h3>
+                        <button class="btn btn-small btn-info" onclick="loadLbPublishedResults()">🔄 Refresh</button>
+                    </div>
+                    <p style="color:#555;font-size:13px;margin-bottom:15px">
+                        When you publish results for a Youthfest event, the winning class gets <strong id="lbWinPtsDisplay">50</strong> pts 
+                        and runner-up gets <strong id="lbRunPtsDisplay">30</strong> pts automatically on the leaderboard.<br>
+                        For the <strong>Quiz Competition</strong>, quiz points (winner class, runner-up class, max-correct bonus) are added 
+                        automatically each day you publish a quiz winner.
+                    </p>
+                    <div id="lbPublishedResultsList">
+                        <p style="color:#aaa;font-size:13px">Click Refresh to load published results…</p>
+                    </div>
+                </div>
+
+                <!-- ── SECTION 3: Custom Criteria ── -->
+                <div style="background:#fff8e1;padding:20px;border-radius:12px;margin-bottom:25px;border:2px solid #ffe082">
+                    <h3 style="color:#e65100;margin-bottom:8px">✨ Custom Criteria (Manual Points)</h3>
+                    <p style="color:#666;font-size:13px;margin-bottom:15px">
+                        Add any extra scoring category (e.g., "Best Dressed Class", "Punctuality", "Attendance") and assign points per class manually.
+                    </p>
+
+                    <!-- Add new criterion -->
+                    <div style="background:white;padding:15px;border-radius:8px;margin-bottom:15px;border:1px solid #ffe082">
+                        <h4 style="color:#856404;margin-bottom:12px">➕ Add New Criterion</h4>
+                        <div style="display:grid;grid-template-columns:1fr auto;gap:10px;align-items:end">
+                            <div class="form-group" style="margin:0">
+                                <label>Criterion Name:</label>
+                                <input type="text" id="lbNewCriterionName" placeholder="e.g., Best Decorated Class, Punctuality…">
+                            </div>
+                            <button class="btn btn-small" onclick="addLbCriterion()" style="height:46px;white-space:nowrap">+ Add</button>
+                        </div>
+                    </div>
+
+                    <!-- Existing criteria list -->
+                    <div id="lbCriteriaList">
+                        <p style="color:#aaa;font-size:13px;text-align:center;padding:20px">Loading custom criteria…</p>
+                    </div>
+                </div>
+
+                <!-- ── SECTION 4: Full Points Preview ── -->
+                <div style="background:linear-gradient(135deg,#1a0030 0%,#3d0060 100%);padding:20px;border-radius:12px;border:2px solid rgba(255,215,0,0.3)">
+                    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:8px">
+                        <h3 style="color:#ffd700;margin:0">👁 Live Points Preview (All Sources)</h3>
+                        <div style="display:flex;gap:8px;align-items:center">
+                            <span id="lbPreviewUpdated" style="color:rgba(255,255,255,0.5);font-size:11px"></span>
+                            <button class="btn btn-small btn-info" onclick="loadLbAdminPreview()">🔄 Refresh</button>
+                        </div>
+                    </div>
+                    <p style="color:rgba(255,255,255,0.6);font-size:12px;margin-bottom:15px">⚠️ This is exactly what the public leaderboard will show. Verify before publishing.</p>
+                    <div id="lbAdminPreview">
+                        <p style="color:rgba(255,255,255,0.4);text-align:center;padding:20px">Loading preview…</p>
+                    </div>
+                </div>
+            </div>
         </div>
+        <!-- ── End Leaderboard Admin Panel ── -->
 
         <!-- Jury Section -->
         <div class="jury-only" id="jurySection">
@@ -1519,6 +1833,7 @@
         try {
             firebase.initializeApp(firebaseConfig);
             db = firebase.database();
+            window.db = db;  // expose globally so leaderboard script block can use it
             ref = db.ref('youthfest-enrollments');
         } catch (e) { console.error('Firebase error:', e); }
 
@@ -1802,12 +2117,19 @@
             if (!cls) { alert('Please select your class'); return; }
             
             crClass = cls;
+            window.currentCRClass = cls;  // expose globally for loadCRQuizStats
             isCR = true;
             currentUser = 'CR';
             document.getElementById('userInfo').innerHTML = 'Logged in as: <span class="admin-badge">CR - '+cls+'</span>';
             document.getElementById('loginSection').style.display = 'none';
             document.getElementById('crSection').style.display = 'block';
             document.getElementById('crClassName').textContent = cls;
+            
+            // Pre-populate quiz date filter for CR
+            populateQsDateFilter().then(() => {
+                const d = document.getElementById('crQsDateFilter');
+                if (d && !d.value) d.value = getQuizToday();
+            });
             
             // Force reload data from Firebase and then render
             console.log('=== CR LOGIN ===');
@@ -1901,6 +2223,9 @@
             
             // Show all tabs including super admin tabs
             document.querySelectorAll('.super-admin-only:not(.form-section)').forEach(el => el.style.display = 'block');
+            
+            // Show HWP edit controls for Super Admin
+            if (typeof hwpShowAdminControls === 'function') hwpShowAdminControls();
             
             // Super admin always sees Results tab
             document.getElementById('resultsTab').style.display = 'block';
@@ -2627,16 +2952,31 @@
             document.querySelectorAll('#adminSection .form-section').forEach(s => s.classList.remove('active'));
             event.target.classList.add('active');
             document.getElementById(tab).classList.add('active');
-            
+
+            // Toggle white box away for leaderboard tab
+            const adminBox = document.getElementById('adminContentBox');
+            if (adminBox) {
+                if (tab === 'leaderboardAdmin') {
+                    adminBox.classList.add('lb-active');
+                } else {
+                    adminBox.classList.remove('lb-active');
+                }
+            }
+
             if (tab === 'results') {
                 loadResultsTab();
             }
             if (tab === 'quizManagement') {
-                // Scroll to top when opening Quiz Management
                 window.scrollTo({ top: 0, behavior: 'smooth' });
                 loadQuizManagementStats();
                 showQuizManagementTab('questions');
-                initializeDateSelector(); // Initialize date selector with today's date
+                initializeDateSelector();
+            }
+            if (tab === 'leaderboardAdmin') {
+                if (typeof loadLbConfigIntoForm   === 'function') loadLbConfigIntoForm();
+                if (typeof loadLbCriteriaList     === 'function') loadLbCriteriaList();
+                if (typeof loadLbPublishedResults === 'function') loadLbPublishedResults();
+                if (typeof loadLbAdminPreview     === 'function') loadLbAdminPreview();
             }
         }
 
@@ -6233,22 +6573,305 @@ Davan Institute Team`;
                 const snap = await db.ref(`quizSubmissions/${today}`).once('value');
                 const tbody = document.getElementById('quizSubmissionsTableAdmin');
                 tbody.innerHTML = '';
-                
-                if (!snap.exists()) {
-                    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center">No submissions yet today.</td></tr>';
-                    return;
+
+                // Populate class filter dropdown
+                const classSet = new Set();
+                const allRows = [];
+                if (snap.exists()) {
+                    snap.forEach(child => {
+                        const s = child.val();
+                        allRows.push(s);
+                        if (s.studentClass) classSet.add(s.studentClass);
+                    });
                 }
-                
-                let idx = 1;
-                snap.forEach(child => {
-                    const s = child.val();
-                    const row = tbody.insertRow();
-                    const mins = Math.floor(s.timeTaken / 60);
-                    const secs = s.timeTaken % 60;
-                    row.innerHTML = `<td>${idx++}</td><td>${s.studentName}</td><td>${s.studentEmail}</td><td>${s.studentClass}</td><td>${new Date(s.submittedAt).toLocaleString()}</td><td><strong>${s.score}/2</strong></td><td>${mins}m ${secs}s</td>`;
-                });
+                const classFilter = document.getElementById('qsClassFilter');
+                if (classFilter) {
+                    const prev = classFilter.value;
+                    classFilter.innerHTML = '<option value="">All Classes</option>';
+                    [...classSet].sort().forEach(c => {
+                        const o = document.createElement('option');
+                        o.value = c; o.textContent = c;
+                        if (c === prev) o.selected = true;
+                        classFilter.appendChild(o);
+                    });
+                }
+
+                // Store rows globally for client-side filter
+                window._qsAllRows = allRows;
+                filterSubmissionsTable();
+
+                // Populate date dropdown and auto-load stats for today
+                await populateQsDateFilter();
+                const dateSel = document.getElementById('qsDateFilter');
+                if (dateSel && !dateSel.value) {
+                    dateSel.value = today;
+                }
+                loadClassStats();
+
             } catch (err) {
                 console.error('Load submissions error:', err);
+            }
+        }
+
+        function filterSubmissionsTable() {
+            const tbody = document.getElementById('quizSubmissionsTableAdmin');
+            if (!tbody) return;
+            const rows = window._qsAllRows || [];
+            const classF = (document.getElementById('qsClassFilter') || {}).value || '';
+            const scoreF = (document.getElementById('qsScoreFilter') || {}).value;
+            tbody.innerHTML = '';
+
+            if (rows.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#999">No submissions yet today.</td></tr>';
+                return;
+            }
+            let idx = 1;
+            rows.filter(s => {
+                if (classF && s.studentClass !== classF) return false;
+                if (scoreF !== '' && scoreF !== undefined && String(s.score) !== scoreF) return false;
+                return true;
+            }).forEach(s => {
+                const row = tbody.insertRow();
+                const mins = Math.floor(s.timeTaken / 60);
+                const secs = s.timeTaken % 60;
+                const scoreBg = s.score === 2 ? '#d4edda' : s.score === 1 ? '#fff3cd' : '#f8d7da';
+                const scoreCol = s.score === 2 ? '#155724' : s.score === 1 ? '#856404' : '#721c24';
+                row.innerHTML = `<td>${idx++}</td><td>${s.studentName||''}</td><td>${s.studentEmail||''}</td>
+                    <td><span style="background:#f3e5ff;color:#4a148c;padding:2px 8px;border-radius:10px;font-size:12px">${s.studentClass||''}</span></td>
+                    <td style="font-size:12px">${new Date(s.submittedAt).toLocaleString('en-IN')}</td>
+                    <td><span style="background:${scoreBg};color:${scoreCol};padding:3px 10px;border-radius:10px;font-weight:700">${s.score}/2</span></td>
+                    <td style="font-size:12px">${mins}m ${secs}s</td>`;
+            });
+            if (idx === 1) tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#999">No matching submissions.</td></tr>';
+        }
+
+        async function populateQsDateFilter() {
+            try {
+                const snap = await db.ref('quizSubmissions').once('value');
+                const sel  = document.getElementById('qsDateFilter');
+                if (!sel || !snap.exists()) return;
+                const cur = sel.value;
+                const dates = [];
+                snap.forEach(d => dates.push(d.key));
+                dates.sort((a,b) => b.localeCompare(a));
+                sel.innerHTML = '<option value="">— Select Date —</option>';
+                dates.forEach(d => {
+                    const o = document.createElement('option');
+                    o.value = d;
+                    o.textContent = new Date(d).toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
+                    if (d === cur || (!cur && d === getQuizToday())) o.selected = true;
+                    sel.appendChild(o);
+                });
+                // Also populate CR date filter
+                const crSel = document.getElementById('crQsDateFilter');
+                if (crSel) {
+                    const crCur = crSel.value;
+                    crSel.innerHTML = '<option value="">— Select Date —</option>';
+                    dates.forEach(d => {
+                        const o = document.createElement('option');
+                        o.value = d;
+                        o.textContent = new Date(d).toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
+                        if (d === crCur || (!crCur && d === getQuizToday())) o.selected = true;
+                        crSel.appendChild(o);
+                    });
+                }
+            } catch(e) { console.warn('populateQsDateFilter:', e); }
+        }
+
+        async function loadClassStats() {
+            const sel  = document.getElementById('qsDateFilter');
+            const date = sel ? sel.value : getQuizToday();
+            const container = document.getElementById('qsClassBreakdown');
+            const infoBox   = document.getElementById('qsInfoBox');
+            const pillTotal  = document.getElementById('qsPillTotal');
+            const pillCorrect= document.getElementById('qsPillCorrect');
+            const pillClass  = document.getElementById('qsPillClasses');
+            if (!date) {
+                if (container) container.innerHTML = '<p style="color:#999;font-size:13px;text-align:center;padding:12px">Select a date above</p>';
+                return;
+            }
+            if (container) container.innerHTML = '<p style="color:#aaa;font-size:13px;text-align:center;padding:12px">⏳ Loading…</p>';
+            try {
+                const snap = await db.ref(`quizSubmissions/${date}`).once('value');
+                const dateStr = new Date(date).toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+
+                if (!snap.exists()) {
+                    if (container) container.innerHTML = `<p style="color:#999;font-size:13px;text-align:center;padding:12px">No submissions found for ${dateStr}</p>`;
+                    if (pillTotal) pillTotal.textContent = 'Total: 0';
+                    if (pillCorrect) pillCorrect.textContent = 'Both Correct: 0';
+                    if (pillClass) pillClass.textContent = 'Classes: 0';
+                    if (infoBox) infoBox.style.display = 'none';
+                    return;
+                }
+
+                // Aggregate by class
+                const classMap = {}; // class → {total, correct, partial, none, students[]}
+                let grandTotal = 0, grandCorrect = 0;
+                snap.forEach(child => {
+                    const s = child.val();
+                    const cls = s.studentClass || 'Unknown';
+                    if (!classMap[cls]) classMap[cls] = {total:0, correct:0, partial:0, none:0};
+                    classMap[cls].total++;
+                    grandTotal++;
+                    if (s.score === 2) { classMap[cls].correct++; grandCorrect++; }
+                    else if (s.score === 1) classMap[cls].partial++;
+                    else classMap[cls].none++;
+                });
+
+                const classCount = Object.keys(classMap).length;
+                if (pillTotal)   pillTotal.textContent   = `Total: ${grandTotal}`;
+                if (pillCorrect) pillCorrect.textContent = `Both Correct: ${grandCorrect}`;
+                if (pillClass)   pillClass.textContent   = `Classes: ${classCount}`;
+
+                // Build class breakdown table
+                const sorted = Object.entries(classMap).sort((a,b) => b[1].total - a[1].total);
+                let html = `<div class="table-wrapper" style="margin:0"><table style="font-size:13px">
+                    <thead><tr>
+                        <th style="background:#3d0060;color:#ffd700">Class</th>
+                        <th style="background:#3d0060;color:white">Participated</th>
+                        <th style="background:#3d0060;color:#a5d6a7">Both Correct ✅</th>
+                        <th style="background:#3d0060;color:#fff3cd">Partial (1/2) ⚠️</th>
+                        <th style="background:#3d0060;color:#f5c6cb">None (0/2) ❌</th>
+                        <th style="background:#3d0060;color:#80deea">Accuracy</th>
+                    </tr></thead><tbody>`;
+                sorted.forEach(([cls, d]) => {
+                    const acc = d.total > 0 ? Math.round((d.correct/d.total)*100) : 0;
+                    const barColor = acc >= 70 ? '#28a745' : acc >= 40 ? '#ffc107' : '#dc3545';
+                    html += `<tr>
+                        <td><strong>${cls}</strong></td>
+                        <td style="text-align:center;font-weight:700">${d.total}</td>
+                        <td style="text-align:center;color:#155724;font-weight:600">${d.correct}</td>
+                        <td style="text-align:center;color:#856404">${d.partial}</td>
+                        <td style="text-align:center;color:#721c24">${d.none}</td>
+                        <td style="min-width:90px">
+                            <div style="display:flex;align-items:center;gap:6px">
+                                <div style="flex:1;background:#eee;border-radius:4px;height:8px;overflow:hidden">
+                                    <div style="width:${acc}%;background:${barColor};height:100%;border-radius:4px;transition:width 0.4s"></div>
+                                </div>
+                                <span style="font-size:11px;font-weight:700;color:${barColor};min-width:30px">${acc}%</span>
+                            </div>
+                        </td>
+                    </tr>`;
+                });
+                html += '</tbody></table></div>';
+                if (container) container.innerHTML = html;
+
+                // Build info text box
+                const infoDateEl = document.getElementById('qsInfoDate');
+                const infoTextEl = document.getElementById('qsInfoText');
+                if (infoDateEl) infoDateEl.textContent = dateStr;
+                if (infoTextEl) {
+                    let infoLines = `<strong>${grandTotal}</strong> students participated across <strong>${classCount}</strong> classes.<br>`;
+                    infoLines += `<strong>${grandCorrect}</strong> got both questions correct (${grandTotal>0?Math.round((grandCorrect/grandTotal)*100):0}% accuracy).<br><br>`;
+                    infoLines += '<strong>Class-wise breakdown:</strong><br>';
+                    sorted.forEach(([cls,d]) => {
+                        const acc = d.total>0?Math.round((d.correct/d.total)*100):0;
+                        infoLines += `• ${cls}: ${d.total} participated, ${d.correct} correct (${acc}%)<br>`;
+                    });
+                    infoTextEl.innerHTML = infoLines;
+                }
+                if (infoBox) infoBox.style.display = 'block';
+                // Save for copy
+                window._qsLastInfoText = `Quiz Summary — ${dateStr}\n\n${grandTotal} students participated across ${classCount} classes.\n${grandCorrect} got both questions correct (${grandTotal>0?Math.round((grandCorrect/grandTotal)*100):0}% accuracy).\n\nClass-wise:\n` +
+                    sorted.map(([cls,d])=>`• ${cls}: ${d.total} participated, ${d.correct} correct (${d.total>0?Math.round((d.correct/d.total)*100):0}%)`).join('\n');
+
+            } catch(e) {
+                if (container) container.innerHTML = `<p style="color:red;font-size:13px;padding:12px">Error: ${e.message}</p>`;
+            }
+        }
+
+        function copyQsInfo() {
+            const txt = window._qsLastInfoText || '';
+            if (!txt) return;
+            navigator.clipboard.writeText(txt).then(()=>{
+                const btn = document.querySelector('[onclick="copyQsInfo()"]');
+                if (btn) { const orig=btn.textContent; btn.textContent='✅ Copied!'; setTimeout(()=>btn.textContent=orig,2000); }
+            }).catch(()=>{ /* fallback */ });
+        }
+
+        async function loadCRQuizStats() {
+            const crClass  = typeof currentCRClass !== 'undefined' ? currentCRClass : (document.getElementById('crClassName')||{}).textContent || '';
+            const dateSel  = document.getElementById('crQsDateFilter');
+            // Populate dates first
+            await populateQsDateFilter();
+            const date = dateSel ? dateSel.value || getQuizToday() : getQuizToday();
+            if (dateSel && !dateSel.value) dateSel.value = date;
+
+            const dateStr  = new Date(date).toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+            const infoDate = document.getElementById('crQsInfoDate');
+            const infoText = document.getElementById('crQsInfoText');
+            const tbody    = document.getElementById('crQsTable');
+            const totEl    = document.getElementById('crQsTotal');
+            const corrEl   = document.getElementById('crQsCorrect');
+            const partEl   = document.getElementById('crQsPartial');
+            const rateEl   = document.getElementById('crQsRate');
+            if (infoDate) infoDate.textContent = dateStr;
+            if (tbody) tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#aaa">⏳ Loading…</td></tr>';
+            if (infoText) infoText.textContent = '⏳ Loading…';
+            try {
+                const snap = await db.ref(`quizSubmissions/${date}`).once('value');
+                if (!snap.exists()) {
+                    if (totEl) totEl.textContent = '0';
+                    if (corrEl) corrEl.textContent = '0';
+                    if (partEl) partEl.textContent = '0';
+                    if (rateEl) rateEl.textContent = '0%';
+                    if (tbody) tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:#999">No quiz submissions on ${dateStr}</td></tr>`;
+                    if (infoText) infoText.textContent = `No quiz submissions found for your class on ${dateStr}.`;
+                    return;
+                }
+                // Filter to CR's class
+                const classStudents = [];
+                let total=0,correct=0,partial=0;
+                snap.forEach(child => {
+                    const s = child.val();
+                    if (!crClass || s.studentClass === crClass) {
+                        classStudents.push(s);
+                        total++;
+                        if (s.score===2) correct++;
+                        else if(s.score===1) partial++;
+                    }
+                });
+                const rate = total>0?Math.round((correct/total)*100):0;
+                if (totEl)  totEl.textContent  = total;
+                if (corrEl) corrEl.textContent = correct;
+                if (partEl) partEl.textContent = partial;
+                if (rateEl) rateEl.textContent = rate+'%';
+
+                // Info text
+                if (infoText) {
+                    if (total === 0) {
+                        infoText.innerHTML = `<strong>No students</strong> from <strong>${crClass}</strong> participated in the quiz on ${dateStr}.`;
+                    } else {
+                        infoText.innerHTML = `On <strong>${dateStr}</strong>, <strong>${total}</strong> student(s) from <strong>${crClass}</strong> participated in the online quiz.<br>
+                            <strong>${correct}</strong> got both questions correct (${rate}% accuracy).<br>
+                            <strong>${partial}</strong> got one correct. <strong>${total-correct-partial}</strong> got none correct.<br>
+                            ${correct>=2 ? '✅ Your class has eligible students for winner selection.' : correct===1 ? '⚠️ Only 1 correct answer — need 2+ for winner &amp; runner-up.' : '❌ No correct answers from your class today.'}`;
+                    }
+                }
+
+                // Student table
+                if (tbody) {
+                    if (classStudents.length === 0) {
+                        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:#999">No submissions from ${crClass} on this date.</td></tr>`;
+                    } else {
+                        classStudents.sort((a,b)=>b.score-a.score||(a.timeTaken-b.timeTaken));
+                        tbody.innerHTML = '';
+                        classStudents.forEach((s,i) => {
+                            const row = tbody.insertRow();
+                            const mins = Math.floor(s.timeTaken/60), secs = s.timeTaken%60;
+                            const scoreBg = s.score===2?'#d4edda':s.score===1?'#fff3cd':'#f8d7da';
+                            const scoreCol= s.score===2?'#155724':s.score===1?'#856404':'#721c24';
+                            row.innerHTML = `<td>${i+1}</td>
+                                <td><strong>${s.studentName||''}</strong></td>
+                                <td><span style="background:${scoreBg};color:${scoreCol};padding:3px 10px;border-radius:10px;font-weight:700">${s.score}/2</span></td>
+                                <td>${mins}m ${secs}s</td>
+                                <td style="font-size:12px">${new Date(s.submittedAt).toLocaleString('en-IN')}</td>`;
+                        });
+                    }
+                }
+            } catch(e) {
+                if (infoText) infoText.textContent = 'Error loading data: ' + e.message;
+                if (tbody) tbody.innerHTML = `<tr><td colspan="5" style="color:red;text-align:center">Error: ${e.message}</td></tr>`;
             }
         }
         
@@ -6972,6 +7595,1659 @@ Davan Institute Team`;
     </script>
     
     <!-- ============================================ -->
+    <!-- CLASS OF THE YEAR 2026 LEADERBOARD           -->
+    <!-- Pulls live data from Firebase automatically  -->
+    <!-- ============================================ -->
+    <style>
+        /* ===== LEADERBOARD STYLES ===== */
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@400;500;600&display=swap');
+
+        @keyframes lbFadeUp {
+            from { opacity:0; transform:translateY(40px); }
+            to   { opacity:1; transform:translateY(0); }
+        }
+        @keyframes lbShine {
+            0%   { background-position: -200% center; }
+            100% { background-position: 200% center; }
+        }
+        @keyframes lbGlow {
+            0%,100% { box-shadow: 0 0 20px rgba(196,69,105,0.3); }
+            50%      { box-shadow: 0 0 40px rgba(196,69,105,0.6), 0 0 60px rgba(106,27,154,0.3); }
+        }
+        @keyframes lbPodiumRise {
+            from { transform: scaleY(0); transform-origin: bottom; }
+            to   { transform: scaleY(1); transform-origin: bottom; }
+        }
+        @keyframes lbSparkle {
+            0%,100% { transform: scale(1) rotate(0deg); opacity:1; }
+            50%      { transform: scale(1.3) rotate(180deg); opacity:0.8; }
+        }
+        @keyframes lbRowSlide {
+            from { opacity:0; transform:translateX(-30px); }
+            to   { opacity:1; transform:translateX(0); }
+        }
+        @keyframes lbCountUp {
+            from { opacity:0; transform:scale(0.5); }
+            to   { opacity:1; transform:scale(1); }
+        }
+        @keyframes lbCrownFloat {
+            0%,100% { transform: translateY(0px) rotate(-5deg); }
+            50%      { transform: translateY(-8px) rotate(5deg); }
+        }
+        @keyframes lbPulseRing {
+            0%   { transform: scale(1); opacity:0.8; }
+            100% { transform: scale(1.5); opacity:0; }
+        }
+
+        .lb-section {
+            margin: 40px 0 30px;
+            animation: lbFadeUp 0.8s ease-out;
+        }
+
+        /* --- Header --- */
+        .lb-header {
+            text-align: center;
+            padding: 50px 30px 40px;
+            background: linear-gradient(135deg, #1a0030 0%, #3d0060 40%, #6a1b9a 70%, #c44569 100%);
+            border-radius: 24px 24px 0 0;
+            position: relative;
+            overflow: hidden;
+        }
+        .lb-header::before {
+            content: '';
+            position: absolute; inset: 0;
+            background: repeating-linear-gradient(
+                45deg,
+                transparent, transparent 20px,
+                rgba(255,255,255,0.03) 20px, rgba(255,255,255,0.03) 40px
+            );
+        }
+        .lb-header-stars {
+            position: absolute; inset: 0; pointer-events: none;
+        }
+        .lb-star {
+            position: absolute;
+            color: rgba(255,255,255,0.15);
+            font-size: 1.2em;
+            animation: lbSparkle 3s ease-in-out infinite;
+        }
+        .lb-crown {
+            font-size: 4em;
+            display: block;
+            margin-bottom: 10px;
+            animation: lbCrownFloat 3s ease-in-out infinite;
+            position: relative; z-index:1;
+        }
+        .lb-title {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: clamp(1.8em, 4vw, 3em);
+            font-weight: 900;
+            color: #fff;
+            letter-spacing: 2px;
+            margin-bottom: 6px;
+            background: linear-gradient(90deg, #fff 0%, #ffd700 50%, #fff 100%);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: lbShine 3s linear infinite;
+            position: relative; z-index:1;
+        }
+        .lb-subtitle {
+            font-family: 'DM Sans', sans-serif;
+            color: rgba(255,255,255,0.75);
+            font-size: 1em;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            position: relative; z-index:1;
+        }
+        .lb-events-pills {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+            position: relative; z-index:1;
+        }
+        .lb-pill {
+            background: rgba(255,255,255,0.12);
+            border: 1px solid rgba(255,255,255,0.25);
+            color: white;
+            padding: 6px 18px;
+            border-radius: 30px;
+            font-size: 0.85em;
+            font-family: 'DM Sans', sans-serif;
+            backdrop-filter: blur(8px);
+        }
+
+        /* --- Body card --- */
+        .lb-body {
+            background: white;
+            border-radius: 0 0 24px 24px;
+            box-shadow: 0 20px 60px rgba(106,27,154,0.15);
+            overflow: hidden;
+        }
+
+        /* --- Scoring legend --- */
+        .lb-legend {
+            display: flex;
+            gap: 10px;
+            padding: 20px 30px;
+            background: #faf5ff;
+            border-bottom: 2px solid #f0e6ff;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .lb-legend-title {
+            font-family: 'DM Sans', sans-serif;
+            font-weight: 600;
+            color: #6a1b9a;
+            font-size: 0.9em;
+            margin-right: 6px;
+        }
+        .lb-legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: white;
+            border: 1px solid #e0d0f0;
+            border-radius: 20px;
+            padding: 5px 14px;
+            font-size: 0.82em;
+            font-family: 'DM Sans', sans-serif;
+            color: #444;
+        }
+        .lb-legend-dot {
+            width: 10px; height: 10px;
+            border-radius: 50%;
+        }
+
+        /* --- Top 3 Podium --- */
+        .lb-podium-section {
+            padding: 40px 30px 20px;
+            background: linear-gradient(180deg, #fdf6ff 0%, #ffffff 100%);
+        }
+        .lb-podium-title {
+            text-align: center;
+            font-family: 'Playfair Display', serif;
+            color: #6a1b9a;
+            font-size: 1.4em;
+            margin-bottom: 30px;
+            font-weight: 700;
+        }
+        .lb-podium {
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            gap: 16px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .lb-podium-slot {
+            flex: 1;
+            text-align: center;
+            max-width: 180px;
+        }
+        .lb-podium-name {
+            font-family: 'DM Sans', sans-serif;
+            font-weight: 600;
+            font-size: 0.85em;
+            color: #333;
+            margin-bottom: 8px;
+            line-height: 1.3;
+            word-break: break-word;
+        }
+        .lb-podium-score {
+            font-family: 'Playfair Display', serif;
+            font-weight: 700;
+            font-size: 1.1em;
+            color: #6a1b9a;
+            margin-bottom: 8px;
+        }
+        .lb-podium-block {
+            border-radius: 12px 12px 0 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5em;
+            position: relative;
+            overflow: hidden;
+            animation: lbPodiumRise 0.8s ease-out;
+        }
+        .lb-podium-block::after {
+            content: '';
+            position: absolute; inset: 0;
+            background: linear-gradient(180deg, rgba(255,255,255,0.2) 0%, transparent 100%);
+        }
+        .lb-pos-1 .lb-podium-block {
+            height: 130px;
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+            box-shadow: 0 8px 25px rgba(255,165,0,0.4);
+        }
+        .lb-pos-2 .lb-podium-block {
+            height: 100px;
+            background: linear-gradient(135deg, #C0C0C0 0%, #A8A8A8 100%);
+            box-shadow: 0 6px 20px rgba(150,150,150,0.3);
+        }
+        .lb-pos-3 .lb-podium-block {
+            height: 75px;
+            background: linear-gradient(135deg, #CD7F32 0%, #A0522D 100%);
+            box-shadow: 0 5px 15px rgba(160,82,45,0.3);
+        }
+        .lb-pos-1 .lb-podium-name {
+            font-size: 1em;
+            color: #4a0080;
+        }
+        .lb-pos-1 .lb-podium-score {
+            font-size: 1.3em;
+            color: #c44569;
+        }
+        .lb-pos-1-ring {
+            position: relative;
+        }
+        .lb-pos-1-ring::before {
+            content: '';
+            position: absolute;
+            inset: -4px;
+            border-radius: 50%;
+            background: conic-gradient(#FFD700, #FF6B6B, #6A1B9A, #FFD700);
+            z-index: -1;
+            animation: lbPulseRing 2s ease-out infinite;
+            opacity: 0;
+        }
+
+        /* --- Full Rankings Table --- */
+        .lb-table-section {
+            padding: 10px 30px 40px;
+        }
+        .lb-table-header {
+            font-family: 'Playfair Display', serif;
+            color: #6a1b9a;
+            font-size: 1.2em;
+            margin: 24px 0 16px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .lb-table-wrap {
+            overflow-x: auto;
+            border-radius: 16px;
+            border: 2px solid #f0e6ff;
+        }
+        .lb-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 560px;
+            font-family: 'DM Sans', sans-serif;
+        }
+        .lb-table thead tr {
+            background: linear-gradient(135deg, #c44569 0%, #6a1b9a 100%);
+        }
+        .lb-table thead th {
+            color: white;
+            padding: 14px 18px;
+            font-size: 0.85em;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            text-align: left;
+            white-space: nowrap;
+        }
+        .lb-table tbody tr {
+            border-bottom: 1px solid #f5eeff;
+            transition: all 0.25s;
+            animation: lbRowSlide 0.4s ease-out both;
+        }
+        .lb-table tbody tr:hover {
+            background: #fdf5ff;
+            transform: translateX(4px);
+        }
+        .lb-table tbody tr:last-child {
+            border-bottom: none;
+        }
+        .lb-table tbody td {
+            padding: 14px 18px;
+            font-size: 0.92em;
+            color: #333;
+            white-space: nowrap;
+        }
+        .lb-rank-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 34px; height: 34px;
+            border-radius: 50%;
+            font-weight: 700;
+            font-size: 0.95em;
+        }
+        .lb-rank-1 { background: linear-gradient(135deg,#FFD700,#FFA500); color:#333; box-shadow:0 3px 10px rgba(255,165,0,0.4); }
+        .lb-rank-2 { background: linear-gradient(135deg,#C0C0C0,#A8A8A8); color:#333; box-shadow:0 3px 10px rgba(150,150,150,0.3); }
+        .lb-rank-3 { background: linear-gradient(135deg,#CD7F32,#A0522D); color:#fff; box-shadow:0 3px 10px rgba(160,82,45,0.3); }
+        .lb-rank-other { background: #f0e6ff; color:#6a1b9a; }
+        .lb-class-chip {
+            background: linear-gradient(135deg, #f3e5ff 0%, #e8d5ff 100%);
+            color: #6a1b9a;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.82em;
+            font-weight: 600;
+            display: inline-block;
+        }
+        .lb-pts-total {
+            font-weight: 700;
+            color: #c44569;
+            font-size: 1.05em;
+        }
+        .lb-pts-event {
+            font-size: 0.82em;
+            color: #888;
+        }
+        .lb-bar-wrap {
+            background: #f5eeff;
+            border-radius: 10px;
+            height: 8px;
+            min-width: 80px;
+            overflow: hidden;
+        }
+        .lb-bar-fill {
+            height: 100%;
+            border-radius: 10px;
+            background: linear-gradient(90deg, #c44569, #6a1b9a);
+            transition: width 1.2s ease;
+        }
+        .lb-loading {
+            text-align: center;
+            padding: 60px 20px;
+            color: #aaa;
+            font-family: 'DM Sans', sans-serif;
+        }
+        .lb-loading-spinner {
+            width: 40px; height: 40px;
+            border: 4px solid #f0e6ff;
+            border-top-color: #c44569;
+            border-radius: 50%;
+            margin: 0 auto 16px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { to { transform:rotate(360deg); } }
+
+        .lb-empty {
+            text-align: center;
+            padding: 50px 20px;
+            color: #bbb;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 1.1em;
+        }
+        .lb-last-updated {
+            text-align: center;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.8em;
+            color: #bbb;
+            padding: 15px;
+            border-top: 1px solid #f5eeff;
+        }
+        .lb-refresh-btn {
+            background: linear-gradient(135deg, #c44569 0%, #6a1b9a 100%);
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.85em;
+            font-family: 'DM Sans', sans-serif;
+            font-weight: 600;
+            margin-left: 10px;
+            transition: all 0.3s;
+        }
+        .lb-refresh-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(196,69,105,0.35);
+        }
+
+        /* Scoring breakdown popover */
+        .lb-breakdown {
+            display: inline-flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+        .lb-score-tag {
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.75em;
+            font-weight: 600;
+        }
+        .lb-score-yf   { background:#fff3cd; color:#856404; border:1px solid #ffc107; }
+        .lb-score-quiz { background:#d4edda; color:#155724; border:1px solid #28a745; }
+
+        @media (max-width: 600px) {
+            .lb-podium { gap: 8px; }
+            .lb-table-section, .lb-legend { padding-left: 15px; padding-right: 15px; }
+            .lb-pos-1 .lb-podium-block { height: 100px; }
+            .lb-pos-2 .lb-podium-block { height: 75px; }
+            .lb-pos-3 .lb-podium-block { height: 55px; }
+        }
+    </style>
+
+    <div class="lb-section" id="leaderboardSection">
+
+        <!-- Header -->
+        <div class="lb-header">
+            <div class="lb-header-stars" id="lbStars"></div>
+            <span class="lb-crown">👑</span>
+            <div class="lb-title">Class of the Year 2026</div>
+            <div class="lb-subtitle">Spurthi Youth Fest · Overall Rankings</div>
+            <div class="lb-events-pills">
+                <span class="lb-pill">🎤 Youthfest Registration</span>
+                <span class="lb-pill">🧠 Online Quiz Competition</span>
+            </div>
+        </div>
+
+        <!-- Body -->
+        <!-- Hidden-by-default gate; shown only when leaderboard is published -->
+        <div id="lbHiddenMsg" style="display:none;border-radius:0 0 24px 24px;overflow:hidden">
+
+            <!-- ── COMING SOON BANNER (always shown when hidden) ── -->
+            <div style="text-align:center;padding:50px 30px 40px;background:linear-gradient(135deg,#1a0030 0%,#3d0060 40%,#6a1b9a 70%,#c44569 100%);position:relative">
+                <div style="position:absolute;inset:0;background:repeating-linear-gradient(45deg,transparent,transparent 20px,rgba(255,255,255,0.02) 20px,rgba(255,255,255,0.02) 40px)"></div>
+                <div style="position:relative;z-index:1">
+                    <div style="font-size:3em;margin-bottom:14px">🔒</div>
+                    <!-- Editable heading -->
+                    <div id="hwpHeadingView">
+                        <h2 id="hwpHeadingText" style="color:#ffd700;margin-bottom:10px;font-size:1.8em;letter-spacing:1px;text-shadow:0 0 20px rgba(255,215,0,0.4)">Leaderboard Coming Soon!</h2>
+                    </div>
+                    <div id="hwpHeadingEdit" style="display:none;margin-bottom:10px">
+                        <input id="hwpHeadingInput" type="text" style="width:80%;max-width:500px;padding:10px 16px;border-radius:8px;border:2px solid #ffd700;background:rgba(255,255,255,0.1);color:#ffd700;font-size:1.3em;font-weight:700;text-align:center;outline:none">
+                    </div>
+                    <!-- Editable sub-text -->
+                    <div id="hwpSubView">
+                        <p id="hwpSubText" style="color:rgba(255,255,255,0.8);font-size:1em;margin:0">Results will be published by the Super Admin once the events are completed.<br>Check back soon!</p>
+                    </div>
+                    <div id="hwpSubEdit" style="display:none;margin-top:8px">
+                        <textarea id="hwpSubInput" rows="2" style="width:80%;max-width:500px;padding:10px 14px;border-radius:8px;border:2px solid rgba(255,255,255,0.4);background:rgba(255,255,255,0.1);color:white;font-size:0.95em;text-align:center;outline:none;resize:vertical"></textarea>
+                    </div>
+                    <!-- Super Admin edit controls (only shown when SA logged in) -->
+                    <div id="hwpBannerEditControls" class="super-admin-only" style="display:none;margin-top:16px;gap:8px;flex-wrap:wrap;justify-content:center">
+                        <button onclick="hwpToggleBannerEdit()" id="hwpBannerEditBtn" style="background:rgba(255,215,0,0.2);color:#ffd700;border:1px solid #ffd700;padding:6px 16px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:600">✏️ Edit Banner Text</button>
+                        <button onclick="hwpSaveBanner()" id="hwpBannerSaveBtn" style="display:none;background:#ffd700;color:#1a0030;border:none;padding:6px 16px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:700">💾 Save</button>
+                        <button onclick="hwpCancelBannerEdit()" id="hwpBannerCancelBtn" style="display:none;background:rgba(255,255,255,0.15);color:white;border:1px solid rgba(255,255,255,0.3);padding:6px 16px;border-radius:6px;cursor:pointer;font-size:13px">Cancel</button>
+                        <span id="hwpBannerSaveMsg" style="display:none;background:rgba(40,167,69,0.3);color:#a5d6a7;border:1px solid #28a745;padding:5px 12px;border-radius:6px;font-size:12px;font-weight:600">✅ Saved!</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── HOW WE PUBLISH — full section (white card below banner) ── -->
+            <div style="background:white">
+
+                <!-- Section header with SA edit toggle -->
+                <div style="background:linear-gradient(135deg,#f3e5ff,#fce4ec);padding:20px 28px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;border-bottom:2px solid #e8d5f5">
+                    <div style="display:flex;align-items:center;gap:10px">
+                        <span style="font-size:1.5em">📋</span>
+                        <div>
+                            <h3 id="hwpSectionTitle" style="color:#3d0060;margin:0;font-size:1.1em;font-weight:800">How We Publish the Leaderboard</h3>
+                            <p style="color:#666;margin:3px 0 0;font-size:12px">Transparent process — Spurthi Youth Fest 2026</p>
+                        </div>
+                    </div>
+                    <!-- SA edit mode toggle -->
+                    <div id="hwpEditModeControls" class="super-admin-only" style="display:none;gap:8px">
+                        <button onclick="hwpToggleEditMode()" id="hwpEditModeBtn" style="background:linear-gradient(135deg,#6a1b9a,#c44569);color:white;border:none;padding:7px 16px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:600">✏️ Edit This Section</button>
+                        <button onclick="hwpSaveAll()" id="hwpSaveAllBtn" style="display:none;background:#28a745;color:white;border:none;padding:7px 16px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:700">💾 Save All Changes</button>
+                        <button onclick="hwpCancelEdit()" id="hwpCancelBtn" style="display:none;background:#666;color:white;border:none;padding:7px 16px;border-radius:6px;cursor:pointer;font-size:13px">✕ Cancel</button>
+                        <span id="hwpSaveAllMsg" style="display:none;background:#d4edda;color:#155724;border:1px solid #c3e6cb;padding:5px 12px;border-radius:6px;font-size:12px;font-weight:600">✅ All changes saved!</span>
+                    </div>
+                </div>
+
+                <div style="padding:24px 28px">
+
+                    <!-- Overview text — editable -->
+                    <div id="hwpOverviewView" style="background:linear-gradient(135deg,#f3e5ff,#fce4ec);border-radius:10px;padding:16px 18px;margin-bottom:22px;border-left:4px solid #6a1b9a">
+                        <p id="hwpOverviewText" style="margin:0;color:#3d0060;font-size:13.5px;line-height:1.75">The <strong style="color:#c44569">Class of the Year 2026</strong> leaderboard ranks all <strong>11 classes</strong> competing across <strong>16 events</strong> at Spurthi Youth Fest. Rankings are hidden until the Super Admin verifies all results and officially publishes them — ensuring every score is accurate before you see it.</p>
+                    </div>
+                    <div id="hwpOverviewEdit" style="display:none;margin-bottom:22px">
+                        <label style="font-size:12px;color:#6a1b9a;font-weight:700;display:block;margin-bottom:6px">Overview paragraph (supports basic HTML like &lt;strong&gt;):</label>
+                        <textarea id="hwpOverviewInput" rows="4" style="width:100%;padding:10px 14px;border:2px solid #6a1b9a;border-radius:8px;font-size:13px;line-height:1.6;resize:vertical;outline:none"></textarea>
+                    </div>
+
+                    <!-- Points breakdown — 4 editable cards -->
+                    <h4 style="color:#1a0030;font-size:1em;margin:0 0 12px;display:flex;align-items:center;gap:8px">
+                        <span style="background:linear-gradient(135deg,#6a1b9a,#c44569);color:white;border-radius:50%;width:24px;height:24px;display:inline-flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;font-weight:700">1</span>
+                        How Points Are Calculated
+                    </h4>
+                    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-bottom:24px" id="hwpPointsGrid">
+
+                        <div style="background:#fffde7;border-radius:10px;padding:15px;border-top:4px solid #ffc107" data-hwp-card="0">
+                            <div style="display:flex;align-items:center;gap:8px;margin-bottom:7px"><span style="font-size:1.3em">🎤</span><strong id="hwpCard0Title" style="color:#856404;font-size:0.9em">Youthfest Registration</strong></div>
+                            <p id="hwpCard0Body" style="margin:0;color:#555;font-size:12.5px;line-height:1.6">Each class earns points for <strong>every event they enrol in</strong>. More participation = more points for your class.</p>
+                            <div class="hwpCardEditArea" style="display:none;margin-top:8px">
+                                <input type="text" class="hwpCardTitleInput" data-idx="0" placeholder="Card title" style="width:100%;padding:5px 8px;border:1px solid #ffc107;border-radius:4px;font-size:12px;margin-bottom:5px">
+                                <textarea class="hwpCardBodyInput" data-idx="0" rows="3" placeholder="Card body text" style="width:100%;padding:5px 8px;border:1px solid #ffc107;border-radius:4px;font-size:12px;resize:vertical"></textarea>
+                            </div>
+                        </div>
+
+                        <div style="background:#e8f5e9;border-radius:10px;padding:15px;border-top:4px solid #28a745" data-hwp-card="1">
+                            <div style="display:flex;align-items:center;gap:8px;margin-bottom:7px"><span style="font-size:1.3em">🧠</span><strong id="hwpCard1Title" style="color:#155724;font-size:0.9em">Quiz Competition</strong></div>
+                            <p id="hwpCard1Body" style="margin:0;color:#555;font-size:12.5px;line-height:1.6">Per published quiz day: <strong>flat bonus</strong> to the winner &amp; runner-up class, plus a <strong>participation rate bonus</strong> — fair across all class sizes.</p>
+                            <div class="hwpCardEditArea" style="display:none;margin-top:8px">
+                                <input type="text" class="hwpCardTitleInput" data-idx="1" placeholder="Card title" style="width:100%;padding:5px 8px;border:1px solid #28a745;border-radius:4px;font-size:12px;margin-bottom:5px">
+                                <textarea class="hwpCardBodyInput" data-idx="1" rows="3" placeholder="Card body text" style="width:100%;padding:5px 8px;border:1px solid #28a745;border-radius:4px;font-size:12px;resize:vertical"></textarea>
+                            </div>
+                        </div>
+
+                        <div style="background:#f3e5ff;border-radius:10px;padding:15px;border-top:4px solid #6a1b9a" data-hwp-card="2">
+                            <div style="display:flex;align-items:center;gap:8px;margin-bottom:7px"><span style="font-size:1.3em">🏆</span><strong id="hwpCard2Title" style="color:#4a148c;font-size:0.9em">Event Results</strong></div>
+                            <p id="hwpCard2Body" style="margin:0;color:#555;font-size:12.5px;line-height:1.6">When jury results are published, the <strong>1st place class</strong> gets winner pts and <strong>2nd place</strong> gets runner-up pts — automatically calculated.</p>
+                            <div class="hwpCardEditArea" style="display:none;margin-top:8px">
+                                <input type="text" class="hwpCardTitleInput" data-idx="2" placeholder="Card title" style="width:100%;padding:5px 8px;border:1px solid #6a1b9a;border-radius:4px;font-size:12px;margin-bottom:5px">
+                                <textarea class="hwpCardBodyInput" data-idx="2" rows="3" placeholder="Card body text" style="width:100%;padding:5px 8px;border:1px solid #6a1b9a;border-radius:4px;font-size:12px;resize:vertical"></textarea>
+                            </div>
+                        </div>
+
+                        <div style="background:#e0f7fa;border-radius:10px;padding:15px;border-top:4px solid #17a2b8" data-hwp-card="3">
+                            <div style="display:flex;align-items:center;gap:8px;margin-bottom:7px"><span style="font-size:1.3em">✨</span><strong id="hwpCard3Title" style="color:#0c5460;font-size:0.9em">Special / Custom Criteria</strong></div>
+                            <p id="hwpCard3Body" style="margin:0;color:#555;font-size:12.5px;line-height:1.6">The Super Admin may add bonus points for criteria like discipline, attendance, best decorated class, or other special achievements.</p>
+                            <div class="hwpCardEditArea" style="display:none;margin-top:8px">
+                                <input type="text" class="hwpCardTitleInput" data-idx="3" placeholder="Card title" style="width:100%;padding:5px 8px;border:1px solid #17a2b8;border-radius:4px;font-size:12px;margin-bottom:5px">
+                                <textarea class="hwpCardBodyInput" data-idx="3" rows="3" placeholder="Card body text" style="width:100%;padding:5px 8px;border:1px solid #17a2b8;border-radius:4px;font-size:12px;resize:vertical"></textarea>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Steps — editable -->
+                    <h4 style="color:#1a0030;font-size:1em;margin:0 0 12px;display:flex;align-items:center;gap:8px">
+                        <span style="background:linear-gradient(135deg,#6a1b9a,#c44569);color:white;border-radius:50%;width:24px;height:24px;display:inline-flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;font-weight:700">2</span>
+                        How the Super Admin Publishes Results
+                    </h4>
+                    <div id="hwpStepsGrid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin-bottom:22px">
+                        <!-- Steps rendered by JS from Firebase / defaults -->
+                    </div>
+
+                    <!-- Important notes — editable textarea -->
+                    <div style="background:#fff8e1;border-radius:10px;padding:15px 18px;border-left:4px solid #ffc107;margin-bottom:20px">
+                        <h5 style="color:#856404;margin:0 0 8px;font-size:0.9em">⚠️ Important Notes</h5>
+                        <div id="hwpNotesView">
+                            <ul id="hwpNotesList" style="margin:0;padding-left:16px;color:#555;font-size:13px;line-height:1.9">
+                                <li>Only the <strong>Super Admin</strong> can publish or hide the leaderboard.</li>
+                                <li>All point calculations are <strong>fully automatic</strong> — no manual tampering.</li>
+                                <li>The leaderboard refreshes every <strong>60 seconds</strong> once live.</li>
+                                <li>Rankings may be updated progressively as more results are published.</li>
+                            </ul>
+                        </div>
+                        <div id="hwpNotesEdit" style="display:none;margin-top:8px">
+                            <label style="font-size:11px;color:#856404;font-weight:700;display:block;margin-bottom:5px">One note per line:</label>
+                            <textarea id="hwpNotesInput" rows="5" style="width:100%;padding:8px 12px;border:2px solid #ffc107;border-radius:6px;font-size:13px;line-height:1.7;resize:vertical;outline:none"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Footer -->
+                    <div style="text-align:center;padding-top:14px;border-top:1px solid #f0e6ff">
+                        <p style="margin:0;color:#999;font-size:11.5px">
+                            🎓 <strong style="color:#6a1b9a">Spurthi Youth Fest 2026</strong> · Davan Institute of Advanced Management Studies, Davangere<br>
+                            <span style="font-size:10.5px">Platform by Harsha Gujjar, Director — Davan College</span>
+                        </p>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+        <div id="lbPublicBody" style="display:none">
+        <div class="lb-body">
+
+            <!-- Scoring Legend -->
+            <div class="lb-legend">
+                <span class="lb-legend-title">📊 Scoring:</span>
+                <span class="lb-legend-item">
+                    <span class="lb-legend-dot" style="background:#ffc107"></span>
+                    Youthfest Reg: pts/event enrolled
+                </span>
+                <span class="lb-legend-item">
+                    <span class="lb-legend-dot" style="background:#28a745"></span>
+                    Quiz: pts/correct answer
+                </span>
+                <span class="lb-legend-item">
+                    <span class="lb-legend-dot" style="background:#6a1b9a"></span>
+                    🏆 Event Results: winner/runner-up pts
+                </span>
+                <span class="lb-legend-item">
+                    <span class="lb-legend-dot" style="background:#17a2b8"></span>
+                    ✨ Special criteria pts
+                </span>
+                <button class="lb-refresh-btn" onclick="loadLeaderboard()">🔄 Refresh</button>
+            </div>
+
+            <!-- Podium Top 3 -->
+            <div class="lb-podium-section">
+                <div class="lb-podium-title">🏅 Top 3 Classes</div>
+                <div class="lb-podium" id="lbPodium">
+                    <div class="lb-loading">
+                        <div class="lb-loading-spinner"></div>
+                        Loading rankings…
+                    </div>
+                </div>
+            </div>
+
+            <!-- Full Rankings Table -->
+            <div class="lb-table-section">
+                <div class="lb-table-header">📋 Full Rankings</div>
+                <div class="lb-table-wrap">
+                    <table class="lb-table">
+                        <thead>
+                            <tr>
+                                <th>Rank</th>
+                                <th>Class</th>
+                                <th>🎤 YF Reg</th>
+                                <th>🧠 Quiz</th>
+                                <th>🏆 Results</th>
+                                <th>Total</th>
+                                <th>Progress</th>
+                            </tr>
+                        </thead>
+                        <tbody id="lbTableBody">
+                            <tr>
+                                <td colspan="6" style="text-align:center;padding:40px;color:#bbb">
+                                    <div class="lb-loading-spinner" style="margin:0 auto 10px"></div>
+                                    Loading…
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="lb-last-updated" id="lbLastUpdated">Fetching live data…</div>
+            </div>
+
+
+        </div>
+        </div><!-- /lbPublicBody -->
+    </div><!-- /lb-section -->
+
+    <script>
+    // ============================================================
+    //  CLASS OF THE YEAR 2026 — LEADERBOARD ENGINE
+    //  db is resolved via getDb() helper — safe across all script blocks
+
+    // ── Safe Firebase db getter (works across separate <script> blocks) ──
+    function getDb() {
+        if (window.db) return window.db;
+        if (typeof db !== 'undefined' && db) return db;
+        throw new Error("Firebase not initialised yet. Please wait and try again.");
+    }
+
+    //  Points:
+    //    Youthfest Registration → 10 pts per event a class enrolled in
+    //    Online Quiz            → 5 pts per correct answer per student per day
+    // ============================================================
+
+    // Star decoration in header
+    (function spawnStars() {
+        const container = document.getElementById('lbStars');
+        if (!container) return;
+        const symbols = ['✦','✧','⋆','★','✩'];
+        for (let i = 0; i < 18; i++) {
+            const s = document.createElement('span');
+            s.className = 'lb-star';
+            s.textContent = symbols[Math.floor(Math.random() * symbols.length)];
+            s.style.top  = Math.random() * 100 + '%';
+            s.style.left = Math.random() * 100 + '%';
+            s.style.animationDelay = (Math.random() * 3) + 's';
+            s.style.fontSize = (0.7 + Math.random() * 1.2) + 'em';
+            container.appendChild(s);
+        }
+    })();
+    // ============================================================
+    //  LEADERBOARD ENGINE v3 — FINAL
+    //  Sources:
+    //  1. Youthfest Registration  → yfPtsPerEvent per event enrolled
+    //  2. Quiz (per PUBLISHED day only):
+    //       a) Winner class       → quizWinnerPts (flat)
+    //       b) Runner-up class    → quizRunnerUpPts (flat)
+    //       c) Participation rate → (studentsWithMaxScore / classStrength) × quizMaxPts
+    //          — fair across classes of different sizes
+    //  3. Youthfest event results → winnerPts / runnerUpPts (jury published)
+    //  4. Custom criteria         → manual points from Super Admin
+    //  Leaderboard itself hidden until Super Admin publishes it
+    //  Config: leaderboardConfig/scoring | classStrengths | published | customCriteria
+    // ============================================================
+
+    const LB_CLASSES = [
+        '1st B.Com','2nd B.Com','3rd B.Com',
+        '1ST BCA','2ND BCA A SEC','2ND BCA B SEC',
+        '3RD BCA A SEC','3RD BCA B SEC','3RD BCA C SEC',
+        '2ND BBA','3RD BBA'
+    ];
+
+    let lbCfg = {
+        yfPtsPerEvent: 10, winnerPts: 50, runnerUpPts: 30,
+        quizWinnerPts: 20, quizRunnerUpPts: 10, quizMaxPts: 10
+    };
+    let lbClassStrengths = {}; // cls → number of students
+
+    async function getLbConfig() {
+        try {
+            const [cfgSnap, strSnap] = await Promise.all([
+                getDb().ref('leaderboardConfig/scoring').once('value'),
+                getDb().ref('leaderboardConfig/classStrengths').once('value')
+            ]);
+            if (cfgSnap.exists()) {
+                const d = cfgSnap.val();
+                lbCfg = {
+                    yfPtsPerEvent:   d.yfPtsPerEvent   || 10,
+                    winnerPts:       d.winnerPts        || 50,
+                    runnerUpPts:     d.runnerUpPts      || 30,
+                    quizWinnerPts:   d.quizWinnerPts    || 20,
+                    quizRunnerUpPts: d.quizRunnerUpPts  || 10,
+                    quizMaxPts:      d.quizMaxPts       || 10
+                };
+            }
+            if (strSnap.exists()) {
+                lbClassStrengths = strSnap.val() || {};
+            }
+        } catch(e) {}
+        return lbCfg;
+    }
+
+    // ── Check publish status and show/hide leaderboard ──────────
+    async function checkLbPublished() {
+        try {
+            const snap = await getDb().ref('leaderboardConfig/published').once('value');
+            const pub = snap.val() === true;
+            document.getElementById('lbPublicBody').style.display  = pub ? 'block' : 'none';
+            document.getElementById('lbHiddenMsg').style.display   = pub ? 'none'  : 'block';
+            return pub;
+        } catch(e) {
+            document.getElementById('lbHiddenMsg').style.display = 'block';
+            return false;
+        }
+    }
+
+    async function loadLeaderboard() {
+        const pub = await checkLbPublished();
+        if (!pub) return; // don't fetch data if not published
+
+        try {
+            const cfg = await getLbConfig();
+            const init = () => { const o = {}; LB_CLASSES.forEach(c => o[c] = 0); return o; };
+
+            const yfPts     = init();
+            const quizPts   = init();
+            const resultPts = init();
+            const customPts = init();
+
+            // ── 1. Youthfest Registration ──────────────────────────
+            const yfSnap = await getDb().ref('youthfest-enrollments').once('value');
+            if (yfSnap.exists()) {
+                yfSnap.forEach(child => {
+                    const d   = child.val();
+                    const cls = d.classYear || d.class || '';
+                    if (yfPts[cls] !== undefined) yfPts[cls] += cfg.yfPtsPerEvent;
+                });
+            }
+
+            // ── 2. Quiz Points (PUBLISHED DAYS ONLY) ─────────────
+            // Criteria:
+            //   a) Flat bonus to winner's class
+            //   b) Flat bonus to runner-up's class
+            //   c) Participation-rate bonus — fair across class sizes:
+            //      count how many students in the class scored max (2/2)
+            //      divide by class strength → multiply by quizMaxPts
+            //      if strength not set, falls back to raw max-correct × pts
+
+            const quizResultsSnap = await getDb().ref('quizResults').once('value');
+            const publishedDates    = new Set();
+            const quizWinnersByDate = {};
+
+            if (quizResultsSnap.exists()) {
+                quizResultsSnap.forEach(dateNode => {
+                    const res = dateNode.val();
+                    if (res && res.winner && res.runnerUp) {
+                        publishedDates.add(dateNode.key);
+                        quizWinnersByDate[dateNode.key] = {
+                            winnerClass: res.winner.class  || '',
+                            runnerClass: res.runnerUp.class || ''
+                        };
+                    }
+                });
+            }
+
+            if (publishedDates.size > 0) {
+                const quizSubSnap = await getDb().ref('quizSubmissions').once('value');
+                if (quizSubSnap.exists()) {
+                    quizSubSnap.forEach(dateNode => {
+                        const date = dateNode.key;
+                        if (!publishedDates.has(date)) return;
+
+                        const w = quizWinnersByDate[date];
+
+                        // a) Winner class bonus
+                        if (w.winnerClass && quizPts[w.winnerClass] !== undefined)
+                            quizPts[w.winnerClass] += cfg.quizWinnerPts;
+
+                        // b) Runner-up class bonus
+                        if (w.runnerClass && quizPts[w.runnerClass] !== undefined)
+                            quizPts[w.runnerClass] += cfg.quizRunnerUpPts;
+
+                        // c) Participation-rate bonus per class
+                        // Count students who scored the maximum (2/2) per class
+                        const classMaxCount  = {}; // how many got max score
+                        const classAnyCount  = {}; // how many attempted at all
+                        const maxPossible    = 2;  // quiz has 2 questions
+
+                        dateNode.forEach(subNode => {
+                            const s  = subNode.val();
+                            const cl = s.studentClass || '';
+                            if (!LB_CLASSES.includes(cl)) return;
+                            classAnyCount[cl]  = (classAnyCount[cl]  || 0) + 1;
+                            if ((parseInt(s.score) || 0) >= maxPossible)
+                                classMaxCount[cl] = (classMaxCount[cl] || 0) + 1;
+                        });
+
+                        LB_CLASSES.forEach(cl => {
+                            if (!classAnyCount[cl]) return; // class didn't play
+                            const strength = lbClassStrengths[cl.replace(/[.\[\]#$\/]/g,'_')]
+                                          || lbClassStrengths[cl]
+                                          || 0;
+                            const topCount = classMaxCount[cl] || 0;
+                            let bonus = 0;
+                            if (strength > 0) {
+                                // Fair formula: (top scorers / class size) × max pts
+                                bonus = Math.round((topCount / strength) * cfg.quizMaxPts * 10) / 10;
+                            } else {
+                                // Fallback if strength not set: just use topCount × 1
+                                bonus = topCount;
+                            }
+                            if (quizPts[cl] !== undefined) quizPts[cl] += bonus;
+                        });
+                    });
+                }
+            }
+
+            // ── 3. Published Youthfest Event Results ──────────────
+            const setupSnap = await getDb().ref('jurySetup').once('value');
+            if (setupSnap.exists()) {
+                for (const [evName, setup] of Object.entries(setupSnap.val())) {
+                    if (!setup.resultsPublished) continue;
+                    const mSnap = await getDb().ref('juryMarks/' + evName).once('value');
+                    if (!mSnap.exists()) continue;
+                    const j1 = mSnap.val().jury1 || {}, j2 = mSnap.val().jury2 || {};
+                    const allK = new Set([...Object.keys(j1), ...Object.keys(j2)]);
+                    const evRes = [];
+                    allK.forEach(sk => {
+                        const d1=j1[sk], d2=j2[sk];
+                        const cls=(d1&&d1.originalClassName)||(d2&&d2.originalClassName)||sk;
+                        let t1=0,t2=0;
+                        if(d1&&d1.marks)(Array.isArray(d1.marks)?d1.marks:Object.values(d1.marks)).forEach(m=>t1+=(m||0));
+                        if(d2&&d2.marks)(Array.isArray(d2.marks)?d2.marks:Object.values(d2.marks)).forEach(m=>t2+=(m||0));
+                        evRes.push({cls,avg:(t1+t2)/2});
+                    });
+                    evRes.sort((a,b)=>b.avg-a.avg);
+                    if(evRes[0]&&resultPts[evRes[0].cls]!==undefined) resultPts[evRes[0].cls]+=cfg.winnerPts;
+                    if(evRes[1]&&resultPts[evRes[1].cls]!==undefined) resultPts[evRes[1].cls]+=cfg.runnerUpPts;
+                }
+            }
+
+            // ── 4. Custom Criteria ─────────────────────────────────
+            const customSnap = await getDb().ref('leaderboardConfig/customCriteria').once('value');
+            if (customSnap.exists()) {
+                customSnap.forEach(critNode => {
+                    const crit = critNode.val();
+                    if (!crit || !crit.points) return;
+                    Object.keys(crit.points).forEach(k => {
+                        LB_CLASSES.forEach(cls => {
+                            if (cls.replace(/[.\[\]#$\/]/g,'_') === k && customPts[cls] !== undefined)
+                                customPts[cls] += (crit.points[k] || 0);
+                        });
+                    });
+                });
+            }
+
+            // ── 5. Merge, sort, render ─────────────────────────────
+            const ranked = LB_CLASSES.map(cls => {
+                const total=(yfPts[cls]||0)+(quizPts[cls]||0)+(resultPts[cls]||0)+(customPts[cls]||0);
+                return {cls,yfPts:yfPts[cls]||0,quizPts:quizPts[cls]||0,resultPts:resultPts[cls]||0,customPts:customPts[cls]||0,total};
+            }).sort((a,b)=>b.total-a.total||b.yfPts-a.yfPts||b.quizPts-a.quizPts);
+
+            const maxTotal = ranked[0]?.total || 1;
+            renderPodium(ranked.slice(0,3));
+            renderTable(ranked, maxTotal);
+
+            const now = new Date();
+            document.getElementById('lbLastUpdated').textContent =
+                '⏱ Last updated: ' + now.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',second:'2-digit'})
+                + ' · Quiz: ' + publishedDates.size + ' day' + (publishedDates.size!==1?'s':'')+' counted';
+
+        } catch (err) {
+            console.error('Leaderboard error:', err);
+            document.getElementById('lbPodium').innerHTML='<div class="lb-empty">⚠️ Could not load data. Please refresh.</div>';
+            document.getElementById('lbTableBody').innerHTML='<tr><td colspan="7" class="lb-empty">⚠️ Could not load data.</td></tr>';
+        }
+    }
+
+    function medalEmoji(rank) { return ['🥇','🥈','🥉'][rank]||''; }
+    function podiumEmoji(rank) { return ['1️⃣','2️⃣','3️⃣'][rank]||''; }
+
+    function renderPodium(top3) {
+        const podium = document.getElementById('lbPodium');
+        if (!top3||top3.length===0||top3[0].total===0) {
+            podium.innerHTML='<div class="lb-empty">No scores yet. Scores will appear once events begin! 🎉</div>';
+            return;
+        }
+        const order=[top3[1],top3[0],top3[2]].filter(Boolean);
+        const posClass=['lb-pos-2','lb-pos-1','lb-pos-3'];
+        const actualRank=[2,1,3];
+        let html='';
+        order.forEach((entry,i)=>{
+            const rank=actualRank[i], isFirst=rank===1;
+            html+=`<div class="lb-podium-slot ${posClass[i]}">
+                <div class="lb-podium-name">${isFirst?'👑 ':''}${entry.cls}</div>
+                <div class="lb-podium-score">${entry.total} pts</div>
+                <div class="lb-podium-block">${podiumEmoji(rank-1)}</div>
+            </div>`;
+        });
+        podium.innerHTML=html;
+    }
+
+    function renderTable(ranked, maxTotal) {
+        const tbody=document.getElementById('lbTableBody');
+        if(!ranked||ranked.length===0){tbody.innerHTML='<tr><td colspan="7" class="lb-empty">No data yet!</td></tr>';return;}
+        let html='';
+        ranked.forEach((entry,i)=>{
+            const rank=i+1;
+            const rankClass=rank<=3?`lb-rank-${rank}`:'lb-rank-other';
+            const rankMedal=rank<=3?medalEmoji(rank-1):rank;
+            const barPct=maxTotal>0?Math.round((entry.total/maxTotal)*100):0;
+            const delay=(i*0.05).toFixed(2);
+            const rowBg=rank===1?'background:linear-gradient(90deg,#fffbea,#fff);':rank===2?'background:linear-gradient(90deg,#f8f8f8,#fff);':rank===3?'background:linear-gradient(90deg,#fff5f0,#fff);':'';
+            const resBadge=entry.resultPts>0?`<span class="lb-score-tag" style="background:#d4edda;color:#155724;border:1px solid #28a745">🏆 ${entry.resultPts}</span> `:'';
+            const custBadge=entry.customPts>0?`<span class="lb-score-tag" style="background:#e8f4fd;color:#0c5460;border:1px solid #17a2b8">✨ ${entry.customPts}</span>`:'';
+            html+=`<tr style="${rowBg}animation-delay:${delay}s">
+                <td><span class="lb-rank-badge ${rankClass}">${rankMedal}</span></td>
+                <td><span class="lb-class-chip">${entry.cls}</span></td>
+                <td><span class="lb-score-tag lb-score-yf">🎤 ${entry.yfPts}</span></td>
+                <td><span class="lb-score-tag lb-score-quiz">🧠 ${entry.quizPts}</span></td>
+                <td>${resBadge}${custBadge||(entry.resultPts===0&&entry.customPts===0?'<span style="color:#ddd">—</span>':'')}</td>
+                <td><span class="lb-pts-total">${entry.total}</span> <span class="lb-pts-event">pts</span></td>
+                <td><div class="lb-bar-wrap"><div class="lb-bar-fill" style="width:${barPct}%"></div></div></td>
+            </tr>`;
+        });
+        tbody.innerHTML=html;
+    }
+
+    // ── Auto-load ────────────────────────────────────────────────
+    (function lbInit() {
+        function tryLoad() {
+            if (typeof db !== 'undefined' && db) {
+                loadLeaderboard();
+                setInterval(loadLeaderboard, 60000);
+            } else {
+                setTimeout(tryLoad, 800);
+            }
+        }
+        tryLoad();
+    })();
+
+    // ============================================================
+    //  LEADERBOARD ADMIN PANEL FUNCTIONS (Super Admin only)
+    // ============================================================
+
+    async function toggleLeaderboardPublish() {
+        const btn    = document.getElementById('lbPublishBtn');
+        const status = document.getElementById('lbVisibilityStatus');
+        try {
+            const snap = await getDb().ref('leaderboardConfig/published').once('value');
+            const current = snap.val() === true;
+            const next = !current;
+            await getDb().ref('leaderboardConfig/published').set(next);
+            updateLbPublishUI(next);
+            showLbAdminMsg(next
+                ? '✅ Leaderboard is now LIVE — students can see it!'
+                : '🔒 Leaderboard hidden — students cannot see it.',
+                next ? 'success' : 'error');
+        } catch(err) {
+            showLbAdminMsg('❌ Error: ' + err.message, 'error');
+        }
+    }
+
+    function updateLbPublishUI(isPublished) {
+        const btn    = document.getElementById('lbPublishBtn');
+        const status = document.getElementById('lbVisibilityStatus');
+        if (!btn || !status) return;
+        if (isPublished) {
+            status.textContent = '✅ LIVE — Students can see it';
+            status.style.color = '#69f0ae';
+            btn.textContent    = '🔒 Hide Leaderboard';
+            btn.className      = 'btn btn-danger';
+        } else {
+            status.textContent = '🔒 Hidden from students';
+            status.style.color = '#ffd700';
+            btn.textContent    = '📢 Publish Leaderboard';
+            btn.className      = 'btn btn-success';
+        }
+    }
+
+    async function loadLbPublishStatus() {
+        try {
+            const snap = await getDb().ref('leaderboardConfig/published').once('value');
+            updateLbPublishUI(snap.val() === true);
+        } catch(e) {
+            updateLbPublishUI(false);
+        }
+    }
+
+    async function saveLbConfig() {
+        const btn = document.querySelector('[onclick="saveLbConfig()"]');
+        const okEl  = document.getElementById('lbCfgSaveMsg');
+        const errEl = document.getElementById('lbCfgErrMsg');
+        if (okEl)  okEl.style.display  = 'none';
+        if (errEl) errEl.style.display = 'none';
+        if (btn) { btn.disabled = true; btn.textContent = '⏳ Saving…'; }
+        const yfPts   = parseInt(document.getElementById('lbCfgYfPts').value)      || 10;
+        const winPts  = parseInt(document.getElementById('lbCfgWinPts').value)     || 50;
+        const runPts  = parseInt(document.getElementById('lbCfgRunPts').value)     || 30;
+        const qWin    = parseInt(document.getElementById('lbCfgQuizWinPts').value) || 20;
+        const qRun    = parseInt(document.getElementById('lbCfgQuizRunPts').value) || 10;
+        const qMax    = parseInt(document.getElementById('lbCfgQuizMaxPts').value) || 10;
+        try {
+            await getDb().ref('leaderboardConfig/scoring').set({
+                yfPtsPerEvent: yfPts, winnerPts: winPts, runnerUpPts: runPts,
+                quizWinnerPts: qWin, quizRunnerUpPts: qRun, quizMaxPts: qMax,
+                updatedAt: new Date().toISOString()
+            });
+            document.getElementById('lbWinPtsDisplay').textContent = winPts;
+            document.getElementById('lbRunPtsDisplay').textContent = runPts;
+            if (okEl)  { okEl.style.display  = 'inline-block'; setTimeout(() => okEl.style.display  = 'none', 4000); }
+            showLbAdminMsg('✅ Config saved! Leaderboard refreshes in ≤60 s.', 'success');
+        } catch(err) {
+            if (errEl) { errEl.textContent = '❌ Error: ' + err.message; errEl.style.display = 'inline-block'; setTimeout(() => errEl.style.display = 'none', 6000); }
+            showLbAdminMsg('❌ Error: ' + err.message, 'error');
+        } finally {
+            if (btn) { btn.disabled = false; btn.textContent = '💾 Save Config'; }
+        }
+    }
+
+    async function loadLbConfigIntoForm() {
+        await loadLbPublishStatus();
+        try {
+            const [cfgSnap, strSnap] = await Promise.all([
+                getDb().ref('leaderboardConfig/scoring').once('value'),
+                getDb().ref('leaderboardConfig/classStrengths').once('value')
+            ]);
+            if (cfgSnap.exists()) {
+                const d = cfgSnap.val();
+                document.getElementById('lbCfgYfPts').value       = d.yfPtsPerEvent   || 10;
+                document.getElementById('lbCfgWinPts').value      = d.winnerPts        || 50;
+                document.getElementById('lbCfgRunPts').value      = d.runnerUpPts      || 30;
+                document.getElementById('lbCfgQuizWinPts').value  = d.quizWinnerPts    || 20;
+                document.getElementById('lbCfgQuizRunPts').value  = d.quizRunnerUpPts  || 10;
+                document.getElementById('lbCfgQuizMaxPts').value  = d.quizMaxPts       || 10;
+                document.getElementById('lbWinPtsDisplay').textContent = d.winnerPts   || 50;
+                document.getElementById('lbRunPtsDisplay').textContent = d.runnerUpPts || 30;
+            }
+            // Build class strength grid
+            const savedStr = strSnap.exists() ? strSnap.val() : {};
+            const grid = document.getElementById('lbClassStrengthGrid');
+            if (grid) {
+                let html = '';
+                LB_CLASSES.forEach(cls => {
+                    const safeKey = cls.replace(/[.\[\]#$\/]/g,'_');
+                    const val = savedStr[safeKey] || savedStr[cls] || '';
+                    const safeId = 'lbStr_' + cls.replace(/[^a-zA-Z0-9]/g,'_');
+                    html += `<div style="display:flex;align-items:center;gap:6px;background:#f1f8e9;padding:7px 10px;border-radius:6px;border:1px solid #a5d6a7">
+                        <span style="font-size:0.78em;color:#1b5e20;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${cls}">${cls}</span>
+                        <input type="number" id="${safeId}" value="${val}" min="1" max="200" placeholder="Count"
+                            style="width:65px;padding:4px 6px;border:1px solid #a5d6a7;border-radius:4px;text-align:center;font-size:0.85em">
+                    </div>`;
+                });
+                grid.innerHTML = html;
+            }
+        } catch(e) {
+            console.error('loadLbConfigIntoForm error:', e);
+            const grid = document.getElementById('lbClassStrengthGrid');
+            if (grid) grid.innerHTML = '<p style="color:red;font-size:12px">❌ Failed to load: ' + e.message + '</p>';
+        }
+    }
+
+    async function saveLbClassStrengths() {
+        const btn = document.querySelector('[onclick="saveLbClassStrengths()"]');
+        const okEl  = document.getElementById('lbStrSaveMsg');
+        const errEl = document.getElementById('lbStrErrMsg');
+        if (okEl)  okEl.style.display  = 'none';
+        if (errEl) errEl.style.display = 'none';
+        if (btn) { btn.disabled = true; btn.textContent = '⏳ Saving…'; }
+        const obj = {};
+        LB_CLASSES.forEach(cls => {
+            const safeId  = 'lbStr_' + cls.replace(/[^a-zA-Z0-9]/g,'_');
+            const safeKey = cls.replace(/[.\[\]#$\/]/g,'_');
+            const inp = document.getElementById(safeId);
+            if (inp && inp.value) obj[safeKey] = parseInt(inp.value) || 0;
+        });
+        try {
+            await getDb().ref('leaderboardConfig/classStrengths').set(obj);
+            if (okEl)  { okEl.style.display  = 'inline-block'; setTimeout(() => okEl.style.display  = 'none', 4000); }
+            showLbAdminMsg('✅ Class strengths saved! Quiz participation rates updated.', 'success');
+        } catch(err) {
+            if (errEl) { errEl.textContent = '❌ ' + err.message; errEl.style.display = 'inline-block'; setTimeout(() => errEl.style.display = 'none', 6000); }
+            showLbAdminMsg('❌ Error: ' + err.message, 'error');
+        } finally {
+            if (btn) { btn.disabled = false; btn.textContent = '💾 Save Class Strengths'; }
+        }
+    }
+
+    async function loadLbPublishedResults() {
+        const container = document.getElementById('lbPublishedResultsList');
+        container.innerHTML = '<p style="color:#aaa;font-size:13px">Loading…</p>';
+        try {
+            const cfg = await getLbConfig();
+            const snap = await getDb().ref('jurySetup').once('value');
+            if (!snap.exists()) {
+                container.innerHTML = '<p style="color:#aaa;font-size:13px">No events set up yet.</p>';
+                return;
+            }
+            let html = '<div class="table-wrapper"><table style="min-width:500px"><thead><tr><th>Event</th><th>Status</th><th>Winner Class</th><th>Runner-Up Class</th></tr></thead><tbody>';
+            for (const [evName, setup] of Object.entries(snap.val())) {
+                const pub = setup.resultsPublished ? '✅ Published' : '⏳ Not published';
+                let winner='—', runnerUp='—';
+                if (setup.resultsPublished) {
+                    const mSnap = await getDb().ref('juryMarks/'+evName).once('value');
+                    if (mSnap.exists()) {
+                        const j1=mSnap.val().jury1||{}, j2=mSnap.val().jury2||{};
+                        const allK=new Set([...Object.keys(j1),...Object.keys(j2)]);
+                        const evR=[];
+                        allK.forEach(sk=>{
+                            const d1=j1[sk],d2=j2[sk];
+                            const cls=(d1&&d1.originalClassName)||(d2&&d2.originalClassName)||sk;
+                            let t1=0,t2=0;
+                            if(d1&&d1.marks)(Array.isArray(d1.marks)?d1.marks:Object.values(d1.marks)).forEach(m=>t1+=(m||0));
+                            if(d2&&d2.marks)(Array.isArray(d2.marks)?d2.marks:Object.values(d2.marks)).forEach(m=>t2+=(m||0));
+                            evR.push({cls,avg:(t1+t2)/2});
+                        });
+                        evR.sort((a,b)=>b.avg-a.avg);
+                        if(evR[0]) winner=`<strong>${evR[0].cls}</strong> <span style="color:#c44569">+${cfg.winnerPts}pts</span>`;
+                        if(evR[1]) runnerUp=`<strong>${evR[1].cls}</strong> <span style="color:#666">+${cfg.runnerUpPts}pts</span>`;
+                    }
+                }
+                html+=`<tr><td><strong>${evName}</strong></td><td style="color:${setup.resultsPublished?'#155724':'#856404'}">${pub}</td><td>${winner}</td><td>${runnerUp}</td></tr>`;
+            }
+            html+='</tbody></table></div>';
+            container.innerHTML=html;
+        } catch(err) {
+            container.innerHTML='<p style="color:red">Error: '+err.message+'</p>';
+        }
+    }
+
+    async function addLbCriterion() {
+        const name = document.getElementById('lbNewCriterionName').value.trim();
+        if (!name) { showLbAdminMsg('Please enter a criterion name.','error'); return; }
+        try {
+            const key = getDb().ref('leaderboardConfig/customCriteria').push().key;
+            await getDb().ref('leaderboardConfig/customCriteria/'+key).set({name,createdAt:new Date().toISOString(),points:{}});
+            document.getElementById('lbNewCriterionName').value='';
+            showLbAdminMsg('✅ Criterion "'+name+'" added!','success');
+            loadLbCriteriaList();
+        } catch(err) { showLbAdminMsg('❌ Error: '+err.message,'error'); }
+    }
+
+    async function loadLbCriteriaList() {
+        const container = document.getElementById('lbCriteriaList');
+        container.innerHTML='<p style="color:#aaa;text-align:center;padding:20px;font-size:13px">Loading…</p>';
+        try {
+            const snap = await getDb().ref('leaderboardConfig/customCriteria').once('value');
+            if (!snap.exists()) {
+                container.innerHTML='<p style="color:#aaa;text-align:center;padding:20px;font-size:13px">No custom criteria yet. Add one above!</p>';
+                return;
+            }
+            let html='';
+            snap.forEach(critNode=>{
+                const key=critNode.key, crit=critNode.val(), pts=crit.points||{};
+                html+=`<div style="background:white;border:1px solid #ffe082;border-radius:10px;padding:15px;margin-bottom:15px">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+                        <strong style="color:#e65100;font-size:1em">✨ ${crit.name}</strong>
+                        <button class="btn btn-danger btn-small" onclick="deleteLbCriterion('${key}','${crit.name.replace(/'/g,"\\'")}')">🗑 Delete</button>
+                    </div>
+                    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px">`;
+                LB_CLASSES.forEach(cls=>{
+                    const safeKey=cls.replace(/[.\[\]#$\/]/g,'_');
+                    const val=pts[safeKey]||pts[cls]||0;
+                    const safeId='lbPts_'+key+'_'+cls.replace(/[^a-zA-Z0-9]/g,'_');
+                    html+=`<div style="display:flex;align-items:center;gap:6px;background:#fffdf0;padding:6px 10px;border-radius:6px;border:1px solid #ffe082">
+                        <span style="font-size:0.78em;color:#555;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${cls}">${cls}</span>
+                        <input type="number" id="${safeId}" value="${val}" min="0" max="9999"
+                            style="width:65px;padding:4px;border:1px solid #ddd;border-radius:4px;text-align:center;font-size:0.85em">
+                    </div>`;
+                });
+                html+=`</div>
+                    <button class="btn btn-small btn-success" onclick="saveLbCriterionPoints('${key}')" style="margin-top:12px">💾 Save Points for "${crit.name}"</button>
+                </div>`;
+            });
+            container.innerHTML=html;
+        } catch(err) { container.innerHTML='<p style="color:red">Error: '+err.message+'</p>'; }
+    }
+
+    async function saveLbCriterionPoints(key) {
+        try {
+            const snap = await getDb().ref('leaderboardConfig/customCriteria/'+key).once('value');
+            const crit = snap.val();
+            if (!crit) { showLbAdminMsg('Criterion not found.','error'); return; }
+            const pointsObj={};
+            LB_CLASSES.forEach(cls=>{
+                const safeId='lbPts_'+key+'_'+cls.replace(/[^a-zA-Z0-9]/g,'_');
+                const safeKey=cls.replace(/[.\[\]#$\/]/g,'_');
+                const inp=document.getElementById(safeId);
+                pointsObj[safeKey]=inp?(parseInt(inp.value)||0):0;
+            });
+            await getDb().ref('leaderboardConfig/customCriteria/'+key+'/points').set(pointsObj);
+            showLbAdminMsg('✅ Points saved for "'+crit.name+'"!','success');
+        } catch(err) { showLbAdminMsg('❌ Error: '+err.message,'error'); }
+    }
+
+    async function deleteLbCriterion(key,name) {
+        if(!confirm('Delete criterion "'+name+'"?\n\nAll points for this criterion will be removed.')) return;
+        try {
+            await getDb().ref('leaderboardConfig/customCriteria/'+key).remove();
+            showLbAdminMsg('✅ "'+name+'" deleted.','success');
+            loadLbCriteriaList();
+        } catch(err) { showLbAdminMsg('❌ Error: '+err.message,'error'); }
+    }
+
+    async function loadLbAdminPreview() {
+        const container = document.getElementById('lbAdminPreview');
+        const updEl     = document.getElementById('lbPreviewUpdated');
+        container.innerHTML = '<p style="color:rgba(255,255,255,0.4);text-align:center;padding:30px">⏳ Fetching live data from Firebase…</p>';
+        try {
+            const cfg = await getLbConfig();
+            const init = () => { const o={}; LB_CLASSES.forEach(c => o[c]=0); return o; };
+            const yfP=init(), quizP=init(), resP=init(), custP=init();
+
+            // ── 1. Youthfest Registration ──────────────────────────────────
+            const yfSnap = await getDb().ref('youthfest-enrollments').once('value');
+            if (yfSnap.exists()) yfSnap.forEach(c => {
+                const d=c.val(), cl=d.classYear||d.class||'';
+                if (yfP[cl] !== undefined) yfP[cl] += cfg.yfPtsPerEvent;
+            });
+
+            // ── 2. Quiz Points (published days only) ──────────────────────
+            const qrSnap = await getDb().ref('quizResults').once('value');
+            const pubDates=new Set(); const qWinMap={};
+            if (qrSnap.exists()) qrSnap.forEach(dn => {
+                const r=dn.val();
+                if (r && r.winner && r.runnerUp) {
+                    pubDates.add(dn.key);
+                    qWinMap[dn.key] = { w: r.winner.class||'', ru: r.runnerUp.class||'' };
+                }
+            });
+            if (pubDates.size > 0) {
+                const qsSnap = await getDb().ref('quizSubmissions').once('value');
+                if (qsSnap.exists()) qsSnap.forEach(dn => {
+                    if (!pubDates.has(dn.key)) return;
+                    const w = qWinMap[dn.key];
+                    if (w.w  && quizP[w.w]  !== undefined) quizP[w.w]  += cfg.quizWinnerPts;
+                    if (w.ru && quizP[w.ru] !== undefined) quizP[w.ru] += cfg.quizRunnerUpPts;
+                    const cmx={};
+                    dn.forEach(sn => {
+                        const s=sn.val(), cl=s.studentClass||'';
+                        if (LB_CLASSES.includes(cl)) { if(!cmx[cl]) cmx[cl]=0; if((parseInt(s.score)||0)>=2) cmx[cl]++; }
+                    });
+                    LB_CLASSES.forEach(cl => {
+                        if (!cmx[cl]) return;
+                        const str = lbClassStrengths[cl.replace(/[.\[\]#$\/]/g,'_')] || lbClassStrengths[cl] || 0;
+                        const b = str>0 ? Math.round((cmx[cl]/str)*cfg.quizMaxPts*10)/10 : cmx[cl];
+                        if (quizP[cl] !== undefined) quizP[cl] += b;
+                    });
+                });
+            }
+
+            // ── 3. Event Results (published jury results) ─────────────────
+            const sSnap = await getDb().ref('jurySetup').once('value');
+            if (sSnap.exists()) {
+                for (const [ev, setup] of Object.entries(sSnap.val())) {
+                    if (!setup.resultsPublished) continue;
+                    const mSnap = await getDb().ref('juryMarks/'+ev).once('value');
+                    if (!mSnap.exists()) continue;
+                    const j1=mSnap.val().jury1||{}, j2=mSnap.val().jury2||{};
+                    const allK=new Set([...Object.keys(j1),...Object.keys(j2)]);
+                    const evR=[];
+                    allK.forEach(sk => {
+                        const d1=j1[sk], d2=j2[sk];
+                        const cls=(d1&&d1.originalClassName)||(d2&&d2.originalClassName)||sk;
+                        let t1=0,t2=0;
+                        if(d1&&d1.marks)(Array.isArray(d1.marks)?d1.marks:Object.values(d1.marks)).forEach(m=>t1+=(m||0));
+                        if(d2&&d2.marks)(Array.isArray(d2.marks)?d2.marks:Object.values(d2.marks)).forEach(m=>t2+=(m||0));
+                        evR.push({cls, avg:(t1+t2)/2});
+                    });
+                    evR.sort((a,b) => b.avg-a.avg);
+                    if (evR[0] && resP[evR[0].cls] !== undefined) resP[evR[0].cls] += cfg.winnerPts;
+                    if (evR[1] && resP[evR[1].cls] !== undefined) resP[evR[1].cls] += cfg.runnerUpPts;
+                }
+            }
+
+            // ── 4. Custom Criteria ────────────────────────────────────────
+            const cSnap = await getDb().ref('leaderboardConfig/customCriteria').once('value');
+            if (cSnap.exists()) cSnap.forEach(cn => {
+                const c=cn.val(); if(!c||!c.points) return;
+                Object.keys(c.points).forEach(k => {
+                    LB_CLASSES.forEach(cl => {
+                        if (cl.replace(/[.\[\]#$\/]/g,'_')===k && custP[cl]!==undefined) custP[cl]+=(c.points[k]||0);
+                    });
+                });
+            });
+
+            // ── Rank & render ─────────────────────────────────────────────
+            const ranked = LB_CLASSES.map(cl => ({
+                cl, yfP:yfP[cl]||0, quizP:quizP[cl]||0, resP:resP[cl]||0, custP:custP[cl]||0,
+                total:(yfP[cl]||0)+(quizP[cl]||0)+(resP[cl]||0)+(custP[cl]||0)
+            })).sort((a,b) => b.total-a.total);
+
+            const medals = ['🥇','🥈','🥉'];
+            let html = '<div class="table-wrapper"><table style="min-width:700px;background:white;border-radius:8px;overflow:hidden">'
+                     + '<thead><tr>'
+                     + '<th style="background:#1a0030;color:#ffd700;padding:10px">Rank</th>'
+                     + '<th style="background:#1a0030;color:#ffd700">Class</th>'
+                     + '<th style="background:#1a0030;color:#ffc107">🎤 YF Reg</th>'
+                     + '<th style="background:#1a0030;color:#a5d6a7">🧠 Quiz</th>'
+                     + '<th style="background:#1a0030;color:#ce93d8">🏆 Results</th>'
+                     + '<th style="background:#1a0030;color:#80deea">✨ Custom</th>'
+                     + '<th style="background:#c44569;color:white;font-size:1.05em">TOTAL</th>'
+                     + '</tr></thead><tbody>';
+
+            ranked.forEach((e,i) => {
+                const rowBg = i===0 ? 'background:#fffde7' : i===1 ? 'background:#f8f8f8' : i===2 ? 'background:#fff3e0' : 'background:white';
+                const rankCell = i<3 ? medals[i] : `<strong>${i+1}</strong>`;
+                const totalStyle = i===0 ? 'font-weight:900;color:#c44569;font-size:1.2em' : 'font-weight:700;color:#c44569';
+                html += `<tr style="${rowBg}">
+                    <td style="text-align:center;font-size:1.1em">${rankCell}</td>
+                    <td style="font-weight:600">${e.cl}</td>
+                    <td style="color:#856404;text-align:center">${e.yfP}</td>
+                    <td style="color:#155724;text-align:center">${e.quizP}</td>
+                    <td style="color:#6a1b9a;text-align:center">${e.resP}</td>
+                    <td style="color:#0c5460;text-align:center">${e.custP}</td>
+                    <td style="${totalStyle};text-align:center">${e.total}</td>
+                </tr>`;
+            });
+            html += '</tbody></table></div>';
+
+            // Data source summary
+            const now = new Date().toLocaleTimeString('en-IN');
+            html += `<div style="margin-top:10px;padding:8px 12px;background:rgba(255,255,255,0.08);border-radius:6px;font-size:11px;color:rgba(255,255,255,0.5)">
+                📊 YF Reg pts used: ${cfg.yfPtsPerEvent}/event &nbsp;|&nbsp;
+                🧠 Quiz winner: ${cfg.quizWinnerPts}pts, runner-up: ${cfg.quizRunnerUpPts}pts, max participation: ${cfg.quizMaxPts}pts &nbsp;|&nbsp;
+                🏆 Event winner: ${cfg.winnerPts}pts, runner-up: ${cfg.runnerUpPts}pts &nbsp;|&nbsp;
+                Published quiz days counted: ${pubDates.size}
+            </div>`;
+
+            container.innerHTML = html;
+            if (updEl) updEl.textContent = 'Last updated: ' + now;
+
+        } catch(err) {
+            container.innerHTML = '<p style="color:#ff6b6b;text-align:center;padding:20px">❌ Error loading preview: <strong>' + err.message + '</strong></p>';
+            if (updEl) updEl.textContent = 'Failed to load';
+        }
+    }
+
+    function showLbAdminMsg(msg, type) {
+        const el = document.getElementById('lbAdminMessage');
+        if (!el) return;
+        el.className = 'message ' + type + ' show';
+        el.textContent = msg;
+        setTimeout(() => el.classList.remove('show'), 6000);
+    }
+
+    // Leaderboard tab loading is handled inside showTab() in the main script above
+
+    // ============================================================
+    //  HOW WE PUBLISH — Editable Section Engine
+    //  Super Admin can edit all text via Firebase
+    //  Path: leaderboardConfig/howWePublish
+    // ============================================================
+
+    const HWP_DEFAULTS = {
+        heading:  'Leaderboard Coming Soon!',
+        subText:  'Results will be published by the Super Admin once the events are completed.\nCheck back soon!',
+        overview: 'The <strong style="color:#c44569">Class of the Year 2026</strong> leaderboard ranks all <strong>11 classes</strong> competing across <strong>16 events</strong> at Spurthi Youth Fest. Rankings are hidden until the Super Admin verifies all results and officially publishes them — ensuring every score is accurate before you see it.',
+        cards: [
+            { title: 'Youthfest Registration', body: 'Each class earns points for <strong>every event they enrol in</strong>. More participation = more points for your class.' },
+            { title: 'Quiz Competition',        body: 'Per published quiz day: <strong>flat bonus</strong> to the winner &amp; runner-up class, plus a <strong>participation rate bonus</strong> — fair across all class sizes.' },
+            { title: 'Event Results',           body: 'When jury results are published, the <strong>1st place class</strong> gets winner pts and <strong>2nd place</strong> gets runner-up pts — automatically calculated.' },
+            { title: 'Special / Custom Criteria', body: 'The Super Admin may add bonus points for criteria like discipline, attendance, best decorated class, or other special achievements.' }
+        ],
+        steps: [
+            { title: 'Complete Events & Jury Scoring',  body: 'All events conducted. Jury 1 & Jury 2 fill and submit marks.' },
+            { title: 'Publish Quiz Results',            body: 'Daily quiz winners & runners-up declared. Only published days count.' },
+            { title: 'Verify Scoring Config',           body: 'Points per event, quiz pts, winner/runner-up pts confirmed & saved.' },
+            { title: 'Set Class Strengths',             body: 'Total students per class entered to ensure fair participation scoring.' },
+            { title: 'Preview & Verify',                body: 'Live preview checked internally before releasing to students.' },
+            { title: '📢 Publish to Students',          body: 'Only after full verification — rankings go LIVE for all students to see.', highlight: true }
+        ],
+        notes: [
+            'Only the <strong>Super Admin</strong> can publish or hide the leaderboard.',
+            'All point calculations are <strong>fully automatic</strong> — no manual tampering.',
+            'The leaderboard refreshes every <strong>60 seconds</strong> once live.',
+            'Rankings may be updated progressively as more results are published during the fest period.'
+        ]
+    };
+
+    let hwpData = JSON.parse(JSON.stringify(HWP_DEFAULTS)); // working copy
+    let hwpEditMode = false;
+
+    // ── Load from Firebase (or use defaults) ─────────────────────────────────
+    async function hwpLoad() {
+        try {
+            const snap = await getDb().ref('leaderboardConfig/howWePublish').once('value');
+            if (snap.exists()) {
+                const d = snap.val();
+                if (d.heading)  hwpData.heading  = d.heading;
+                if (d.subText)  hwpData.subText  = d.subText;
+                if (d.overview) hwpData.overview = d.overview;
+                if (d.cards  && Array.isArray(d.cards))  hwpData.cards  = d.cards;
+                if (d.steps  && Array.isArray(d.steps))  hwpData.steps  = d.steps;
+                if (d.notes  && Array.isArray(d.notes))  hwpData.notes  = d.notes;
+            }
+        } catch(e) { console.warn('hwpLoad error (using defaults):', e.message); }
+        hwpRender();
+        hwpShowAdminControls();
+    }
+
+    // ── Render all content from hwpData ──────────────────────────────────────
+    function hwpRender() {
+        // Banner
+        const hEl = document.getElementById('hwpHeadingText');
+        const sEl = document.getElementById('hwpSubText');
+        if (hEl) hEl.innerHTML = hwpData.heading;
+        if (sEl) sEl.innerHTML = hwpData.subText.replace(/\n/g, '<br>');
+
+        // Overview
+        const ov = document.getElementById('hwpOverviewText');
+        if (ov) ov.innerHTML = hwpData.overview;
+
+        // Cards
+        hwpData.cards.forEach((c, i) => {
+            const t = document.getElementById('hwpCard'+i+'Title');
+            const b = document.getElementById('hwpCard'+i+'Body');
+            if (t) t.innerHTML = c.title;
+            if (b) b.innerHTML = c.body;
+        });
+
+        // Steps
+        const grid = document.getElementById('hwpStepsGrid');
+        if (grid) {
+            grid.innerHTML = hwpData.steps.map((s, i) => {
+                const isLast = s.highlight;
+                const numBg  = isLast ? '#28a745' : '#c44569';
+                const cardBg = isLast ? 'background:linear-gradient(135deg,#e8f5e9,#d4edda);border:2px solid #28a745' : 'background:#fafafa;border:1px solid #eee';
+                const titleColor = isLast ? '#155724' : '#333';
+                const bodyColor  = isLast ? '#155724' : '#666';
+                return `<div style="${cardBg};border-radius:8px;padding:13px;display:flex;gap:11px;align-items:flex-start" data-step="${i}">
+                    <span style="background:${numBg};color:white;border-radius:50%;width:23px;height:23px;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;margin-top:1px">${i+1}</span>
+                    <div>
+                        <strong style="color:${titleColor};font-size:12.5px" id="hwpStep${i}Title">${s.title}</strong>
+                        <p style="margin:3px 0 0;color:${bodyColor};font-size:11.5px" id="hwpStep${i}Body">${s.body}</p>
+                        <div class="hwpStepEditArea" style="display:none;margin-top:6px">
+                            <input type="text" class="hwpStepTitleInput" data-idx="${i}" value="${s.title.replace(/"/g,'&quot;')}" style="width:100%;padding:4px 7px;border:1px solid #ccc;border-radius:4px;font-size:11.5px;margin-bottom:4px">
+                            <textarea class="hwpStepBodyInput" data-idx="${i}" rows="2" style="width:100%;padding:4px 7px;border:1px solid #ccc;border-radius:4px;font-size:11.5px;resize:vertical">${s.body}</textarea>
+                            <label style="font-size:11px;color:#666;display:flex;align-items:center;gap:5px;margin-top:3px">
+                                <input type="checkbox" class="hwpStepHighlight" data-idx="${i}" ${s.highlight?'checked':''} style="width:auto"> Highlight as final step (green)
+                            </label>
+                        </div>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        // Notes
+        const nl = document.getElementById('hwpNotesList');
+        if (nl) nl.innerHTML = hwpData.notes.map(n => `<li>${n}</li>`).join('');
+    }
+
+    // ── Show admin controls if Super Admin is logged in ───────────────────────
+    function hwpShowAdminControls() {
+        const isSA = typeof isSuperAdmin !== 'undefined' && isSuperAdmin;
+        if (!isSA) return;
+        const bannerCtrl  = document.getElementById('hwpBannerEditControls');
+        const sectionCtrl = document.getElementById('hwpEditModeControls');
+        if (bannerCtrl)  { bannerCtrl.style.display  = 'flex'; }
+        if (sectionCtrl) { sectionCtrl.style.display = 'flex'; }
+    }
+
+    // ── Banner edit ───────────────────────────────────────────────────────────
+    function hwpToggleBannerEdit() {
+        const isEditing = document.getElementById('hwpHeadingEdit').style.display !== 'none';
+        if (!isEditing) {
+            document.getElementById('hwpHeadingInput').value = hwpData.heading;
+            document.getElementById('hwpSubInput').value     = hwpData.subText;
+            document.getElementById('hwpHeadingView').style.display = 'none';
+            document.getElementById('hwpSubView').style.display     = 'none';
+            document.getElementById('hwpHeadingEdit').style.display = 'block';
+            document.getElementById('hwpSubEdit').style.display     = 'block';
+            document.getElementById('hwpBannerEditBtn').style.display  = 'none';
+            document.getElementById('hwpBannerSaveBtn').style.display  = 'inline-block';
+            document.getElementById('hwpBannerCancelBtn').style.display= 'inline-block';
+        }
+    }
+    function hwpCancelBannerEdit() {
+        document.getElementById('hwpHeadingView').style.display = 'block';
+        document.getElementById('hwpSubView').style.display     = 'block';
+        document.getElementById('hwpHeadingEdit').style.display = 'none';
+        document.getElementById('hwpSubEdit').style.display     = 'none';
+        document.getElementById('hwpBannerEditBtn').style.display   = 'inline-block';
+        document.getElementById('hwpBannerSaveBtn').style.display   = 'none';
+        document.getElementById('hwpBannerCancelBtn').style.display = 'none';
+    }
+    async function hwpSaveBanner() {
+        hwpData.heading = document.getElementById('hwpHeadingInput').value.trim() || hwpData.heading;
+        hwpData.subText = document.getElementById('hwpSubInput').value.trim()     || hwpData.subText;
+        try {
+            await getDb().ref('leaderboardConfig/howWePublish/heading').set(hwpData.heading);
+            await getDb().ref('leaderboardConfig/howWePublish/subText').set(hwpData.subText);
+            hwpRender();
+            hwpCancelBannerEdit();
+            const msg = document.getElementById('hwpBannerSaveMsg');
+            if (msg) { msg.style.display='inline-block'; setTimeout(()=>msg.style.display='none',3000); }
+        } catch(e) { alert('Save error: ' + e.message); }
+    }
+
+    // ── Section edit mode ─────────────────────────────────────────────────────
+    function hwpToggleEditMode() {
+        hwpEditMode = true;
+        // Overview
+        document.getElementById('hwpOverviewView').style.display = 'none';
+        document.getElementById('hwpOverviewEdit').style.display = 'block';
+        document.getElementById('hwpOverviewInput').value = hwpData.overview;
+        // Cards
+        document.querySelectorAll('.hwpCardEditArea').forEach((el,i) => {
+            el.style.display = 'block';
+            const tIn = el.querySelector('.hwpCardTitleInput');
+            const bIn = el.querySelector('.hwpCardBodyInput');
+            if (tIn) tIn.value = hwpData.cards[i] ? hwpData.cards[i].title : '';
+            if (bIn) bIn.value = hwpData.cards[i] ? hwpData.cards[i].body.replace(/<[^>]+>/g,'') : '';
+        });
+        // Steps
+        document.querySelectorAll('.hwpStepEditArea').forEach(el => el.style.display='block');
+        // Notes
+        document.getElementById('hwpNotesView').style.display = 'none';
+        document.getElementById('hwpNotesEdit').style.display = 'block';
+        document.getElementById('hwpNotesInput').value = hwpData.notes.map(n=>n.replace(/<[^>]+>/g,'')).join('\n');
+        // Buttons
+        document.getElementById('hwpEditModeBtn').style.display  = 'none';
+        document.getElementById('hwpSaveAllBtn').style.display   = 'inline-block';
+        document.getElementById('hwpCancelBtn').style.display    = 'inline-block';
+    }
+    function hwpCancelEdit() {
+        hwpEditMode = false;
+        hwpRender();
+        document.getElementById('hwpOverviewView').style.display = 'block';
+        document.getElementById('hwpOverviewEdit').style.display = 'none';
+        document.getElementById('hwpNotesView').style.display    = 'block';
+        document.getElementById('hwpNotesEdit').style.display    = 'none';
+        document.querySelectorAll('.hwpCardEditArea').forEach(el => el.style.display='none');
+        document.getElementById('hwpEditModeBtn').style.display  = 'inline-block';
+        document.getElementById('hwpSaveAllBtn').style.display   = 'none';
+        document.getElementById('hwpCancelBtn').style.display    = 'none';
+    }
+    async function hwpSaveAll() {
+        // Collect overview
+        hwpData.overview = document.getElementById('hwpOverviewInput').value.trim() || hwpData.overview;
+
+        // Collect cards
+        document.querySelectorAll('.hwpCardTitleInput').forEach(inp => {
+            const i = parseInt(inp.dataset.idx);
+            if (!isNaN(i) && hwpData.cards[i]) hwpData.cards[i].title = inp.value.trim();
+        });
+        document.querySelectorAll('.hwpCardBodyInput').forEach(inp => {
+            const i = parseInt(inp.dataset.idx);
+            if (!isNaN(i) && hwpData.cards[i]) hwpData.cards[i].body = inp.value.trim();
+        });
+
+        // Collect steps
+        document.querySelectorAll('.hwpStepTitleInput').forEach(inp => {
+            const i = parseInt(inp.dataset.idx);
+            if (!isNaN(i) && hwpData.steps[i]) hwpData.steps[i].title = inp.value.trim();
+        });
+        document.querySelectorAll('.hwpStepBodyInput').forEach(inp => {
+            const i = parseInt(inp.dataset.idx);
+            if (!isNaN(i) && hwpData.steps[i]) hwpData.steps[i].body = inp.value.trim();
+        });
+        document.querySelectorAll('.hwpStepHighlight').forEach(inp => {
+            const i = parseInt(inp.dataset.idx);
+            if (!isNaN(i) && hwpData.steps[i]) hwpData.steps[i].highlight = inp.checked;
+        });
+
+        // Collect notes
+        const rawNotes = document.getElementById('hwpNotesInput').value.trim();
+        if (rawNotes) hwpData.notes = rawNotes.split('\n').map(n=>n.trim()).filter(Boolean);
+
+        const saveBtn = document.getElementById('hwpSaveAllBtn');
+        if (saveBtn) { saveBtn.disabled=true; saveBtn.textContent='⏳ Saving…'; }
+        try {
+            await getDb().ref('leaderboardConfig/howWePublish').set({
+                heading:  hwpData.heading,
+                subText:  hwpData.subText,
+                overview: hwpData.overview,
+                cards:    hwpData.cards,
+                steps:    hwpData.steps,
+                notes:    hwpData.notes,
+                updatedAt: new Date().toISOString()
+            });
+            hwpCancelEdit();
+            hwpRender();
+            const msg = document.getElementById('hwpSaveAllMsg');
+            if (msg) { msg.style.display='inline-block'; setTimeout(()=>msg.style.display='none',4000); }
+        } catch(e) {
+            alert('❌ Save error: ' + e.message);
+        } finally {
+            if (saveBtn) { saveBtn.disabled=false; saveBtn.textContent='💾 Save All Changes'; }
+        }
+    }
+
+    // ── Auto-init when db is ready ────────────────────────────────────────────
+    (function hwpInit() {
+        function tryInit() {
+            try {
+                getDb(); // will throw if not ready
+                hwpLoad();
+            } catch(e) { setTimeout(tryInit, 600); }
+        }
+        tryInit();
+    })();
+
+    </script>
+
+    <!-- ============================================ -->
     <!-- RULES AND REGULATIONS SECTION                -->
     <!-- TO EDIT: Just change the text below          -->
     <!-- TO ADD PDF: Replace "rules.pdf" with your    -->
@@ -7060,7 +9336,7 @@ Davan Institute Team`;
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;">
-                <strong>Version:</strong> 2.0 (Quiz) | <strong>Last Updated:</strong> February 17, 2026
+                <strong>Version:</strong> 2.1 (Leaderboard) | <strong>Last Updated:</strong> February 17, 2026 (5.00pm)
             </p>
             <!-- ============================================ -->
             
