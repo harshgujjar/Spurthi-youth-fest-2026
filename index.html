@@ -3447,7 +3447,7 @@
                 const cfg = events[ev];
                 const enrolled = all.filter(e => e.event===ev && e.classYear===studentClass).length;
                 const effMax = getEffectiveMax(cfg, studentClass);
-                const enrolledCount = cfg.allowIndividual ? enrolled : (cfg.count === 1 ? enrolled : Math.ceil(enrolled / cfg.count));
+                const enrolledCount = cfg.allowIndividual || !cfg.count ? enrolled : (cfg.count === 1 ? enrolled : Math.ceil(enrolled / cfg.count));
                 const remaining = effMax - enrolledCount;
                 const isFull = remaining <= 0;
                 const card = document.createElement('div');
@@ -3466,7 +3466,7 @@
                 const cfg = events[ev];
                 const enrolled = all.filter(e => e.event===ev && e.classYear===crClass).length;
                 const effMax = getEffectiveMax(cfg, crClass);
-                const enrolledCount = cfg.allowIndividual ? enrolled : (cfg.count === 1 ? enrolled : Math.ceil(enrolled / cfg.count));
+                const enrolledCount = cfg.allowIndividual || !cfg.count ? enrolled : (cfg.count === 1 ? enrolled : Math.ceil(enrolled / cfg.count));
                 const remaining = effMax - enrolledCount;
                 const isFull = remaining <= 0;
                 const card = document.createElement('div');
@@ -3485,7 +3485,7 @@
             
             // Calculate how many teams/participants are already enrolled
             const effMax = getEffectiveMax(cfg, studentClass);
-            const enrolledCount = cfg.allowIndividual ? enrolled : (cfg.count === 1 ? enrolled : Math.ceil(enrolled / cfg.count));
+            const enrolledCount = cfg.allowIndividual || !cfg.count ? enrolled : (cfg.count === 1 ? enrolled : Math.ceil(enrolled / cfg.count));
             const remaining = effMax - enrolledCount;
             
             if (remaining <= 0) { alert('Event is full for your class'); return; }
@@ -3820,7 +3820,7 @@
             const enrolled = all.filter(e => e.event===ev && e.classYear===crClass).length;
             
             const effMax = getEffectiveMax(cfg, crClass);
-            const enrolledCount = cfg.count === 1 ? enrolled : Math.ceil(enrolled / cfg.count);
+            const enrolledCount = (!cfg.count || cfg.count === 1) ? enrolled : Math.ceil(enrolled / cfg.count);
             const remaining = effMax - enrolledCount;
             
             if (remaining <= 0) { alert('Event is full for your class'); return; }
@@ -12836,7 +12836,7 @@ Proceed?`)) return;
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;">
-                <strong>Version:</strong> 3.0 Scavenger Hunt Event  | <strong>Last Updated:</strong> February 18, 2026 (5.00pm)
+                <strong>Version:</strong> 3.0 Scavenger Hunt Event  | <strong>Last Updated:</strong> February 18, 2026 (5.10pm)
             </p>
             <!-- ============================================ -->
             
