@@ -932,6 +932,20 @@
                         <p style="margin:0;color:#666;text-align:center">Checking today's quiz status...</p>
                     </div>
                 </div>
+
+                <!-- Past Results Lookup -->
+                <div style="background:white;border-radius:14px;padding:18px 20px;margin-bottom:24px;box-shadow:0 4px 16px rgba(0,0,0,0.08);border:2px solid #e0e0e0">
+                    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap">
+                        <span style="font-size:1.4em">📅</span>
+                        <h4 style="margin:0;color:#6a1b9a;font-size:1em">Check Past Quiz Results</h4>
+                    </div>
+                    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+                        <input type="date" id="pastResultDate"
+                            style="flex:1;min-width:150px;padding:10px 14px;border:2px solid #9c27b0;border-radius:10px;font-size:14px;color:#333;cursor:pointer">
+                        <button onclick="loadPastQuizResult()" style="background:linear-gradient(135deg,#6a1b9a,#c44569);color:white;border:none;padding:10px 20px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;white-space:nowrap">🔍 Check Result</button>
+                    </div>
+                    <div id="pastResultBox" style="margin-top:14px;display:none"></div>
+                </div>
                 
                 <hr style="margin:30px 0;border:none;border-top:2px solid #e9ecef">
                 
@@ -1659,9 +1673,12 @@
                             <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap">
                                 <span style="font-size:1.7em">⏰</span>
                                 <div style="flex:1">
-                                    <h4 style="color:#ffd700;margin:0;font-size:1em">Auto-Declaration at 11:30 PM</h4>
-                                    <p style="color:rgba(255,255,255,0.65);font-size:12px;margin:3px 0 0">If no manual declaration is done, winners are auto-selected at 11:30 PM daily.</p>
+                                    <h4 style="color:#ffd700;margin:0;font-size:1em">Auto-Declaration</h4>
+                                    <p style="color:rgba(255,255,255,0.65);font-size:12px;margin:3px 0 0">Winners auto-selected at your chosen time daily.</p>
                                 </div>
+                                <!-- Time picker -->
+                                <input type="time" id="autoDeclarTime" value="23:30" onchange="saveAutoDeclarSetting()"
+                                    style="padding:6px 10px;border-radius:8px;border:2px solid #ffd700;background:#2a0050;color:#ffd700;font-size:14px;font-weight:700;cursor:pointer">
                                 <label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin:0">
                                     <div style="position:relative;width:48px;height:26px">
                                         <input type="checkbox" id="autoDeclarToggle" onchange="saveAutoDeclarSetting()" style="opacity:0;width:0;height:0;position:absolute">
@@ -1672,7 +1689,7 @@
                                 </label>
                             </div>
                             <div id="autoDeclarWarning" style="background:rgba(255,150,0,0.15);border-radius:8px;padding:10px 14px;font-size:12px;color:#ffd700;margin-bottom:8px">
-                                ⚠️ <strong>Important:</strong> Auto-declaration only runs if this page is <strong>open in a browser at 11:30 PM</strong>. If the page is closed, use <strong>Run Now</strong> after 11:30 PM.
+                                ⚠️ <strong>Important:</strong> Auto-declaration only runs if this page is <strong>open in a browser at the set time</strong>. If the page is closed, use <strong>Run Now</strong> after the time passes.
                             </div>
                             <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
                                 <button onclick="runAutoDeclaration()" style="background:#ffd700;color:#1a0030;border:none;padding:6px 16px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:700">▶️ Run Now (Manual Trigger)</button>
@@ -1684,9 +1701,16 @@
                             <div id="autoDeclarCountdown" style="display:none;margin-top:10px;background:rgba(255,215,0,0.1);border-radius:8px;padding:10px 14px;font-size:13px;color:#ffd700;font-weight:600;text-align:center"></div>
                         </div>
 
-                        <!-- ── HOW IT WORKS ── -->
+                        <!-- ── HOW IT WORKS ── -->\
                         <div style="background:#fff3cd;padding:15px 20px;border-radius:10px;margin-bottom:22px">
                             <p style="margin:0;color:#856404"><strong>ℹ️ How it works:</strong> System randomly selects winner &amp; runner-up from students who got BOTH questions correct.</p>
+                        </div>
+                        
+                        <!-- ── DATE SELECTOR FOR STATS ── -->
+                        <div style="background:#e3f2fd;padding:14px 18px;border-radius:10px;margin-bottom:16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+                            <label style="font-weight:700;color:#1565c0;white-space:nowrap">📅 View Stats for Date:</label>
+                            <input type="date" id="winnersDateSelector" style="border:2px solid #1565c0;border-radius:8px;padding:7px 12px;font-size:1em;color:#333;background:white" onchange="loadQuizResultsAdmin()" />
+                            <button onclick="loadQuizResultsAdmin()" style="background:#1565c0;color:white;border:none;padding:8px 18px;border-radius:8px;font-weight:700;cursor:pointer;font-size:0.95em">🔄 Load</button>
                         </div>
                         
                         <div style="background:#f8f9fa;padding:20px;border-radius:10px;margin:0 0 20px">
@@ -1698,6 +1722,9 @@
                         
                         <!-- Eligible Students List -->
                         <div id="eligibleStudentsListAdmin"></div>
+
+                        <!-- Winner display for selected date -->
+                        <div id="winnersDisplayAdmin" style="display:none;margin-top:25px"></div>
 
                         <!-- ── ACTION BUTTONS ── -->
                         <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:20px;margin-bottom:10px">
@@ -1728,8 +1755,6 @@
                                 <button class="btn btn-secondary" onclick="toggleManualWinnerUI()" style="padding:12px 20px">✖ Cancel</button>
                             </div>
                         </div>
-                        
-                        <div id="winnersDisplayAdmin" style="display:none;margin-top:25px"></div>
                     </div>
                     
                     <!-- Edit Quiz Dates Sub-Tab (Super Admin Only) -->
@@ -1840,18 +1865,17 @@
                         <span id="shCreateTaskMsg" style="margin-left:12px;font-size:0.9em;color:#4caf50;display:none">✅ Task created!</span>
                     </div>
 
-                    <!-- ── WhatsApp Share Box (shown after task creation) ── -->
-                    <div id="shWaBox" style="display:none;background:linear-gradient(135deg,#e8f5e9,#f1f8e9);border:2px solid #25D366;border-radius:12px;padding:18px;margin-bottom:20px">
+                    <!-- ── WhatsApp Share Box (always visible) ── -->
+                    <div id="shWaBox" style="display:block;background:linear-gradient(135deg,#e8f5e9,#f1f8e9);border:2px solid #25D366;border-radius:12px;padding:18px;margin-bottom:20px">
                         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px">
                             <span style="color:#1b5e20;font-weight:700;font-size:1em">📲 WhatsApp Announcement Ready!</span>
                             <div style="display:flex;gap:8px">
                                 <button class="btn btn-success btn-small" onclick="shCopyWaMsg()" id="shWaCopyBtn">📋 Copy Message</button>
-                                <button class="btn btn-secondary btn-small" onclick="document.getElementById('shWaBox').style.display='none'">✖ Dismiss</button>
                             </div>
                         </div>
                         <textarea id="shWaText" rows="8" readonly
                             style="width:100%;padding:12px;border:1px solid #a5d6a7;border-radius:8px;font-size:13px;line-height:1.7;background:white;color:#1a1a1a;resize:vertical;font-family:inherit;cursor:text"
-                            onclick="this.select()"></textarea>
+                            onclick="this.select()">⏳ Loading tasks...</textarea>
                     </div>
 
                     <h4 style="color:#6a1b9a;margin-bottom:12px">📋 All Tasks</h4>
@@ -1960,6 +1984,57 @@
                     <div style="background:linear-gradient(135deg,#7b1fa2,#e91e63);border-radius:14px;padding:22px;margin-bottom:20px;color:white">
                         <h3 style="margin:0 0 6px;font-size:1.2em">🎖️ Declare Scavenger Hunt Winner</h3>
                         <p style="margin:0;font-size:0.88em;opacity:0.85">Select winner and runner-up from participants who completed ALL tasks</p>
+                    </div>
+
+                    <!-- ── AUTO-DECLARATION PANEL ── -->
+                    <div style="background:linear-gradient(135deg,#1a0030 0%,#3d0060 100%);border-radius:14px;padding:20px 22px;margin-bottom:20px;border:2px solid rgba(255,215,0,0.3)">
+                        <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap">
+                            <span style="font-size:1.7em">⏰</span>
+                            <div style="flex:1">
+                                <h4 style="color:#ffd700;margin:0;font-size:1em">Auto-Declaration</h4>
+                                <p style="color:rgba(255,255,255,0.65);font-size:12px;margin:3px 0 0">Set the date, time and which task winners should be declared for.</p>
+                            </div>
+                            <!-- Toggle -->
+                            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin:0">
+                                <div style="position:relative;width:48px;height:26px">
+                                    <input type="checkbox" id="shAutoDeclarToggle" onchange="shToggleAutoDeclar()" style="opacity:0;width:0;height:0;position:absolute">
+                                    <span id="shAutoDeclarSlider" style="position:absolute;inset:0;background:#555;border-radius:26px;transition:0.3s;cursor:pointer"></span>
+                                    <span id="shAutoDeclarThumb" style="position:absolute;left:3px;top:3px;width:20px;height:20px;background:white;border-radius:50%;transition:0.3s;pointer-events:none"></span>
+                                </div>
+                                <span id="shAutoDeclarBadge" style="color:#ffd700;font-weight:700;font-size:13px;white-space:nowrap">OFF</span>
+                            </label>
+                        </div>
+
+                        <!-- Date + Time + Task row -->
+                        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:14px">
+                            <div>
+                                <label style="color:rgba(255,255,255,0.7);font-size:11px;font-weight:600;display:block;margin-bottom:4px">📅 DATE</label>
+                                <input type="date" id="shAutoDeclarDate"
+                                    style="width:100%;padding:8px 10px;border-radius:8px;border:2px solid #ffd700;background:#2a0050;color:#ffd700;font-size:13px;font-weight:700;cursor:pointer">
+                            </div>
+                            <div>
+                                <label style="color:rgba(255,255,255,0.7);font-size:11px;font-weight:600;display:block;margin-bottom:4px">🕐 TIME</label>
+                                <input type="time" id="shAutoDeclarTime"
+                                    style="width:100%;padding:8px 10px;border-radius:8px;border:2px solid #ffd700;background:#2a0050;color:#ffd700;font-size:13px;font-weight:700;cursor:pointer">
+                            </div>
+                            <div>
+                                <label style="color:rgba(255,255,255,0.7);font-size:11px;font-weight:600;display:block;margin-bottom:4px">🗺️ TASK</label>
+                                <select id="shAutoDeclarTask"
+                                    style="width:100%;padding:8px 10px;border-radius:8px;border:2px solid #ffd700;background:#2a0050;color:#ffd700;font-size:13px;font-weight:700;cursor:pointer">
+                                    <option value="all">⭐ All tasks</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+                            <button onclick="shSaveAutoDeclarConfig(this)" style="background:#ffd700;color:#1a0030;border:none;padding:7px 18px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:700">💾 Save Config</button>
+                            <button onclick="shRunAutoDeclaration()" style="background:rgba(255,255,255,0.15);color:white;border:none;padding:7px 16px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600">▶️ Run Now</button>
+                        </div>
+
+                        <div id="shAutoDeclarStatusMsg" style="background:rgba(255,255,255,0.07);border-radius:8px;padding:10px 14px;font-size:12.5px;color:rgba(255,255,255,0.75);margin-bottom:8px">
+                            🔴 Auto-declaration is <strong style="color:#ff6b6b">disabled</strong>. Toggle ON and save config to enable.
+                        </div>
+                        <div id="shAutoDeclarCountdownDisplay" style="display:none;background:rgba(255,215,0,0.1);border-radius:8px;padding:8px 14px;font-size:13px;color:#ffd700;font-weight:600;text-align:center"></div>
                     </div>
 
                     <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px">
@@ -2405,8 +2480,9 @@
 
         <div id="shStudentDashboard" style="display:none">
             <!-- Login success banner -->
-            <div style="background:linear-gradient(135deg,#9c27b0,#e91e63);color:white;padding:16px 24px;border-radius:12px;margin-bottom:16px;text-align:center;font-size:1.2em;font-weight:700;box-shadow:0 4px 15px rgba(156,39,176,0.4)">
-                ✅ Logged In Successfully — Scavenger Hunt
+            <div style="background:linear-gradient(135deg,#9c27b0,#e91e63);color:white;padding:16px 24px;border-radius:12px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;box-shadow:0 4px 15px rgba(156,39,176,0.4)">
+                <span style="font-size:1.2em;font-weight:700">✅ Logged In Successfully — Scavenger Hunt</span>
+                <button onclick="shGoBack()" style="background:rgba(255,255,255,0.2);color:white;border:2px solid rgba(255,255,255,0.6);padding:8px 18px;border-radius:20px;cursor:pointer;font-size:0.85em;font-weight:700;display:flex;align-items:center;gap:6px;white-space:nowrap;transition:all 0.2s" onmouseover="this.style.background='rgba(255,255,255,0.35)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'">⬅️ Go Back</button>
             </div>
             <!-- Header -->
             <div style="background:linear-gradient(135deg,#9c27b0,#e91e63);padding:16px 20px;border-radius:12px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:20px;box-shadow:0 4px 15px rgba(0,0,0,0.2)">
@@ -2543,11 +2619,32 @@
 
         let db, ref;
         try {
-            firebase.initializeApp(firebaseConfig);
+            // Guard: only initialize if not already initialized
+            if (!firebase.apps.length) {
+                firebase.initializeApp(firebaseConfig);
+            }
             db = firebase.database();
             window.db = db;  // expose globally so leaderboard script block can use it
             ref = db.ref('youthfest-enrollments');
-        } catch (e) { console.error('Firebase error:', e); }
+        } catch (e) {
+            console.error('Firebase error:', e);
+            // Show user-visible warning without breaking the page
+            document.addEventListener('DOMContentLoaded', function() {
+                const warn = document.createElement('div');
+                warn.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#c62828;color:white;text-align:center;padding:10px;font-weight:700;z-index:99999;font-size:14px';
+                warn.innerHTML = '⚠️ Database connection error. Please refresh the page. If the problem persists, contact support.';
+                document.body.prepend(warn);
+            });
+        }
+
+        // Global JS error guard — catches syntax/runtime errors in any script block
+        // and logs them without crashing the whole app
+        window.addEventListener('error', function(e) {
+            console.error('[Global JS Error]', e.message, 'at', e.filename, 'line', e.lineno);
+        });
+        window.addEventListener('unhandledrejection', function(e) {
+            console.error('[Unhandled Promise]', e.reason);
+        });
 
         // Firebase Connection Status Monitor
         let isConnected = false;
@@ -2594,6 +2691,7 @@
 
         // Global Variables
         const classes = ['1st B.Com','2nd B.Com','3rd B.Com','1ST BCA','2ND BCA A SEC','2ND BCA B SEC','3RD BCA A SEC','3RD BCA B SEC','3RD BCA C SEC','2ND BBA','3RD BBA','Faculty/Principal/Vice-Principal/Staff','Others'];
+        window._appClasses = classes; // expose to other script blocks
         const events = {
             'Pod Casting': {size:'Individual',count:1,role:false,topic:true,topicLabel:'Topic',allow:false,maxPerClass:3},
             'Mime': {size:'6 Members',count:6,role:true,topic:true,topicLabel:'Theme',allow:false,maxPerClass:1},
@@ -5576,99 +5674,216 @@
         async function checkPublicQuizStatus() {
             const today = await getQuizTodayServer();
             const messageDiv = document.getElementById('publicQuizMessage');
-            
-            console.log('=== checkPublicQuizStatus START ===');
-            console.log('Today:', today);
-            
+            console.log('=== checkPublicQuizStatus START === Today:', today);
             try {
-                const qRef = db.ref(`quizQuestions/${today}`);
-                const qSnap = await qRef.once('value');
-                
-                console.log('Questions exist for public view?', qSnap.exists());
-                
-                if (!qSnap.exists()) {
-                    messageDiv.innerHTML = '<p style="margin:0;color:#856404">⏳ <strong>No quiz available today.</strong></p>';
-                    return;
+                // Always fetch all published dates first
+                const allPublished = await db.ref('quizPublished').once('value');
+                let latestPublishedDate = null;
+                let latestPublishedData = null;
+                if (allPublished.exists()) {
+                    const pubData = allPublished.val();
+                    const publishedDates = Object.keys(pubData)
+                        .filter(d => pubData[d] && pubData[d].published === true)
+                        .sort().reverse();
+                    if (publishedDates.length > 0) {
+                        latestPublishedDate = publishedDates[0];
+                        latestPublishedData = pubData[latestPublishedDate];
+                    }
                 }
-                
-                // Check if published (for showing answers)
-                const pSnap = await db.ref(`quizPublished/${today}`).once('value');
-                const publishData = pSnap.val();
-                const isPublished = publishData && publishData.published === true;
-                
-                console.log('Is quiz published for public Q&A view?', isPublished);
-                
-                if (!isPublished) {
-                    // Quiz exists but not published - students can login and take it
-                    messageDiv.innerHTML = '<div class="quiz-available-banner"><div class="trophy-icon">🏆</div><h3>✅ Today\'s Quiz is Available!</h3><p style="margin:0;color:#155724;font-size:1.15em">Login below to participate and win exciting prizes!</p><p style="margin-top:10px;color:#28a745;font-weight:600">⚡ Be the fastest to answer correctly!</p><div style="margin-top:14px;background:rgba(255,255,255,0.7);border-radius:10px;padding:10px 15px;display:inline-block;border:2px solid #28a745"><span style="color:#856404;font-weight:700;font-size:0.95em">⏳ Quiz ends in: </span><span id="publicQuizCountdown" style="color:#c0392b;font-weight:800;font-size:1.15em;letter-spacing:1px">--:--:--</span><span style="color:#666;font-size:0.82em;margin-left:6px">(closes at 11:59 PM today)</span></div></div>';
-                    // Start countdown to 11:59 PM today
-                    (function startPublicCountdown() {
-                        function updatePublicCountdown() {
-                            const el = document.getElementById('publicQuizCountdown');
-                            if (!el) return;
-                            const now = new Date();
-                            const end = new Date();
-                            end.setHours(23, 59, 59, 0);
-                            const diff = end - now;
-                            if (diff <= 0) { el.textContent = 'CLOSED'; el.style.color = '#c0392b'; return; }
-                            const h = Math.floor(diff / 3600000);
-                            const m = Math.floor((diff % 3600000) / 60000);
-                            const s = Math.floor((diff % 60000) / 1000);
-                            el.textContent = String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
-                            setTimeout(updatePublicCountdown, 1000);
+                console.log('Latest published date:', latestPublishedDate);
+
+                // If there is a published quiz (any date), show its Q&A
+                if (latestPublishedDate) {
+                    const pubQSnap = await db.ref(`quizQuestions/${latestPublishedDate}`).once('value');
+                    if (pubQSnap.exists()) {
+                        const questions = pubQSnap.val();
+                        const publishData = latestPublishedData;
+                        const publishedDate = new Date(latestPublishedDate + 'T00:00:00').toLocaleDateString('en-IN', {
+                            weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+                        });
+                        const publishedTime = new Date(publishData.publishedAt).toLocaleTimeString('en-IN', {
+                            hour: '2-digit', minute: '2-digit'
+                        });
+                        let html = '<div style="background:#e8f5e9;padding:20px;border-radius:10px;border:3px solid #4CAF50;margin-bottom:16px">';
+                        html += '<h4 style="color:#2e7d32;margin-top:0">\uD83D\uDCC5 Published Quiz - Questions &amp; Answers</h4>';
+                        html += '<p style="color:#2e7d32;margin-bottom:15px;font-size:0.9em">Published: ' + publishedDate + ' at ' + publishedTime + '</p>';
+                        html += '<div style="background:white;padding:20px;border-radius:8px;margin-bottom:15px;border-left:5px solid #667eea">';
+                        html += '<p style="margin:0 0 10px 0;color:#667eea;font-weight:bold;font-size:1.1em">Question 1:</p>';
+                        html += '<p style="margin:0 0 15px 0;color:#333;font-size:1.05em">' + questions.q1.text + '</p>';
+                        html += '<div style="background:#4CAF50;color:white;padding:12px;border-radius:6px;font-weight:bold">\u2705 Correct Answer: ' + questions.q1.options[questions.q1.correct] + '</div></div>';
+                        html += '<div style="background:white;padding:20px;border-radius:8px;border-left:5px solid #667eea">';
+                        html += '<p style="margin:0 0 10px 0;color:#667eea;font-weight:bold;font-size:1.1em">Question 2:</p>';
+                        html += '<p style="margin:0 0 15px 0;color:#333;font-size:1.05em">' + questions.q2.text + '</p>';
+                        html += '<div style="background:#4CAF50;color:white;padding:12px;border-radius:6px;font-weight:bold">\u2705 Correct Answer: ' + questions.q2.options[questions.q2.correct] + '</div></div>';
+                        html += '<p style="color:#2e7d32;margin:15px 0 0 0;font-size:0.9em;text-align:center"><em>Review the questions and answers from the published quiz</em></p></div>';
+                        // Also show today participation banner if today has a DIFFERENT (unpublished) quiz
+                        if (latestPublishedDate !== today) {
+                            const todayQSnap = await db.ref(`quizQuestions/${today}`).once('value');
+                            if (todayQSnap.exists()) {
+                                const todayDateStr = new Date(today + 'T00:00:00').toLocaleDateString('en-IN', {weekday:'long', day:'2-digit', month:'long', year:'numeric'});
+                                html += '<div class="quiz-available-banner"><div class="trophy-icon">\uD83C\uDFC6</div><h3>\u2705 Today\'s Quiz is Available!</h3><p style="margin:0;color:#155724;font-size:1.05em;font-weight:600">\uD83D\uDCC5 ' + todayDateStr + '</p><p style="margin-top:6px;color:#155724;font-size:1.05em">Login below to participate and win exciting prizes!</p><p style="margin-top:8px;color:#28a745;font-weight:600">\u26A1 Be the fastest to answer correctly!</p><div style="margin-top:14px;background:rgba(255,255,255,0.7);border-radius:10px;padding:10px 15px;display:inline-block;border:2px solid #28a745"><span style="color:#856404;font-weight:700;font-size:0.95em">\u23F3 Quiz ends in: </span><span id="publicQuizCountdown" style="color:#c0392b;font-weight:800;font-size:1.15em;letter-spacing:1px">--:--:--</span><span style="color:#666;font-size:0.82em;margin-left:6px">(closes at 11:59 PM today)</span></div></div>';
+                            }
                         }
-                        updatePublicCountdown();
-                    })();
+                        messageDiv.innerHTML = html;
+                        // Start countdown AFTER innerHTML is set
+                        setTimeout(function startQuizCountdownAfterRender() {
+                            function tickCountdown() {
+                                const el = document.getElementById('publicQuizCountdown');
+                                if (!el) return;
+                                const now2 = new Date(), end2 = new Date();
+                                end2.setHours(23, 59, 59, 0);
+                                const diff = end2 - now2;
+                                if (diff <= 0) { el.textContent = 'CLOSED'; el.style.color = '#c0392b'; return; }
+                                const h = Math.floor(diff/3600000), m = Math.floor((diff%3600000)/60000), s = Math.floor((diff%60000)/1000);
+                                el.textContent = String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+                                setTimeout(tickCountdown, 1000);
+                            }
+                            tickCountdown();
+                        }, 0);
+                        showPublicQuizWinner(latestPublishedDate);
+                        console.log('=== checkPublicQuizStatus END (published) ===');
+                        return;
+                    }
+                }
+
+                // No published quiz — check if today has a quiz for participation
+                const todayQSnap2 = await db.ref(`quizQuestions/${today}`).once('value');
+                if (!todayQSnap2.exists()) {
+                    messageDiv.innerHTML = '<p style="margin:0;color:#856404">\u23F3 <strong>No quiz available today.</strong></p>';
+                    showPublicQuizWinner(today);
                     return;
                 }
-                
-                // Quiz is published - show questions with correct answers for review
-                const questions = qSnap.val();
-                const publishedDate = new Date(publishData.publishedAt).toLocaleDateString('en-IN', {
-                    weekday: 'long',
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric'
-                });
-                const publishedTime = new Date(publishData.publishedAt).toLocaleTimeString('en-IN', {
-                    hour: '2-digit',
-                    minute: '2-digit'
-                });
-                
-                let html = '<div style="background:#e8f5e9;padding:20px;border-radius:10px;border:3px solid #4CAF50">';
-                html += '<h4 style="color:#2e7d32;margin-top:0">📅 Today\'s Quiz - Questions & Answers</h4>';
-                html += '<p style="color:#2e7d32;margin-bottom:15px;font-size:0.9em">Published: ' + publishedDate + ' at ' + publishedTime + '</p>';
-                
-                // Question 1
-                html += '<div style="background:white;padding:20px;border-radius:8px;margin-bottom:15px;border-left:5px solid #667eea">';
-                html += '<p style="margin:0 0 10px 0;color:#667eea;font-weight:bold;font-size:1.1em">Question 1:</p>';
-                html += '<p style="margin:0 0 15px 0;color:#333;font-size:1.05em">' + questions.q1.text + '</p>';
-                html += '<div style="background:#4CAF50;color:white;padding:12px;border-radius:6px;font-weight:bold">';
-                html += '✅ Correct Answer: ' + questions.q1.options[questions.q1.correct];
-                html += '</div>';
-                html += '</div>';
-                
-                // Question 2
-                html += '<div style="background:white;padding:20px;border-radius:8px;border-left:5px solid #667eea">';
-                html += '<p style="margin:0 0 10px 0;color:#667eea;font-weight:bold;font-size:1.1em">Question 2:</p>';
-                html += '<p style="margin:0 0 15px 0;color:#333;font-size:1.05em">' + questions.q2.text + '</p>';
-                html += '<div style="background:#4CAF50;color:white;padding:12px;border-radius:6px;font-weight:bold">';
-                html += '✅ Correct Answer: ' + questions.q2.options[questions.q2.correct];
-                html += '</div>';
-                html += '</div>';
-                
-                html += '<p style="color:#2e7d32;margin:15px 0 0 0;font-size:0.9em;text-align:center"><em>Review the questions and answers from today\'s quiz</em></p>';
-                html += '</div>';
-                
-                messageDiv.innerHTML = html;
-                
-                console.log('=== checkPublicQuizStatus END ===');
+
+                // Today has quiz but not published yet — show participation banner with date
+                const todayDateStr2 = new Date(today + 'T00:00:00').toLocaleDateString('en-IN', {weekday:'long', day:'2-digit', month:'long', year:'numeric'});
+                messageDiv.innerHTML = '<div class="quiz-available-banner"><div class="trophy-icon">\uD83C\uDFC6</div><h3>\u2705 Today\'s Quiz is Available!</h3><p style="margin:0;color:#155724;font-size:1.05em;font-weight:600">\uD83D\uDCC5 ' + todayDateStr2 + '</p><p style="margin-top:6px;color:#155724;font-size:1.05em">Login below to participate and win exciting prizes!</p><p style="margin-top:8px;color:#28a745;font-weight:600">\u26A1 Be the fastest to answer correctly!</p><div style="margin-top:14px;background:rgba(255,255,255,0.7);border-radius:10px;padding:10px 15px;display:inline-block;border:2px solid #28a745"><span style="color:#856404;font-weight:700;font-size:0.95em">\u23F3 Quiz ends in: </span><span id="publicQuizCountdown" style="color:#c0392b;font-weight:800;font-size:1.15em;letter-spacing:1px">--:--:--</span><span style="color:#666;font-size:0.82em;margin-left:6px">(closes at 11:59 PM today)</span></div></div>';
+                // Start countdown AFTER innerHTML is set
+                setTimeout(function startQuizCountdownAfterRender2() {
+                    function tickCountdown2() {
+                        const el = document.getElementById('publicQuizCountdown');
+                        if (!el) return;
+                        const now3 = new Date(), end3 = new Date();
+                        end3.setHours(23, 59, 59, 0);
+                        const diff = end3 - now3;
+                        if (diff <= 0) { el.textContent = 'CLOSED'; el.style.color = '#c0392b'; return; }
+                        const h = Math.floor(diff/3600000), m = Math.floor((diff%3600000)/60000), s = Math.floor((diff%60000)/1000);
+                        el.textContent = String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+                        setTimeout(tickCountdown2, 1000);
+                    }
+                    tickCountdown2();
+                }, 0);
+                showPublicQuizWinner(today);
+                console.log('=== checkPublicQuizStatus END (available) ===');
             } catch (err) {
                 console.error('Public quiz status check error:', err);
-                messageDiv.innerHTML = '<p style="margin:0;color:#721c24">❌ Error loading quiz status</p>';
+                messageDiv.innerHTML = '<p style="margin:0;color:#721c24">\u274C Error loading quiz status</p>';
             }
         }
+
+        // Show declared winner below the quiz status box
+        async function showPublicQuizWinner(date) {
+            // Remove any existing winner box first
+            const existing = document.getElementById('publicQuizWinnerBox');
+            if (existing) existing.remove();
+
+            try {
+                const snap = await db.ref(`quizResults/${date}`).once('value');
+                const data = snap.val();
+                if (!data || !data.winner) return; // no winner declared yet
+
+                const dateFormatted = new Date(date).toLocaleDateString('en-IN', {
+                    weekday: 'long', day: '2-digit', month: 'long', year: 'numeric'
+                });
+                const declaredTime = new Date(data.declaredAt).toLocaleTimeString('en-IN', {
+                    hour: '2-digit', minute: '2-digit', hour12: true
+                });
+
+                const box = document.createElement('div');
+                box.id = 'publicQuizWinnerBox';
+                box.style.cssText = 'margin-top:20px;border-radius:16px;overflow:hidden;box-shadow:0 8px 30px rgba(0,0,0,0.15)';
+                box.innerHTML = `
+                    <div style="background:linear-gradient(135deg,#6a1b9a,#c44569);padding:16px 22px;color:white;display:flex;align-items:center;gap:12px">
+                        <span style="font-size:1.8em">🏆</span>
+                        <div>
+                            <h4 style="margin:0;font-size:1.05em">Today's Quiz Winners</h4>
+                            <p style="margin:0;font-size:11px;opacity:0.8">📅 ${dateFormatted} &nbsp;|&nbsp; Declared at ${declaredTime}</p>
+                        </div>
+                    </div>
+                    <div style="background:white;padding:18px 22px;display:flex;gap:16px;flex-wrap:wrap">
+                        <div style="flex:1;min-width:160px;background:linear-gradient(135deg,#fff9c4,#ffd54f);border-radius:12px;padding:16px;text-align:center;border:2px solid #ffd700">
+                            <div style="font-size:2em;margin-bottom:4px">🥇</div>
+                            <div style="font-weight:800;font-size:1.05em;color:#5d4037">${data.winner.name}</div>
+                            <div style="background:#6a1b9a;color:white;border-radius:20px;padding:3px 12px;font-size:12px;font-weight:700;margin:6px auto;display:inline-block">${data.winner.class}</div>
+                            <div style="font-size:11px;color:#666;margin-top:4px">Score: ${data.winner.score}/2</div>
+                        </div>
+                        ${data.runnerUp ? `
+                        <div style="flex:1;min-width:160px;background:linear-gradient(135deg,#f5f5f5,#e0e0e0);border-radius:12px;padding:16px;text-align:center;border:2px solid #bdbdbd">
+                            <div style="font-size:2em;margin-bottom:4px">🥈</div>
+                            <div style="font-weight:800;font-size:1.05em;color:#37474f">${data.runnerUp.name}</div>
+                            <div style="background:#455a64;color:white;border-radius:20px;padding:3px 12px;font-size:12px;font-weight:700;margin:6px auto;display:inline-block">${data.runnerUp.class}</div>
+                            <div style="font-size:11px;color:#666;margin-top:4px">Score: ${data.runnerUp.score}/2</div>
+                        </div>` : ''}
+                    </div>
+                `;
+
+                // Insert after publicQuizMessage div
+                const msgDiv = document.getElementById('publicQuizMessage');
+                msgDiv.parentNode.insertBefore(box, msgDiv.nextSibling);
+
+            } catch(e) { console.warn('showPublicQuizWinner error:', e); }
+        }
         
+        // Load result for any past date selected by the user
+        async function loadPastQuizResult() {
+            const date = document.getElementById('pastResultDate').value;
+            const box  = document.getElementById('pastResultBox');
+            if (!date) { alert('Please select a date.'); return; }
+            box.style.display = 'block';
+            box.innerHTML = '<p style="color:#666;margin:0;text-align:center">⏳ Loading result...</p>';
+            try {
+                const snap = await db.ref(`quizResults/${date}`).once('value');
+                const data = snap.val();
+                const dateFormatted = new Date(date + 'T00:00:00').toLocaleDateString('en-IN', {
+                    weekday:'long', day:'2-digit', month:'long', year:'numeric'
+                });
+                if (!data || !data.winner) {
+                    box.innerHTML = `<div style="background:#fff3cd;border-radius:10px;padding:14px 18px;border-left:4px solid #ffc107">
+                        <strong style="color:#856404">📭 No winner declared for ${dateFormatted}.</strong>
+                        <p style="margin:6px 0 0;color:#856404;font-size:13px">Either the quiz didn't take place or the result hasn't been declared yet.</p>
+                    </div>`;
+                    return;
+                }
+                const declaredTime = new Date(data.declaredAt).toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true});
+                box.innerHTML = `
+                    <div style="border-radius:14px;overflow:hidden;box-shadow:0 4px 16px rgba(0,0,0,0.1)">
+                        <div style="background:linear-gradient(135deg,#6a1b9a,#c44569);padding:14px 18px;color:white;display:flex;align-items:center;gap:10px">
+                            <span style="font-size:1.5em">🏆</span>
+                            <div>
+                                <strong style="font-size:1em">Quiz Winners</strong>
+                                <p style="margin:0;font-size:11px;opacity:0.8">📅 ${dateFormatted} &nbsp;|&nbsp; Declared at ${declaredTime}</p>
+                            </div>
+                        </div>
+                        <div style="background:white;padding:16px;display:flex;gap:14px;flex-wrap:wrap">
+                            <div style="flex:1;min-width:140px;background:linear-gradient(135deg,#fff9c4,#ffd54f);border-radius:10px;padding:14px;text-align:center;border:2px solid #ffd700">
+                                <div style="font-size:1.8em;margin-bottom:4px">🥇</div>
+                                <div style="font-weight:800;color:#5d4037;font-size:1em">${data.winner.name}</div>
+                                <div style="background:#6a1b9a;color:white;border-radius:20px;padding:2px 10px;font-size:12px;font-weight:700;margin:5px auto;display:inline-block">${data.winner.class}</div>
+                                <div style="font-size:11px;color:#666;margin-top:3px">Score: ${data.winner.score}/2</div>
+                            </div>
+                            ${data.runnerUp ? `
+                            <div style="flex:1;min-width:140px;background:linear-gradient(135deg,#f5f5f5,#e0e0e0);border-radius:10px;padding:14px;text-align:center;border:2px solid #bdbdbd">
+                                <div style="font-size:1.8em;margin-bottom:4px">🥈</div>
+                                <div style="font-weight:800;color:#37474f;font-size:1em">${data.runnerUp.name}</div>
+                                <div style="background:#455a64;color:white;border-radius:20px;padding:2px 10px;font-size:12px;font-weight:700;margin:5px auto;display:inline-block">${data.runnerUp.class}</div>
+                                <div style="font-size:11px;color:#666;margin-top:3px">Score: ${data.runnerUp.score}/2</div>
+                            </div>` : ''}
+                        </div>
+                    </div>`;
+            } catch(e) {
+                box.innerHTML = '<p style="color:red;margin:0">❌ Error loading result: ' + e.message + '</p>';
+            }
+        }
+
         function generateQuizPassword() {
             const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#$';
             let pwd = '';
@@ -5692,7 +5907,8 @@
             const sel = document.getElementById('quizClass');
             if (!sel) return;
             sel.innerHTML = '<option value="">-- Select Class --</option>';
-            classes.forEach(c => {
+            const classList = (typeof classes !== "undefined" ? classes : window._appClasses) || [];
+            classList.forEach(c => {
                 const opt = document.createElement('option');
                 opt.value = c;
                 opt.textContent = c;
@@ -7137,6 +7353,9 @@ Davan Institute Team`;
                 loadQuizSubmissionsAdmin();
             } else if (tab === 'winners') {
                 document.getElementById('quizWinnersContent').classList.add('active');
+                // Initialize date selector to today if not set
+                const wds = document.getElementById('winnersDateSelector');
+                if (wds && !wds.value) wds.value = getQuizToday();
                 loadQuizResultsAdmin();
                 // Init auto-declaration toggle state
                 if (typeof initAutoDeclarScheduler === 'function') initAutoDeclarScheduler();
@@ -8303,14 +8522,24 @@ Davan Institute Team`;
         }
         
         async function loadQuizResultsAdmin() {
-            const today = getQuizToday();
+            const dateInput = document.getElementById('winnersDateSelector');
+            const selectedDate = (dateInput && dateInput.value) ? dateInput.value : getQuizToday();
+            // Ensure the date input is set
+            if (dateInput && !dateInput.value) dateInput.value = selectedDate;
             try {
-                const snap = await db.ref(`quizSubmissions/${today}`).once('value');
+                const snap = await db.ref(`quizSubmissions/${selectedDate}`).once('value');
                 
                 if (!snap.exists()) {
                     document.getElementById('resultTotalPartAdmin').textContent = '0';
                     document.getElementById('resultBothCorrectAdmin').textContent = '0';
                     document.getElementById('resultEligibleAdmin').textContent = '0';
+                    const container = document.getElementById('eligibleStudentsListAdmin');
+                    if (container) container.innerHTML = '<p style="color:#999;font-style:italic;text-align:center;padding:20px">No submissions found for ' + selectedDate + '</p>';
+                    // Check for winner even if no submissions
+                    const resSnap2 = await db.ref(`quizResults/${selectedDate}`).once('value');
+                    const winnerDiv = document.getElementById('winnersDisplayAdmin');
+                    if (resSnap2.exists()) { displayQuizWinnersAdmin(resSnap2.val()); }
+                    else { if(winnerDiv) { winnerDiv.innerHTML = '<p style="color:#856404;background:#fff3cd;padding:12px 16px;border-radius:8px;margin-top:10px">📭 No winner declared for ' + selectedDate + '</p>'; winnerDiv.style.display='block'; } }
                     return;
                 }
                 
@@ -8339,9 +8568,16 @@ Davan Institute Team`;
                 // Display detailed list of eligible students
                 displayEligibleStudentsList(eligibleStudents);
                 
-                const resSnap = await db.ref(`quizResults/${today}`).once('value');
+                // Show winner/runner-up for selected date
+                const resSnap = await db.ref(`quizResults/${selectedDate}`).once('value');
+                const winnerDiv = document.getElementById('winnersDisplayAdmin');
                 if (resSnap.exists()) {
                     displayQuizWinnersAdmin(resSnap.val());
+                } else {
+                    if (winnerDiv) {
+                        winnerDiv.innerHTML = '<p style="color:#856404;background:#fff3cd;padding:12px 16px;border-radius:8px;margin-top:10px">📭 No winner declared yet for ' + selectedDate + '. Use the buttons below to declare winners.</p>';
+                        winnerDiv.style.display = 'block';
+                    }
                 }
             } catch (err) {
                 console.error('Load results error:', err);
@@ -8399,7 +8635,8 @@ Davan Institute Team`;
         }
         
         async function selectQuizWinnersFromAdmin() {
-            const today = getQuizToday();
+            const wds = document.getElementById('winnersDateSelector');
+            const today = (wds && wds.value) ? wds.value : getQuizToday();
             try {
                 const snap = await db.ref(`quizSubmissions/${today}`).once('value');
                 const eligible = [];
@@ -8483,10 +8720,14 @@ Davan Institute Team`;
 
         function saveAutoDeclarSetting() {
             const enabled = document.getElementById('autoDeclarToggle').checked;
+            const time    = document.getElementById('autoDeclarTime').value || '23:30';
             try { localStorage.setItem('quizAutoDeclar', enabled ? '1' : '0'); } catch(e){}
-            // Also persist to Firebase so it survives page refresh/close
-            try { db.ref('quizConfig/autoDeclar').set({ enabled, updatedAt: new Date().toISOString() }); } catch(e){}
-            applyAutoDeclarUI(enabled);
+            try { localStorage.setItem('quizAutoDeclarTime', time); } catch(e){}
+            // Persist to Firebase so it survives page refresh/close
+            try { db.ref('quizConfig/autoDeclar').set({ enabled, time, updatedAt: new Date().toISOString() }); } catch(e){}
+            // Also save SH auto-declar setting to Firebase
+            try { window.db.ref('scavengerHunt/autoDeclar').set({ enabled, time, updatedAt: new Date().toISOString() }); } catch(e){}
+            applyAutoDeclarUI(enabled, time);
             if (enabled) {
                 startAutoDeclarScheduler();
             } else {
@@ -8494,7 +8735,13 @@ Davan Institute Team`;
             }
         }
 
-        function applyAutoDeclarUI(enabled) {
+        function applyAutoDeclarUI(enabled, time) {
+            time = time || document.getElementById('autoDeclarTime').value || '23:30';
+            // Format time for display e.g. "23:30" → "11:30 PM"
+            const [hh, mm] = time.split(':').map(Number);
+            const ampm = hh >= 12 ? 'PM' : 'AM';
+            const h12  = hh % 12 || 12;
+            const timeDisplay = `${h12}:${String(mm).padStart(2,'0')} ${ampm}`;
             const slider = document.getElementById('autoDeclarSlider');
             const thumb  = document.getElementById('autoDeclarThumb');
             const label  = document.getElementById('autoDeclarLabel');
@@ -8505,7 +8752,7 @@ Davan Institute Team`;
                 slider.style.background = '#28a745';
                 thumb.style.left = '25px';
                 label.textContent = 'ON';
-                status.innerHTML = '🟢 Auto-declaration is <strong style="color:#a5ffb8">enabled</strong>. Winners will be auto-selected at <strong style="color:#ffd700">11:30 PM</strong> if not declared manually.';
+                status.innerHTML = `🟢 Auto-declaration is <strong style="color:#a5ffb8">enabled</strong>. Winners will be auto-selected at <strong style="color:#ffd700">${timeDisplay}</strong> if not declared manually.`;
                 countdown.style.display = 'block';
                 updateAutoDeclarCountdown();
             } else {
@@ -8520,11 +8767,14 @@ Davan Institute Team`;
         function updateAutoDeclarCountdown() {
             const el = document.getElementById('autoDeclarCountdown');
             if (!el || !document.getElementById('autoDeclarToggle').checked) return;
+            const time = document.getElementById('autoDeclarTime').value || '23:30';
+            const [hh, mm] = time.split(':').map(Number);
             const now = new Date();
             const target = new Date();
-            target.setHours(23, 30, 0, 0);
+            target.setHours(hh, mm, 0, 0);
             if (now >= target) {
-                el.textContent = '⏰ 11:30 PM has passed for today. Auto-declaration ran (or no eligible students).';
+                const [h12, ampm] = [hh % 12 || 12, hh >= 12 ? 'PM' : 'AM'];
+                el.textContent = `⏰ ${h12}:${String(mm).padStart(2,'0')} ${ampm} has passed for today. Auto-declaration ran (or no eligible students).`;
                 return;
             }
             const diff = Math.floor((target - now) / 1000);
@@ -8539,9 +8789,10 @@ Davan Institute Team`;
             _autoDeclarInterval = setInterval(async () => {
                 if (!document.getElementById('autoDeclarToggle') || !document.getElementById('autoDeclarToggle').checked) return;
                 updateAutoDeclarCountdown();
+                const time = document.getElementById('autoDeclarTime').value || '23:30';
+                const [hh, mm] = time.split(':').map(Number);
                 const now = new Date();
-                // Trigger between 23:30:00 and 23:30:59
-                if (now.getHours() === 23 && now.getMinutes() === 30) {
+                if (now.getHours() === hh && now.getMinutes() === mm) {
                     await runAutoDeclaration();
                 }
             }, 1000);
@@ -8598,32 +8849,40 @@ Davan Institute Team`;
 
         async function initAutoDeclarScheduler() {
             let enabled = false;
+            let time = '23:30';
             // Try Firebase first (most reliable across sessions)
             try {
                 const snap = await db.ref('quizConfig/autoDeclar').once('value');
-                if (snap.exists()) { enabled = !!snap.val().enabled; }
-                else { enabled = localStorage.getItem('quizAutoDeclar') === '1'; }
+                if (snap.exists()) { enabled = !!snap.val().enabled; time = snap.val().time || '23:30'; }
+                else {
+                    enabled = localStorage.getItem('quizAutoDeclar') === '1';
+                    time = localStorage.getItem('quizAutoDeclarTime') || '23:30';
+                }
             } catch(e) {
-                try { enabled = localStorage.getItem('quizAutoDeclar') === '1'; } catch(e2){}
+                try { enabled = localStorage.getItem('quizAutoDeclar') === '1'; time = localStorage.getItem('quizAutoDeclarTime') || '23:30'; } catch(e2){}
             }
-            const toggle = document.getElementById('autoDeclarToggle');
+            const toggle   = document.getElementById('autoDeclarToggle');
+            const timeInp  = document.getElementById('autoDeclarTime');
             if (toggle) {
                 toggle.checked = enabled;
+                if (timeInp) timeInp.value = time;
                 try { localStorage.setItem('quizAutoDeclar', enabled ? '1' : '0'); } catch(e){}
-                applyAutoDeclarUI(enabled);
+                try { localStorage.setItem('quizAutoDeclarTime', time); } catch(e){}
+                applyAutoDeclarUI(enabled, time);
                 if (enabled) {
                     startAutoDeclarScheduler();
-                    // Also check: did 11:30 PM already pass today without declaration?
+                    // Also check: did the set time already pass today without declaration?
                     checkMissedAutoDeclar();
                 }
             }
         }
 
-        // Check if today's auto-declaration was missed (11:30 PM passed, page was closed)
+        // Check if today's auto-declaration was missed (set time passed, page was closed)
         async function checkMissedAutoDeclar() {
+            const time = document.getElementById('autoDeclarTime').value || '23:30';
+            const [hh, mm] = time.split(':').map(Number);
             const now = new Date();
-            // Only check if current time is AFTER 11:30 PM
-            if (now.getHours() < 23 || (now.getHours() === 23 && now.getMinutes() < 30)) return;
+            if (now.getHours() < hh || (now.getHours() === hh && now.getMinutes() < mm)) return;
             const today = getQuizToday();
             try {
                 const existing = await db.ref(`quizResults/${today}`).once('value');
@@ -8686,7 +8945,7 @@ Davan Institute Team`;
             const runnerUp = _eligibleCache[runIdx];
             if (!winner || !runnerUp) { alert('⚠️ Invalid selection.'); return; }
             if (!confirm(`Declare:\n🏆 Winner: ${winner.name}\n🥈 Runner-Up: ${runnerUp.name}\n\nProceed?`)) return;
-            const today = getQuizToday();
+            const wds2 = document.getElementById('winnersDateSelector'); const today = (wds2 && wds2.value) ? wds2.value : getQuizToday();
             const data = {
                 winner:       { name: winner.name,   email: winner.email,   class: winner.class,   score: 2 },
                 runnerUp:     { name: runnerUp.name, email: runnerUp.email, class: runnerUp.class, score: 2 },
@@ -11072,6 +11331,13 @@ Davan Institute Team`;
 
     function shLogout() { logout(); }
 
+    function shGoBack() {
+        // Hide dashboard, show login page — student stays logged in but goes back to login screen
+        document.getElementById('shStudentDashboard').style.display = 'none';
+        document.getElementById('scavengerHuntLogin').style.display = 'block';
+        shCurrentUser = null;
+    }
+
     // ── Student: Refresh Status ────────────────────────────────────────
     async function shRefreshStatus() {
         const btn = document.getElementById('shRefreshBtn');
@@ -11155,6 +11421,8 @@ Davan Institute Team`;
                 }
                 showToast('✅ Approved by Super Admin!', '#4caf50');
                 updateProgressInPlace();
+                // Reload full dashboard so next locked task gets unlocked
+                setTimeout(() => shLoadStudentDashboard(), 600);
 
             } else if (sub && sub.status === 'rejected') {
                 if (btn) { btn.disabled = false; btn.textContent = '🔄 Check Approval'; }
@@ -11208,19 +11476,43 @@ Davan Institute Team`;
         const subs = subSnap.val() || {};
         let completed=0, pendingReview=0, locked=0;
         const nowMs = Date.now();
-        shTasks.forEach((t,idx) => {
-            const sub  = subs[t.id];
-            const prevDone = idx===0 || (()=>{ const ps=subs[shTasks[idx-1].id]; return ps && ps.status==='approved'; })();
+        // Pre-compute: all tasks require ALL previous tasks to be approved (strict chain)
+        // Build a lookup of which task indices are truly approved (verified chain from task 0)
+        const approvedChain = [];
+        for (let i = 0; i < shTasks.length; i++) {
+            const s = subs[shTasks[i].id];
+            if (s && s.status === 'approved') {
+                approvedChain.push(i);
+            } else {
+                break; // chain breaks — no task beyond this is unlocked
+            }
+        }
+
+        shTasks.forEach((t, idx) => {
+            const sub = subs[t.id];
+            // A task is accessible only if ALL tasks before it are approved (unbroken chain)
+            // idx=0 is always accessible; idx>0 requires idx-1 to be in approvedChain
+            const allPrevApproved = idx === 0 || approvedChain.includes(idx - 1);
             // Check time availability
             const notYet = t.availableFrom && new Date(t.availableFrom).getTime() > nowMs;
             const expired = t.deadline && new Date(t.deadline).getTime() < nowMs;
-            if (sub && sub.status==='approved')      { t._state='completed'; completed++; }
-            else if (sub && sub.status==='pending')  { t._state='pending';   pendingReview++; }
-            else if (sub && sub.status==='rejected') { t._state='rejected'; }
-            else if (notYet)                          { t._state='locked'; t._lockReason='not_yet'; locked++; }
-            else if (expired)                         { t._state='locked'; t._lockReason='expired'; locked++; }
-            else if (prevDone)                        { t._state='active'; }
-            else                                      { t._state='locked';   locked++; }
+
+            // Gate 1: ALL previous tasks must be approved — if not, lock immediately
+            if (!allPrevApproved) {
+                t._state = 'locked'; locked++;
+            } else if (sub && sub.status === 'approved') {
+                t._state = 'completed'; completed++;
+            } else if (sub && sub.status === 'pending') {
+                t._state = 'pending'; pendingReview++;
+            } else if (sub && sub.status === 'rejected') {
+                t._state = 'rejected';
+            } else if (notYet) {
+                t._state = 'locked'; t._lockReason = 'not_yet'; locked++;
+            } else if (expired) {
+                t._state = 'locked'; t._lockReason = 'expired'; locked++;
+            } else {
+                t._state = 'active';
+            }
             t._sub = sub || null;
         });
         const total = shTasks.length;
@@ -11292,7 +11584,7 @@ Davan Institute Team`;
                     html += '</div></div></div>';
                 } else if (state === 'pending') {
                     html += '<div data-pending-box style="background:#fff3e0;border:2px solid #ff9800;border-radius:8px;padding:10px 14px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap">';
-                    html += '<div style="display:flex;align-items:center;gap:8px"><span style="font-size:1.3em">⏳</span><div><strong style="color:#e65100;font-size:0.95em">Under Review</strong><br><span style="font-size:0.78em;color:#666">Waiting for super admin approval</span></div></div>';
+                    html += '<div style="display:flex;align-items:center;gap:8px"><span style="font-size:1.3em">⏳</span><div><strong style="color:#e65100;font-size:0.95em">Under Review</strong><br><span style="font-size:0.78em;color:#666">Waiting for super admin approval</span><br><span style="font-size:0.8em;color:#c0392b;font-weight:700">⚠️ You can proceed to the next task only after this is approved.</span></div></div>';
                     html += '<button id="shCheckBtn_' + t.id + '" onclick="shCheckTaskApproval(\'' + t.id + '\', this)" style="background:#ff9800;color:white;border:none;padding:7px 14px;border-radius:18px;cursor:pointer;font-size:0.82em;font-weight:700;display:flex;align-items:center;gap:5px;white-space:nowrap">🔄 Check Approval</button></div>';
                 }
             }
@@ -11425,7 +11717,7 @@ Davan Institute Team`;
         if (id==='shAdminSubmissions') shAdminLoadSubmissions();
         if (id==='shAdminLeaderboard') shAdminLoadLeaderboard();
         if (id==='shAdminClasswise')   shAdminLoadClasswise();
-        if (id==='shAdminWinners')     shLoadWinnersTab();
+        if (id==='shAdminWinners')     { shLoadWinnersTab(); shInitAutoDeclarScheduler(); }
         if (id==='shAdminSettings')    shAdminLoadSettings();
     }
 
@@ -11451,37 +11743,6 @@ Davan Institute Team`;
         msgEl.style.display = 'inline-block';
         setTimeout(()=>{ msgEl.style.display='none'; }, 3000);
 
-        // Build WhatsApp message
-        const fmtDT = iso => iso ? new Date(iso).toLocaleString('en-IN',{weekday:'short',day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit',hour12:true}) : null;
-        const fromFmt = availFrom ? fmtDT(new Date(availFrom).toISOString()) : null;
-        const tillFmt = deadline  ? fmtDT(new Date(deadline).toISOString())  : null;
-        const gpsLine = (lat && lng) ? `📍 GPS Location  : Set (auto-verify enabled)` : null;
-
-        const lines = [
-            `🗺️ *SCAVENGER HUNT — NEW TASK ALERT!*`,
-            ``,
-            `🔢 Task No.     : ${order}`,
-            `📋 Task          : ${name}`,
-            hint   ? `💡 Hint            : ${hint}`            : null,
-            fromFmt? `⏰ Starts at     : ${fromFmt}`           : `⏰ Starts at     : Immediately`,
-            tillFmt? `🔚 Deadline       : ${tillFmt}`          : `🔚 Deadline       : No deadline`,
-            gpsLine,
-            ``,
-            `📸 *How to participate:*`,
-            `1. Open the Spurthi Youth Fest app`,
-            `2. Login → Scavenger Hunt`,
-            `3. Complete the task & upload your photo`,
-            ``,
-            `⚡ Be quick — points awarded on approval!`,
-            ``,
-            `— Spurthi Youth Fest 2026 🎉`
-        ].filter(l => l !== null).join('\n');
-
-        document.getElementById('shWaText').value = lines;
-        const waBox = document.getElementById('shWaBox');
-        waBox.style.display = 'block';
-        waBox.scrollIntoView({behavior:'smooth', block:'start'});
-
         // Reset form
         document.getElementById('shNewTaskName').value     = '';
         document.getElementById('shNewTaskHint').value     = '';
@@ -11490,6 +11751,7 @@ Davan Institute Team`;
         document.getElementById('shNewTaskLng').value      = '';
         document.getElementById('shNewTaskDate').value     = '';
         document.getElementById('shNewTaskDeadline').value = '';
+        // Reload tasks list — this also rebuilds the WhatsApp message for ALL tasks
         shAdminLoadTasks();
     }
 
@@ -11511,6 +11773,40 @@ Davan Institute Team`;
         }
     }
 
+    // ── Build WhatsApp message for ALL tasks ──────────────────────────
+    function shBuildWaMsg(tasks) {
+        const fmtDT = iso => iso ? new Date(iso).toLocaleString('en-IN',{weekday:'short',day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit',hour12:true}) : null;
+        if (!tasks || !tasks.length) {
+            document.getElementById('shWaText').value = '(No tasks yet — create a task above to generate the announcement message)';
+            return;
+        }
+        const lines = [
+            `🗺️ *SCAVENGER HUNT — TASK LIST*`,
+            ``
+        ];
+        tasks.forEach((t, i) => {
+            const fromFmt = t.availableFrom ? fmtDT(t.availableFrom) : null;
+            const tillFmt = t.deadline      ? fmtDT(t.deadline)      : null;
+            const gpsLine = (t.lat && t.lng) ? `   📍 GPS: Set (auto-verify enabled)` : null;
+            lines.push(`*Task ${t.order || (i+1)}: ${t.name}*`);
+            if (t.hint)  lines.push(`   💡 Hint: ${t.hint}`);
+            lines.push(fromFmt ? `   ⏰ Starts at : ${fromFmt}` : `   ⏰ Starts at : Immediately`);
+            lines.push(tillFmt ? `   🔚 Deadline  : ${tillFmt}` : `   🔚 Deadline  : No deadline`);
+            if (gpsLine) lines.push(gpsLine);
+            if (i < tasks.length - 1) lines.push('');
+        });
+        lines.push('');
+        lines.push(`📸 *How to participate:*`);
+        lines.push(`1. Open the Spurthi Youth Fest app`);
+        lines.push(`2. Login → Scavenger Hunt`);
+        lines.push(`3. Complete the task & upload your photo`);
+        lines.push('');
+        lines.push(`⚡ Be quick — points awarded on approval!`);
+        lines.push('');
+        lines.push(`— Spurthi Youth Fest 2026 🎉`);
+        document.getElementById('shWaText').value = lines.join('\n');
+    }
+
     async function shAdminLoadTasks() {
         const el = document.getElementById('shAdminTasksList');
         if(!el) return;
@@ -11519,6 +11815,8 @@ Davan Institute Team`;
             const snap  = await window.db.ref('scavengerHunt/tasks').once('value');
             window._shTasksCache = snap.val() || {};
             const tasks = Object.entries(window._shTasksCache).map(([k,v])=>({id:k,...v})).sort((a,b)=>(a.order||0)-(b.order||0));
+            // Always refresh WhatsApp message with current task list
+            shBuildWaMsg(tasks);
             if (!tasks.length) { el.innerHTML='<p style="color:#999">No tasks yet. Create one above.</p>'; return; }
 
             let html = '';
@@ -12105,8 +12403,15 @@ Davan Institute Team`;
             const w = snap.val();
             if(!w){ box.style.display='none'; return; }
             box.style.display='block';
+            const dateStr   = w.declaredFor ? new Date(w.declaredFor).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}) : '';
+            const taskStr   = w.taskLabel   || 'All tasks';
+            const declaredStr = new Date(w.declaredAt).toLocaleString('en-IN',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit',hour12:true});
             box.innerHTML = '<div style="background:linear-gradient(135deg,#ffd700,#ff9800);border-radius:14px;padding:22px;margin-top:10px;color:#3d0060">'
-                +'<h4 style="margin:0 0 14px;font-size:1.1em">🎖️ Currently Declared Winner</h4>'
+                +'<h4 style="margin:0 0 6px;font-size:1.1em">🎖️ Currently Declared Winner</h4>'
+                +'<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">'
+                +(dateStr?'<span style="background:rgba(255,255,255,0.6);padding:3px 10px;border-radius:12px;font-size:12px;font-weight:700">📅 '+dateStr+'</span>':'')
+                +'<span style="background:rgba(255,255,255,0.6);padding:3px 10px;border-radius:12px;font-size:12px;font-weight:700">🗺️ '+shEsc(taskStr)+'</span>'
+                +'</div>'
                 +'<div style="display:flex;gap:20px;flex-wrap:wrap">'
                 +(w.winner?'<div style="background:rgba(255,255,255,0.7);border-radius:10px;padding:14px 20px;min-width:180px">'
                     +'<div style="font-size:1.8em;margin-bottom:4px">🥇</div>'
@@ -12119,7 +12424,7 @@ Davan Institute Team`;
                     +'<br><span style="font-size:0.85em;color:#4a148c">'+shEsc(w.runnerUp.cls)+'</span>'
                     +'<br><span style="font-size:0.8em;color:#555">'+w.runnerUp.approved+'/'+w.runnerUp.totalTasks+' tasks</span></div>':'')
                 +'</div>'
-                +'<div style="margin-top:12px;font-size:0.8em;opacity:0.75">Declared: '+new Date(w.declaredAt).toLocaleString('en-IN')+'</div>'
+                +'<div style="margin-top:12px;font-size:0.8em;opacity:0.75">Declared at: '+declaredStr+'</div>'
                 +'<button onclick="shClearWinner()" class="btn btn-danger btn-small" style="margin-top:10px">🗑️ Clear Winner</button>'
                 +'</div>';
         } catch(e) { console.warn('shLoadDeclaredWinner:', e); }
@@ -12131,17 +12436,209 @@ Davan Institute Team`;
         const maxApproved = top.approved;
         const eligible = _shWinnersParticipants.filter(p=>p.approved===maxApproved);
         if(eligible.length===0){ alert('No participants with approved tasks yet.'); return; }
-        // Randomly pick winner from eligible
         const winner = eligible[Math.floor(Math.random()*eligible.length)];
         const rest   = _shWinnersParticipants.filter(p=>p.key!==winner.key);
         const runnerUp = rest.length ? rest[0] : null;
-        if(!confirm(`Auto-select:
-🥇 Winner: ${winner.name} (${winner.cls})
-${runnerUp ? '🥈 Runner-up: '+runnerUp.name+' ('+runnerUp.cls+')' : ''}
-
-Declare these winners?`)) return;
+        if(!confirm(`Auto-select:\n🥇 Winner: ${winner.name} (${winner.cls})\n${runnerUp ? '🥈 Runner-up: '+runnerUp.name+' ('+runnerUp.cls+')' : ''}\n\nDeclare these winners?`)) return;
         await shSaveWinner(winner, runnerUp);
     }
+
+    // ── Scavenger Hunt Auto-Declaration Scheduler ────────────────────
+    let _shAutoDeclarInterval = null;
+
+    function shToggleAutoDeclar() {
+        const enabled = document.getElementById('shAutoDeclarToggle').checked;
+        shApplyAutoDeclarUI(enabled);
+        // Save to Firebase
+        const time   = document.getElementById('shAutoDeclarTime').value || '23:30';
+        const date   = document.getElementById('shAutoDeclarDate').value || '';
+        const taskId = document.getElementById('shAutoDeclarTask').value || 'all';
+        window.db.ref('scavengerHunt/autoDeclarConfig').set({ enabled, time, date, taskId, updatedAt: new Date().toISOString() });
+        if (enabled) shStartAutoDeclarScheduler(); else shStopAutoDeclarScheduler();
+    }
+
+    function shApplyAutoDeclarUI(enabled) {
+        const slider  = document.getElementById('shAutoDeclarSlider');
+        const thumb   = document.getElementById('shAutoDeclarThumb');
+        const badge   = document.getElementById('shAutoDeclarBadge');
+        const status  = document.getElementById('shAutoDeclarStatusMsg');
+        const countdown = document.getElementById('shAutoDeclarCountdownDisplay');
+        if (!slider) return;
+        const time = document.getElementById('shAutoDeclarTime')?.value || '23:30';
+        const [hh, mm] = time.split(':').map(Number);
+        const ampm = hh >= 12 ? 'PM' : 'AM';
+        const h12  = hh % 12 || 12;
+        const timeStr = `${h12}:${String(mm).padStart(2,'0')} ${ampm}`;
+        if (enabled) {
+            slider.style.background = '#28a745'; thumb.style.left = '25px';
+            badge.textContent = 'ON';
+            status.innerHTML = `🟢 Auto-declaration <strong style="color:#a5ffb8">enabled</strong>. Winners will be declared at <strong style="color:#ffd700">${timeStr}</strong> on the set date.`;
+            countdown.style.display = 'block';
+            shUpdateCountdown();
+        } else {
+            slider.style.background = '#555'; thumb.style.left = '3px';
+            badge.textContent = 'OFF';
+            status.innerHTML = '🔴 Auto-declaration is <strong style="color:#ff6b6b">disabled</strong>. Toggle ON and save config to enable.';
+            countdown.style.display = 'none';
+        }
+    }
+
+    function shUpdateCountdown() {
+        const el = document.getElementById('shAutoDeclarCountdownDisplay');
+        if (!el) return;
+        const time = document.getElementById('shAutoDeclarTime')?.value || '23:30';
+        const date = document.getElementById('shAutoDeclarDate')?.value || '';
+        const [hh, mm] = time.split(':').map(Number);
+        const now = new Date();
+        let target;
+        if (date) {
+            target = new Date(`${date}T${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}:00`);
+        } else {
+            target = new Date(); target.setHours(hh, mm, 0, 0);
+            if (now >= target) target.setDate(target.getDate() + 1);
+        }
+        if (now >= target) {
+            el.textContent = '⏰ Scheduled time has passed.'; return;
+        }
+        const diff = Math.floor((target - now) / 1000);
+        const h = Math.floor(diff / 3600), m = Math.floor((diff % 3600) / 60), s = diff % 60;
+        el.textContent = `⏳ Auto-declaration in: ${String(h).padStart(2,'0')}h ${String(m).padStart(2,'0')}m ${String(s).padStart(2,'0')}s`;
+    }
+
+    function shStartAutoDeclarScheduler() {
+        shStopAutoDeclarScheduler();
+        _shAutoDeclarInterval = setInterval(async () => {
+            const toggle = document.getElementById('shAutoDeclarToggle');
+            if (!toggle || !toggle.checked) return;
+            shUpdateCountdown();
+            const time = document.getElementById('shAutoDeclarTime')?.value || '23:30';
+            const date = document.getElementById('shAutoDeclarDate')?.value || '';
+            const [hh, mm] = time.split(':').map(Number);
+            const now = new Date();
+            const todayStr = now.toISOString().slice(0, 10);
+            // Fire only if date matches (or no date set) AND time matches current minute
+            const dateMatch = !date || date === todayStr;
+            if (dateMatch && now.getHours() === hh && now.getMinutes() === mm) {
+                await shRunAutoDeclaration();
+            }
+        }, 1000);
+    }
+
+    function shStopAutoDeclarScheduler() {
+        if (_shAutoDeclarInterval) { clearInterval(_shAutoDeclarInterval); _shAutoDeclarInterval = null; }
+    }
+
+    async function shRunAutoDeclaration() {
+        shStopAutoDeclarScheduler();
+        try {
+            const cfgSnap    = await window.db.ref('scavengerHunt/autoDeclarConfig').once('value');
+            const cfg        = cfgSnap.val() || {};
+            const filterTaskId = cfg.taskId || 'all';
+            const targetDate   = cfg.date   || null;
+
+            // Skip if date set and doesn't match today
+            if (targetDate && targetDate !== new Date().toISOString().slice(0, 10)) {
+                console.log('[SH-AutoDeclar] Date mismatch — skipping.'); return;
+            }
+            // Skip if already declared today
+            const winSnap = await window.db.ref('scavengerHunt/winner').once('value');
+            const existing = winSnap.val();
+            if (existing?.declaredAt?.slice(0, 10) === new Date().toISOString().slice(0, 10)) {
+                console.log('[SH-AutoDeclar] Already declared today — skipping.'); return;
+            }
+
+            const [taskSnap, subSnap] = await Promise.all([
+                window.db.ref('scavengerHunt/tasks').once('value'),
+                window.db.ref('scavengerHunt/submissions').once('value')
+            ]);
+            const allTasks   = taskSnap.val() || {};
+            const totalTasks = Object.keys(allTasks).length;
+            const allSubs    = subSnap.val() || {};
+
+            const participants = [];
+            Object.entries(allSubs).forEach(([sk, ss]) => {
+                const first = Object.values(ss)[0] || {};
+                let approved = 0, lastTime = null;
+                if (filterTaskId === 'all') {
+                    Object.values(ss).forEach(sub => { if (sub.status === 'approved') { approved++; if (!lastTime || sub.reviewedAt > lastTime) lastTime = sub.reviewedAt; } });
+                } else {
+                    const sub = ss[filterTaskId];
+                    if (sub?.status === 'approved') { approved = 1; lastTime = sub.reviewedAt || ''; }
+                }
+                participants.push({ key: sk, name: first.studentName || sk, cls: first.studentClass || '', approved, totalTasks, lastTime: lastTime || '' });
+            });
+            participants.sort((a, b) => b.approved - a.approved || (a.lastTime || 'zzz').localeCompare(b.lastTime || 'zzz'));
+
+            if (!participants.length || participants[0].approved === 0) {
+                const s = document.getElementById('shAutoDeclarStatusMsg');
+                if (s) s.innerHTML = '⚠️ Auto-declaration ran but <strong>no approved submissions</strong> found for the selected task.';
+                return;
+            }
+
+            const maxApproved = participants[0].approved;
+            const eligible    = participants.filter(p => p.approved === maxApproved);
+            const winner      = eligible[Math.floor(Math.random() * eligible.length)];
+            const rest        = participants.filter(p => p.key !== winner.key);
+            const runnerUp    = rest.length ? rest[0] : null;
+            const taskLabel   = filterTaskId === 'all' ? 'All tasks' : (allTasks[filterTaskId]?.name || filterTaskId);
+
+            await shSaveWinner(winner, runnerUp, taskLabel, targetDate);
+            const s = document.getElementById('shAutoDeclarStatusMsg');
+            if (s) s.innerHTML = `✅ Declared! 🥇 ${winner.name} (${winner.cls})${runnerUp ? ' | 🥈 ' + runnerUp.name + ' (' + runnerUp.cls + ')' : ''}`;
+            console.log(`[SH-AutoDeclar] ✅ Winner: ${winner.name}`);
+        } catch(e) {
+            console.error('[SH-AutoDeclar] Error:', e);
+        } finally {
+            shStartAutoDeclarScheduler();
+        }
+    }
+
+    async function shInitAutoDeclarScheduler() {
+        try {
+            // Load tasks into dropdown
+            const taskSnap = await window.db.ref('scavengerHunt/tasks').once('value');
+            const tasks = Object.entries(taskSnap.val() || {}).map(([k,v])=>({id:k,...v})).sort((a,b)=>(a.order||0)-(b.order||0));
+            const taskSel = document.getElementById('shAutoDeclarTask');
+            if (taskSel) {
+                taskSel.innerHTML = '<option value="all">⭐ All tasks</option>';
+                tasks.forEach(t => {
+                    const o = document.createElement('option');
+                    o.value = t.id;
+                    o.textContent = `Task ${t.order||'?'}: ${t.name.length > 45 ? t.name.slice(0,45)+'…' : t.name}`;
+                    taskSel.appendChild(o);
+                });
+            }
+            // Restore saved config
+            const cfgSnap = await window.db.ref('scavengerHunt/autoDeclarConfig').once('value');
+            const cfg = cfgSnap.val() || {};
+            if (cfg.date   && document.getElementById('shAutoDeclarDate')) document.getElementById('shAutoDeclarDate').value = cfg.date;
+            if (cfg.time   && document.getElementById('shAutoDeclarTime')) document.getElementById('shAutoDeclarTime').value = cfg.time;
+            if (cfg.taskId && taskSel) taskSel.value = cfg.taskId;
+            const enabled = !!cfg.enabled;
+            const toggle  = document.getElementById('shAutoDeclarToggle');
+            if (toggle) toggle.checked = enabled;
+            shApplyAutoDeclarUI(enabled);
+            if (enabled) shStartAutoDeclarScheduler();
+        } catch(e) { console.warn('[SH-AutoDeclar] Init error:', e); }
+    }
+
+    async function shSaveAutoDeclarConfig(btn) {
+        const date   = document.getElementById('shAutoDeclarDate').value;
+        const time   = document.getElementById('shAutoDeclarTime').value || '23:30';
+        const taskId = document.getElementById('shAutoDeclarTask').value;
+        const enabled = document.getElementById('shAutoDeclarToggle').checked;
+        if (!date) { alert('Please select a date.'); return; }
+        try {
+            await window.db.ref('scavengerHunt/autoDeclarConfig').set({ enabled, date, time, taskId, updatedAt: new Date().toISOString() });
+            shApplyAutoDeclarUI(enabled);
+            if (enabled) shStartAutoDeclarScheduler();
+            const orig = btn.textContent;
+            btn.textContent = '✅ Saved!'; btn.style.background = '#4caf50'; btn.style.color = 'white';
+            setTimeout(() => { btn.textContent = orig; btn.style.background = '#ffd700'; btn.style.color = '#1a0030'; }, 2000);
+        } catch(e) { alert('Save failed: ' + e.message); }
+    }
+
+    function shSyncAutoDeclarPanel() {} // no-op, kept for compatibility
 
     function shToggleManualWinner() {
         const p = document.getElementById('shManualWinnerPanel');
@@ -12164,12 +12661,15 @@ Proceed?`)) return;
         shToggleManualWinner();
     }
 
-    async function shSaveWinner(winner, runnerUp) {
+    async function shSaveWinner(winner, runnerUp, taskLabel, declaredDate) {
         try {
             const data = {
                 winner:   {key:winner.key,   name:winner.name,   cls:winner.cls,   approved:winner.approved,   totalTasks:winner.totalTasks},
                 runnerUp: runnerUp ? {key:runnerUp.key, name:runnerUp.name, cls:runnerUp.cls, approved:runnerUp.approved, totalTasks:runnerUp.totalTasks} : null,
-                declaredAt: new Date().toISOString()
+                declaredAt:   new Date().toISOString(),
+                declaredFor:  declaredDate || new Date().toISOString().slice(0,10),
+                taskLabel:    taskLabel || 'All tasks',
+                autoSelected: true
             };
             await window.db.ref('scavengerHunt/winner').set(data);
             const toast = document.createElement('div');
@@ -12336,7 +12836,7 @@ Proceed?`)) return;
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;">
-                <strong>Version:</strong> 2.2 (Leaderboard, enrolment ) | <strong>Last Updated:</strong> February 17, 2026 (8.30pm)
+                <strong>Version:</strong> 3.0 Scavenger Hunt Event  | <strong>Last Updated:</strong> February 18, 2026 (5.00pm)
             </p>
             <!-- ============================================ -->
             
