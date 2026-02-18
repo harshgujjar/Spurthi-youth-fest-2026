@@ -812,7 +812,7 @@
         <div style="display:block;width:100%;max-width:1200px;margin:0 auto 22px;border-radius:14px;background:linear-gradient(90deg,#e8722a 0%,#f0a05a 40%,#f0a05a 60%,#e8722a 100%);box-shadow:0 4px 18px rgba(232,114,42,0.35);padding:16px 30px;text-align:center;animation:shimmer 3s linear infinite;background-size:2000px 100%">
             <!-- EDIT BANNER TEXT BELOW -->
             <span id="announcementBannerText" style="color:white;font-size:1.1em;font-weight:700;letter-spacing:0.5px;text-shadow:0 1px 4px rgba(0,0,0,0.18)">
-                🎯 New Scavenger Hunt Event is live! 🎯
+                🎯 New Scavenger Hunt Event Coming Soon Today! 🎯
             </span>
         </div>
         <!-- ============================================================ -->
@@ -853,6 +853,11 @@
                     <label>Class:</label>
                     <select id="crClass"></select>
                 </div>
+                <div style="margin-bottom:12px">
+                    <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:0.9em;color:#555;font-weight:normal">
+                        <input type="checkbox" id="crRememberMe" style="width:auto;accent-color:#6a1b9a"> Remember my class on this device
+                    </label>
+                </div>
                 <button class="btn" onclick="crLogin()">Login as CR</button>
             </div>
             
@@ -862,6 +867,11 @@
                     <label>Admin Password:</label>
                     <input type="password" id="adminPassword" placeholder="Enter admin password" onkeydown="if(event.key==='Enter') adminLogin()">
                 </div>
+                <div style="margin-bottom:12px">
+                    <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:0.9em;color:#555;font-weight:normal">
+                        <input type="checkbox" id="adminRememberMe" style="width:auto;accent-color:#6a1b9a"> Remember password on this device
+                    </label>
+                </div>
                 <button class="btn" onclick="adminLogin()">Login as Admin</button>
             </div>
             
@@ -870,6 +880,11 @@
                 <div class="form-group">
                     <label>Super Admin Password:</label>
                     <input type="password" id="superAdminPassword" placeholder="Enter super admin password" onkeydown="if(event.key==='Enter') superAdminLogin()">
+                </div>
+                <div style="margin-bottom:12px">
+                    <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:0.9em;color:#555;font-weight:normal">
+                        <input type="checkbox" id="superAdminRememberMe" style="width:auto;accent-color:#6a1b9a"> Remember password on this device
+                    </label>
                 </div>
                 <button class="btn" onclick="superAdminLogin()">Login as Super Admin</button>
             </div>
@@ -995,6 +1010,11 @@
                 <div class="form-group">
                     <label>Password:</label>
                     <input type="password" id="shLoginPassword" placeholder="Enter password" onkeydown="if(event.key==='Enter') shLogin()">
+                </div>
+                <div style="margin-bottom:14px">
+                    <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:0.9em;color:#555;font-weight:normal">
+                        <input type="checkbox" id="shRememberMe" style="width:auto;accent-color:#9c27b0"> Remember me on this device
+                    </label>
                 </div>
                 <button class="btn sh-glow" onclick="shLogin()" style="background:linear-gradient(135deg,#9c27b0,#e91e63);color:white;width:100%;font-size:1.1em;padding:15px;border-radius:12px;font-weight:700;letter-spacing:0.5px;margin-bottom:8px">
                     🚀 Enter Scavenger Hunt
@@ -1818,6 +1838,20 @@
                             ➕ Add Task
                         </button>
                         <span id="shCreateTaskMsg" style="margin-left:12px;font-size:0.9em;color:#4caf50;display:none">✅ Task created!</span>
+                    </div>
+
+                    <!-- ── WhatsApp Share Box (shown after task creation) ── -->
+                    <div id="shWaBox" style="display:none;background:linear-gradient(135deg,#e8f5e9,#f1f8e9);border:2px solid #25D366;border-radius:12px;padding:18px;margin-bottom:20px">
+                        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px">
+                            <span style="color:#1b5e20;font-weight:700;font-size:1em">📲 WhatsApp Announcement Ready!</span>
+                            <div style="display:flex;gap:8px">
+                                <button class="btn btn-success btn-small" onclick="shCopyWaMsg()" id="shWaCopyBtn">📋 Copy Message</button>
+                                <button class="btn btn-secondary btn-small" onclick="document.getElementById('shWaBox').style.display='none'">✖ Dismiss</button>
+                            </div>
+                        </div>
+                        <textarea id="shWaText" rows="8" readonly
+                            style="width:100%;padding:12px;border:1px solid #a5d6a7;border-radius:8px;font-size:13px;line-height:1.7;background:white;color:#1a1a1a;resize:vertical;font-family:inherit;cursor:text"
+                            onclick="this.select()"></textarea>
                     </div>
 
                     <h4 style="color:#6a1b9a;margin-bottom:12px">📋 All Tasks</h4>
@@ -2710,7 +2744,32 @@
             document.getElementById('adminLogin').style.display = type === 'admin' ? 'block' : 'none';
             document.getElementById('superAdminLogin').style.display = type === 'superadmin' ? 'block' : 'none';
             document.getElementById('juryLogin').style.display = type === 'jury' ? 'block' : 'none';
-            
+
+            // Auto-fill saved credentials
+            if (type === 'cr' && localStorage.getItem('spurthi_cr_remember') === '1') {
+                const savedCls = localStorage.getItem('spurthi_cr_class');
+                if (savedCls) {
+                    const sel = document.getElementById('crClass');
+                    // Wait for options to populate if needed
+                    const trySet = () => {
+                        if (sel.options.length > 1) { sel.value = savedCls; }
+                        else { setTimeout(trySet, 100); }
+                    };
+                    trySet();
+                }
+                document.getElementById('crRememberMe').checked = true;
+            }
+            if (type === 'admin' && localStorage.getItem('spurthi_admin_remember') === '1') {
+                const saved = localStorage.getItem('spurthi_admin_pwd');
+                if (saved) document.getElementById('adminPassword').value = saved;
+                document.getElementById('adminRememberMe').checked = true;
+            }
+            if (type === 'superadmin' && localStorage.getItem('spurthi_superadmin_remember') === '1') {
+                const saved = localStorage.getItem('spurthi_superadmin_pwd');
+                if (saved) document.getElementById('superAdminPassword').value = saved;
+                document.getElementById('superAdminRememberMe').checked = true;
+            }
+
             // Reset competition dropdown when user type is selected
             if (type) {
                 document.getElementById('competitionType').value = '';
@@ -2739,6 +2798,14 @@
             }
             if (type === 'scavengerhunt') {
                 shCheckPublicStatus();
+                // Auto-fill saved credentials
+                if (localStorage.getItem('spurthi_sh_remember') === '1') {
+                    const savedPhone = localStorage.getItem('spurthi_sh_phone');
+                    const savedPwd   = localStorage.getItem('spurthi_sh_pwd');
+                    if (savedPhone) document.getElementById('shLoginPhone').value    = savedPhone;
+                    if (savedPwd)   document.getElementById('shLoginPassword').value = savedPwd;
+                    document.getElementById('shRememberMe').checked = true;
+                }
             }
         }
 
@@ -2812,6 +2879,15 @@
         function crLogin() {
             const cls = document.getElementById('crClass').value;
             if (!cls) { alert('Please select your class'); return; }
+
+            // Save to localStorage if Remember Me checked
+            if (document.getElementById('crRememberMe').checked) {
+                localStorage.setItem('spurthi_cr_class', cls);
+                localStorage.setItem('spurthi_cr_remember', '1');
+            } else {
+                localStorage.removeItem('spurthi_cr_class');
+                localStorage.removeItem('spurthi_cr_remember');
+            }
             
             crClass = cls;
             window.currentCRClass = cls;  // expose globally for loadCRQuizStats
@@ -2886,6 +2962,15 @@
         function adminLogin() {
             const pwd = document.getElementById('adminPassword').value;
             if (pwd !== adminPassword) { alert('Invalid admin password'); return; }
+
+            // Save to localStorage if Remember Me checked
+            if (document.getElementById('adminRememberMe').checked) {
+                localStorage.setItem('spurthi_admin_pwd', pwd);
+                localStorage.setItem('spurthi_admin_remember', '1');
+            } else {
+                localStorage.removeItem('spurthi_admin_pwd');
+                localStorage.removeItem('spurthi_admin_remember');
+            }
             
             isAdmin = true;
             currentUser = 'Admin';
@@ -2917,6 +3002,15 @@
         function superAdminLogin() {
             const pwd = document.getElementById('superAdminPassword').value;
             if (pwd !== superAdminPassword) { alert('Invalid super admin password'); return; }
+
+            // Save to localStorage if Remember Me checked
+            if (document.getElementById('superAdminRememberMe').checked) {
+                localStorage.setItem('spurthi_superadmin_pwd', pwd);
+                localStorage.setItem('spurthi_superadmin_remember', '1');
+            } else {
+                localStorage.removeItem('spurthi_superadmin_pwd');
+                localStorage.removeItem('spurthi_superadmin_remember');
+            }
             
             isAdmin = true;
             isSuperAdmin = true;
@@ -3178,6 +3272,7 @@
             crClass = null;
             window.currentCRClass = null;
             isAdmin = false;
+            // Note: we do NOT clear localStorage here — saved credentials persist across logouts
             isSuperAdmin = false;
             isCR = false;
             isJury = false;
@@ -10940,6 +11035,18 @@ Davan Institute Team`;
             let found = null, foundKey = null;
             snap.forEach(c => { if (c.val().password === pwd) { found = c.val(); foundKey = c.key; } });
             if (!found) { alert('❌ Incorrect password!\n\nPlease check your password and try again.'); shShowMsg(msg,'error','❌ Incorrect password.'); return; }
+
+            // Save credentials if Remember Me checked
+            if (document.getElementById('shRememberMe').checked) {
+                localStorage.setItem('spurthi_sh_phone', phone);
+                localStorage.setItem('spurthi_sh_pwd', pwd);
+                localStorage.setItem('spurthi_sh_remember', '1');
+            } else {
+                localStorage.removeItem('spurthi_sh_phone');
+                localStorage.removeItem('spurthi_sh_pwd');
+                localStorage.removeItem('spurthi_sh_remember');
+            }
+
             shCurrentUser = { key: foundKey, ...found };
             document.getElementById('loginSection').style.display        = 'none';
             document.getElementById('quizStudentDashboard').style.display = 'none';
@@ -11324,31 +11431,84 @@ Davan Institute Team`;
 
     // ── Admin: Create task ─────────────────────────────────────────────
     async function shAdminCreateTask() {
-        const name  = document.getElementById('shNewTaskName').value.trim();
-        const hint  = document.getElementById('shNewTaskHint').value.trim();
-        const order = parseInt(document.getElementById('shNewTaskOrder').value)||1;
-        const lat   = parseFloat(document.getElementById('shNewTaskLat').value)||null;
-        const lng   = parseFloat(document.getElementById('shNewTaskLng').value)||null;
+        const name     = document.getElementById('shNewTaskName').value.trim();
+        const hint     = document.getElementById('shNewTaskHint').value.trim();
+        const order    = parseInt(document.getElementById('shNewTaskOrder').value)||1;
+        const lat      = parseFloat(document.getElementById('shNewTaskLat').value)||null;
+        const lng      = parseFloat(document.getElementById('shNewTaskLng').value)||null;
         if (!name) { alert('Task name is required'); return; }
-        const availFrom  = document.getElementById('shNewTaskDate').value;
-        const deadline   = document.getElementById('shNewTaskDeadline').value;
+        const availFrom = document.getElementById('shNewTaskDate').value;
+        const deadline  = document.getElementById('shNewTaskDeadline').value;
         const task = { name, order, createdAt:new Date().toISOString() };
-        if (hint)         task.hint = hint;
-        if (lat && lng)   { task.lat=lat; task.lng=lng; }
-        if (availFrom)    task.availableFrom = new Date(availFrom).toISOString();
-        if (deadline)     task.deadline      = new Date(deadline).toISOString();
+        if (hint)       task.hint = hint;
+        if (lat && lng) { task.lat=lat; task.lng=lng; }
+        if (availFrom)  task.availableFrom = new Date(availFrom).toISOString();
+        if (deadline)   task.deadline      = new Date(deadline).toISOString();
         await window.db.ref('scavengerHunt/tasks').push(task);
+
+        // Show brief success badge
         const msgEl = document.getElementById('shCreateTaskMsg');
         msgEl.style.display = 'inline-block';
-        setTimeout(()=>{ msgEl.style.display='none'; },3000);
-        document.getElementById('shNewTaskName').value  = '';
-        document.getElementById('shNewTaskHint').value  = '';
-        document.getElementById('shNewTaskOrder').value = order+1;
+        setTimeout(()=>{ msgEl.style.display='none'; }, 3000);
+
+        // Build WhatsApp message
+        const fmtDT = iso => iso ? new Date(iso).toLocaleString('en-IN',{weekday:'short',day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit',hour12:true}) : null;
+        const fromFmt = availFrom ? fmtDT(new Date(availFrom).toISOString()) : null;
+        const tillFmt = deadline  ? fmtDT(new Date(deadline).toISOString())  : null;
+        const gpsLine = (lat && lng) ? `📍 GPS Location  : Set (auto-verify enabled)` : null;
+
+        const lines = [
+            `🗺️ *SCAVENGER HUNT — NEW TASK ALERT!*`,
+            ``,
+            `🔢 Task No.     : ${order}`,
+            `📋 Task          : ${name}`,
+            hint   ? `💡 Hint            : ${hint}`            : null,
+            fromFmt? `⏰ Starts at     : ${fromFmt}`           : `⏰ Starts at     : Immediately`,
+            tillFmt? `🔚 Deadline       : ${tillFmt}`          : `🔚 Deadline       : No deadline`,
+            gpsLine,
+            ``,
+            `📸 *How to participate:*`,
+            `1. Open the Spurthi Youth Fest app`,
+            `2. Login → Scavenger Hunt`,
+            `3. Complete the task & upload your photo`,
+            ``,
+            `⚡ Be quick — points awarded on approval!`,
+            ``,
+            `— Spurthi Youth Fest 2026 🎉`
+        ].filter(l => l !== null).join('\n');
+
+        document.getElementById('shWaText').value = lines;
+        const waBox = document.getElementById('shWaBox');
+        waBox.style.display = 'block';
+        waBox.scrollIntoView({behavior:'smooth', block:'start'});
+
+        // Reset form
+        document.getElementById('shNewTaskName').value     = '';
+        document.getElementById('shNewTaskHint').value     = '';
+        document.getElementById('shNewTaskOrder').value    = order + 1;
         document.getElementById('shNewTaskLat').value      = '';
         document.getElementById('shNewTaskLng').value      = '';
         document.getElementById('shNewTaskDate').value     = '';
         document.getElementById('shNewTaskDeadline').value = '';
         shAdminLoadTasks();
+    }
+
+    function shCopyWaMsg() {
+        const ta = document.getElementById('shWaText');
+        ta.select();
+        try {
+            navigator.clipboard.writeText(ta.value).then(() => {
+                const btn = document.getElementById('shWaCopyBtn');
+                const orig = btn.textContent;
+                btn.textContent = '✅ Copied!';
+                btn.style.background = '#28a745';
+                setTimeout(() => { btn.textContent = orig; btn.style.background = ''; }, 2500);
+            });
+        } catch(e) {
+            document.execCommand('copy');
+            document.getElementById('shWaCopyBtn').textContent = '✅ Copied!';
+            setTimeout(() => { document.getElementById('shWaCopyBtn').textContent = '📋 Copy Message'; }, 2500);
+        }
     }
 
     async function shAdminLoadTasks() {
@@ -11357,26 +11517,122 @@ Davan Institute Team`;
         el.innerHTML = '<p style="color:#999">Loading...</p>';
         try {
             const snap  = await window.db.ref('scavengerHunt/tasks').once('value');
-            const tasks = snap.val() ? Object.entries(snap.val()).map(([k,v])=>({id:k,...v})).sort((a,b)=>(a.order||0)-(b.order||0)) : [];
+            window._shTasksCache = snap.val() || {};
+            const tasks = Object.entries(window._shTasksCache).map(([k,v])=>({id:k,...v})).sort((a,b)=>(a.order||0)-(b.order||0));
             if (!tasks.length) { el.innerHTML='<p style="color:#999">No tasks yet. Create one above.</p>'; return; }
-            let html = '<div class="table-wrapper"><table><thead><tr><th>#</th><th>Task</th><th>Hint</th><th>From</th><th>Until</th><th>GPS</th><th>Delete</th></tr></thead><tbody>';
+
+            let html = '';
+
+            // ── Inline Edit Panel (hidden by default) ──────────────────────────
+            html += '<div id="shEditPanel" style="display:none;background:#f3e5f5;border:2px solid #9c27b0;border-radius:10px;padding:18px;margin-bottom:18px">';
+            html += '<h4 style="color:#6a1b9a;margin:0 0 14px">✏️ Edit Task</h4>';
+            html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">';
+            html += '<div class="form-group" style="margin:0"><label style="font-size:12px;font-weight:700;color:#6a1b9a">Task Name:</label><input id="shEditName" type="text" style="width:100%"></div>';
+            html += '<div class="form-group" style="margin:0"><label style="font-size:12px;font-weight:700;color:#6a1b9a">Hint / Clue:</label><input id="shEditHint" type="text" style="width:100%"></div>';
+            html += '<div class="form-group" style="margin:0"><label style="font-size:12px;font-weight:700;color:#6a1b9a">Task Order / Number:</label><input id="shEditOrder" type="number" min="1" style="width:100px"></div>';
+            html += '<div class="form-group" style="margin:0"><label style="font-size:12px;font-weight:700;color:#6a1b9a">📅 Available From:</label><input id="shEditFrom" type="datetime-local" style="padding:7px 10px;border:2px solid #9c27b0;border-radius:8px;font-size:0.93em"></div>';
+            html += '<div class="form-group" style="margin:0"><label style="font-size:12px;font-weight:700;color:#6a1b9a">⏰ Available Until:</label><input id="shEditTill" type="datetime-local" style="padding:7px 10px;border:2px solid #e91e63;border-radius:8px;font-size:0.93em"></div>';
+            html += '<div class="form-group" style="margin:0"><label style="font-size:12px;font-weight:700;color:#1565c0">📍 GPS Lat / Lng (optional):</label>';
+            html += '<div style="display:flex;gap:8px"><input id="shEditLat" type="number" step="0.000001" placeholder="Latitude" style="width:130px"><input id="shEditLng" type="number" step="0.000001" placeholder="Longitude" style="width:130px"></div></div>';
+            html += '</div>';
+            html += '<input type="hidden" id="shEditId">';
+            html += '<div style="display:flex;gap:8px;align-items:center">';
+            html += '<button class="btn btn-success" onclick="shAdminSaveTask()">💾 Save Changes</button>';
+            html += '<button class="btn btn-secondary" onclick="shAdminCancelEditTask()">✖ Cancel</button>';
+            html += '<span id="shEditMsg" style="font-size:13px;color:#4caf50;display:none;font-weight:600">✅ Saved!</span>';
+            html += '</div></div>';
+
+            // ── Tasks Table ────────────────────────────────────────────────────
+            html += '<div class="table-wrapper"><table><thead><tr><th>#</th><th>Task</th><th>Hint</th><th>From</th><th>Until</th><th>GPS</th><th style="min-width:70px">Edit</th><th>Delete</th></tr></thead><tbody>';
             tasks.forEach(t => {
                 const gps     = t.lat ? '<span class="sh-gps-badge" style="font-size:0.75em">📍 Set</span>' : '<span style="color:#999">—</span>';
                 const fromStr = t.availableFrom ? new Date(t.availableFrom).toLocaleString('en-IN',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit',hour12:true}) : '—';
                 const tillStr = t.deadline      ? new Date(t.deadline).toLocaleString('en-IN',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit',hour12:true}) : '—';
-                html += '<tr>';
+                html += '<tr id="shTaskRow_'+t.id+'">';
                 html += '<td><strong>'+(t.order||'-')+'</strong></td>';
                 html += '<td>'+shEsc(t.name)+'</td>';
                 html += '<td style="color:#795548;font-size:0.9em">'+shEsc(t.hint||'—')+'</td>';
                 html += '<td style="font-size:0.82em;color:#1565c0;white-space:nowrap">'+fromStr+'</td>';
                 html += '<td style="font-size:0.82em;color:#c62828;white-space:nowrap">'+tillStr+'</td>';
                 html += '<td>'+gps+'</td>';
-                html += '<td><button class="delete-btn" onclick="shAdminDeleteTask(\'' + t.id + '\')">🗑️</button></td>';
+                html += '<td><button class="btn btn-info btn-small" onclick="shAdminEditTask(\''+t.id+'\')">✏️ Edit</button></td>';
+                html += '<td><button class="delete-btn" onclick="shAdminDeleteTask(\''+t.id+'\')">🗑️</button></td>';
                 html += '</tr>';
             });
             html += '</tbody></table></div>';
             el.innerHTML = html;
         } catch(e) { el.innerHTML='<p style="color:red">Error: '+e.message+'</p>'; }
+    }
+
+    function shAdminEditTask(id) {
+        const t = window._shTasksCache && window._shTasksCache[id];
+        if (!t) { alert('Task not found — please refresh.'); return; }
+
+        // Populate the edit panel
+        document.getElementById('shEditId').value    = id;
+        document.getElementById('shEditName').value  = t.name  || '';
+        document.getElementById('shEditHint').value  = t.hint  || '';
+        document.getElementById('shEditOrder').value = t.order || 1;
+        document.getElementById('shEditLat').value   = t.lat   || '';
+        document.getElementById('shEditLng').value   = t.lng   || '';
+        document.getElementById('shEditFrom').value  = t.availableFrom ? new Date(t.availableFrom).toISOString().slice(0,16) : '';
+        document.getElementById('shEditTill').value  = t.deadline      ? new Date(t.deadline).toISOString().slice(0,16) : '';
+        document.getElementById('shEditMsg').style.display = 'none';
+
+        // Show panel and scroll to it
+        const panel = document.getElementById('shEditPanel');
+        panel.style.display = 'block';
+        panel.scrollIntoView({behavior:'smooth', block:'start'});
+
+        // Highlight the row being edited
+        document.querySelectorAll('#shAdminTasksList tr').forEach(r => r.style.background = '');
+        const row = document.getElementById('shTaskRow_'+id);
+        if (row) row.style.background = '#fce4ec';
+    }
+
+    function shAdminCancelEditTask() {
+        document.getElementById('shEditPanel').style.display = 'none';
+        document.querySelectorAll('#shAdminTasksList tr').forEach(r => r.style.background = '');
+    }
+
+    async function shAdminSaveTask() {
+        const id    = document.getElementById('shEditId').value;
+        const name  = document.getElementById('shEditName').value.trim();
+        const hint  = document.getElementById('shEditHint').value.trim();
+        const order = parseInt(document.getElementById('shEditOrder').value) || 1;
+        const fromV = document.getElementById('shEditFrom').value;
+        const tillV = document.getElementById('shEditTill').value;
+        const latV  = parseFloat(document.getElementById('shEditLat').value) || null;
+        const lngV  = parseFloat(document.getElementById('shEditLng').value) || null;
+        if (!name) { alert('Task name is required'); return; }
+
+        const update = {
+            name,
+            order,
+            hint:          hint || null,
+            availableFrom: fromV ? new Date(fromV).toISOString() : null,
+            deadline:      tillV ? new Date(tillV).toISOString() : null,
+            lat:           latV,
+            lng:           lngV
+        };
+
+        // Firebase doesn't accept null — use set on the whole node with cleaned data
+        const cleaned = {};
+        Object.entries(update).forEach(([k,v]) => { if (v !== null) cleaned[k] = v; });
+        // Preserve createdAt
+        if (window._shTasksCache && window._shTasksCache[id] && window._shTasksCache[id].createdAt) {
+            cleaned.createdAt = window._shTasksCache[id].createdAt;
+        }
+
+        try {
+            await window.db.ref('scavengerHunt/tasks/'+id).set(cleaned);
+            const msg = document.getElementById('shEditMsg');
+            if (msg) { msg.style.display = 'inline-block'; }
+            setTimeout(() => {
+                shAdminCancelEditTask();
+                shAdminLoadTasks();
+            }, 1200);
+        } catch(e) { alert('Save failed: ' + e.message); }
     }
 
     async function shAdminDeleteTask(id) {
@@ -12080,7 +12336,7 @@ Proceed?`)) return;
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;">
-                <strong>Version:</strong> 3.0 Scavenger Hunt  | <strong>Last Updated:</strong> February 18, 2026 (12.40pm)
+                <strong>Version:</strong> 2.2 (Leaderboard, enrolment ) | <strong>Last Updated:</strong> February 17, 2026 (8.30pm)
             </p>
             <!-- ============================================ -->
             
