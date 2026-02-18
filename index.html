@@ -37,6 +37,7 @@
     
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
     <!-- EmailJS for sending actual emails -->
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
     <script type="text/javascript">
@@ -340,6 +341,110 @@
             color: #666;
             margin: 10px 0;
         }
+
+        /* ========== SCAVENGER HUNT STYLES ========== */
+        .sh-tab-panel          { display: none; }
+        .sh-tab-panel.sh-tab-active { display: block; }
+
+        .sh-task-card {
+            background: white;
+            border-radius: 14px;
+            padding: 20px 22px;
+            margin-bottom: 16px;
+            box-shadow: 0 4px 18px rgba(0,0,0,0.10);
+            border-left: 6px solid #9c27b0;
+            transition: all 0.3s ease;
+            animation: slideInUp 0.4s ease-out;
+        }
+        .sh-task-card.completed { border-left-color: #4caf50; background: #f1f8f1; }
+        .sh-task-card.pending   { border-left-color: #ff9800; }
+        .sh-task-card.locked    { border-left-color: #bdbdbd; opacity: 0.6; }
+        .sh-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.78em;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+        .sh-badge-active   { background:#fff3e0; color:#e65100; border:1px solid #ffb74d; }
+        .sh-badge-done     { background:#e8f5e9; color:#2e7d32; border:1px solid #81c784; }
+        .sh-badge-pending  { background:#e3f2fd; color:#1565c0; border:1px solid #64b5f6; }
+        .sh-badge-rejected { background:#ffebee; color:#c62828; border:1px solid #ef9a9a; }
+        .sh-upload-zone {
+            border: 2.5px dashed #9c27b0;
+            border-radius: 12px;
+            padding: 22px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            background: #faf0ff;
+            margin-top: 14px;
+        }
+        .sh-upload-zone:hover { background: #f3e5f5; border-color: #6a1b9a; }
+        .sh-upload-zone.has-file { background: #e8f5e9; border-color: #4caf50; }
+        .sh-preview-img {
+            max-width: 100%;
+            max-height: 200px;
+            border-radius: 10px;
+            margin-top: 12px;
+            object-fit: cover;
+            border: 3px solid #9c27b0;
+        }
+        .sh-admin-photo {
+            max-width: 180px;
+            max-height: 180px;
+            border-radius: 8px;
+            object-fit: cover;
+            border: 3px solid #9c27b0;
+            cursor: pointer;
+        }
+        .sh-progress-bar-wrap {
+            background: #e0e0e0;
+            border-radius: 20px;
+            height: 12px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        .sh-progress-bar {
+            height: 100%;
+            border-radius: 20px;
+            background: linear-gradient(90deg, #9c27b0, #e91e63);
+            transition: width 0.6s ease;
+        }
+        .sh-leaderboard-row {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 12px 16px;
+            border-radius: 10px;
+            margin-bottom: 8px;
+            background: white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+            transition: all 0.2s;
+        }
+        .sh-leaderboard-row:hover { transform: translateX(4px); box-shadow: 0 4px 15px rgba(156,39,176,0.15); }
+        .sh-rank { font-size: 1.5em; min-width: 36px; text-align: center; }
+        .sh-photo-modal {
+            position: fixed; top:0; left:0; width:100%; height:100%;
+            background: rgba(0,0,0,0.85);
+            display: flex; align-items: center; justify-content: center;
+            z-index: 99999;
+        }
+        .sh-photo-modal img { max-width: 92vw; max-height: 90vh; border-radius: 12px; }
+        @keyframes shGlowPulse {
+            0%,100% { box-shadow: 0 0 0 0 rgba(156,39,176,0.4); }
+            50%      { box-shadow: 0 0 0 12px rgba(156,39,176,0); }
+        }
+        .sh-glow { animation: shGlowPulse 2s infinite; }
+        .sh-gps-badge {
+            display:inline-flex; align-items:center; gap:5px;
+            background: linear-gradient(135deg,#00bcd4,#009688);
+            color:white; padding:4px 12px; border-radius:20px;
+            font-size:0.8em; font-weight:700;
+        }
+
         .container { max-width: 1400px; margin: 0 auto; }
         .banner { width: 100%; max-width: 1200px; margin: 0 auto 30px; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); display: block; }
         .header { text-align: center; color: white; margin-bottom: 30px; }
@@ -416,7 +521,7 @@
         }
         
         .tabs { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
-        .tab { padding: 12px 24px; background: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: 600; transition: all 0.3s; }
+        .tab { padding: 12px 24px; background: white; color: #333; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: 600; transition: all 0.3s; }
         .tab:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
         .tab.active { background: linear-gradient(135deg, #c44569 0%, #6a1b9a 100%); color: white; }
         .content { background: white; border-radius: 12px; padding: 30px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
@@ -699,15 +804,20 @@
             <p id="userInfo"></p>
         </div>
 
-        <!-- ============================================ -->
-        <!-- NEW EVENT BANNER                             -->
-        <!-- TO EDIT: Change the text inside the span    -->
-        <!-- tag below to update the banner message      -->
-        <!-- ============================================ -->
-        <div style="background: linear-gradient(90deg, #ff6b35, #f7c59f, #ff6b35); background-size: 200% 100%; animation: shimmer 3s linear infinite; border-radius: 12px; padding: 14px 24px; margin: 10px 0 5px 0; text-align: center; box-shadow: 0 4px 15px rgba(255, 107, 53, 0.4); border: 2px solid #ff6b35;">
+        <!-- ============================================================ -->
+        <!-- ANNOUNCEMENT BANNER                                          -->
+        <!-- TO EDIT: Change the text inside the <span> tag below        -->
+        <!-- TO HIDE: Change display:block to display:none on the div    -->
+        <!-- ============================================================ -->
+        <div style="display:block;width:100%;max-width:1200px;margin:0 auto 22px;border-radius:14px;background:linear-gradient(90deg,#e8722a 0%,#f0a05a 40%,#f0a05a 60%,#e8722a 100%);box-shadow:0 4px 18px rgba(232,114,42,0.35);padding:16px 30px;text-align:center;animation:shimmer 3s linear infinite;background-size:2000px 100%">
             <!-- EDIT BANNER TEXT BELOW -->
-            <span style="font-size: 1.15em; font-weight: 700; color: #fff; text-shadow: 1px 1px 3px rgba(0,0,0,0.3); letter-spacing: 0.5px;">🎯 New Scavenger Hunt Event Coming Soon Today! @ 12.45PM 🎯</span>
+            <span id="announcementBannerText" style="color:white;font-size:1.1em;font-weight:700;letter-spacing:0.5px;text-shadow:0 1px 4px rgba(0,0,0,0.18)">
+                🎯 New Scavenger Hunt Event Coming Soon Today! 🎯
+            </span>
         </div>
+        <!-- ============================================================ -->
+        <!-- END ANNOUNCEMENT BANNER                                      -->
+        <!-- ============================================================ -->
 
         <!-- Login/Logout Section (Visible to all) -->
         <div class="content" id="loginSection">
@@ -794,6 +904,7 @@
                 <select id="competitionType" onchange="handleCompetitionChange()">
                     <option value="">-- Select --</option>
                     <option value="dailyquiz">Daily Quiz Competition</option>
+                    <option value="scavengerhunt">🗺️ Scavenger Hunt</option>
                 </select>
             </div>
             
@@ -849,6 +960,46 @@
                     <input type="password" id="quizLoginPassword" placeholder="Enter password" onkeydown="if(event.key==='Enter') loginQuizStudent()">
                 </div>
                 <button class="btn btn-success" onclick="loginQuizStudent()">🚀 Login to Quiz</button>
+                <button class="btn btn-secondary" onclick="console.log('TEST: loginQuizStudent type:', typeof loginQuizStudent); alert('Function type: ' + typeof loginQuizStudent)" style="margin-top:8px;font-size:0.85em">🔍 Test Function</button>
+            </div>
+
+            <!-- ============================================ -->
+            <!-- SCAVENGER HUNT LOGIN                         -->
+            <!-- ============================================ -->
+            <div id="scavengerHuntLogin" style="display:none">
+                <div style="text-align:center;margin-bottom:24px">
+                    <div style="font-size:3em;margin-bottom:8px">🗺️</div>
+                    <h3 style="color:#6a1b9a;font-size:1.8em;margin-bottom:6px">Scavenger Hunt</h3>
+                    <p style="color:#666;font-size:1em">Find locations · Take photos · Win prizes!</p>
+                </div>
+
+                <!-- Hunt Status Banner -->
+                <div id="shPublicBanner" style="background:linear-gradient(135deg,#9c27b0,#e91e63);color:white;border-radius:14px;padding:18px 22px;margin-bottom:22px;text-align:center">
+                    <p style="margin:0;font-size:1em;opacity:0.9">⏳ Checking hunt status...</p>
+                </div>
+
+                <div style="background:#f3e5f5;padding:15px;border-radius:8px;margin-bottom:20px;border-left:4px solid #9c27b0">
+                    <p style="margin:0;color:#6a1b9a"><strong>📋 How it works:</strong> Login → Get tasks → Visit locations → Upload photo proof → Admin verifies → First to finish wins! 🏆</p>
+                </div>
+
+                <div style="background:#e8f5e9;padding:15px;border-radius:8px;margin-bottom:20px;border-left:4px solid #4caf50">
+                    <p style="margin:0;color:#2e7d32"><strong>📍 GPS Version Active:</strong> App auto-detects your location. You must be within 100 metres of the target to upload your photo.</p>
+                </div>
+
+                <h4 style="color:#6a1b9a;margin-bottom:14px">Login with your Quiz account</h4>
+                <div id="shLoginMsg" class="message"></div>
+                <div class="form-group">
+                    <label>Phone Number:</label>
+                    <input type="tel" id="shLoginPhone" placeholder="Enter 10-digit phone number" maxlength="10" inputmode="numeric" onkeydown="if(event.key==='Enter') shLogin()">
+                </div>
+                <div class="form-group">
+                    <label>Password:</label>
+                    <input type="password" id="shLoginPassword" placeholder="Enter password" onkeydown="if(event.key==='Enter') shLogin()">
+                </div>
+                <button class="btn sh-glow" onclick="shLogin()" style="background:linear-gradient(135deg,#9c27b0,#e91e63);color:white;width:100%;font-size:1.1em;padding:15px;border-radius:12px;font-weight:700;letter-spacing:0.5px;margin-bottom:8px">
+                    🚀 Enter Scavenger Hunt
+                </button>
+                <button class="btn btn-secondary" onclick="console.log('TEST: shLogin type:', typeof shLogin, 'window.db:', typeof window.db); alert('shLogin: ' + typeof shLogin + ', window.db: ' + typeof window.db)" style="width:100%;margin-top:8px;font-size:0.85em">🔍 Test Scavenger Function</button>
             </div>
         </div>
 
@@ -917,6 +1068,7 @@
                 <button class="tab active" onclick="showCRTab('crEnroll')">Enroll Students</button>
                 <button class="tab" onclick="showCRTab('crView')">View Enrollments</button>
                 <button class="tab" onclick="showCRTab('crQuizStats');loadCRQuizStats()">🧠 Quiz Stats</button>
+                <button class="tab" onclick="showCRTab('crScavengerStats');loadCRScavengerStats()">🗺️ Scavenger Hunt</button>
             </div>
 
             <div id="crEnroll" class="form-section active">
@@ -951,6 +1103,62 @@
                 </div>
                 <div id="crSummary" style="margin-bottom:20px"></div>
                 <div id="crEnrollmentsContainer"></div>
+            </div>
+
+            <!-- ── CR SCAVENGER HUNT STATS TAB ─────────────────────────────────── -->
+            <div id="crScavengerStats" class="form-section">
+                <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:18px">
+                    <h3 style="color:#6a1b9a;margin:0">🗺️ Scavenger Hunt — Your Class Stats</h3>
+                    <button class="btn btn-small btn-info" onclick="loadCRScavengerStats()">🔄 Refresh</button>
+                </div>
+
+                <!-- Info summary box -->
+                <div id="crShInfoBox" style="background:#fffde7;border-radius:10px;padding:16px 18px;margin-bottom:16px;border-left:4px solid #ffc107">
+                    <h4 style="color:#856404;margin:0 0 5px;font-size:0.9em">📋 Scavenger Hunt Participation Summary — <span id="crShInfoDate">Loading…</span></h4>
+                    <div id="crShInfoText" style="color:#555;font-size:13px;line-height:1.75">Loading your class's scavenger hunt data…</div>
+                </div>
+
+                <!-- Stats cards -->
+                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:18px">
+                    <div style="background:linear-gradient(135deg,#667eea,#764ba2);border-radius:10px;padding:16px;text-align:center">
+                        <div style="font-size:1.8em;font-weight:800;color:white" id="crShTotal">—</div>
+                        <div style="color:rgba(255,255,255,0.8);font-size:12px;margin-top:4px">Participants</div>
+                    </div>
+                    <div style="background:linear-gradient(135deg,#28a745,#20c997);border-radius:10px;padding:16px;text-align:center">
+                        <div style="font-size:1.8em;font-weight:800;color:white" id="crShApproved">—</div>
+                        <div style="color:rgba(255,255,255,0.8);font-size:12px;margin-top:4px">Approved Tasks</div>
+                    </div>
+                    <div style="background:linear-gradient(135deg,#ffc107,#ff9800);border-radius:10px;padding:16px;text-align:center">
+                        <div style="font-size:1.8em;font-weight:800;color:white" id="crShPending">—</div>
+                        <div style="color:rgba(255,255,255,0.8);font-size:12px;margin-top:4px">Pending Review</div>
+                    </div>
+                    <div style="background:linear-gradient(135deg,#c44569,#e91e63);border-radius:10px;padding:16px;text-align:center">
+                        <div style="font-size:1.8em;font-weight:800;color:white" id="crShRejected">—</div>
+                        <div style="color:rgba(255,255,255,0.8);font-size:12px;margin-top:4px">Rejected</div>
+                    </div>
+                </div>
+
+                <!-- Student list -->
+                <div style="background:white;border-radius:10px;border:2px solid #e0c8f5;overflow:hidden">
+                    <div style="background:linear-gradient(135deg,#6a1b9a,#c44569);padding:12px 16px">
+                        <h4 style="color:white;margin:0;font-size:0.95em">Your Class Students — Scavenger Hunt Submissions</h4>
+                    </div>
+                    <div class="table-wrapper" style="margin:0">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Student Name</th>
+                                    <th>Tasks Submitted</th>
+                                    <th>Approved</th>
+                                    <th>Pending</th>
+                                    <th>Rejected</th>
+                                </tr>
+                            </thead>
+                            <tbody id="crShTable"></tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
 
             <!-- ── CR QUIZ STATS TAB ──────────────────────────────────────────── -->
@@ -1048,6 +1256,7 @@
                 <button class="tab" onclick="showTab('results')" id="resultsTab">Results</button>
                 <button class="tab super-admin-only" onclick="showTab('quizManagement')" id="quizManagementTab">📝 Quiz Management</button>
                 <button class="tab super-admin-only" onclick="showTab('leaderboardAdmin')" id="leaderboardAdminTab">🏆 Leaderboard</button>
+                <button class="tab super-admin-only" onclick="showTab('scavengerAdmin')" id="scavengerAdminTab">🗺️ Scavenger Hunt</button>
             </div>
 
             <div class="content" id="adminContentBox">
@@ -1442,6 +1651,13 @@
                                     <span id="autoDeclarLabel" style="color:#ffd700;font-weight:700;font-size:13px;white-space:nowrap">OFF</span>
                                 </label>
                             </div>
+                            <div id="autoDeclarWarning" style="background:rgba(255,150,0,0.15);border-radius:8px;padding:10px 14px;font-size:12px;color:#ffd700;margin-bottom:8px">
+                                ⚠️ <strong>Important:</strong> Auto-declaration only runs if this page is <strong>open in a browser at 11:30 PM</strong>. If the page is closed, use <strong>Run Now</strong> after 11:30 PM.
+                            </div>
+                            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
+                                <button onclick="runAutoDeclaration()" style="background:#ffd700;color:#1a0030;border:none;padding:6px 16px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:700">▶️ Run Now (Manual Trigger)</button>
+                                <button onclick="checkMissedAutoDeclar()" style="background:rgba(255,255,255,0.15);color:white;border:none;padding:6px 16px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600">🔍 Check Missed</button>
+                            </div>
                             <div id="autoDeclarStatus" style="background:rgba(255,255,255,0.07);border-radius:8px;padding:10px 14px;font-size:12.5px;color:rgba(255,255,255,0.75)">
                                 🔴 Auto-declaration is <strong style="color:#ff6b6b">disabled</strong>. Toggle ON to enable.
                             </div>
@@ -1543,12 +1759,258 @@
                         </div>
                     </div>
                 </div>
+            <!-- ============================================ -->
+            <!-- SCAVENGER HUNT ADMIN PANEL                  -->
+            <!-- ============================================ -->
+            <div id="scavengerAdmin" class="form-section super-admin-only">
+                <h2 style="color:#9c27b0;margin-bottom:6px">🗺️ Scavenger Hunt Management</h2>
+                <p style="color:#666;margin-bottom:22px">Create tasks, verify photo submissions and declare winners.</p>
+
+                <!-- Sub-tabs -->
+                <div class="tabs" style="margin-bottom:20px">
+                    <button class="tab active" onclick="shAdminTab('shAdminTasks', this)">📋 Tasks</button>
+                    <button class="tab" onclick="shAdminTab('shAdminSubmissions', this)">📸 Submissions</button>
+                    <button class="tab" onclick="shAdminTab('shAdminLeaderboard', this)">🏆 Leaderboard</button>
+                    <button class="tab" onclick="shAdminTab('shAdminClasswise', this)">📊 Class-wise</button>
+                    <button class="tab" onclick="shAdminTab('shAdminWinners', this)">🎖️ Winners</button>
+                    <button class="tab" onclick="shAdminTab('shAdminSettings', this)">⚙️ Settings</button>
+                </div>
+
+                <!-- TASKS TAB -->
+                <div id="shAdminTasks" class="sh-tab-panel" style="display:block">
+                    <div style="background:#f3e5f5;padding:18px;border-radius:10px;margin-bottom:20px;border-left:5px solid #9c27b0">
+                        <h4 style="color:#6a1b9a;margin-bottom:14px">➕ Create New Task</h4>
+                        <div class="form-group">
+                            <label>Task Name / Description:</label>
+                            <input type="text" id="shNewTaskName" placeholder='e.g. "Find the school library"'>
+                        </div>
+                        <div class="form-group">
+                            <label>Hint / Clue (optional):</label>
+                            <input type="text" id="shNewTaskHint" placeholder='e.g. "Look near the main building ground floor"'>
+                        </div>
+                        <div class="form-group">
+                            <label>Task Order / Number:</label>
+                            <input type="number" id="shNewTaskOrder" value="1" min="1" style="width:100px">
+                        </div>
+                        <div class="form-group">
+                            <label>📅 Available From (Date & Time):</label>
+                            <input type="datetime-local" id="shNewTaskDate" style="padding:8px 12px;border:2px solid #9c27b0;border-radius:8px;font-size:0.95em">
+                            <span style="font-size:0.8em;color:#888;display:block;margin-top:4px">Leave blank = available immediately</span>
+                        </div>
+                        <div class="form-group">
+                            <label>⏰ Available Until (Deadline):</label>
+                            <input type="datetime-local" id="shNewTaskDeadline" style="padding:8px 12px;border:2px solid #e91e63;border-radius:8px;font-size:0.95em">
+                            <span style="font-size:0.8em;color:#888;display:block;margin-top:4px">Leave blank = no deadline</span>
+                        </div>
+
+                        <div style="background:#e3f2fd;padding:14px;border-radius:8px;margin-bottom:14px;border-left:4px solid #2196f3">
+                            <strong style="color:#1565c0">📍 GPS Target Location (for Auto-Verification)</strong><br>
+                            <small style="color:#555">Click the button below or enter coordinates manually. Participants must be within 100m.</small>
+                            <div style="display:flex;gap:10px;margin-top:10px;flex-wrap:wrap;align-items:center">
+                                <input type="number" id="shNewTaskLat" placeholder="Latitude" step="0.000001" style="width:160px">
+                                <input type="number" id="shNewTaskLng" placeholder="Longitude" step="0.000001" style="width:160px">
+                                <button onclick="shAdminGetLocation()" class="btn btn-info btn-small">📍 Use My Location</button>
+                            </div>
+                            <div id="shAdminLocMsg" style="font-size:0.85em;color:#1565c0;margin-top:6px"></div>
+                        </div>
+
+                        <button class="btn" onclick="shAdminCreateTask()" style="background:linear-gradient(135deg,#9c27b0,#e91e63)">
+                            ➕ Add Task
+                        </button>
+                        <span id="shCreateTaskMsg" style="margin-left:12px;font-size:0.9em;color:#4caf50;display:none">✅ Task created!</span>
+                    </div>
+
+                    <h4 style="color:#6a1b9a;margin-bottom:12px">📋 All Tasks</h4>
+                    <div id="shAdminTasksList">
+                        <p style="color:#999">Loading tasks...</p>
+                    </div>
+                </div>
+
+                <!-- SUBMISSIONS TAB -->
+                <div id="shAdminSubmissions" class="sh-tab-panel" style="display:none">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+                        <h4 style="color:#6a1b9a;margin:0">📸 Photo Submissions <span style="background:#28a745;color:white;font-size:0.7em;padding:2px 8px;border-radius:20px;margin-left:6px">🔴 LIVE</span></h4>
+                        <button class="btn btn-info btn-small" onclick="shAdminLoadSubmissions()">🔄 Refresh</button>
+                    </div>
+                    <div style="margin-bottom:14px">
+                        <select id="shSubmissionFilter" onchange="shAdminLoadSubmissions()" style="width:auto;display:inline-block;padding:8px 14px;border-radius:8px;border:2px solid #9c27b0">
+                            <option value="all">📋 All</option>
+                            <option value="pending">⏳ Pending</option>
+                            <option value="approved">✅ Approved</option>
+                            <option value="rejected">❌ Rejected</option>
+                        </select>
+                    </div>
+                    <div id="shAdminSubmissionsList">
+                        <p style="color:#999">Click Refresh to load submissions.</p>
+                    </div>
+                </div>
+
+                <!-- LEADERBOARD TAB -->
+                <div id="shAdminLeaderboard" class="sh-tab-panel" style="display:none">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+                        <h4 style="color:#6a1b9a;margin:0">🏆 Live Leaderboard</h4>
+                        <button class="btn btn-info btn-small" onclick="shAdminLoadLeaderboard()">🔄 Refresh</button>
+                    </div>
+                    <div id="shAdminLeaderboardList">
+                        <p style="color:#999">Click Refresh to load leaderboard.</p>
+                    </div>
+                </div>
+
+                <!-- CLASS-WISE TAB -->
+                <div id="shAdminClasswise" class="sh-tab-panel" style="display:none">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+                        <h4 style="color:#6a1b9a;margin:0">📊 Class-wise Participation</h4>
+                        <button class="btn btn-info btn-small" onclick="shAdminLoadClasswise()">🔄 Refresh</button>
+                    </div>
+
+                    <!-- SH Summary message box (copyable) -->
+                    <div id="shCwSummaryBox" style="background:#fffde7;border-radius:10px;padding:16px 20px;margin-bottom:18px;border-left:4px solid #ffc107;display:none">
+                        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px">
+                            <div style="flex:1">
+                                <h4 style="color:#856404;margin:0 0 6px;font-size:0.95em">🗺️ Scavenger Hunt Summary — <span id="shCwSummaryDate"></span></h4>
+                                <div id="shCwSummaryText" style="color:#555;font-size:13px;line-height:1.7"></div>
+                            </div>
+                            <button onclick="shCopySummary()" style="background:#ffc107;color:#1a0030;border:none;padding:5px 12px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:700;white-space:nowrap">📋 Copy</button>
+                        </div>
+                    </div>
+
+                    <!-- Summary pills -->
+                    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px">
+                        <span id="shCwPillTotal" style="background:#e8eaf6;color:#3949ab;padding:6px 16px;border-radius:20px;font-size:0.85em;font-weight:700">Total: —</span>
+                        <span id="shCwPillApproved" style="background:#e8f5e9;color:#2e7d32;padding:6px 16px;border-radius:20px;font-size:0.85em;font-weight:700">Approved: —</span>
+                        <span id="shCwPillPending" style="background:#fff3e0;color:#e65100;padding:6px 16px;border-radius:20px;font-size:0.85em;font-weight:700">Pending: —</span>
+                        <span id="shCwPillClasses" style="background:#f3e5f5;color:#6a1b9a;padding:6px 16px;border-radius:20px;font-size:0.85em;font-weight:700">Classes: —</span>
+                    </div>
+
+                    <!-- Class breakdown table -->
+                    <div id="shAdminClasswiseList">
+                        <p style="color:#999">Click Refresh to load class-wise data.</p>
+                    </div>
+
+                    <hr style="margin:24px 0;border-color:#e0e0e0">
+
+                    <!-- Today's submissions by class (like quiz) -->
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:10px">
+                        <h4 style="color:#6a1b9a;margin:0">📸 All Submissions Detail</h4>
+                        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+                            <select id="shCwClassFilter" onchange="shAdminLoadClasswiseDetail()" style="padding:7px 12px;border:2px solid #9c27b0;border-radius:8px;font-weight:600;color:#3d0060">
+                                <option value="">All Classes</option>
+                            </select>
+                            <select id="shCwStatusFilter" onchange="shAdminLoadClasswiseDetail()" style="padding:7px 12px;border:2px solid #9c27b0;border-radius:8px;font-weight:600;color:#3d0060">
+                                <option value="">All Statuses</option>
+                                <option value="approved">✅ Approved</option>
+                                <option value="pending">⏳ Pending</option>
+                                <option value="rejected">❌ Rejected</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="table-wrapper">
+                        <table style="font-size:13px;width:100%">
+                            <thead><tr>
+                                <th style="background:#3d0060;color:#ffd700">#</th>
+                                <th style="background:#3d0060;color:white">Student</th>
+                                <th style="background:#3d0060;color:#ce93d8">Class</th>
+                                <th style="background:#3d0060;color:#80deea">Task</th>
+                                <th style="background:#3d0060;color:#fff3cd">Submitted At</th>
+                                <th style="background:#3d0060;color:#a5d6a7">Status</th>
+                            </tr></thead>
+                            <tbody id="shCwDetailTable">
+                                <tr><td colspan="6" style="text-align:center;color:#999;padding:16px">Click Refresh to load</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- WINNERS TAB -->
+                <div id="shAdminWinners" class="sh-tab-panel" style="display:none">
+                    <div style="background:linear-gradient(135deg,#7b1fa2,#e91e63);border-radius:14px;padding:22px;margin-bottom:20px;color:white">
+                        <h3 style="margin:0 0 6px;font-size:1.2em">🎖️ Declare Scavenger Hunt Winner</h3>
+                        <p style="margin:0;font-size:0.88em;opacity:0.85">Select winner and runner-up from participants who completed ALL tasks</p>
+                    </div>
+
+                    <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px">
+                        <button class="btn btn-success" onclick="shSelectWinnersAuto()" style="font-size:1em;padding:12px 22px">🎲 Auto-Select (Random from Top)</button>
+                        <button class="btn btn-info" onclick="shToggleManualWinner()" id="shManualWinnerToggleBtn" style="font-size:1em;padding:12px 22px">✋ Manual Select</button>
+                        <button class="btn btn-info btn-small" onclick="shLoadWinnersTab()" style="margin-left:auto">🔄 Refresh</button>
+                    </div>
+
+                    <!-- Manual select panel -->
+                    <div id="shManualWinnerPanel" style="display:none;background:#f0f4ff;border:2px solid #667eea;border-radius:12px;padding:22px;margin-bottom:20px">
+                        <h4 style="color:#667eea;margin-bottom:14px">✋ Manual Winner Selection</h4>
+                        <p style="color:#555;font-size:13px;margin-bottom:16px">Choose winner and runner-up from all participants.</p>
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+                            <div>
+                                <label style="color:#ffd700;font-weight:700;display:block;margin-bottom:6px">🥇 Winner</label>
+                                <select id="shManualWinnerSelect" style="width:100%;padding:10px;border:2px solid #ffd700;border-radius:8px;font-size:0.95em">
+                                    <option value="">-- Select Winner --</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label style="color:#c0c0c0;font-weight:700;display:block;margin-bottom:6px">🥈 Runner-up</label>
+                                <select id="shManualRunnerSelect" style="width:100%;padding:10px;border:2px solid #c0c0c0;border-radius:8px;font-size:0.95em">
+                                    <option value="">-- Select Runner-up --</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div style="display:flex;gap:10px">
+                            <button class="btn btn-success" onclick="shDeclareManualWinners()" style="padding:12px 24px">✅ Declare These Winners</button>
+                            <button class="btn btn-secondary" onclick="shToggleManualWinner()" style="padding:12px 20px">✖ Cancel</button>
+                        </div>
+                    </div>
+
+                    <!-- Eligible participants list -->
+                    <div id="shWinnersEligibleList" style="margin-bottom:20px">
+                        <p style="color:#999">Click Refresh to load participants.</p>
+                    </div>
+
+                    <!-- Current declared winner display -->
+                    <div id="shWinnersDeclaredBox" style="display:none"></div>
+                </div>
+
+                <!-- SETTINGS TAB -->
+                <div id="shAdminSettings" class="sh-tab-panel" style="display:none">
+                    <div style="background:#fff3e0;padding:18px;border-radius:10px;margin-bottom:20px;border-left:5px solid #ff9800">
+                        <h4 style="color:#e65100;margin-bottom:14px">⚙️ Hunt Settings</h4>
+
+                        <div class="form-group">
+                            <label style="display:flex;align-items:center;gap:10px;cursor:pointer">
+                                <input type="checkbox" id="shSettingActive" style="width:20px;height:20px;accent-color:#9c27b0">
+                                <span><strong>Hunt is ACTIVE</strong> — Students can login and attempt tasks</span>
+                            </label>
+                        </div>
+                        <div class="form-group">
+                            <label style="display:flex;align-items:center;gap:10px;cursor:pointer">
+                                <input type="checkbox" id="shSettingGPS" style="width:20px;height:20px;accent-color:#9c27b0" checked>
+                                <span><strong>GPS Verification ON</strong> — Must be within 100m to upload</span>
+                            </label>
+                        </div>
+                        <div class="form-group">
+                            <label>GPS Radius (metres):</label>
+                            <input type="number" id="shSettingRadius" value="100" min="10" max="1000" style="width:120px">
+                        </div>
+                        <div class="form-group">
+                            <label style="display:flex;align-items:center;gap:10px;cursor:pointer">
+                                <input type="checkbox" id="shSettingAutoApprove" style="width:20px;height:20px;accent-color:#9c27b0">
+                                <span><strong>Auto-Approve</strong> on GPS match (no manual review needed)</span>
+                            </label>
+                        </div>
+                        <button class="btn btn-success" onclick="shAdminSaveSettings()" style="margin-top:6px">💾 Save Settings</button>
+                        <span id="shSettingsSaveMsg" style="margin-left:12px;font-size:0.9em;color:#4caf50;display:none">✅ Saved!</span>
+                    </div>
+
+                    <div style="background:#ffebee;padding:18px;border-radius:10px;border-left:5px solid #f44336">
+                        <h4 style="color:#c62828;margin-bottom:10px">🗑️ Danger Zone</h4>
+                        <button class="btn btn-danger btn-small" onclick="shAdminResetAll()" style="margin-right:10px">🗑️ Reset All Submissions</button>
+                        <button class="btn btn-danger btn-small" onclick="shAdminDeleteAllTasks()">🗑️ Delete All Tasks</button>
+                    </div>
+                </div>
             </div>
 
             <!-- ================================================ -->
             <!-- LEADERBOARD ADMIN PANEL (Super Admin only)       -->
             <!-- Accessed via the "🏆 Leaderboard" tab above      -->
             <!-- ================================================ -->
+
             <div id="leaderboardAdmin" class="form-section super-admin-only" style="margin-top:20px">
                 <h2 style="color:#ffd700;margin-bottom:12px;text-shadow:0 2px 8px rgba(0,0,0,0.4)">🏆 Leaderboard Management</h2>
 
@@ -1673,6 +2135,44 @@
                             </p>
                         </div>
                     </div>
+                    <!-- Scavenger Hunt scoring -->
+                    <div style="margin-top:18px;padding:15px;background:#f3e5f5;border-radius:10px;border:2px solid #ce93d8">
+                        <h4 style="color:#6a1b9a;margin-bottom:12px">🗺️ Scavenger Hunt — Points</h4>
+                        <p style="color:#444;font-size:12px;margin-bottom:14px">
+                            Points are awarded automatically from Firebase data when scavenger hunt submissions are approved.<br>
+                            Three criteria combine: task completion rate per class, winner class bonus, runner-up class bonus.
+                        </p>
+                        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px">
+                            <div class="form-group" style="margin:0">
+                                <label style="color:#6a1b9a">🥇 SH Winner class gets (pts)</label>
+                                <input type="number" id="lbCfgShWinPts" value="30" min="0" max="500" style="border:2px solid #9c27b0">
+                                <small style="color:#555">Flat bonus to the class of the declared SH winner</small>
+                            </div>
+                            <div class="form-group" style="margin:0">
+                                <label style="color:#6a1b9a">🥈 SH Runner-Up class gets (pts)</label>
+                                <input type="number" id="lbCfgShRunPts" value="15" min="0" max="500" style="border:2px solid #ab47bc">
+                                <small style="color:#555">Flat bonus to the class of the declared runner-up</small>
+                            </div>
+                            <div class="form-group" style="margin:0">
+                                <label style="color:#6a1b9a">✅ Per approved task (pts per task per student)</label>
+                                <input type="number" id="lbCfgShTaskPts" value="5" min="0" max="100" style="border:2px solid #ba68c8">
+                                <small style="color:#555">Each approved task earns this many pts for the student's class</small>
+                            </div>
+                            <div class="form-group" style="margin:0">
+                                <label style="color:#6a1b9a">🏁 Full completion bonus (pts per student who finishes all)</label>
+                                <input type="number" id="lbCfgShCompletePts" value="20" min="0" max="500" style="border:2px solid #ce93d8">
+                                <small style="color:#555">Bonus for each student who gets ALL tasks approved</small>
+                            </div>
+                        </div>
+                        <div style="margin-top:12px;background:#ede7f6;padding:10px;border-radius:8px;border:1px solid #ce93d8">
+                            <p style="margin:0;color:#4a148c;font-size:12px">
+                                <strong>Example:</strong> 3rd B.Com has 5 students each completing 4 tasks = 5×4×5 = <strong>100 pts</strong>. 
+                                2 students finish all 6 tasks = 2×20 = <strong>40 bonus pts</strong>. 
+                                If their class wins = +30 pts. Total SH contribution = <strong>170 pts</strong> 🎉
+                            </p>
+                        </div>
+                    </div>
+
                     <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:15px">
                         <button class="btn btn-success" onclick="saveLbConfig()">💾 Save Config</button>
                         <span id="lbCfgSaveMsg" style="display:none;background:#d4edda;color:#155724;border:1px solid #c3e6cb;padding:7px 14px;border-radius:6px;font-size:13px;font-weight:600">✅ Config saved! Leaderboard updates in ≤60s</span>
@@ -1769,9 +2269,21 @@
         <!-- ============================================ -->
         
         <!-- Quiz Student Dashboard -->
+        
+        <!-- Quiz Admin Dashboard -->
+        <!-- Regular Quiz Admin Dashboard REMOVED - Only Super Admin Dashboard is used -->
+    </div>
+
+        <!-- ============================================ -->
+        <!-- QUIZ & SCAVENGER DASHBOARDS (outside adminSection) -->
+        <!-- ============================================ -->
         <div id="quizStudentDashboard" style="display:none">
+            <!-- Login success banner -->
+            <div style="background:linear-gradient(135deg,#28a745,#20c997);color:white;padding:16px 24px;border-radius:12px;margin-bottom:16px;text-align:center;font-size:1.2em;font-weight:700;box-shadow:0 4px 15px rgba(40,167,69,0.4)">
+                ✅ Logged In Successfully — Daily Quiz Competition
+            </div>
             <!-- Fixed header bar -->
-            <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:20px">
+            <div style="background:linear-gradient(135deg,#6a1b9a,#c44569);padding:16px 20px;border-radius:12px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:20px;box-shadow:0 4px 15px rgba(0,0,0,0.2)">
                 <h2 style="color:#fff;margin:0;font-size:clamp(1em,3vw,1.4em);display:flex;align-items:center;gap:10px;text-shadow:1px 1px 3px rgba(0,0,0,0.5)">
                     🎓 <span>Daily Quiz Competition</span>
                     <span id="quizStudentNameBadge" class="badge" style="background:#28a745;color:white;padding:6px 14px;border-radius:20px;font-size:0.75em;white-space:nowrap"></span>
@@ -1856,8 +2368,72 @@
                 </div>
             </div>
         </div>
-        
-        <!-- Quiz Page -->
+
+        <div id="shStudentDashboard" style="display:none">
+            <!-- Login success banner -->
+            <div style="background:linear-gradient(135deg,#9c27b0,#e91e63);color:white;padding:16px 24px;border-radius:12px;margin-bottom:16px;text-align:center;font-size:1.2em;font-weight:700;box-shadow:0 4px 15px rgba(156,39,176,0.4)">
+                ✅ Logged In Successfully — Scavenger Hunt
+            </div>
+            <!-- Header -->
+            <div style="background:linear-gradient(135deg,#9c27b0,#e91e63);padding:16px 20px;border-radius:12px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:20px;box-shadow:0 4px 15px rgba(0,0,0,0.2)">
+                <h2 style="color:#fff;margin:0;font-size:clamp(1em,3vw,1.4em);display:flex;align-items:center;gap:10px;text-shadow:1px 1px 3px rgba(0,0,0,0.5)">
+                    🗺️ <span>Scavenger Hunt</span>
+                    <span id="shStudentBadge" class="badge" style="background:#fff;color:#9c27b0;padding:6px 14px;border-radius:20px;font-size:0.75em;white-space:nowrap"></span>
+                </h2>
+                <button class="btn btn-secondary" onclick="shLogout()" style="white-space:nowrap;flex-shrink:0">Logout</button>
+            </div>
+
+            <div class="content">
+                <h3 style="color:#6a1b9a;margin-bottom:6px">Welcome, <span id="shStudentName"></span>!</h3>
+                <p style="margin-bottom:18px;color:#666"><strong>Class:</strong> <span id="shStudentClass"></span></p>
+
+                <!-- Hunt not active message -->
+                <div id="shNotActiveMsg" style="display:none;background:#fff3e0;padding:20px;border-radius:12px;border-left:5px solid #ff9800;margin-bottom:20px">
+                    <h4 style="color:#e65100;margin-bottom:6px">⏳ Hunt Not Active Yet</h4>
+                    <p style="color:#bf360c;margin:0">The Scavenger Hunt has not started yet. Check back soon!</p>
+                </div>
+
+                <!-- Progress -->
+                <div id="shProgressSection" style="display:none">
+                    <div style="background:linear-gradient(135deg,#9c27b0,#e91e63);color:white;border-radius:14px;padding:18px 22px;margin-bottom:20px">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px">
+                            <span style="font-weight:700;font-size:1.1em">🏆 Your Progress</span>
+                            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+                                <span id="shProgressText" style="font-size:1.3em;font-weight:800"></span>
+                                <button onclick="shRefreshStatus()" id="shRefreshBtn" style="background:rgba(255,255,255,0.25);color:white;border:2px solid rgba(255,255,255,0.6);padding:6px 14px;border-radius:20px;cursor:pointer;font-size:0.85em;font-weight:700;display:flex;align-items:center;gap:5px">🔄 Check Status</button>
+                            </div>
+                        </div>
+                        <div id="shLastRefreshed" style="font-size:0.75em;opacity:0.75;margin-bottom:6px"></div>
+                        <div class="sh-progress-bar-wrap" style="background:rgba(255,255,255,0.3)">
+                            <div class="sh-progress-bar" id="shProgressBar" style="width:0%;background:white"></div>
+                        </div>
+                        <div style="display:flex;gap:12px;margin-top:12px;flex-wrap:wrap">
+                            <span style="font-size:0.85em;opacity:0.9">✅ <span id="shCompletedCount">0</span> Completed</span>
+                            <span style="font-size:0.85em;opacity:0.9">⏳ <span id="shPendingCount">0</span> Pending Review</span>
+                            <span style="font-size:0.85em;opacity:0.9">🔒 <span id="shLockedCount">0</span> Locked</span>
+                        </div>
+                    </div>
+
+                    <!-- GPS Status -->
+                    <div id="shGpsStatus" style="background:#e0f7fa;border:2px solid #00bcd4;border-radius:10px;padding:12px 16px;margin-bottom:18px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+                        <span class="sh-gps-badge">📍 GPS</span>
+                        <span id="shGpsStatusText" style="color:#006064;font-size:0.9em;flex:1">Requesting location access...</span>
+                        <button onclick="shGetLocation(); shRefreshStatus();" style="background:#00bcd4;color:white;border:none;padding:6px 14px;border-radius:20px;cursor:pointer;font-size:0.85em;font-weight:600">🔄 Refresh</button>
+                    </div>
+
+                    <!-- Tasks -->
+                    <div id="shTasksList"></div>
+                </div>
+
+                <!-- Completed all tasks! -->
+                <div id="shAllDoneSection" style="display:none;text-align:center;padding:30px 20px">
+                    <div style="font-size:4em;margin-bottom:16px">🎉</div>
+                    <h2 style="color:#4caf50;margin-bottom:10px">All Tasks Completed!</h2>
+                    <p style="color:#666;font-size:1.1em">Amazing! You have completed all tasks. Wait for the results announcement!</p>
+                </div>
+            </div>
+        </div>
+
         <div id="quizPage" style="display:none">
             <div class="quiz-timer-box" id="quizTimer">
                 ⏱️ <span id="quizTimerValue">00:00</span>
@@ -1875,10 +2451,7 @@
                 </button>
             </div>
         </div>
-        
-        <!-- Quiz Admin Dashboard -->
-        <!-- Regular Quiz Admin Dashboard REMOVED - Only Super Admin Dashboard is used -->
-    </div>
+
 
     <!-- Firebase Status Indicator -->
     <div class="firebase-status">
@@ -2147,7 +2720,8 @@
 
         function handleCompetitionChange() {
             const type = document.getElementById('competitionType').value;
-            document.getElementById('dailyQuizLogin').style.display = type === 'dailyquiz' ? 'block' : 'none';
+            document.getElementById('dailyQuizLogin').style.display     = type === 'dailyquiz'     ? 'block' : 'none';
+            document.getElementById('scavengerHuntLogin').style.display = type === 'scavengerhunt' ? 'block' : 'none';
             
             // Reset user type dropdown and hide credentials when competition is selected
             if (type) {
@@ -2162,6 +2736,9 @@
                 fetchServerTimeOffset(); // pre-fetch server time offset early
                 populateQuizClasses();
                 checkPublicQuizStatus();
+            }
+            if (type === 'scavengerhunt') {
+                shCheckPublicStatus();
             }
         }
 
@@ -2599,6 +3176,7 @@
         function logout() {
             studentClass = null;
             crClass = null;
+            window.currentCRClass = null;
             isAdmin = false;
             isSuperAdmin = false;
             isCR = false;
@@ -2621,9 +3199,14 @@
             document.getElementById('adminSection').style.display = 'none';
             document.getElementById('jurySection').style.display = 'none';
             document.getElementById('quizStudentDashboard').style.display = 'none';
-            document.getElementById('quizAdminDashboard').style.display = 'none';
+            // quizAdminDashboard removed - no longer used
             document.getElementById('quizPage').style.display = 'none';
+            document.getElementById('shStudentDashboard').style.display = 'none';
+            shCurrentUser = null;
+            if (typeof shAdminStopSubmissionsListener === 'function') shAdminStopSubmissionsListener();
             document.getElementById('userType').value = '';
+            document.getElementById('competitionType').value = '';
+            handleCompetitionChange();
             handleUserTypeChange();
         }
 
@@ -3448,34 +4031,39 @@
 
         // Admin Functions
         function showTab(tab) {
-            document.querySelectorAll('#adminSection .tab').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('#adminSection .form-section').forEach(s => s.classList.remove('active'));
+            // Clear only top-level admin nav tabs (NOT scavenger inner tabs)
+            document.querySelectorAll('#adminSection > div.tabs > .tab').forEach(t => t.classList.remove('active'));
+            // Clear only direct-child form-sections of adminContentBox (NOT scavenger inner panels)
+            document.querySelectorAll('#adminContentBox > .form-section').forEach(s => s.classList.remove('active'));
             event.target.classList.add('active');
             document.getElementById(tab).classList.add('active');
 
-            // Toggle white box away for leaderboard tab
+            // Toggle white box for leaderboard
             const adminBox = document.getElementById('adminContentBox');
             if (adminBox) {
-                if (tab === 'leaderboardAdmin') {
-                    adminBox.classList.add('lb-active');
-                } else {
-                    adminBox.classList.remove('lb-active');
-                }
+                adminBox.classList.toggle('lb-active', tab === 'leaderboardAdmin');
             }
 
-            if (tab === 'results') {
-                loadResultsTab();
-            }
-            if (tab === 'quizManagement') {
-                loadQuizManagementStats();
-                showQuizManagementTab('questions');
-                initializeDateSelector();
-            }
+            if (tab === 'results')        loadResultsTab();
+            if (tab === 'quizManagement') { loadQuizManagementStats(); showQuizManagementTab('questions'); initializeDateSelector(); }
             if (tab === 'leaderboardAdmin') {
                 if (typeof loadLbConfigIntoForm   === 'function') loadLbConfigIntoForm();
                 if (typeof loadLbCriteriaList     === 'function') loadLbCriteriaList();
                 if (typeof loadLbPublishedResults === 'function') loadLbPublishedResults();
                 if (typeof loadLbAdminPreview     === 'function') loadLbAdminPreview();
+            }
+            if (tab === 'scavengerAdmin') {
+                // Show Tasks panel, hide others using inline style (immune to class conflicts)
+                ['shAdminTasks','shAdminSubmissions','shAdminLeaderboard','shAdminClasswise','shAdminWinners','shAdminSettings'].forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) el.style.display = (id === 'shAdminTasks') ? 'block' : 'none';
+                });
+                // Reset scavenger sub-tab button active states
+                document.querySelectorAll('#scavengerAdmin .tabs .tab').forEach(t => t.classList.remove('active'));
+                const firstBtn = document.querySelector('#scavengerAdmin .tabs .tab');
+                if (firstBtn) firstBtn.classList.add('active');
+                if (typeof shAdminLoadTasks    === 'function') shAdminLoadTasks();
+                if (typeof shAdminLoadSettings === 'function') shAdminLoadSettings();
             }
         }
 
@@ -5393,8 +5981,10 @@ Davan Institute Team`;
                 console.log('Student lookup result:', snap.exists());
                 
                 if (!snap.exists()) {
+                    alert('❌ Phone number not registered!\n\nPhone: ' + phone + '\n\nPlease register first using the registration form above.');
                     showQuizMsg('quizMessage', '❌ Phone number not registered! Please register first.', 'error');
-                    document.getElementById('quizMessage').scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    const qMsg = document.getElementById('quizMessage');
+                    if (qMsg) { qMsg.style.display = 'block'; qMsg.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
                     if (loginBtn) { loginBtn.disabled = false; loginBtn.innerHTML = '🚀 Login to Quiz'; }
                     return;
                 }
@@ -5415,8 +6005,10 @@ Davan Institute Team`;
                 
                 if (studentData.password !== password) {
                     console.log('Password mismatch');
+                    alert('❌ Incorrect password!\n\nPlease check your password and try again.\n\nIf you forgot your password, contact the admin.');
                     showQuizMsg('quizMessage', '❌ Incorrect password! Check your password and try again.', 'error');
-                    document.getElementById('quizMessage').scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    const qMsg = document.getElementById('quizMessage');
+                    if (qMsg) { qMsg.style.display = 'block'; qMsg.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
                     if (loginBtn) { loginBtn.disabled = false; loginBtn.innerHTML = '🚀 Login to Quiz'; }
                     return;
                 }
@@ -5441,8 +6033,14 @@ Davan Institute Team`;
                 // Start live date/time clock
                 startQuizLiveClock();
                 
-                // Scroll to top immediately on login
-                window.scrollTo({ top: 0, behavior: 'instant' });
+                // Scroll to quiz dashboard on login
+                setTimeout(() => {
+                    const dash = document.getElementById('quizStudentDashboard');
+                    if (dash) {
+                        const y = dash.getBoundingClientRect().top + window.pageYOffset - 20;
+                        window.scrollTo({ top: y, behavior: 'smooth' });
+                    }
+                }, 150);
                 
                 // Set student info
                 document.getElementById('quizStudentName').textContent = studentData.name;
@@ -5457,8 +6055,11 @@ Davan Institute Team`;
             } catch (err) {
                 console.error('Login error:', err);
                 console.error('Error stack:', err.stack);
-                showQuizMsg('quizMessage', '❌ Login failed. Please check your connection and try again.', 'error');
-                document.getElementById('quizMessage').scrollIntoView({ behavior: 'smooth', block: 'center' });
+                const errMsg = '❌ Login failed: ' + (err.message || 'Unknown error') + '\n\nPlease check your internet connection and try again.';
+                alert(errMsg);
+                showQuizMsg('quizMessage', '❌ Login failed: ' + (err.message || 'Check your connection'), 'error');
+                const qMsg = document.getElementById('quizMessage');
+                if (qMsg) { qMsg.style.display = 'block'; qMsg.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
                 const loginBtn = document.querySelector('#dailyQuizLogin .btn-success');
                 if (loginBtn) { loginBtn.disabled = false; loginBtn.innerHTML = '🚀 Login to Quiz'; }
             }
@@ -7266,17 +7867,21 @@ Davan Institute Team`;
             try {
                 const snap = await db.ref('quizSubmissions').once('value');
                 const sel  = document.getElementById('qsDateFilter');
-                if (!sel || !snap.exists()) return;
+                if (!sel) return;
                 const cur = sel.value;
+                const today = getQuizToday();
                 const dates = [];
-                snap.forEach(d => dates.push(d.key));
+                if (snap.exists()) snap.forEach(d => dates.push(d.key));
+                // Always include today even if no submissions yet
+                if (!dates.includes(today)) dates.push(today);
                 dates.sort((a,b) => b.localeCompare(a));
                 sel.innerHTML = '<option value="">— Select Date —</option>';
                 dates.forEach(d => {
                     const o = document.createElement('option');
                     o.value = d;
-                    o.textContent = new Date(d).toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
-                    if (d === cur || (!cur && d === getQuizToday())) o.selected = true;
+                    const label = new Date(d + 'T00:00:00').toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
+                    o.textContent = d === today ? label + ' (Today)' : label;
+                    if (d === cur || (!cur && d === today)) o.selected = true;
                     sel.appendChild(o);
                 });
                 // Also populate CR date filter
@@ -7287,8 +7892,9 @@ Davan Institute Team`;
                     dates.forEach(d => {
                         const o = document.createElement('option');
                         o.value = d;
-                        o.textContent = new Date(d).toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
-                        if (d === crCur || (!crCur && d === getQuizToday())) o.selected = true;
+                        const label = new Date(d + 'T00:00:00').toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
+                        o.textContent = d === today ? label + ' (Today)' : label;
+                        if (d === crCur || (!crCur && d === today)) o.selected = true;
                         crSel.appendChild(o);
                     });
                 }
@@ -7310,7 +7916,7 @@ Davan Institute Team`;
             if (container) container.innerHTML = '<p style="color:#aaa;font-size:13px;text-align:center;padding:12px">⏳ Loading…</p>';
             try {
                 const snap = await db.ref(`quizSubmissions/${date}`).once('value');
-                const dateStr = new Date(date).toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+                const dateStr = new Date(date + 'T00:00:00').toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
 
                 if (!snap.exists()) {
                     if (container) container.innerHTML = `<p style="color:#999;font-size:13px;text-align:center;padding:12px">No submissions found for ${dateStr}</p>`;
@@ -7373,24 +7979,40 @@ Davan Institute Team`;
                 html += '</tbody></table></div>';
                 if (container) container.innerHTML = html;
 
-                // Build info text box
+                // Build info text box — fetch class strengths from leaderboard config
                 const infoDateEl = document.getElementById('qsInfoDate');
                 const infoTextEl = document.getElementById('qsInfoText');
+                const _qsDisplayTime = new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true});
+                if (!window._classStrengths) {
+                    try { const ss = await db.ref('leaderboardConfig/classStrengths').once('value'); window._classStrengths = ss.val() || {}; } catch(e) { window._classStrengths = {}; }
+                }
+                const _qsStr = window._classStrengths || {};
+                function _normCls(s){ return String(s).toLowerCase().replace(/[^a-z0-9]/g,''); }
+                function _getStrength(map, cls){ const n=_normCls(cls); const k=Object.keys(map).find(k=>_normCls(k)===n); return k?map[k]:0; }
                 if (infoDateEl) infoDateEl.textContent = dateStr;
                 if (infoTextEl) {
-                    let infoLines = `<strong>${grandTotal}</strong> students participated across <strong>${classCount}</strong> classes.<br>`;
+                    let infoLines = `<span style="color:#888;font-size:12px">🕐 Generated at: <strong>${_qsDisplayTime}</strong></span><br><br>`;
+                    infoLines += `<strong>${grandTotal}</strong> students participated across <strong>${classCount}</strong> classes.<br>`;
                     infoLines += `<strong>${grandCorrect}</strong> got both questions correct (${grandTotal>0?Math.round((grandCorrect/grandTotal)*100):0}% accuracy).<br><br>`;
                     infoLines += '<strong>Class-wise breakdown:</strong><br>';
                     sorted.forEach(([cls,d]) => {
                         const acc = d.total>0?Math.round((d.correct/d.total)*100):0;
-                        infoLines += `• ${cls}: ${d.total} participated, ${d.correct} correct (${acc}%)<br>`;
+                        const strength = _getStrength(_qsStr, cls);
+                        const strengthTag = strength ? `<span style="color:#888;font-size:0.92em">(Class Strength: ${strength})</span> ` : '';
+                        infoLines += `• ${cls}: ${strengthTag}<strong>${d.total}</strong> participated, <strong>${d.correct}</strong> correct (${acc}%)<br>`;
                     });
                     infoTextEl.innerHTML = infoLines;
                 }
                 if (infoBox) infoBox.style.display = 'block';
                 // Save for copy
-                window._qsLastInfoText = `Quiz Summary — ${dateStr}\n\n${grandTotal} students participated across ${classCount} classes.\n${grandCorrect} got both questions correct (${grandTotal>0?Math.round((grandCorrect/grandTotal)*100):0}% accuracy).\n\nClass-wise:\n` +
-                    sorted.map(([cls,d])=>`• ${cls}: ${d.total} participated, ${d.correct} correct (${d.total>0?Math.round((d.correct/d.total)*100):0}%)`).join('\n');
+                const _qsNow = new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true});
+                window._qsLastInfoText = `📋 Quiz Summary — ${dateStr}\n🕐 Generated at: ${_qsNow}\n\n${grandTotal} students participated across ${classCount} classes.\n${grandCorrect} got both questions correct (${grandTotal>0?Math.round((grandCorrect/grandTotal)*100):0}% accuracy).\n\nClass-wise breakdown:\n` +
+                    sorted.map(([cls,d]) => {
+                        const strength = _getStrength(_qsStr, cls);
+                        const strengthTxt = strength ? `[Class Strength: ${strength}] ` : '';
+                        return `• ${cls}: ${strengthTxt}${d.total} participated, ${d.correct} correct (${d.total>0?Math.round((d.correct/d.total)*100):0}%)`;
+                    }).join('\n') +
+                    `\n\n— Spurthi Youth Fest 2026`;
 
             } catch(e) {
                 if (container) container.innerHTML = `<p style="color:red;font-size:13px;padding:12px">Error: ${e.message}</p>`;
@@ -7407,14 +8029,14 @@ Davan Institute Team`;
         }
 
         async function loadCRQuizStats() {
-            const crClass  = typeof currentCRClass !== 'undefined' ? currentCRClass : (document.getElementById('crClassName')||{}).textContent || '';
+            const crClass  = (window.currentCRClass || '').trim() || (document.getElementById('crClassName')||{}).textContent.trim() || '';
             const dateSel  = document.getElementById('crQsDateFilter');
             // Populate dates first
             await populateQsDateFilter();
             const date = dateSel ? dateSel.value || getQuizToday() : getQuizToday();
             if (dateSel && !dateSel.value) dateSel.value = date;
 
-            const dateStr  = new Date(date).toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+            const dateStr  = new Date(date + 'T00:00:00').toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
             const infoDate = document.getElementById('crQsInfoDate');
             const infoText = document.getElementById('crQsInfoText');
             const tbody    = document.getElementById('crQsTable');
@@ -7426,6 +8048,12 @@ Davan Institute Team`;
             if (tbody) tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#aaa">⏳ Loading…</td></tr>';
             if (infoText) infoText.textContent = '⏳ Loading…';
             try {
+                // Fetch class strength first — always re-fetch fresh for accuracy
+                try { const ss = await db.ref('leaderboardConfig/classStrengths').once('value'); window._classStrengths = ss.val() || {}; } catch(e) { window._classStrengths = window._classStrengths || {}; }
+                const _crSafeKey = crClass ? crClass.replace(/[.\[\]#$\/]/g,'_') : '';
+                const crClassStrength = (window._classStrengths[_crSafeKey] || window._classStrengths[crClass] || 0);
+                const crStrengthTag = crClassStrength ? ` <span style="color:#888;font-size:0.92em">(Class Strength: ${crClassStrength})</span>` : '';
+
                 const snap = await db.ref(`quizSubmissions/${date}`).once('value');
                 if (!snap.exists()) {
                     if (totEl) totEl.textContent = '0';
@@ -7433,7 +8061,7 @@ Davan Institute Team`;
                     if (partEl) partEl.textContent = '0';
                     if (rateEl) rateEl.textContent = '0%';
                     if (tbody) tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:#999">No quiz submissions on ${dateStr}</td></tr>`;
-                    if (infoText) infoText.textContent = `No quiz submissions found for your class on ${dateStr}.`;
+                    if (infoText) infoText.innerHTML = `<strong>No students</strong> from <strong>${crClass}</strong>${crStrengthTag} participated in the quiz on ${dateStr}.`;
                     return;
                 }
                 // Filter to CR's class
@@ -7457,9 +8085,9 @@ Davan Institute Team`;
                 // Info text
                 if (infoText) {
                     if (total === 0) {
-                        infoText.innerHTML = `<strong>No students</strong> from <strong>${crClass}</strong> participated in the quiz on ${dateStr}.`;
+                        infoText.innerHTML = `<strong>No students</strong> from <strong>${crClass}</strong>${crStrengthTag} participated in the quiz on ${dateStr}.`;
                     } else {
-                        infoText.innerHTML = `On <strong>${dateStr}</strong>, <strong>${total}</strong> student(s) from <strong>${crClass}</strong> participated in the online quiz.<br>
+                        infoText.innerHTML = `On <strong>${dateStr}</strong>, <strong>${total}</strong> student(s) from <strong>${crClass}</strong>${crStrengthTag} participated in the online quiz.<br>
                             <strong>${correct}</strong> got both questions correct (${rate}% accuracy).<br>
                             <strong>${partial}</strong> got one correct. <strong>${total-correct-partial}</strong> got none correct.<br>
                             ${correct>=2 ? '✅ Your class has eligible students for winner selection.' : correct===1 ? '⚠️ Only 1 correct answer — need 2+ for winner &amp; runner-up.' : '❌ No correct answers from your class today.'}`;
@@ -7489,6 +8117,93 @@ Davan Institute Team`;
             } catch(e) {
                 if (infoText) infoText.textContent = 'Error loading data: ' + e.message;
                 if (tbody) tbody.innerHTML = `<tr><td colspan="5" style="color:red;text-align:center">Error: ${e.message}</td></tr>`;
+            }
+        }
+
+        async function loadCRScavengerStats() {
+            const crClass = (window.currentCRClass || '').trim() || (document.getElementById('crClassName')||{}).textContent.trim() || '';
+            const infoDate = document.getElementById('crShInfoDate');
+            const infoText = document.getElementById('crShInfoText');
+            const totalEl  = document.getElementById('crShTotal');
+            const appEl    = document.getElementById('crShApproved');
+            const penEl    = document.getElementById('crShPending');
+            const rejEl    = document.getElementById('crShRejected');
+            const tbody    = document.getElementById('crShTable');
+            if (infoDate) infoDate.textContent = new Date().toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+            if (infoText) infoText.textContent = '⏳ Loading…';
+            if (tbody) tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#aaa">⏳ Loading…</td></tr>';
+            try {
+                // Fetch class strength — always re-fetch fresh for accuracy
+                try { const ss = await db.ref('leaderboardConfig/classStrengths').once('value'); window._classStrengths = ss.val() || {}; } catch(e) { window._classStrengths = window._classStrengths || {}; }
+                const _shSafeKey = crClass ? crClass.replace(/[.\[\]#$\/]/g,'_') : '';
+                const crClassStrengthSH = (window._classStrengths[_shSafeKey] || window._classStrengths[crClass] || 0);
+                const crStrengthTagSH = crClassStrengthSH ? ` <span style="color:#888;font-size:0.92em">(Class Strength: ${crClassStrengthSH})</span>` : '';
+
+                const [subSnap, taskSnap] = await Promise.all([
+                    db.ref('scavengerHunt/submissions').once('value'),
+                    db.ref('scavengerHunt/tasks').once('value')
+                ]);
+                const allSubs  = subSnap.val()  || {};
+                const allTasks = taskSnap.val() || {};
+                const totalTasks = Object.keys(allTasks).length;
+
+                // Filter to CR's class
+                const classStudents = [];
+                let grandApproved=0, grandPending=0, grandRejected=0, grandSubmitted=0;
+                Object.entries(allSubs).forEach(([sk, ss]) => {
+                    const first = Object.values(ss)[0] || {};
+                    const cls = first.studentClass || '';
+                    if (crClass && cls !== crClass) return;
+                    const name = first.studentName || sk;
+                    let approved=0, pending=0, rejected=0;
+                    Object.values(ss).forEach(sub => {
+                        if (sub.status==='approved')  { approved++;  grandApproved++; }
+                        else if (sub.status==='pending')  { pending++;   grandPending++; }
+                        else if (sub.status==='rejected') { rejected++;  grandRejected++; }
+                        grandSubmitted++;
+                    });
+                    classStudents.push({name, approved, pending, rejected, total: approved+pending+rejected});
+                });
+                classStudents.sort((a,b)=>b.approved-a.approved||b.total-a.total);
+                const participantCount = classStudents.length;
+
+                if (totalEl)  totalEl.textContent  = participantCount;
+                if (appEl)    appEl.textContent    = grandApproved;
+                if (penEl)    penEl.textContent    = grandPending;
+                if (rejEl)    rejEl.textContent    = grandRejected;
+
+                const nowTime = new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true});
+                if (infoText) {
+                    if (participantCount === 0) {
+                        infoText.innerHTML = `<span style="color:#888;font-size:12px">🕐 Generated at: <strong>${nowTime}</strong></span><br><br>`
+                            + `<strong>No students</strong> from <strong>${crClass}</strong>${crStrengthTagSH} have participated in the Scavenger Hunt yet.`;
+                    } else {
+                        infoText.innerHTML = `<span style="color:#888;font-size:12px">🕐 Generated at: <strong>${nowTime}</strong></span><br><br>`
+                            + `<strong>${participantCount}</strong> student(s) from <strong>${crClass}</strong>${crStrengthTagSH} have participated in the Scavenger Hunt.<br>`
+                            + `<strong>${grandApproved}</strong> task(s) approved, <strong>${grandPending}</strong> pending review, <strong>${grandRejected}</strong> rejected.<br>`
+                            + (totalTasks ? `Total tasks available: <strong>${totalTasks}</strong>.` : '');
+                    }
+                }
+
+                if (tbody) {
+                    if (classStudents.length === 0) {
+                        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:#999">No scavenger hunt submissions from ${crClass} yet.</td></tr>`;
+                    } else {
+                        tbody.innerHTML = '';
+                        classStudents.forEach((s,i) => {
+                            const row = tbody.insertRow();
+                            row.innerHTML = `<td>${i+1}</td>
+                                <td><strong>${s.name}</strong></td>
+                                <td style="text-align:center;font-weight:700">${s.total}${totalTasks?' / '+totalTasks:''}</td>
+                                <td style="text-align:center"><span style="background:#d4edda;color:#155724;padding:3px 10px;border-radius:10px;font-weight:700">${s.approved}</span></td>
+                                <td style="text-align:center"><span style="background:#fff3cd;color:#856404;padding:3px 10px;border-radius:10px;font-weight:700">${s.pending}</span></td>
+                                <td style="text-align:center"><span style="background:#f8d7da;color:#721c24;padding:3px 10px;border-radius:10px;font-weight:700">${s.rejected}</span></td>`;
+                        });
+                    }
+                }
+            } catch(e) {
+                if (infoText) infoText.textContent = 'Error loading data: ' + e.message;
+                if (tbody) tbody.innerHTML = `<tr><td colspan="6" style="color:red;text-align:center">Error: ${e.message}</td></tr>`;
             }
         }
         
@@ -7674,6 +8389,8 @@ Davan Institute Team`;
         function saveAutoDeclarSetting() {
             const enabled = document.getElementById('autoDeclarToggle').checked;
             try { localStorage.setItem('quizAutoDeclar', enabled ? '1' : '0'); } catch(e){}
+            // Also persist to Firebase so it survives page refresh/close
+            try { db.ref('quizConfig/autoDeclar').set({ enabled, updatedAt: new Date().toISOString() }); } catch(e){}
             applyAutoDeclarUI(enabled);
             if (enabled) {
                 startAutoDeclarScheduler();
@@ -7784,15 +8501,45 @@ Davan Institute Team`;
             }
         }
 
-        function initAutoDeclarScheduler() {
+        async function initAutoDeclarScheduler() {
             let enabled = false;
-            try { enabled = localStorage.getItem('quizAutoDeclar') === '1'; } catch(e){}
+            // Try Firebase first (most reliable across sessions)
+            try {
+                const snap = await db.ref('quizConfig/autoDeclar').once('value');
+                if (snap.exists()) { enabled = !!snap.val().enabled; }
+                else { enabled = localStorage.getItem('quizAutoDeclar') === '1'; }
+            } catch(e) {
+                try { enabled = localStorage.getItem('quizAutoDeclar') === '1'; } catch(e2){}
+            }
             const toggle = document.getElementById('autoDeclarToggle');
             if (toggle) {
                 toggle.checked = enabled;
+                try { localStorage.setItem('quizAutoDeclar', enabled ? '1' : '0'); } catch(e){}
                 applyAutoDeclarUI(enabled);
-                if (enabled) startAutoDeclarScheduler();
+                if (enabled) {
+                    startAutoDeclarScheduler();
+                    // Also check: did 11:30 PM already pass today without declaration?
+                    checkMissedAutoDeclar();
+                }
             }
+        }
+
+        // Check if today's auto-declaration was missed (11:30 PM passed, page was closed)
+        async function checkMissedAutoDeclar() {
+            const now = new Date();
+            // Only check if current time is AFTER 11:30 PM
+            if (now.getHours() < 23 || (now.getHours() === 23 && now.getMinutes() < 30)) return;
+            const today = getQuizToday();
+            try {
+                const existing = await db.ref(`quizResults/${today}`).once('value');
+                if (!existing.exists()) {
+                    // Results not declared yet and 11:30 has passed — run now
+                    console.log('[AutoDeclar] Missed 11:30 PM trigger — running now on page load');
+                    const statusEl = document.getElementById('autoDeclarStatus');
+                    if (statusEl) statusEl.innerHTML = '⚠️ <strong>11:30 PM was missed</strong> (page was closed). Running auto-declaration now…';
+                    await runAutoDeclaration();
+                }
+            } catch(e) { console.warn('[AutoDeclar] checkMissed error:', e); }
         }
 
         // ============================================
@@ -8968,12 +9715,21 @@ Davan Institute Team`;
                             </div>
                         </div>
 
-                        <div style="background:#e0f7fa;border-radius:10px;padding:15px;border-top:4px solid #17a2b8" data-hwp-card="3">
-                            <div style="display:flex;align-items:center;gap:8px;margin-bottom:7px"><span style="font-size:1.3em">✨</span><strong id="hwpCard3Title" style="color:#0c5460;font-size:0.9em">Special / Custom Criteria</strong></div>
-                            <p id="hwpCard3Body" style="margin:0;color:#555;font-size:12.5px;line-height:1.6">The Super Admin may add bonus points for criteria like discipline, attendance, best decorated class, or other special achievements.</p>
+                        <div style="background:#fff3e0;border-radius:10px;padding:15px;border-top:4px solid #e8722a" data-hwp-card="3">
+                            <div style="display:flex;align-items:center;gap:8px;margin-bottom:7px"><span style="font-size:1.3em">🗺️</span><strong id="hwpCard3Title" style="color:#bf360c;font-size:0.9em">Scavenger Hunt</strong></div>
+                            <p id="hwpCard3Body" style="margin:0;color:#555;font-size:12.5px;line-height:1.6">Points are awarded for <strong>approved task submissions</strong> in the Scavenger Hunt. The more tasks a student completes and gets approved, the more points their class earns.</p>
                             <div class="hwpCardEditArea" style="display:none;margin-top:8px">
-                                <input type="text" class="hwpCardTitleInput" data-idx="3" placeholder="Card title" style="width:100%;padding:5px 8px;border:1px solid #17a2b8;border-radius:4px;font-size:12px;margin-bottom:5px">
-                                <textarea class="hwpCardBodyInput" data-idx="3" rows="3" placeholder="Card body text" style="width:100%;padding:5px 8px;border:1px solid #17a2b8;border-radius:4px;font-size:12px;resize:vertical"></textarea>
+                                <input type="text" class="hwpCardTitleInput" data-idx="3" placeholder="Card title" style="width:100%;padding:5px 8px;border:1px solid #e8722a;border-radius:4px;font-size:12px;margin-bottom:5px">
+                                <textarea class="hwpCardBodyInput" data-idx="3" rows="3" placeholder="Card body text" style="width:100%;padding:5px 8px;border:1px solid #e8722a;border-radius:4px;font-size:12px;resize:vertical"></textarea>
+                            </div>
+                        </div>
+
+                        <div style="background:#e0f7fa;border-radius:10px;padding:15px;border-top:4px solid #17a2b8" data-hwp-card="4">
+                            <div style="display:flex;align-items:center;gap:8px;margin-bottom:7px"><span style="font-size:1.3em">✨</span><strong id="hwpCard4Title" style="color:#0c5460;font-size:0.9em">Special / Custom Criteria</strong></div>
+                            <p id="hwpCard4Body" style="margin:0;color:#555;font-size:12.5px;line-height:1.6">The Super Admin may add bonus points for criteria like discipline, attendance, best decorated class, or other special achievements.</p>
+                            <div class="hwpCardEditArea" style="display:none;margin-top:8px">
+                                <input type="text" class="hwpCardTitleInput" data-idx="4" placeholder="Card title" style="width:100%;padding:5px 8px;border:1px solid #17a2b8;border-radius:4px;font-size:12px;margin-bottom:5px">
+                                <textarea class="hwpCardBodyInput" data-idx="4" rows="3" placeholder="Card body text" style="width:100%;padding:5px 8px;border:1px solid #17a2b8;border-radius:4px;font-size:12px;resize:vertical"></textarea>
                             </div>
                         </div>
 
@@ -9064,6 +9820,7 @@ Davan Institute Team`;
                                 <th>🎤 YF Reg</th>
                                 <th>🧠 Quiz</th>
                                 <th>🏆 Results</th>
+                                <th>🗺️ Hunt</th>
                                 <th>Total</th>
                                 <th>Progress</th>
                             </tr>
@@ -9143,7 +9900,8 @@ Davan Institute Team`;
 
     let lbCfg = {
         yfPtsPerEvent: 10, winnerPts: 50, runnerUpPts: 30,
-        quizWinnerPts: 20, quizRunnerUpPts: 10, quizMaxPts: 10
+        quizWinnerPts: 20, quizRunnerUpPts: 10, quizMaxPts: 10,
+        shWinnerPts: 30, shRunnerUpPts: 15, shTaskPts: 5, shCompletePts: 20
     };
     let lbClassStrengths = {}; // cls → number of students
 
@@ -9161,7 +9919,11 @@ Davan Institute Team`;
                     runnerUpPts:     d.runnerUpPts      || 30,
                     quizWinnerPts:   d.quizWinnerPts    || 20,
                     quizRunnerUpPts: d.quizRunnerUpPts  || 10,
-                    quizMaxPts:      d.quizMaxPts       || 10
+                    quizMaxPts:      d.quizMaxPts       || 10,
+                    shWinnerPts:     d.shWinnerPts      || 30,
+                    shRunnerUpPts:   d.shRunnerUpPts    || 15,
+                    shTaskPts:       d.shTaskPts        || 5,
+                    shCompletePts:   d.shCompletePts    || 20
                 };
             }
             if (strSnap.exists()) {
@@ -9325,10 +10087,43 @@ Davan Institute Team`;
                 });
             }
 
-            // ── 5. Merge, sort, render ─────────────────────────────
+            // ── 5. Scavenger Hunt Points ───────────────────────────
+            const shPts = init();
+            try {
+                const [shSubSnap, shTaskSnap, shWinSnap] = await Promise.all([
+                    getDb().ref('scavengerHunt/submissions').once('value'),
+                    getDb().ref('scavengerHunt/tasks').once('value'),
+                    getDb().ref('scavengerHunt/winner').once('value')
+                ]);
+                const shSubs  = shSubSnap.val()  || {};
+                const shTasks = shTaskSnap.val() || {};
+                const totalTasks = Object.keys(shTasks).length;
+                const shWinner = shWinSnap.val() || null;
+
+                // Per-student: task pts + completion bonus
+                Object.values(shSubs).forEach(ss => {
+                    const first = Object.values(ss)[0] || {};
+                    const cls = first.studentClass || '';
+                    if (shPts[cls] === undefined) return;
+                    let approved = 0;
+                    Object.values(ss).forEach(sub => { if (sub.status === 'approved') approved++; });
+                    shPts[cls] += approved * cfg.shTaskPts;
+                    if (totalTasks > 0 && approved >= totalTasks) shPts[cls] += cfg.shCompletePts;
+                });
+
+                // Winner / runner-up class bonus
+                if (shWinner) {
+                    const wCls  = shWinner.winner   ? shWinner.winner.cls   : '';
+                    const ruCls = shWinner.runnerUp ? shWinner.runnerUp.cls : '';
+                    if (wCls  && shPts[wCls]  !== undefined) shPts[wCls]  += cfg.shWinnerPts;
+                    if (ruCls && shPts[ruCls] !== undefined) shPts[ruCls] += cfg.shRunnerUpPts;
+                }
+            } catch(e) { console.warn('SH points error:', e); }
+
+            // ── 6. Merge, sort, render ─────────────────────────────
             const ranked = LB_CLASSES.map(cls => {
-                const total=(yfPts[cls]||0)+(quizPts[cls]||0)+(resultPts[cls]||0)+(customPts[cls]||0);
-                return {cls,yfPts:yfPts[cls]||0,quizPts:quizPts[cls]||0,resultPts:resultPts[cls]||0,customPts:customPts[cls]||0,total};
+                const total=(yfPts[cls]||0)+(quizPts[cls]||0)+(resultPts[cls]||0)+(customPts[cls]||0)+(shPts[cls]||0);
+                return {cls,yfPts:yfPts[cls]||0,quizPts:quizPts[cls]||0,resultPts:resultPts[cls]||0,customPts:customPts[cls]||0,shPts:shPts[cls]||0,total};
             }).sort((a,b)=>b.total-a.total||b.yfPts-a.yfPts||b.quizPts-a.quizPts);
 
             const maxTotal = ranked[0]?.total || 1;
@@ -9373,7 +10168,7 @@ Davan Institute Team`;
 
     function renderTable(ranked, maxTotal) {
         const tbody=document.getElementById('lbTableBody');
-        if(!ranked||ranked.length===0){tbody.innerHTML='<tr><td colspan="7" class="lb-empty">No data yet!</td></tr>';return;}
+        if(!ranked||ranked.length===0){tbody.innerHTML='<tr><td colspan="8" class="lb-empty">No data yet!</td></tr>';return;}
         let html='';
         ranked.forEach((entry,i)=>{
             const rank=i+1;
@@ -9384,12 +10179,14 @@ Davan Institute Team`;
             const rowBg=rank===1?'background:linear-gradient(90deg,#fffbea,#fff);':rank===2?'background:linear-gradient(90deg,#f8f8f8,#fff);':rank===3?'background:linear-gradient(90deg,#fff5f0,#fff);':'';
             const resBadge=entry.resultPts>0?`<span class="lb-score-tag" style="background:#d4edda;color:#155724;border:1px solid #28a745">🏆 ${entry.resultPts}</span> `:'';
             const custBadge=entry.customPts>0?`<span class="lb-score-tag" style="background:#e8f4fd;color:#0c5460;border:1px solid #17a2b8">✨ ${entry.customPts}</span>`:'';
+            const shBadge=entry.shPts>0?`<span class="lb-score-tag" style="background:#f3e5f5;color:#6a1b9a;border:1px solid #ce93d8">🗺️ ${entry.shPts}</span>`:'<span style="color:#ddd">—</span>';
             html+=`<tr style="${rowBg}animation-delay:${delay}s">
                 <td><span class="lb-rank-badge ${rankClass}">${rankMedal}</span></td>
                 <td><span class="lb-class-chip">${entry.cls}</span></td>
                 <td><span class="lb-score-tag lb-score-yf">🎤 ${entry.yfPts}</span></td>
                 <td><span class="lb-score-tag lb-score-quiz">🧠 ${entry.quizPts}</span></td>
                 <td>${resBadge}${custBadge||(entry.resultPts===0&&entry.customPts===0?'<span style="color:#ddd">—</span>':'')}</td>
+                <td>${shBadge}</td>
                 <td><span class="lb-pts-total">${entry.total}</span> <span class="lb-pts-event">pts</span></td>
                 <td><div class="lb-bar-wrap"><div class="lb-bar-fill" style="width:${barPct}%"></div></div></td>
             </tr>`;
@@ -9471,10 +10268,15 @@ Davan Institute Team`;
         const qWin    = parseInt(document.getElementById('lbCfgQuizWinPts').value) || 20;
         const qRun    = parseInt(document.getElementById('lbCfgQuizRunPts').value) || 10;
         const qMax    = parseInt(document.getElementById('lbCfgQuizMaxPts').value) || 10;
+        const shWin   = parseInt(document.getElementById('lbCfgShWinPts').value)   || 30;
+        const shRun   = parseInt(document.getElementById('lbCfgShRunPts').value)   || 15;
+        const shTask  = parseInt(document.getElementById('lbCfgShTaskPts').value)  || 5;
+        const shComp  = parseInt(document.getElementById('lbCfgShCompletePts').value) || 20;
         try {
             await getDb().ref('leaderboardConfig/scoring').set({
                 yfPtsPerEvent: yfPts, winnerPts: winPts, runnerUpPts: runPts,
                 quizWinnerPts: qWin, quizRunnerUpPts: qRun, quizMaxPts: qMax,
+                shWinnerPts: shWin, shRunnerUpPts: shRun, shTaskPts: shTask, shCompletePts: shComp,
                 updatedAt: new Date().toISOString()
             });
             document.getElementById('lbWinPtsDisplay').textContent = winPts;
@@ -9506,6 +10308,10 @@ Davan Institute Team`;
                 document.getElementById('lbCfgQuizMaxPts').value  = d.quizMaxPts       || 10;
                 document.getElementById('lbWinPtsDisplay').textContent = d.winnerPts   || 50;
                 document.getElementById('lbRunPtsDisplay').textContent = d.runnerUpPts || 30;
+                if (document.getElementById('lbCfgShWinPts'))      document.getElementById('lbCfgShWinPts').value      = d.shWinnerPts   || 30;
+                if (document.getElementById('lbCfgShRunPts'))      document.getElementById('lbCfgShRunPts').value      = d.shRunnerUpPts || 15;
+                if (document.getElementById('lbCfgShTaskPts'))     document.getElementById('lbCfgShTaskPts').value     = d.shTaskPts     || 5;
+                if (document.getElementById('lbCfgShCompletePts')) document.getElementById('lbCfgShCompletePts').value = d.shCompletePts || 20;
             }
             // Build class strength grid
             const savedStr = strSnap.exists() ? strSnap.val() : {};
@@ -9755,14 +10561,42 @@ Davan Institute Team`;
                 });
             });
 
+            // ── 5. Scavenger Hunt Points ──────────────────────────────────
+            const shP = init();
+            try {
+                const [shSubSnap, shTaskSnap, shWinSnap] = await Promise.all([
+                    getDb().ref('scavengerHunt/submissions').once('value'),
+                    getDb().ref('scavengerHunt/tasks').once('value'),
+                    getDb().ref('scavengerHunt/winner').once('value')
+                ]);
+                const shSubs = shSubSnap.val() || {};
+                const totalTasks = Object.keys(shTaskSnap.val() || {}).length;
+                const shWinner = shWinSnap.val() || null;
+                Object.values(shSubs).forEach(ss => {
+                    const first = Object.values(ss)[0] || {};
+                    const cl = first.studentClass || '';
+                    if (shP[cl] === undefined) return;
+                    let approved = 0;
+                    Object.values(ss).forEach(sub => { if (sub.status === 'approved') approved++; });
+                    shP[cl] += approved * cfg.shTaskPts;
+                    if (totalTasks > 0 && approved >= totalTasks) shP[cl] += cfg.shCompletePts;
+                });
+                if (shWinner) {
+                    const wCls  = shWinner.winner   ? shWinner.winner.cls   : '';
+                    const ruCls = shWinner.runnerUp ? shWinner.runnerUp.cls : '';
+                    if (wCls  && shP[wCls]  !== undefined) shP[wCls]  += cfg.shWinnerPts;
+                    if (ruCls && shP[ruCls] !== undefined) shP[ruCls] += cfg.shRunnerUpPts;
+                }
+            } catch(e) { console.warn('SH preview pts error:', e); }
+
             // ── Rank & render ─────────────────────────────────────────────
             const ranked = LB_CLASSES.map(cl => ({
-                cl, yfP:yfP[cl]||0, quizP:quizP[cl]||0, resP:resP[cl]||0, custP:custP[cl]||0,
-                total:(yfP[cl]||0)+(quizP[cl]||0)+(resP[cl]||0)+(custP[cl]||0)
+                cl, yfP:yfP[cl]||0, quizP:quizP[cl]||0, resP:resP[cl]||0, custP:custP[cl]||0, shP:shP[cl]||0,
+                total:(yfP[cl]||0)+(quizP[cl]||0)+(resP[cl]||0)+(custP[cl]||0)+(shP[cl]||0)
             })).sort((a,b) => b.total-a.total);
 
             const medals = ['🥇','🥈','🥉'];
-            let html = '<div class="table-wrapper"><table style="min-width:700px;background:white;border-radius:8px;overflow:hidden">'
+            let html = '<div class="table-wrapper"><table style="min-width:780px;background:white;border-radius:8px;overflow:hidden">'
                      + '<thead><tr>'
                      + '<th style="background:#1a0030;color:#ffd700;padding:10px">Rank</th>'
                      + '<th style="background:#1a0030;color:#ffd700">Class</th>'
@@ -9770,6 +10604,7 @@ Davan Institute Team`;
                      + '<th style="background:#1a0030;color:#a5d6a7">🧠 Quiz</th>'
                      + '<th style="background:#1a0030;color:#ce93d8">🏆 Results</th>'
                      + '<th style="background:#1a0030;color:#80deea">✨ Custom</th>'
+                     + '<th style="background:#1a0030;color:#e1bee7">🗺️ Hunt</th>'
                      + '<th style="background:#c44569;color:white;font-size:1.05em">TOTAL</th>'
                      + '</tr></thead><tbody>';
 
@@ -9784,6 +10619,7 @@ Davan Institute Team`;
                     <td style="color:#155724;text-align:center">${e.quizP}</td>
                     <td style="color:#6a1b9a;text-align:center">${e.resP}</td>
                     <td style="color:#0c5460;text-align:center">${e.custP}</td>
+                    <td style="color:#6a1b9a;font-weight:600;text-align:center">${e.shP || '<span style=\'color:#ccc\'>—</span>'}</td>
                     <td style="${totalStyle};text-align:center">${e.total}</td>
                 </tr>`;
             });
@@ -9792,10 +10628,11 @@ Davan Institute Team`;
             // Data source summary
             const now = new Date().toLocaleTimeString('en-IN');
             html += `<div style="margin-top:10px;padding:8px 12px;background:rgba(255,255,255,0.08);border-radius:6px;font-size:11px;color:rgba(255,255,255,0.5)">
-                📊 YF Reg pts used: ${cfg.yfPtsPerEvent}/event &nbsp;|&nbsp;
-                🧠 Quiz winner: ${cfg.quizWinnerPts}pts, runner-up: ${cfg.quizRunnerUpPts}pts, max participation: ${cfg.quizMaxPts}pts &nbsp;|&nbsp;
+                📊 YF Reg pts: ${cfg.yfPtsPerEvent}/event &nbsp;|&nbsp;
+                🧠 Quiz winner: ${cfg.quizWinnerPts}pts, runner-up: ${cfg.quizRunnerUpPts}pts, participation max: ${cfg.quizMaxPts}pts &nbsp;|&nbsp;
                 🏆 Event winner: ${cfg.winnerPts}pts, runner-up: ${cfg.runnerUpPts}pts &nbsp;|&nbsp;
-                Published quiz days counted: ${pubDates.size}
+                🗺️ Hunt task: ${cfg.shTaskPts}pts, completion bonus: ${cfg.shCompletePts}pts, winner: ${cfg.shWinnerPts}pts, runner-up: ${cfg.shRunnerUpPts}pts &nbsp;|&nbsp;
+                Quiz days counted: ${pubDates.size}
             </div>`;
 
             container.innerHTML = html;
@@ -9831,6 +10668,7 @@ Davan Institute Team`;
             { title: 'Youthfest Registration', body: 'Each class earns points for <strong>every event they enrol in</strong>. More participation = more points for your class.' },
             { title: 'Quiz Competition',        body: 'Per published quiz day: <strong>flat bonus</strong> to the winner &amp; runner-up class, plus a <strong>participation rate bonus</strong> — fair across all class sizes.' },
             { title: 'Event Results',           body: 'When jury results are published, the <strong>1st place class</strong> gets winner pts and <strong>2nd place</strong> gets runner-up pts — automatically calculated.' },
+            { title: 'Scavenger Hunt',          body: 'Points are awarded for <strong>approved task submissions</strong> in the Scavenger Hunt. The more tasks a student completes and gets approved, the more points their class earns.' },
             { title: 'Special / Custom Criteria', body: 'The Super Admin may add bonus points for criteria like discipline, attendance, best decorated class, or other special achievements.' }
         ],
         steps: [
@@ -10060,6 +10898,1085 @@ Davan Institute Team`;
             if (saveBtn) { saveBtn.disabled=false; saveBtn.textContent='💾 Save All Changes'; }
         }
     }
+
+
+    // ================================================================
+    //  SCAVENGER HUNT SYSTEM
+    // ================================================================
+    let shCurrentUser   = null;
+    let shTasks         = [];
+    let shSettings      = { active: false, gps: true, radius: 100, autoApprove: false };
+    let shUserLat       = null;
+    let shUserLng       = null;
+    let shGpsWatchId    = null;
+
+    // ── Public status banner (before login) ─────────────────────────
+    async function shCheckPublicStatus() {
+        const banner = document.getElementById('shPublicBanner');
+        if (!banner) return;
+        try {
+            const snap = await window.db.ref('scavengerHunt/settings').once('value');
+            const s = snap.val() || {};
+            if (s.active) {
+                banner.innerHTML = '<div style="font-size:2em;margin-bottom:6px">🟢</div><strong style="font-size:1.15em">Hunt is LIVE!</strong><p style="margin:6px 0 0;opacity:0.9;font-size:0.95em">Tasks are waiting. Login to start!</p>';
+                banner.style.background = 'linear-gradient(135deg,#2e7d32,#43a047)';
+            } else {
+                banner.innerHTML = '<div style="font-size:2em;margin-bottom:6px">🔴</div><strong>Hunt Not Started Yet</strong><p style="margin:6px 0 0;opacity:0.9;font-size:0.9em">Stay tuned — the hunt will begin soon!</p>';
+                banner.style.background = 'linear-gradient(135deg,#b71c1c,#e53935)';
+            }
+        } catch(e) { if (banner) banner.innerHTML = '<p style="margin:0">⚠️ Could not load status.</p>'; }
+    }
+
+    // ── Student Login ─────────────────────────────────────────────────
+    async function shLogin() {
+        const phone = document.getElementById('shLoginPhone').value.trim();
+        const pwd   = document.getElementById('shLoginPassword').value;
+        const msg   = document.getElementById('shLoginMsg');
+        msg.className = 'message'; msg.style.display = 'none';
+        if (!phone || !pwd) { shShowMsg(msg,'error','Enter phone and password.'); return; }
+        try {
+            const snap = await window.db.ref('quizStudents').orderByChild('phone').equalTo(phone).once('value');
+            if (!snap.exists()) { alert('❌ Phone number not registered!\n\nPlease register via the Daily Quiz section first, then try Scavenger Hunt login.'); shShowMsg(msg,'error','❌ Phone not registered. Register via Daily Quiz first.'); return; }
+            let found = null, foundKey = null;
+            snap.forEach(c => { if (c.val().password === pwd) { found = c.val(); foundKey = c.key; } });
+            if (!found) { alert('❌ Incorrect password!\n\nPlease check your password and try again.'); shShowMsg(msg,'error','❌ Incorrect password.'); return; }
+            shCurrentUser = { key: foundKey, ...found };
+            document.getElementById('loginSection').style.display        = 'none';
+            document.getElementById('quizStudentDashboard').style.display = 'none';
+            document.getElementById('shStudentDashboard').style.display   = 'block';
+            document.getElementById('shStudentName').textContent   = found.name;
+            document.getElementById('shStudentClass').textContent  = found.class || found.classYear || '';
+            document.getElementById('shStudentBadge').textContent  = found.name;
+            document.getElementById('userInfo').innerHTML = 'Logged in as: <span class="badge" style="background:#9c27b0;color:white;padding:5px 12px;border-radius:20px;font-size:0.85em">' + found.name + ' – Scavenger Hunt</span>';
+            setTimeout(() => {
+                const shDash = document.getElementById('shStudentDashboard');
+                if (shDash) {
+                    const y = shDash.getBoundingClientRect().top + window.pageYOffset - 20;
+                    window.scrollTo({ top: y, behavior: 'smooth' });
+                }
+            }, 150);
+            await shLoadStudentDashboard();
+        } catch(e) { 
+            console.error('shLogin error:', e);
+            alert('❌ Login failed: ' + (e.message || 'Unknown error') + '\n\nCheck your internet connection and try again.');
+            shShowMsg(msg,'error','❌ Error: ' + e.message); 
+        }
+    }
+
+    function shLogout() { logout(); }
+
+    // ── Student: Refresh Status ────────────────────────────────────────
+    async function shRefreshStatus() {
+        const btn = document.getElementById('shRefreshBtn');
+        const lastEl = document.getElementById('shLastRefreshed');
+        if (btn) { btn.disabled = true; btn.textContent = '⏳ Checking...'; }
+        await shLoadStudentDashboard();
+        if (btn) { btn.disabled = false; btn.innerHTML = '🔄 Check Status'; }
+        const now = new Date().toLocaleTimeString('en-IN', {hour:'2-digit',minute:'2-digit',second:'2-digit'});
+        if (lastEl) lastEl.textContent = 'Last checked: ' + now;
+        // Show toast
+        const toast = document.createElement('div');
+        toast.textContent = '✅ Status updated!';
+        toast.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#4caf50;color:white;padding:12px 28px;border-radius:30px;font-weight:700;font-size:1em;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,0.2);transition:opacity 0.5s';
+        document.body.appendChild(toast);
+        setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 500); }, 2000);
+    }
+
+    // ── Check single task approval (no scroll) ────────────────────────
+    async function shCheckTaskApproval(taskId, btn) {
+        if (btn) { btn.disabled = true; btn.textContent = '⏳ Checking...'; }
+        try {
+            const subSnap = await window.db.ref('scavengerHunt/submissions/' + shCurrentUser.key + '/' + taskId).once('value');
+            const sub = subSnap.val();
+
+            function showToast(msg, color) {
+                const t = document.createElement('div');
+                t.textContent = msg;
+                t.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:'+color+';color:white;padding:12px 28px;border-radius:30px;font-weight:700;font-size:0.95em;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,0.2);transition:opacity 0.5s';
+                document.body.appendChild(t);
+                setTimeout(() => { t.style.opacity='0'; setTimeout(()=>t.remove(),500); }, 2500);
+            }
+
+            // Helper: update progress bar in-place without re-rendering tasks
+            function updateProgressInPlace() {
+                const allCards = document.querySelectorAll('.sh-task-card');
+                let completed = 0, pending = 0, locked = 0, total = allCards.length;
+                allCards.forEach(c => {
+                    if (c.classList.contains('completed')) completed++;
+                    else if (c.classList.contains('pending')) pending++;
+                    else if (c.classList.contains('locked')) locked++;
+                });
+                const pct = total ? Math.round(completed/total*100) : 0;
+                const pt = document.getElementById('shProgressText');
+                const pb = document.getElementById('shProgressBar');
+                const cc = document.getElementById('shCompletedCount');
+                const pc = document.getElementById('shPendingCount');
+                const lc = document.getElementById('shLockedCount');
+                if (pt) pt.textContent = completed+'/'+total+' ('+pct+'%)';
+                if (pb) pb.style.width = pct+'%';
+                if (cc) cc.textContent = completed;
+                if (pc) pc.textContent = pending;
+                if (lc) lc.textContent = locked;
+                // Also update lastRefreshed time
+                const lastEl = document.getElementById('shLastRefreshed');
+                const now = new Date().toLocaleTimeString('en-IN', {hour:'2-digit',minute:'2-digit',second:'2-digit'});
+                if (lastEl) lastEl.textContent = 'Last checked: ' + now;
+                // If all done, show completion message WITHOUT scrolling
+                if (completed === total && total > 0) {
+                    const allDone = document.getElementById('shAllDoneSection');
+                    const tasksList = document.getElementById('shTasksList');
+                    if (allDone) allDone.style.display = 'block';
+                    if (tasksList) tasksList.style.display = 'none';
+                }
+            }
+
+            if (sub && sub.status === 'approved') {
+                const card = document.getElementById('shTask_' + taskId);
+                if (card) {
+                    const reviewedTime = sub.reviewedAt ? new Date(sub.reviewedAt).toLocaleString('en-IN',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit',hour12:true}) : '';
+                    // Swap pending box to approved box in-place
+                    const pendingBox = card.querySelector('[data-pending-box]');
+                    if (pendingBox) {
+                        pendingBox.style.background = '#e8f5e9';
+                        pendingBox.style.border = '2px solid #4caf50';
+                        pendingBox.innerHTML = '<div style="display:flex;align-items:center;gap:8px"><span style="font-size:1.3em">✅</span><div><strong style="color:#2e7d32;font-size:0.95em">APPROVED by Super Admin</strong><br><span style="font-size:0.78em;color:#666">Reviewed on: ' + reviewedTime + '</span></div></div>';
+                    }
+                    // Update badge in-place
+                    const badge = card.querySelector('.sh-badge-pending');
+                    if (badge) { badge.className = 'sh-badge sh-badge-done'; badge.textContent = '✅ Completed'; }
+                    card.className = card.className.replace('pending','completed');
+                }
+                showToast('✅ Approved by Super Admin!', '#4caf50');
+                updateProgressInPlace();
+
+            } else if (sub && sub.status === 'rejected') {
+                if (btn) { btn.disabled = false; btn.textContent = '🔄 Check Approval'; }
+                showToast('❌ Task was Rejected — please reupload!', '#c62828');
+                // For rejected, do a silent background reload after short delay so reupload UI appears
+                setTimeout(() => shLoadStudentDashboard(), 500);
+
+            } else {
+                // Still pending — just show toast, no re-render, no scroll
+                if (btn) { btn.disabled = false; btn.textContent = '🔄 Check Approval'; }
+                showToast('⏳ Still waiting for super admin approval…', '#ff9800');
+            }
+        } catch(e) {
+            if (btn) { btn.disabled = false; btn.textContent = '🔄 Check Approval'; }
+            alert('Error checking status: ' + e.message);
+        }
+    }
+
+    // ── Student Dashboard ─────────────────────────────────────────────
+    async function shLoadStudentDashboard() {
+        // Show loading state
+        const notActive = document.getElementById('shNotActiveMsg');
+        const progSect  = document.getElementById('shProgressSection');
+        if (notActive) notActive.style.display = 'none';
+        if (progSect)  progSect.style.display  = 'none';
+        const tasksList = document.getElementById('shTasksList');
+        if (tasksList) tasksList.innerHTML = '<p style="color:#999;text-align:center;padding:20px">⏳ Loading tasks...</p>';
+        let settSnap, taskSnap, subSnap;
+        try {
+            [settSnap, taskSnap, subSnap] = await Promise.all([
+                window.db.ref('scavengerHunt/settings').once('value'),
+                window.db.ref('scavengerHunt/tasks').once('value'),
+                window.db.ref('scavengerHunt/submissions/' + shCurrentUser.key).once('value')
+            ]);
+        } catch(e) {
+            console.error('shLoadStudentDashboard DB error:', e);
+            if (tasksList) tasksList.innerHTML = '<div style="background:#ffebee;padding:15px;border-radius:8px;color:#c62828">❌ Failed to load: ' + e.message + '<br><button onclick="shLoadStudentDashboard()" class="btn btn-small" style="margin-top:8px">🔄 Retry</button></div>';
+            if (progSect) progSect.style.display = 'block';
+            return;
+        }
+        shSettings = settSnap.val() || { active:false, gps:true, radius:100, autoApprove:false };
+        if (!shSettings.active) {
+            document.getElementById('shNotActiveMsg').style.display    = 'block';
+            document.getElementById('shProgressSection').style.display = 'none';
+            return;
+        }
+        document.getElementById('shNotActiveMsg').style.display    = 'none';
+        document.getElementById('shProgressSection').style.display = 'block';
+        const tasksRaw = taskSnap.val() || {};
+        shTasks = Object.entries(tasksRaw).map(([k,v])=>({id:k,...v})).sort((a,b)=>(a.order||0)-(b.order||0));
+        const subs = subSnap.val() || {};
+        let completed=0, pendingReview=0, locked=0;
+        const nowMs = Date.now();
+        shTasks.forEach((t,idx) => {
+            const sub  = subs[t.id];
+            const prevDone = idx===0 || (()=>{ const ps=subs[shTasks[idx-1].id]; return ps && ps.status==='approved'; })();
+            // Check time availability
+            const notYet = t.availableFrom && new Date(t.availableFrom).getTime() > nowMs;
+            const expired = t.deadline && new Date(t.deadline).getTime() < nowMs;
+            if (sub && sub.status==='approved')      { t._state='completed'; completed++; }
+            else if (sub && sub.status==='pending')  { t._state='pending';   pendingReview++; }
+            else if (sub && sub.status==='rejected') { t._state='rejected'; }
+            else if (notYet)                          { t._state='locked'; t._lockReason='not_yet'; locked++; }
+            else if (expired)                         { t._state='locked'; t._lockReason='expired'; locked++; }
+            else if (prevDone)                        { t._state='active'; }
+            else                                      { t._state='locked';   locked++; }
+            t._sub = sub || null;
+        });
+        const total = shTasks.length;
+        const pct   = total ? Math.round(completed/total*100) : 0;
+        document.getElementById('shProgressText').textContent   = completed+'/'+total+' ('+pct+'%)';
+        document.getElementById('shProgressBar').style.width    = pct+'%';
+        document.getElementById('shCompletedCount').textContent = completed;
+        document.getElementById('shPendingCount').textContent   = pendingReview;
+        document.getElementById('shLockedCount').textContent    = locked;
+        if (completed===total && total>0) {
+            const _sy = window.scrollY;
+            document.getElementById('shTasksList').innerHTML = '';
+            document.getElementById('shAllDoneSection').style.display = 'block';
+            requestAnimationFrame(() => window.scrollTo({ top: _sy, behavior: 'instant' }));
+        } else {
+            const _sy2 = window.scrollY;
+            document.getElementById('shAllDoneSection').style.display = 'none';
+            shRenderTasks(shTasks, subs);
+            requestAnimationFrame(() => window.scrollTo({ top: _sy2, behavior: 'instant' }));
+        }
+        if (shSettings.gps) shGetLocation();
+    }
+
+    function shRenderTasks(tasks, subs) {
+        const el = document.getElementById('shTasksList');
+        if (!tasks.length) { el.innerHTML = '<p style="color:#999">No tasks available yet.</p>'; return; }
+        let html = '';
+        tasks.forEach((t,idx) => {
+            const state = t._state;
+            const sub   = t._sub;
+            const stateLabel = {
+                completed: '<span class="sh-badge sh-badge-done">✅ Completed</span>',
+                pending:   '<span class="sh-badge sh-badge-pending">⏳ Under Review</span>',
+                rejected:  '<span class="sh-badge sh-badge-rejected">❌ Rejected – Reupload</span>',
+                active:    '<span class="sh-badge sh-badge-active">📍 Active</span>',
+                locked:    '<span class="sh-badge" style="background:#eee;color:#999;border:1px solid #ccc">🔒 Locked</span>'
+            }[state] || '';
+            const cardClass = state==='completed' ? 'sh-task-card completed' : state==='pending' ? 'sh-task-card pending' : state==='locked' ? 'sh-task-card locked' : 'sh-task-card';
+            html += '<div class="' + cardClass + '" id="shTask_' + t.id + '">';
+            html += '<div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px;margin-bottom:10px">';
+            html += '<h4 style="margin:0;color:#6a1b9a">Task ' + (idx+1) + ': ' + shEsc(t.name) + '</h4>' + stateLabel;
+            html += '</div>';
+            if (t.hint) html += '<p style="color:#795548;font-size:0.9em;margin-bottom:10px">💡 Hint: ' + shEsc(t.hint) + '</p>';
+            if (t.availableFrom || t.deadline) {
+                html += '<div style="font-size:0.8em;color:#888;margin-bottom:8px;display:flex;gap:14px;flex-wrap:wrap">';
+                if (t.availableFrom) html += '<span>🟢 From: <strong>' + new Date(t.availableFrom).toLocaleString('en-IN',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit',hour12:true}) + '</strong></span>';
+                if (t.deadline)      html += '<span>🔴 Until: <strong>' + new Date(t.deadline).toLocaleString('en-IN',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit',hour12:true}) + '</strong></span>';
+                html += '</div>';
+                if (t._lockReason==='not_yet')  html += '<div style="background:#e3f2fd;padding:8px 12px;border-radius:6px;font-size:0.85em;color:#1565c0;margin-bottom:8px">⏳ This task opens on ' + new Date(t.availableFrom).toLocaleString('en-IN') + '</div>';
+                if (t._lockReason==='expired')  html += '<div style="background:#ffebee;padding:8px 12px;border-radius:6px;font-size:0.85em;color:#c62828;margin-bottom:8px">⛔ This task deadline has passed.</div>';
+            }
+            if (shSettings.gps && t.lat && t.lng) html += '<span class="sh-gps-badge" style="margin-bottom:10px;display:inline-flex">📍 GPS Verified Location</span>';
+            // Show submission date/time and review info
+            if (sub) {
+                const submittedTime = sub.submittedAt ? new Date(sub.submittedAt).toLocaleString('en-IN',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit',hour12:true}) : '';
+                const reviewedTime  = sub.reviewedAt  ? new Date(sub.reviewedAt).toLocaleString('en-IN',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit',hour12:true}) : '';
+                if (submittedTime) html += '<div style="font-size:0.82em;color:#888;margin-bottom:6px">📅 Submitted: <strong style="color:#555">' + submittedTime + '</strong></div>';
+                if (state === 'completed' && reviewedTime) {
+                    html += '<div style="background:#e8f5e9;border:2px solid #4caf50;border-radius:8px;padding:10px 14px;margin-bottom:8px;display:flex;align-items:center;gap:8px">';
+                    html += '<span style="font-size:1.3em">✅</span><div><strong style="color:#2e7d32;font-size:0.95em">APPROVED by Admin</strong><br><span style="font-size:0.78em;color:#666">Reviewed on: ' + reviewedTime + '</span></div></div>';
+                } else if (state === 'rejected') {
+                    const rejReason = sub.rejectionReason ? sub.rejectionReason : '';
+                    html += '<div style="background:#ffebee;border:2px solid #f44336;border-radius:8px;padding:12px 14px;margin-bottom:8px">';
+                    html += '<div style="display:flex;align-items:flex-start;gap:10px">';
+                    html += '<span style="font-size:1.4em;line-height:1">❌</span>';
+                    html += '<div style="flex:1"><strong style="color:#c62828;font-size:0.95em">REJECTED — Please reupload</strong>';
+                    if (reviewedTime) html += '<br><span style="font-size:0.78em;color:#666">Reviewed on: ' + reviewedTime + '</span>';
+                    if (rejReason) html += '<div style="margin-top:8px;background:#fff0f0;border-left:3px solid #f44336;padding:8px 12px;border-radius:0 6px 6px 0;font-size:0.88em;color:#b71c1c"><strong>📝 Reason:</strong> ' + shEsc(rejReason) + '</div>';
+                    html += '</div></div></div>';
+                } else if (state === 'pending') {
+                    html += '<div data-pending-box style="background:#fff3e0;border:2px solid #ff9800;border-radius:8px;padding:10px 14px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap">';
+                    html += '<div style="display:flex;align-items:center;gap:8px"><span style="font-size:1.3em">⏳</span><div><strong style="color:#e65100;font-size:0.95em">Under Review</strong><br><span style="font-size:0.78em;color:#666">Waiting for super admin approval</span></div></div>';
+                    html += '<button id="shCheckBtn_' + t.id + '" onclick="shCheckTaskApproval(\'' + t.id + '\', this)" style="background:#ff9800;color:white;border:none;padding:7px 14px;border-radius:18px;cursor:pointer;font-size:0.82em;font-weight:700;display:flex;align-items:center;gap:5px;white-space:nowrap">🔄 Check Approval</button></div>';
+                }
+            }
+            if (sub && sub.photoUrl) html += '<div style="margin:10px 0"><img src="' + sub.photoUrl + '" class="sh-preview-img" onclick="shViewPhoto(this.src)" title="Click to enlarge"></div>';
+            if (state==='active' || state==='rejected') {
+                const fid = 'shFileInput_' + t.id;
+                html += '<div class="sh-upload-zone" id="shZone_' + t.id + '" onclick="document.getElementById(\'' + fid + '\').click()">';
+                html += '<div style="font-size:2em;margin-bottom:8px">📸</div>';
+                html += '<p style="color:#9c27b0;font-weight:600;margin:0">Tap to take / upload photo proof</p>';
+                html += '<p style="color:#999;font-size:0.85em;margin:4px 0 0">JPG/PNG, max 5MB</p>';
+                html += '<input type="file" id="' + fid + '" accept="image/*" capture="environment" style="display:none" onchange="shFileSelected(\'' + t.id + '\',this)">';
+                html += '<img id="shThumb_' + t.id + '" class="sh-preview-img" style="display:none"></div>';
+                if (shSettings.gps && t.lat && t.lng) html += '<div id="shDistInfo_' + t.id + '" style="margin-top:8px;font-size:0.88em;color:#1565c0">📡 Checking distance...</div>';
+                html += '<button class="btn btn-success" style="margin-top:12px;width:100%" onclick="shUploadPhoto(\'' + t.id + '\')">📤 Submit Photo Proof</button>';
+                html += '<div id="shUploadMsg_' + t.id + '" style="margin-top:8px;font-size:0.9em;display:none"></div>';
+            }
+            html += '</div>';
+        });
+        el.innerHTML = html;
+        if (shUserLat !== null) shUpdateDistances();
+    }
+
+    // ── GPS ────────────────────────────────────────────────────────────
+    function shGetLocation() {
+        const statusEl = document.getElementById('shGpsStatusText');
+        if (!navigator.geolocation) { if(statusEl) statusEl.textContent='⚠️ GPS not available.'; return; }
+        if (statusEl) statusEl.textContent = '🔄 Getting location...';
+        if (shGpsWatchId) navigator.geolocation.clearWatch(shGpsWatchId);
+        shGpsWatchId = navigator.geolocation.watchPosition(
+            pos => {
+                shUserLat = pos.coords.latitude; shUserLng = pos.coords.longitude;
+                if (statusEl) statusEl.textContent = '✅ Location found (±' + Math.round(pos.coords.accuracy) + 'm)';
+                shUpdateDistances();
+            },
+            err => { if(statusEl) statusEl.textContent = '❌ ' + (err.message||'Location denied'); },
+            { enableHighAccuracy:true, maximumAge:10000, timeout:15000 }
+        );
+    }
+
+    function shUpdateDistances() {
+        shTasks.forEach(t => {
+            if (!t.lat || !t.lng) return;
+            const el = document.getElementById('shDistInfo_' + t.id);
+            if (!el) return;
+            const dist = Math.round(shHaversine(shUserLat, shUserLng, t.lat, t.lng));
+            const radius = shSettings.radius || 100;
+            el.innerHTML = dist <= radius
+                ? '<span style="color:#2e7d32;font-weight:700">✅ You are ' + dist + 'm away — within range!</span>'
+                : '<span style="color:#c62828">❗ You are ' + dist + 'm away. Move closer (need ' + radius + 'm).</span>';
+        });
+    }
+
+    function shHaversine(lat1,lon1,lat2,lon2) {
+        const R=6371000, dLat=(lat2-lat1)*Math.PI/180, dLon=(lon2-lon1)*Math.PI/180;
+        const a=Math.sin(dLat/2)*Math.sin(dLat/2)+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)*Math.sin(dLon/2);
+        return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+    }
+
+    // ── File preview ───────────────────────────────────────────────────
+    function shFileSelected(taskId, input) {
+        if (!input.files || !input.files[0]) return;
+        const reader = new FileReader();
+        reader.onload = e => {
+            const thumb = document.getElementById('shThumb_' + taskId);
+            const zone  = document.getElementById('shZone_' + taskId);
+            if (thumb) { thumb.src = e.target.result; thumb.style.display = 'block'; }
+            if (zone)  zone.classList.add('has-file');
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+
+    // ── Upload photo ───────────────────────────────────────────────────
+    async function shUploadPhoto(taskId) {
+        const task  = shTasks.find(t => t.id === taskId);
+        const input = document.getElementById('shFileInput_' + taskId);
+        const msgEl = document.getElementById('shUploadMsg_' + taskId);
+        const btnEl = document.querySelector('#shTask_' + taskId + ' .btn-success');
+        if (!input || !input.files || !input.files[0]) { shShowInlineMsg(msgEl,'error','📸 Select a photo first.'); return; }
+        if (shSettings.gps && task.lat && task.lng) {
+            if (shUserLat===null) { shShowInlineMsg(msgEl,'error','❌ GPS not ready. Wait and retry.'); return; }
+            const dist = shHaversine(shUserLat,shUserLng,task.lat,task.lng);
+            if (dist > (shSettings.radius||100)) { shShowInlineMsg(msgEl,'error','❌ Too far! '+Math.round(dist)+'m away. Need '+( shSettings.radius||100)+'m.'); return; }
+        }
+        if (btnEl) { btnEl.disabled=true; btnEl.textContent='⏳ Uploading...'; }
+        shShowInlineMsg(msgEl,'info','⏳ Uploading photo...');
+        try {
+            const file = input.files[0];
+            if (file.size > 5*1024*1024) { shShowInlineMsg(msgEl,'error','❌ File too large. Max 5MB.'); if(btnEl){btnEl.disabled=false;btnEl.textContent='📤 Submit Photo Proof';} return; }
+            const base64 = await shFileToBase64(file);
+            const subData = {
+                taskId, taskName:task.name,
+                studentKey:shCurrentUser.key, studentName:shCurrentUser.name,
+                studentEmail:shCurrentUser.email, studentClass:shCurrentUser.class||shCurrentUser.classYear||'',
+                photoUrl:base64,
+                status: shSettings.autoApprove && (!shSettings.gps||!task.lat) ? 'approved' : 'pending',
+                submittedAt:new Date().toISOString(), lat:shUserLat, lng:shUserLng
+            };
+            await window.db.ref('scavengerHunt/submissions/'+shCurrentUser.key+'/'+taskId).set(subData);
+            shShowInlineMsg(msgEl,'success','✅ Submitted! '+(subData.status==='approved'?'Auto-approved!':'Waiting for admin review.'));
+            if(btnEl){btnEl.disabled=false;btnEl.textContent='📤 Submit Photo Proof';}
+            setTimeout(() => shLoadStudentDashboard(), 1500);
+        } catch(e) {
+            shShowInlineMsg(msgEl,'error','❌ Upload failed: '+e.message);
+            if(btnEl){btnEl.disabled=false;btnEl.textContent='📤 Submit Photo Proof';}
+        }
+    }
+
+    function shFileToBase64(file) {
+        return new Promise((res,rej) => { const r=new FileReader(); r.onload=()=>res(r.result); r.onerror=rej; r.readAsDataURL(file); });
+    }
+
+    // ── Photo lightbox ─────────────────────────────────────────────────
+    function shViewPhoto(src) {
+        const d = document.createElement('div');
+        d.className = 'sh-photo-modal';
+        d.onclick = () => document.body.removeChild(d);
+        d.innerHTML = '<img src="' + src + '" alt="proof"><br><span style="color:white;font-size:0.85em;margin-top:10px;display:block;text-align:center">Click anywhere to close</span>';
+        document.body.appendChild(d);
+    }
+
+    // ── Admin Tab switching ───────────────────────────────────────────
+    function shAdminTab(id, btn) {
+        ['shAdminTasks','shAdminSubmissions','shAdminLeaderboard','shAdminClasswise','shAdminWinners','shAdminSettings'].forEach(pid => {
+            const el = document.getElementById(pid);
+            if (el) el.style.display = (pid===id) ? 'block' : 'none';
+        });
+        document.querySelectorAll('#scavengerAdmin .tabs .tab').forEach(t => t.classList.remove('active'));
+        if (btn) btn.classList.add('active');
+        if (id==='shAdminTasks')       shAdminLoadTasks();
+        if (id==='shAdminSubmissions') shAdminLoadSubmissions();
+        if (id==='shAdminLeaderboard') shAdminLoadLeaderboard();
+        if (id==='shAdminClasswise')   shAdminLoadClasswise();
+        if (id==='shAdminWinners')     shLoadWinnersTab();
+        if (id==='shAdminSettings')    shAdminLoadSettings();
+    }
+
+    // ── Admin: Create task ─────────────────────────────────────────────
+    async function shAdminCreateTask() {
+        const name  = document.getElementById('shNewTaskName').value.trim();
+        const hint  = document.getElementById('shNewTaskHint').value.trim();
+        const order = parseInt(document.getElementById('shNewTaskOrder').value)||1;
+        const lat   = parseFloat(document.getElementById('shNewTaskLat').value)||null;
+        const lng   = parseFloat(document.getElementById('shNewTaskLng').value)||null;
+        if (!name) { alert('Task name is required'); return; }
+        const availFrom  = document.getElementById('shNewTaskDate').value;
+        const deadline   = document.getElementById('shNewTaskDeadline').value;
+        const task = { name, order, createdAt:new Date().toISOString() };
+        if (hint)         task.hint = hint;
+        if (lat && lng)   { task.lat=lat; task.lng=lng; }
+        if (availFrom)    task.availableFrom = new Date(availFrom).toISOString();
+        if (deadline)     task.deadline      = new Date(deadline).toISOString();
+        await window.db.ref('scavengerHunt/tasks').push(task);
+        const msgEl = document.getElementById('shCreateTaskMsg');
+        msgEl.style.display = 'inline-block';
+        setTimeout(()=>{ msgEl.style.display='none'; },3000);
+        document.getElementById('shNewTaskName').value  = '';
+        document.getElementById('shNewTaskHint').value  = '';
+        document.getElementById('shNewTaskOrder').value = order+1;
+        document.getElementById('shNewTaskLat').value      = '';
+        document.getElementById('shNewTaskLng').value      = '';
+        document.getElementById('shNewTaskDate').value     = '';
+        document.getElementById('shNewTaskDeadline').value = '';
+        shAdminLoadTasks();
+    }
+
+    async function shAdminLoadTasks() {
+        const el = document.getElementById('shAdminTasksList');
+        if(!el) return;
+        el.innerHTML = '<p style="color:#999">Loading...</p>';
+        try {
+            const snap  = await window.db.ref('scavengerHunt/tasks').once('value');
+            const tasks = snap.val() ? Object.entries(snap.val()).map(([k,v])=>({id:k,...v})).sort((a,b)=>(a.order||0)-(b.order||0)) : [];
+            if (!tasks.length) { el.innerHTML='<p style="color:#999">No tasks yet. Create one above.</p>'; return; }
+            let html = '<div class="table-wrapper"><table><thead><tr><th>#</th><th>Task</th><th>Hint</th><th>From</th><th>Until</th><th>GPS</th><th>Delete</th></tr></thead><tbody>';
+            tasks.forEach(t => {
+                const gps     = t.lat ? '<span class="sh-gps-badge" style="font-size:0.75em">📍 Set</span>' : '<span style="color:#999">—</span>';
+                const fromStr = t.availableFrom ? new Date(t.availableFrom).toLocaleString('en-IN',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit',hour12:true}) : '—';
+                const tillStr = t.deadline      ? new Date(t.deadline).toLocaleString('en-IN',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit',hour12:true}) : '—';
+                html += '<tr>';
+                html += '<td><strong>'+(t.order||'-')+'</strong></td>';
+                html += '<td>'+shEsc(t.name)+'</td>';
+                html += '<td style="color:#795548;font-size:0.9em">'+shEsc(t.hint||'—')+'</td>';
+                html += '<td style="font-size:0.82em;color:#1565c0;white-space:nowrap">'+fromStr+'</td>';
+                html += '<td style="font-size:0.82em;color:#c62828;white-space:nowrap">'+tillStr+'</td>';
+                html += '<td>'+gps+'</td>';
+                html += '<td><button class="delete-btn" onclick="shAdminDeleteTask(\'' + t.id + '\')">🗑️</button></td>';
+                html += '</tr>';
+            });
+            html += '</tbody></table></div>';
+            el.innerHTML = html;
+        } catch(e) { el.innerHTML='<p style="color:red">Error: '+e.message+'</p>'; }
+    }
+
+    async function shAdminDeleteTask(id) {
+        if (!confirm('Delete this task?')) return;
+        await window.db.ref('scavengerHunt/tasks/'+id).remove();
+        shAdminLoadTasks();
+    }
+
+    async function shAdminDeleteAllTasks() {
+        if (!confirm('Delete ALL tasks?')) return;
+        await window.db.ref('scavengerHunt/tasks').remove();
+        shAdminLoadTasks();
+    }
+
+    async function shAdminResetAll() {
+        if (!confirm('Reset ALL submissions?')) return;
+        await window.db.ref('scavengerHunt/submissions').remove();
+        alert('All submissions reset.');
+    }
+
+    function shAdminGetLocation() {
+        const msgEl = document.getElementById('shAdminLocMsg');
+        msgEl.textContent = '🔄 Getting location...';
+        if (!navigator.geolocation) { msgEl.textContent='⚠️ Not available'; return; }
+        navigator.geolocation.getCurrentPosition(
+            pos => {
+                document.getElementById('shNewTaskLat').value = pos.coords.latitude.toFixed(6);
+                document.getElementById('shNewTaskLng').value = pos.coords.longitude.toFixed(6);
+                msgEl.textContent = '✅ Location set! (±'+Math.round(pos.coords.accuracy)+'m)';
+            },
+            err => { msgEl.textContent='❌ '+err.message; },
+            {enableHighAccuracy:true}
+        );
+    }
+
+    // ── Admin: Submissions ─────────────────────────────────────────────
+    // Realtime listener handle for submissions
+    let _shSubmissionsListener = null;
+
+    function shAdminStopSubmissionsListener() {
+        if (_shSubmissionsListener) {
+            window.db.ref('scavengerHunt/submissions').off('value', _shSubmissionsListener);
+            _shSubmissionsListener = null;
+        }
+    }
+
+    function shAdminStartSubmissionsListener() {
+        shAdminStopSubmissionsListener();
+        const el = document.getElementById('shAdminSubmissionsList');
+        if(!el) return;
+        el.innerHTML = '<p style="color:#999">🔄 Loading live submissions...</p>';
+        _shSubmissionsListener = window.db.ref('scavengerHunt/submissions').on('value', snap => {
+            shAdminRenderSubmissions(snap);
+        }, err => {
+            if(el) el.innerHTML = '<p style="color:red">Error: ' + err.message + '</p>';
+        });
+    }
+
+    async function shAdminLoadSubmissions() {
+        // Start realtime listener for live updates
+        shAdminStartSubmissionsListener();
+    }
+
+    function shAdminRenderSubmissions(snap) {
+        const el     = document.getElementById('shAdminSubmissionsList');
+        const filter = (document.getElementById('shSubmissionFilter')||{}).value||'all';
+        if(!el) return;
+        try {
+            const allSubs = snap.val() || {};
+            let rows = [];
+            Object.entries(allSubs).forEach(([sk,ss]) => {
+                Object.entries(ss).forEach(([tid,sub]) => {
+                    if (filter!=='all' && sub.status!==filter) return;
+                    rows.push({studentKey:sk, taskId:tid, ...sub});
+                });
+            });
+            if (!rows.length) { el.innerHTML='<p style="color:#999">No submissions for filter: '+filter+'</p>'; return; }
+            rows.sort((a,b)=>new Date(b.submittedAt)-new Date(a.submittedAt));
+            let html = '';
+            rows.forEach(r => {
+                const bg  = r.status==='approved'?'#d4edda':r.status==='rejected'?'#ffebee':'#fff3cd';
+                const brd = r.status==='approved'?'#4caf50':r.status==='rejected'?'#f44336':'#ff9800';
+                html += '<div style="background:'+bg+';border:2px solid '+brd+';border-radius:12px;padding:16px 18px;margin-bottom:14px">';
+                html += '<div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px">';
+                html += '<div><strong style="color:#6a1b9a">'+shEsc(r.studentName||r.studentKey)+'</strong> <span style="color:#666;font-size:0.85em">('+shEsc(r.studentClass||'')+')</span><br>';
+                html += '<span style="color:#555;font-size:0.9em">Task: <strong>'+shEsc(r.taskName||r.taskId)+'</strong></span></div>';
+                html += '<div style="text-align:right"><span style="font-size:0.8em;color:#777">'+new Date(r.submittedAt).toLocaleString('en-IN')+'</span></div></div>';
+                if (r.photoUrl) html += '<img src="'+r.photoUrl+'" class="sh-admin-photo" onclick="shViewPhoto(this.src)" title="Click to enlarge"><br>';
+                if (r.lat && r.lng) html += '<a href="https://maps.google.com/?q='+r.lat+','+r.lng+'" target="_blank" style="font-size:0.85em;color:#1565c0">📍 View on Maps</a><br>';
+                if (r.status==='pending') {
+                    const rejectBoxId = 'shRejectBox_' + r.studentKey + '_' + r.taskId;
+                    html += '<div style="margin-top:10px">';
+                    html += '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">';
+                    html += '<button class="btn btn-success btn-small" onclick="shAdminVerify(\'' + r.studentKey + '\',\'' + r.taskId + '\',\'approved\',\'\')">✅ Approve</button>';
+                    html += '<button class="btn btn-danger btn-small" onclick="shAdminToggleRejectBox(\'' + rejectBoxId + '\')">❌ Reject</button>';
+                    html += '</div>';
+                    html += '<div id="' + rejectBoxId + '" style="display:none;background:#fff0f0;border:2px solid #f44336;border-radius:10px;padding:14px;margin-top:4px">';
+                    html += '<label style="font-size:0.88em;color:#c62828;font-weight:700;display:block;margin-bottom:6px">📝 Reason for rejection (will be shown to student):</label>';
+                    html += '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px">';
+                    ['Wrong location','Blurry/unclear photo','Wrong task photo','Not at required spot','Photo not original'].forEach(p => {
+                        html += '<button onclick="shSetRejectReason(\'' + rejectBoxId + '\',this)" data-reason="' + p + '" style="background:#ffebee;color:#c62828;border:1px solid #f44336;border-radius:6px;padding:5px 10px;cursor:pointer;font-size:12px">' + p + '</button>';
+                    });
+                    html += '</div>';
+                    html += '<textarea id="' + rejectBoxId + '_txt" placeholder="Or type a custom reason…" rows="2" style="width:100%;padding:8px;border:1px solid #f44336;border-radius:6px;font-size:13px;box-sizing:border-box;margin-bottom:10px;resize:vertical"></textarea>';
+                    html += '<div style="display:flex;gap:8px">';
+                    html += '<button class="btn btn-danger btn-small" onclick="shAdminVerifyWithReason(\'' + r.studentKey + '\',\'' + r.taskId + '\',\'' + rejectBoxId + '\')">❌ Confirm Reject</button>';
+                    html += '<button class="btn btn-secondary btn-small" onclick="shAdminToggleRejectBox(\'' + rejectBoxId + '\')">Cancel</button>';
+                    html += '</div></div></div>';
+                } else {
+                    const statusIcon = r.status==='approved' ? '✅' : '❌';
+                    const reviewedTime2 = r.reviewedAt ? new Date(r.reviewedAt).toLocaleString('en-IN',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit',hour12:true}) : '';
+                    const reviewerHtml = r.reviewedBy ? ' <span style="font-size:0.78em;color:#888">by ' + shEsc(r.reviewedBy) + '</span>' : '';
+                    html += '<div style="margin-top:8px">';
+                    html += '<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">';
+                    html += '<strong>' + statusIcon + ' ' + r.status.toUpperCase() + '</strong>' + reviewerHtml;
+                    if (reviewedTime2) html += '<span style="font-size:0.78em;color:#888">· ' + reviewedTime2 + '</span>';
+                    html += '</div>';
+                    if (r.rejectionReason) html += '<div style="margin-top:6px;background:#fff0f0;border-left:3px solid #f44336;padding:7px 10px;border-radius:0 6px 6px 0;font-size:0.85em;color:#b71c1c"><strong>📝 Reason:</strong> ' + shEsc(r.rejectionReason) + '</div>';
+                    html += '<div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">';
+                    html += '<button class="btn btn-secondary btn-small" onclick="shAdminVerify(\'' + r.studentKey + '\',\'' + r.taskId + '\',\'pending\',\'\')">↩️ Reset</button>';
+                    html += '<button class="btn btn-danger btn-small" onclick="shAdminDeleteSubmission(\'' + r.studentKey + '\',\'' + r.taskId + '\')">🗑️ Delete</button>';
+                    html += '</div></div>';
+                }
+                                html += '</div>';
+            });
+            el.innerHTML = html;
+        } catch(e) { el.innerHTML='<p style="color:red">Error: '+e.message+'</p>'; }
+    }
+
+    async function shAdminVerify(studentKey, taskId, status, reason) {
+        const update = {
+            status,
+            reviewedAt: new Date().toISOString(),
+            reviewedBy: (window.currentUser && window.currentUser.name) ? window.currentUser.name : 'Admin',
+            rejectionReason: (status === 'rejected' && reason) ? reason : null
+        };
+        await window.db.ref('scavengerHunt/submissions/'+studentKey+'/'+taskId).update(update);
+        shAdminLoadSubmissions();
+    }
+
+    function shAdminToggleRejectBox(boxId) {
+        const box = document.getElementById(boxId);
+        if (box) box.style.display = box.style.display === 'none' ? 'block' : 'none';
+    }
+
+    function shSetRejectReason(boxId, btn) {
+        const txt = document.getElementById(boxId + '_txt');
+        if (txt) txt.value = btn.dataset.reason;
+        // Highlight selected preset
+        const box = document.getElementById(boxId);
+        if (box) box.querySelectorAll('[data-reason]').forEach(b => b.style.background = '#ffebee');
+        btn.style.background = '#f44336';
+        btn.style.color = 'white';
+    }
+
+    async function shAdminVerifyWithReason(studentKey, taskId, boxId) {
+        const txt = document.getElementById(boxId + '_txt');
+        const reason = (txt ? txt.value.trim() : '') || 'Rejected by admin';
+        await shAdminVerify(studentKey, taskId, 'rejected', reason);
+    }
+
+    async function shAdminDeleteSubmission(studentKey, taskId) {
+        if (!confirm("Delete this submission permanently? This cannot be undone.")) return;
+        try {
+            await window.db.ref("scavengerHunt/submissions/"+studentKey+"/"+taskId).remove();
+            const toast = document.createElement("div");
+            toast.textContent = "🗑️ Submission deleted!";
+            toast.style.cssText = "position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#c62828;color:white;padding:12px 28px;border-radius:30px;font-weight:700;font-size:1em;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,0.2);transition:opacity 0.5s";
+            document.body.appendChild(toast);
+            setTimeout(() => { toast.style.opacity = "0"; setTimeout(() => toast.remove(), 500); }, 2000);
+            shAdminLoadSubmissions();
+        } catch(e) {
+            alert("Failed to delete: " + e.message);
+        }
+    }
+
+    // ── Admin: Leaderboard ─────────────────────────────────────────────
+    async function shAdminLoadLeaderboard() {
+        const el = document.getElementById('shAdminLeaderboardList');
+        if(!el) return;
+        el.innerHTML = '<p style="color:#999">Loading...</p>';
+        try {
+            const [subSnap, taskSnap] = await Promise.all([
+                window.db.ref('scavengerHunt/submissions').once('value'),
+                window.db.ref('scavengerHunt/tasks').once('value')
+            ]);
+            const allSubs  = subSnap.val()  || {};
+            const allTasks = taskSnap.val() || {};
+            const totalTasks = Object.keys(allTasks).length;
+            let rows = [];
+            Object.entries(allSubs).forEach(([sk,ss]) => {
+                let approved=0, lastTime=null;
+                Object.values(ss).forEach(sub => {
+                    if (sub.status==='approved') { approved++; if(!lastTime||sub.reviewedAt>lastTime) lastTime=sub.reviewedAt; }
+                });
+                const first = Object.values(ss)[0];
+                rows.push({name:first.studentName||sk, cls:first.studentClass||'', approved, lastTime:lastTime||'', totalTasks});
+            });
+            rows.sort((a,b)=>b.approved-a.approved||(a.lastTime||'zzz').localeCompare(b.lastTime||'zzz'));
+            if (!rows.length) { el.innerHTML='<p style="color:#999">No participants yet.</p>'; return; }
+            const medals=['🥇','🥈','🥉'];
+            let html='';
+            rows.forEach((r,i) => {
+                const pct = totalTasks ? Math.round(r.approved/totalTasks*100) : 0;
+                html += '<div class="sh-leaderboard-row">';
+                html += '<div class="sh-rank">'+(medals[i]||(i+1))+'</div>';
+                html += '<div style="flex:1"><strong style="color:#6a1b9a">'+shEsc(r.name)+'</strong> <span style="color:#999;font-size:0.85em">('+shEsc(r.cls)+')</span><br>';
+                html += '<div class="sh-progress-bar-wrap" style="height:8px;margin-top:6px"><div class="sh-progress-bar" style="width:'+pct+'%"></div></div>';
+                html += '<span style="font-size:0.82em;color:#666">'+r.approved+'/'+r.totalTasks+' tasks ('+pct+'%)</span></div></div>';
+            });
+            el.innerHTML = html;
+        } catch(e) { el.innerHTML='<p style="color:red">Error: '+e.message+'</p>'; }
+    }
+
+    // ── Admin: Class-wise Participation ───────────────────────────────
+    let _shAllSubsCache = null;
+    let _shAllTasksCache = null;
+
+    async function shAdminLoadClasswise() {
+        const el = document.getElementById('shAdminClasswiseList');
+        if (el) el.innerHTML = '<p style="color:#aaa;text-align:center;padding:12px">⏳ Loading…</p>';
+        try {
+            const [subSnap, taskSnap] = await Promise.all([
+                window.db.ref('scavengerHunt/submissions').once('value'),
+                window.db.ref('scavengerHunt/tasks').once('value')
+            ]);
+            _shAllSubsCache  = subSnap.val()  || {};
+            _shAllTasksCache = taskSnap.val() || {};
+            const totalTasks = Object.keys(_shAllTasksCache).length;
+
+            // Build class map
+            const classMap = {}; // class → {total, approved, pending, rejected, students[]}
+            let grandTotal=0, grandApproved=0, grandPending=0;
+            const allStudents = [];
+
+            Object.entries(_shAllSubsCache).forEach(([sk, ss]) => {
+                const first = Object.values(ss)[0] || {};
+                const cls = first.studentClass || 'Unknown';
+                const name = first.studentName || sk;
+                let studentApproved=0;
+                Object.entries(ss).forEach(([tid, sub]) => {
+                    if (!classMap[cls]) classMap[cls] = {total:0, approved:0, pending:0, rejected:0};
+                    classMap[cls].total++;
+                    grandTotal++;
+                    if (sub.status==='approved')  { classMap[cls].approved++; grandApproved++; studentApproved++; }
+                    else if (sub.status==='pending')  { classMap[cls].pending++;  grandPending++; }
+                    else if (sub.status==='rejected') classMap[cls].rejected++;
+                });
+                allStudents.push({key:sk, name, cls, approved:studentApproved, total:totalTasks});
+            });
+
+            // Pills
+            const pt=document.getElementById('shCwPillTotal');
+            const pa=document.getElementById('shCwPillApproved');
+            const pp=document.getElementById('shCwPillPending');
+            const pc=document.getElementById('shCwPillClasses');
+            if(pt) pt.textContent='Total Submissions: '+grandTotal;
+            if(pa) pa.textContent='Approved: '+grandApproved;
+            if(pp) pp.textContent='Pending: '+grandPending;
+            if(pc) pc.textContent='Classes: '+Object.keys(classMap).length;
+
+            // Build class breakdown table
+            const sorted = Object.entries(classMap).sort((a,b)=>b[1].approved-a[1].approved||b[1].total-a[1].total);
+            let html = '<div class="table-wrapper" style="margin:0"><table style="font-size:13px;width:100%"><thead><tr>';
+            html += '<th style="background:#3d0060;color:#ffd700">Class</th>';
+            html += '<th style="background:#3d0060;color:white">Submissions</th>';
+            html += '<th style="background:#3d0060;color:#a5d6a7">✅ Approved</th>';
+            html += '<th style="background:#3d0060;color:#fff3cd">⏳ Pending</th>';
+            html += '<th style="background:#3d0060;color:#f5c6cb">❌ Rejected</th>';
+            html += '<th style="background:#3d0060;color:#80deea">Approval %</th>';
+            html += '</tr></thead><tbody>';
+            sorted.forEach(([cls, d]) => {
+                const acc = d.total > 0 ? Math.round((d.approved/d.total)*100) : 0;
+                const barColor = acc>=70?'#28a745':acc>=40?'#ffc107':'#dc3545';
+                html += '<tr>';
+                html += '<td><strong>'+shEsc(cls)+'</strong></td>';
+                html += '<td style="text-align:center;font-weight:700">'+d.total+'</td>';
+                html += '<td style="text-align:center;color:#155724;font-weight:600">'+d.approved+'</td>';
+                html += '<td style="text-align:center;color:#e65100;font-weight:600">'+d.pending+'</td>';
+                html += '<td style="text-align:center;color:#c62828;font-weight:600">'+d.rejected+'</td>';
+                html += '<td style="min-width:100px"><div style="background:#eee;border-radius:6px;height:8px;margin-bottom:3px"><div style="background:'+barColor+';width:'+acc+'%;height:8px;border-radius:6px"></div></div><span style="font-size:11px;color:#555">'+acc+'%</span></td>';
+                html += '</tr>';
+            });
+            if (!sorted.length) html += '<tr><td colspan="6" style="text-align:center;color:#999;padding:16px">No submissions yet.</td></tr>';
+            html += '</tbody></table></div>';
+            if(el) el.innerHTML = html;
+
+            // Populate class filter dropdown
+            const classFilter = document.getElementById('shCwClassFilter');
+            if (classFilter) {
+                const curVal = classFilter.value;
+                classFilter.innerHTML = '<option value="">All Classes</option>';
+                Object.keys(classMap).sort().forEach(c => {
+                    const o = document.createElement('option');
+                    o.value = c; o.textContent = c;
+                    if (c===curVal) o.selected=true;
+                    classFilter.appendChild(o);
+                });
+            }
+
+            // Build summary message box — fetch class strengths from leaderboard config
+            const summaryBox  = document.getElementById('shCwSummaryBox');
+            const summaryDate = document.getElementById('shCwSummaryDate');
+            const summaryText = document.getElementById('shCwSummaryText');
+            const nowTime = new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true});
+            if (!window._classStrengths) {
+                try { const ss = await window.db.ref('leaderboardConfig/classStrengths').once('value'); window._classStrengths = ss.val() || {}; } catch(e) { window._classStrengths = {}; }
+            }
+            const _shStr = window._classStrengths || {};
+            function _normCls2(s){ return String(s).toLowerCase().replace(/[^a-z0-9]/g,''); }
+            function _getStrength2(map,cls){ const n=_normCls2(cls); const k=Object.keys(map).find(k=>_normCls2(k)===n); return k?map[k]:0; }
+            if (summaryDate) summaryDate.textContent = new Date().toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+            const studentCount = Object.keys(_shAllSubsCache||{}).length || grandTotal;
+            if (summaryText) {
+                let lines = `<span style="color:#888;font-size:12px">🕐 Generated at: <strong>${nowTime}</strong></span><br><br>`;
+                lines += `<strong>${studentCount}</strong> students across <strong>${Object.keys(classMap).length}</strong> classes.<br>`;
+                lines += `<strong>${grandApproved}</strong> approved, <strong>${grandPending}</strong> pending review.<br><br>`;
+                lines += '<strong>Class-wise breakdown:</strong><br>';
+                sorted.forEach(([cls,d]) => {
+                    const acc = d.total>0?Math.round((d.approved/d.total)*100):0;
+                    const strength = _getStrength2(_shStr, cls);
+                    const strengthTag = strength ? `<span style="color:#888;font-size:0.92em">(Class Strength: ${strength})</span> ` : '';
+                    lines += `• ${shEsc(cls)}: ${strengthTag}<strong>${d.total}</strong> submitted, <strong>${d.approved}</strong> approved (${acc}%)<br>`;
+                });
+                summaryText.innerHTML = lines;
+            }
+            if (summaryBox) summaryBox.style.display = 'block';
+            // Store plain text for copy
+            window._shLastSummaryText = `🗺️ Scavenger Hunt Summary\n🕐 Generated at: ${nowTime}\n\n` +
+                `${studentCount} students across ${Object.keys(classMap).length} classes.\n` +
+                `${grandApproved} approved, ${grandPending} pending review.\n\nClass-wise breakdown:\n` +
+                sorted.map(([cls,d]) => {
+                    const strength = _getStrength2(_shStr, cls);
+                    const strengthTxt = strength ? `[Class Strength: ${strength}] ` : '';
+                    return `• ${cls}: ${strengthTxt}${d.total} submitted, ${d.approved} approved (${d.total>0?Math.round((d.approved/d.total)*100):0}%)`;
+                }).join('\n') +
+                `\n\n— Spurthi Youth Fest 2026`;
+
+            shAdminLoadClasswiseDetail();
+        } catch(e) {
+            const el=document.getElementById('shAdminClasswiseList');
+            if(el) el.innerHTML='<p style="color:red">Error: '+e.message+'</p>';
+        }
+    }
+
+    function shAdminLoadClasswiseDetail() {
+        const tbody = document.getElementById('shCwDetailTable');
+        if(!tbody || !_shAllSubsCache || !_shAllTasksCache) return;
+        const classF  = (document.getElementById('shCwClassFilter')||{}).value||'';
+        const statusF = (document.getElementById('shCwStatusFilter')||{}).value||'';
+        let rows = [];
+        Object.entries(_shAllSubsCache).forEach(([sk,ss]) => {
+            Object.entries(ss).forEach(([tid,sub]) => {
+                const taskName = (_shAllTasksCache[tid]||{}).name || tid;
+                if (classF  && sub.studentClass!==classF) return;
+                if (statusF && sub.status!==statusF) return;
+                rows.push({name:sub.studentName||sk, cls:sub.studentClass||'', task:taskName, submittedAt:sub.submittedAt, status:sub.status});
+            });
+        });
+        rows.sort((a,b)=>new Date(b.submittedAt)-new Date(a.submittedAt));
+        if(!rows.length){ tbody.innerHTML='<tr><td colspan="6" style="text-align:center;color:#999;padding:16px">No matching submissions.</td></tr>'; return; }
+        tbody.innerHTML='';
+        rows.forEach((r,i) => {
+            const statusBg  = r.status==='approved'?'#d4edda':r.status==='rejected'?'#f8d7da':'#fff3cd';
+            const statusCol = r.status==='approved'?'#155724':r.status==='rejected'?'#721c24':'#856404';
+            const statusLabel = r.status==='approved'?'✅ Approved':r.status==='rejected'?'❌ Rejected':'⏳ Pending';
+            const row = tbody.insertRow();
+            row.innerHTML = '<td>'+(i+1)+'</td>'
+                +'<td><strong>'+shEsc(r.name)+'</strong></td>'
+                +'<td><span style="background:#f3e5ff;color:#4a148c;padding:2px 8px;border-radius:10px;font-size:12px">'+shEsc(r.cls)+'</span></td>'
+                +'<td>'+shEsc(r.task)+'</td>'
+                +'<td style="font-size:12px">'+new Date(r.submittedAt).toLocaleString('en-IN')+'</td>'
+                +'<td><span style="background:'+statusBg+';color:'+statusCol+';padding:3px 10px;border-radius:10px;font-weight:700;font-size:12px">'+statusLabel+'</span></td>';
+        });
+    }
+
+    function shCopySummary() {
+        const txt = window._shLastSummaryText || '';
+        if (!txt) { alert('Load class-wise data first by clicking Refresh.'); return; }
+        navigator.clipboard.writeText(txt).then(() => {
+            const btn = document.querySelector('[onclick="shCopySummary()"]');
+            if (btn) { const orig=btn.textContent; btn.textContent='✅ Copied!'; setTimeout(()=>btn.textContent=orig,2000); }
+        }).catch(() => {
+            // Fallback for older browsers
+            const ta = document.createElement('textarea');
+            ta.value = txt; ta.style.position='fixed'; ta.style.opacity='0';
+            document.body.appendChild(ta); ta.select();
+            document.execCommand('copy'); document.body.removeChild(ta);
+            const btn = document.querySelector('[onclick="shCopySummary()"]');
+            if (btn) { const orig=btn.textContent; btn.textContent='✅ Copied!'; setTimeout(()=>btn.textContent=orig,2000); }
+        });
+    }
+
+    // ── Admin: Winners ─────────────────────────────────────────────────
+    let _shWinnersParticipants = [];
+
+    async function shLoadWinnersTab() {
+        const listEl = document.getElementById('shWinnersEligibleList');
+        if(listEl) listEl.innerHTML='<p style="color:#aaa;text-align:center;padding:12px">⏳ Loading participants…</p>';
+        try {
+            const [subSnap, taskSnap] = await Promise.all([
+                window.db.ref('scavengerHunt/submissions').once('value'),
+                window.db.ref('scavengerHunt/tasks').once('value')
+            ]);
+            const allSubs  = subSnap.val()  || {};
+            const allTasks = taskSnap.val() || {};
+            const totalTasks = Object.keys(allTasks).length;
+            _shWinnersParticipants = [];
+
+            Object.entries(allSubs).forEach(([sk,ss]) => {
+                const first = Object.values(ss)[0] || {};
+                let approved=0, lastTime=null;
+                Object.values(ss).forEach(sub => {
+                    if(sub.status==='approved'){ approved++; if(!lastTime||sub.reviewedAt>lastTime) lastTime=sub.reviewedAt; }
+                });
+                _shWinnersParticipants.push({key:sk, name:first.studentName||sk, cls:first.studentClass||'', approved, totalTasks, lastTime:lastTime||''});
+            });
+            _shWinnersParticipants.sort((a,b)=>b.approved-a.approved||(a.lastTime||'zzz').localeCompare(b.lastTime||'zzz'));
+
+            // Populate manual select dropdowns
+            const winSel = document.getElementById('shManualWinnerSelect');
+            const runSel = document.getElementById('shManualRunnerSelect');
+            if(winSel){ winSel.innerHTML='<option value="">-- Select Winner --</option>'; }
+            if(runSel){ runSel.innerHTML='<option value="">-- Select Runner-up --</option>'; }
+            _shWinnersParticipants.forEach(p => {
+                const label = p.name + ' ('+p.cls+') – '+p.approved+'/'+p.totalTasks+' tasks';
+                if(winSel){ const o=document.createElement('option'); o.value=p.key; o.textContent=label; winSel.appendChild(o); }
+                if(runSel){ const o=document.createElement('option'); o.value=p.key; o.textContent=label; runSel.appendChild(o); }
+            });
+
+            // Render eligible participants table
+            const medals=['🥇','🥈','🥉'];
+            let html='<div class="table-wrapper"><table style="font-size:13px;width:100%"><thead><tr>';
+            html+='<th style="background:#3d0060;color:#ffd700">Rank</th>';
+            html+='<th style="background:#3d0060;color:white">Student</th>';
+            html+='<th style="background:#3d0060;color:#ce93d8">Class</th>';
+            html+='<th style="background:#3d0060;color:#a5d6a7">Tasks Done</th>';
+            html+='<th style="background:#3d0060;color:#80deea">Progress</th>';
+            html+='</tr></thead><tbody>';
+            if(!_shWinnersParticipants.length){
+                html+='<tr><td colspan="5" style="text-align:center;color:#999;padding:16px">No participants yet.</td></tr>';
+            } else {
+                _shWinnersParticipants.forEach((p,i) => {
+                    const pct = p.totalTasks ? Math.round(p.approved/p.totalTasks*100) : 0;
+                    const rowBg = i===0?'#fffde7':i===1?'#f5f5f5':i===2?'#fff8f0':'white';
+                    html+='<tr style="background:'+rowBg+'">';
+                    html+='<td style="text-align:center;font-size:1.3em">'+(medals[i]||(i+1))+'</td>';
+                    html+='<td><strong style="color:#6a1b9a">'+shEsc(p.name)+'</strong></td>';
+                    html+='<td><span style="background:#f3e5ff;color:#4a148c;padding:2px 8px;border-radius:10px;font-size:12px">'+shEsc(p.cls)+'</span></td>';
+                    html+='<td style="text-align:center;font-weight:700;color:'+(p.approved===p.totalTasks?'#2e7d32':'#555')+'">'+p.approved+'/'+p.totalTasks+'</td>';
+                    html+='<td style="min-width:120px"><div style="background:#eee;border-radius:6px;height:8px;margin-bottom:3px"><div style="background:'+(pct>=100?'#4caf50':'#9c27b0')+';width:'+pct+'%;height:8px;border-radius:6px"></div></div><span style="font-size:11px;color:#555">'+pct+'%</span></td>';
+                    html+='</tr>';
+                });
+            }
+            html+='</tbody></table></div>';
+            if(listEl) listEl.innerHTML=html;
+
+            // Load currently declared winner
+            shLoadDeclaredWinner();
+        } catch(e) {
+            if(listEl) listEl.innerHTML='<p style="color:red">Error: '+e.message+'</p>';
+        }
+    }
+
+    async function shLoadDeclaredWinner() {
+        const box = document.getElementById('shWinnersDeclaredBox');
+        if(!box) return;
+        try {
+            const snap = await window.db.ref('scavengerHunt/winner').once('value');
+            const w = snap.val();
+            if(!w){ box.style.display='none'; return; }
+            box.style.display='block';
+            box.innerHTML = '<div style="background:linear-gradient(135deg,#ffd700,#ff9800);border-radius:14px;padding:22px;margin-top:10px;color:#3d0060">'
+                +'<h4 style="margin:0 0 14px;font-size:1.1em">🎖️ Currently Declared Winner</h4>'
+                +'<div style="display:flex;gap:20px;flex-wrap:wrap">'
+                +(w.winner?'<div style="background:rgba(255,255,255,0.7);border-radius:10px;padding:14px 20px;min-width:180px">'
+                    +'<div style="font-size:1.8em;margin-bottom:4px">🥇</div>'
+                    +'<strong style="font-size:1em;color:#1a237e">'+shEsc(w.winner.name)+'</strong>'
+                    +'<br><span style="font-size:0.85em;color:#4a148c">'+shEsc(w.winner.cls)+'</span>'
+                    +'<br><span style="font-size:0.8em;color:#555">'+w.winner.approved+'/'+w.winner.totalTasks+' tasks</span></div>':'')
+                +(w.runnerUp?'<div style="background:rgba(255,255,255,0.5);border-radius:10px;padding:14px 20px;min-width:180px">'
+                    +'<div style="font-size:1.8em;margin-bottom:4px">🥈</div>'
+                    +'<strong style="font-size:1em;color:#1a237e">'+shEsc(w.runnerUp.name)+'</strong>'
+                    +'<br><span style="font-size:0.85em;color:#4a148c">'+shEsc(w.runnerUp.cls)+'</span>'
+                    +'<br><span style="font-size:0.8em;color:#555">'+w.runnerUp.approved+'/'+w.runnerUp.totalTasks+' tasks</span></div>':'')
+                +'</div>'
+                +'<div style="margin-top:12px;font-size:0.8em;opacity:0.75">Declared: '+new Date(w.declaredAt).toLocaleString('en-IN')+'</div>'
+                +'<button onclick="shClearWinner()" class="btn btn-danger btn-small" style="margin-top:10px">🗑️ Clear Winner</button>'
+                +'</div>';
+        } catch(e) { console.warn('shLoadDeclaredWinner:', e); }
+    }
+
+    async function shSelectWinnersAuto() {
+        if(!_shWinnersParticipants.length){ alert('Load participants first by clicking Refresh.'); return; }
+        const top = _shWinnersParticipants[0];
+        const maxApproved = top.approved;
+        const eligible = _shWinnersParticipants.filter(p=>p.approved===maxApproved);
+        if(eligible.length===0){ alert('No participants with approved tasks yet.'); return; }
+        // Randomly pick winner from eligible
+        const winner = eligible[Math.floor(Math.random()*eligible.length)];
+        const rest   = _shWinnersParticipants.filter(p=>p.key!==winner.key);
+        const runnerUp = rest.length ? rest[0] : null;
+        if(!confirm(`Auto-select:
+🥇 Winner: ${winner.name} (${winner.cls})
+${runnerUp ? '🥈 Runner-up: '+runnerUp.name+' ('+runnerUp.cls+')' : ''}
+
+Declare these winners?`)) return;
+        await shSaveWinner(winner, runnerUp);
+    }
+
+    function shToggleManualWinner() {
+        const p = document.getElementById('shManualWinnerPanel');
+        if(p) p.style.display = p.style.display==='none' ? 'block' : 'none';
+    }
+
+    async function shDeclareManualWinners() {
+        const wKey = document.getElementById('shManualWinnerSelect').value;
+        const rKey = document.getElementById('shManualRunnerSelect').value;
+        if(!wKey){ alert('Please select a winner.'); return; }
+        if(wKey===rKey){ alert('Winner and Runner-up cannot be the same person.'); return; }
+        const winner   = _shWinnersParticipants.find(p=>p.key===wKey);
+        const runnerUp = rKey ? _shWinnersParticipants.find(p=>p.key===rKey) : null;
+        if(!confirm(`Declare:
+🥇 Winner: ${winner.name} (${winner.cls})
+${runnerUp ? '🥈 Runner-up: '+runnerUp.name+' ('+runnerUp.cls+')' : ''}
+
+Proceed?`)) return;
+        await shSaveWinner(winner, runnerUp);
+        shToggleManualWinner();
+    }
+
+    async function shSaveWinner(winner, runnerUp) {
+        try {
+            const data = {
+                winner:   {key:winner.key,   name:winner.name,   cls:winner.cls,   approved:winner.approved,   totalTasks:winner.totalTasks},
+                runnerUp: runnerUp ? {key:runnerUp.key, name:runnerUp.name, cls:runnerUp.cls, approved:runnerUp.approved, totalTasks:runnerUp.totalTasks} : null,
+                declaredAt: new Date().toISOString()
+            };
+            await window.db.ref('scavengerHunt/winner').set(data);
+            const toast = document.createElement('div');
+            toast.textContent = '🎖️ Winners declared successfully!';
+            toast.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#4caf50;color:white;padding:12px 28px;border-radius:30px;font-weight:700;font-size:1em;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,0.2);transition:opacity 0.5s';
+            document.body.appendChild(toast);
+            setTimeout(()=>{ toast.style.opacity='0'; setTimeout(()=>toast.remove(),500); }, 2500);
+            shLoadDeclaredWinner();
+        } catch(e) { alert('Failed to save winner: '+e.message); }
+    }
+
+    async function shClearWinner() {
+        if(!confirm('Clear the declared winner? This cannot be undone.')) return;
+        await window.db.ref('scavengerHunt/winner').remove();
+        const box = document.getElementById('shWinnersDeclaredBox');
+        if(box) box.style.display='none';
+    }
+
+    // ── Admin: Settings ────────────────────────────────────────────────
+    async function shAdminLoadSettings() {
+        try {
+            const snap = await window.db.ref('scavengerHunt/settings').once('value');
+            const s = snap.val() || {};
+            document.getElementById('shSettingActive').checked      = !!s.active;
+            document.getElementById('shSettingGPS').checked         = s.gps!==false;
+            document.getElementById('shSettingRadius').value        = s.radius||100;
+            document.getElementById('shSettingAutoApprove').checked = !!s.autoApprove;
+        } catch(e) { console.error('shAdminLoadSettings:',e); }
+    }
+
+    async function shAdminSaveSettings() {
+        const settings = {
+            active:      document.getElementById('shSettingActive').checked,
+            gps:         document.getElementById('shSettingGPS').checked,
+            radius:      parseInt(document.getElementById('shSettingRadius').value)||100,
+            autoApprove: document.getElementById('shSettingAutoApprove').checked,
+            updatedAt:   new Date().toISOString()
+        };
+        await window.db.ref('scavengerHunt/settings').set(settings);
+        const msg = document.getElementById('shSettingsSaveMsg');
+        msg.style.display='inline-block';
+        setTimeout(()=>msg.style.display='none', 3000);
+    }
+
+    // ── Helpers ────────────────────────────────────────────────────────
+    function shEsc(str) {
+        if (!str) return '';
+        return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+    function shShowMsg(el,type,text) {
+        el.className='message '+(type==='error'?'error':'success')+' show';
+        el.textContent=text; el.style.display='block';
+    }
+    function shShowInlineMsg(el,type,text) {
+        if(!el) return;
+        el.style.display='block';
+        el.style.color=type==='error'?'#c62828':type==='success'?'#2e7d32':'#1565c0';
+        el.style.background=type==='error'?'#ffebee':type==='success'?'#e8f5e9':'#e3f2fd';
+        el.style.padding='8px 12px'; el.style.borderRadius='6px';
+        el.textContent=text;
+    }
+
+    // showTab scavenger logic handled directly inside showTab() in main script
 
     // ── Auto-init when db is ready ────────────────────────────────────────────
     (function hwpInit() {
