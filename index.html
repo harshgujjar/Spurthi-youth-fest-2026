@@ -828,7 +828,7 @@
         <div style="display:block;width:100%;max-width:1200px;margin:0 auto 22px;border-radius:14px;background:linear-gradient(90deg,#e8722a 0%,#f0a05a 40%,#f0a05a 60%,#e8722a 100%);box-shadow:0 4px 18px rgba(232,114,42,0.35);padding:16px 30px;text-align:center;animation:shimmer 3s linear infinite;background-size:2000px 100%">
             <!-- EDIT BANNER TEXT BELOW -->
             <span id="announcementBannerText" style="color:white;font-size:1.1em;font-weight:700;letter-spacing:0.5px;text-shadow:0 1px 4px rgba(0,0,0,0.18)">
-                🎯 New Scavenger Hunt is live new event  🎯 Speed Slide Challenge coming soon 🎯
+                🎯 New Scavenger Hunt is live new event 🎯 Speed Slide Challenge coming soon 🎯 
             </span>
         </div>
         <!-- ============================================================ -->
@@ -1890,15 +1890,6 @@
                             <input type="text" id="shNewTaskHint" placeholder='e.g. "Look near the main building ground floor"'>
                         </div>
                         <div class="form-group">
-                            <label>🖼️ Reference Image (optional — shown to students):</label>
-                            <input type="file" id="shNewTaskImageFile" accept="image/*" style="margin-bottom:6px;font-size:0.9em" onchange="shPreviewTaskImage(this)">
-                            <div id="shNewTaskImagePreview" style="display:none;margin-top:8px">
-                                <img id="shNewTaskImageThumb" src="" alt="preview" style="max-width:200px;max-height:150px;border-radius:8px;border:2px solid #ce93d8">
-                                <button type="button" onclick="shClearTaskImage()" style="display:block;margin-top:4px;font-size:0.8em;color:#c62828;background:none;border:none;cursor:pointer">✕ Remove image</button>
-                            </div>
-                            <span style="font-size:0.8em;color:#888;display:block;margin-top:4px">Upload a hint photo, map, or reference picture. Saved to Cloudinary.</span>
-                        </div>
-                        <div class="form-group">
                             <label>📸 Task Parts (multi-photo, optional):</label>
                             <div id="shNewTaskPartsBox" style="display:flex;flex-direction:column;gap:6px;margin-bottom:6px"></div>
                             <button type="button" onclick="shAddNewTaskPart()" style="background:#e8f5e9;color:#2e7d32;border:2px dashed #4caf50;border-radius:8px;padding:6px 14px;cursor:pointer;font-size:0.88em;font-weight:700">➕ Add Part</button>
@@ -2205,6 +2196,48 @@
                         </div>
                         <button class="btn btn-success" onclick="shAdminSaveSettings()" style="margin-top:6px">💾 Save Settings</button>
                         <span id="shSettingsSaveMsg" style="margin-left:12px;font-size:0.9em;color:#4caf50;display:none">✅ Saved!</span>
+                    </div>
+
+                    <!-- ☁️ CLOUDINARY TEST -->
+                    <div style="background:#e3f2fd;padding:18px;border-radius:10px;margin-bottom:20px;border-left:5px solid #1976d2">
+                        <h4 style="color:#0d47a1;margin-bottom:10px">☁️ Cloudinary Connection Test</h4>
+                        <p style="color:#555;font-size:0.9em;margin-bottom:12px">Cloud: <strong>dat0khbet</strong> | Preset: <strong>scavenger_hunt</strong><br>Pick a photo (or leave blank) and tap Test.</p>
+                        <input type="file" id="shCloudTestFile" accept="image/*" style="margin-bottom:10px;font-size:0.9em"><br>
+                        <button class="btn" style="background:#1976d2;color:white" onclick="shTestCloudinary()">🧪 Test Cloudinary Upload</button>
+                        <div id="shCloudTestResult" style="margin-top:12px;font-size:0.9em"></div>
+                    </div>
+
+                    <!-- 🔧 FIX TASK ORDER + DEADLINES -->
+                    <div style="background:#e8f5e9;padding:18px;border-radius:10px;margin-bottom:20px;border-left:5px solid #2e7d32">
+                        <h4 style="color:#1b5e20;margin-bottom:8px">🔧 Fix Task Order Numbers</h4>
+                        <p style="color:#555;font-size:0.9em;margin-bottom:12px">Renumbers tasks 1, 2, 3... and optionally removes all deadlines so expired tasks never block submissions.</p>
+                        <button class="btn" style="background:#388e3c;color:white;margin-right:10px" onclick="shFixChainOrder(false)">🔍 Preview</button>
+                        <button class="btn" style="background:#2e7d32;color:white;margin-right:10px" onclick="shFixChainOrder(true)">✅ Fix Order Numbers</button>
+                        <button class="btn" style="background:#e65100;color:white" onclick="shRemoveAllDeadlines()">🗓️ Remove ALL Deadlines</button>
+                        <div id="shChainFixResult" style="margin-top:12px;font-size:0.85em;font-family:monospace;background:#fafafa;padding:10px;border-radius:6px;border:1px solid #c8e6c9;display:none;white-space:pre-wrap"></div>
+                    </div>
+
+                    <!-- 🛠️ ADMIN FORCE SUBMIT -->
+                    <div style="background:#fff8e1;padding:18px;border-radius:10px;margin-bottom:20px;border-left:5px solid #f9a825">
+                        <h4 style="color:#e65100;margin-bottom:8px">🛠️ Admin Force Submit</h4>
+                        <p style="color:#555;font-size:0.9em;margin-bottom:12px">Manually create a pending submission. Get the photo URL from your Cloudinary dashboard → Assets.</p>
+                        <div style="display:grid;gap:8px;max-width:500px">
+                            <input type="text" id="afsStudentKey" placeholder="Student key e.g. Gujjar1" style="padding:8px 12px;border-radius:6px;border:1px solid #ccc">
+                            <select id="afsTaskId" style="padding:8px 12px;border-radius:6px;border:1px solid #ccc"><option value="">— Select Task —</option></select>
+                            <input type="text" id="afsPhotoUrl" placeholder="Cloudinary URL (https://res.cloudinary.com/...)" style="padding:8px 12px;border-radius:6px;border:1px solid #ccc">
+                            <input type="text" id="afsComment" placeholder="Comment / note" style="padding:8px 12px;border-radius:6px;border:1px solid #ccc">
+                        </div>
+                        <button class="btn" style="background:#f57c00;color:white;margin-top:10px" onclick="shAdminForceSubmit()">🛠️ Force Create Submission</button>
+                        <div id="afsResult" style="margin-top:10px;font-size:0.9em"></div>
+                    </div>
+
+                    <!-- 🔍 DEBUGGER -->
+                    <div style="background:#f3e5f5;padding:18px;border-radius:10px;margin-bottom:20px;border-left:5px solid #7b1fa2">
+                        <h4 style="color:#4a148c;margin-bottom:10px">🔍 Student Submission Debugger</h4>
+                        <p style="color:#555;font-size:0.9em;margin-bottom:10px">Enter a student key to see exactly what Firebase has saved for them.</p>
+                        <input type="text" id="shDebugStudentKey" placeholder="Student key e.g. Gujjar1" style="padding:8px 12px;border-radius:6px;border:1px solid #ccc;width:220px;margin-right:8px">
+                        <button class="btn" style="background:#7b1fa2;color:white" onclick="shDebugStudentSubs()">🔍 Check Firebase</button>
+                        <div id="shDebugResult" style="margin-top:14px;font-size:0.85em;font-family:monospace;background:#fafafa;padding:12px;border-radius:6px;border:1px solid #e0e0e0;display:none;max-height:300px;overflow-y:auto;white-space:pre-wrap"></div>
                     </div>
 
                     <div style="background:#ffebee;padding:18px;border-radius:10px;border-left:5px solid #f44336">
@@ -11869,13 +11902,11 @@ Davan Institute Team`;
             // task by design). If a task has order > minOrder and is at idx=0 because earlier
             // order tasks were deleted, it is NOT automatically unlocked — it requires prior approval.
             const taskOrder = t.order || (idx + 1);
-            const isFirstByOrder = taskOrder === minOrder;
-            // idx=0 is only freely accessible if it's genuinely order=1 (or the absolute minimum order)
-            // For any task beyond the first, all previous tasks must be approved
-            const allPrevApproved = (idx === 0 && isFirstByOrder) || approvedChainCount >= idx;
+            // idx===0 = first task in sorted list = always accessible, regardless of order number value
+            const allPrevApproved = (idx === 0) || approvedChainCount >= idx;
             // Check time availability
-            const notYet = t.availableFrom && new Date(t.availableFrom).getTime() > nowMs;
-            const expired = t.deadline && new Date(t.deadline).getTime() < nowMs;
+            const notYet = t.availableFrom && !isNaN(new Date(t.availableFrom).getTime()) && new Date(t.availableFrom).getTime() > nowMs;
+            const expired = t.deadline && !isNaN(new Date(t.deadline).getTime()) && new Date(t.deadline).getTime() < nowMs;
 
             // Gate 1: ALL previous tasks must be approved — if not, lock immediately
             if (!allPrevApproved) {
@@ -12010,7 +12041,6 @@ Davan Institute Team`;
             html += '</div>';
 
             if (t.hint) html += '<p style="color:#795548;font-size:0.9em;margin-bottom:10px;background:#fff8e1;padding:8px 12px;border-radius:6px;border-left:4px solid #ffb300">💡 <strong>Hint:</strong> ' + shEsc(t.hint) + '</p>';
-            if (t.imageUrl) html += '<div style="margin-bottom:12px;text-align:center"><img src="'+t.imageUrl+'" alt="Task reference image" style="max-width:100%;max-height:280px;border-radius:10px;border:2px solid #ce93d8;box-shadow:0 3px 12px rgba(0,0,0,0.15);cursor:pointer" onclick="shViewPhoto(this.src)" title="Tap to enlarge"><p style="font-size:0.78em;color:#888;margin-top:4px">📸 Reference image — tap to enlarge</p></div>';
 
             // Lock/expiry reason
             if (t._lockReason==='not_yet')  html += '<div style="background:#e3f2fd;padding:10px 14px;border-radius:6px;font-size:0.88em;color:#1565c0;margin-bottom:10px;border-left:4px solid #2196f3">⏳ <strong>Not open yet.</strong> This task unlocks on '+fmtDT(t.availableFrom)+'</div>';
@@ -12324,8 +12354,8 @@ Davan Institute Team`;
             }
             // Gate: task at liveTaskIdx=0 only if it genuinely has the minimum order;
             // otherwise require all prior tasks to be approved
-            const liveIsFirstByOrder = liveTaskOrder === liveMinOrder;
-            const liveAllPrevOk = (liveTaskIdx === 0 && liveIsFirstByOrder) || liveApprovedCount >= liveTaskIdx;
+            // liveTaskIdx===0 = first task in sorted list = always allow submission
+            const liveAllPrevOk = (liveTaskIdx === 0) || liveApprovedCount >= liveTaskIdx;
             if (!liveAllPrevOk) {
                 shShowInlineMsg(msgEl,'error','🔒 Cannot submit: previous task(s) must be approved first.');
                 return;
@@ -12424,40 +12454,7 @@ Davan Institute Team`;
         if (id==='shAdminLeaderboard') shAdminLoadLeaderboard();
         if (id==='shAdminClasswise')   shAdminLoadClasswise();
         if (id==='shAdminWinners')     { shLoadWinnersTab(); shInitAutoDeclarScheduler(); }
-        if (id==='shAdminSettings')    shAdminLoadSettings();
-    }
-
-    // ── Task reference image preview helpers ─────────────────────────
-    function shPreviewTaskImage(input) {
-        var preview = document.getElementById('shNewTaskImagePreview');
-        var thumb   = document.getElementById('shNewTaskImageThumb');
-        if (input.files && input.files[0]) {
-            var reader = new FileReader();
-            reader.onload = function(e) {
-                thumb.src = e.target.result;
-                preview.style.display = 'block';
-            };
-            reader.readAsDataURL(input.files[0]);
-        }
-    }
-
-    function shClearTaskImage() {
-        document.getElementById('shNewTaskImageFile').value = '';
-        document.getElementById('shNewTaskImagePreview').style.display = 'none';
-        document.getElementById('shNewTaskImageThumb').src = '';
-    }
-
-    function shPreviewEditTaskImage(input) {
-        var preview = document.getElementById('shEditTaskImagePreview');
-        var thumb   = document.getElementById('shEditTaskImageThumb');
-        if (input.files && input.files[0]) {
-            var reader = new FileReader();
-            reader.onload = function(e) {
-                thumb.src = e.target.result;
-                preview.style.display = 'block';
-            };
-            reader.readAsDataURL(input.files[0]);
-        }
+        if (id==='shAdminSettings')    { shAdminLoadSettings(); shPopulateAfsTaskDropdown(); }
     }
 
     // ── Admin: Create task ─────────────────────────────────────────────
@@ -12480,21 +12477,6 @@ Davan Institute Team`;
         if (lat && lng) { task.lat=lat; task.lng=lng; }
         if (availFrom)  task.availableFrom = new Date(availFrom).toISOString();
         if (deadline)   task.deadline      = new Date(deadline).toISOString();
-        // Upload task reference image to Cloudinary if provided
-        var newImgFile = document.getElementById('shNewTaskImageFile');
-        newImgFile = newImgFile && newImgFile.files && newImgFile.files[0] ? newImgFile.files[0] : null;
-        if (newImgFile) {
-            try {
-                var fdImg = new FormData();
-                fdImg.append('file', newImgFile);
-                fdImg.append('upload_preset', 'scavenger_hunt');
-                fdImg.append('folder', 'scavenger_hunt/task_images');
-                fdImg.append('public_id', 'task_ref_'+Date.now());
-                var rImg = await fetch('https://api.cloudinary.com/v1_1/dat0khbet/image/upload',{method:'POST',body:fdImg});
-                var dImg = await rImg.json();
-                if (dImg.secure_url) task.imageUrl = dImg.secure_url;
-            } catch(e) { console.error('Task image upload failed:', e); }
-        }
         await window.db.ref('scavengerHunt/tasks').push(task);
 
         // Show brief success badge
@@ -12511,8 +12493,6 @@ Davan Institute Team`;
         document.getElementById('shNewTaskLng').value      = '';
         document.getElementById('shNewTaskDate').value     = '';
         document.getElementById('shNewTaskDeadline').value = '';
-        document.getElementById('shNewTaskImageFile').value = '';
-        document.getElementById('shNewTaskImagePreview').style.display = 'none';
         // Reload tasks list — this also rebuilds the WhatsApp message for ALL tasks
         shAdminLoadTasks();
     }
@@ -12616,7 +12596,6 @@ Davan Institute Team`;
             html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">';
             html += '<div class="form-group" style="margin:0"><label style="font-size:12px;font-weight:700;color:#6a1b9a">Task Name:</label><input id="shEditName" type="text" style="width:100%"></div>';
             html += '<div class="form-group" style="margin:0"><label style="font-size:12px;font-weight:700;color:#6a1b9a">Hint / Clue:</label><input id="shEditHint" type="text" style="width:100%"></div>';
-            html += '<div class="form-group" style="grid-column:1/-1;margin:0"><label style="font-size:12px;font-weight:700;color:#6a1b9a">🖼️ Reference Image:</label><div id="shEditImgCurrentBox"></div><input type="file" id="shEditTaskImageFile" accept="image/*" onchange="shPreviewEditTaskImage(this)" style="font-size:0.88em"><div id="shEditTaskImagePreview" style="display:none;margin-top:6px"><img id="shEditTaskImageThumb" src="" style="max-width:180px;border-radius:8px;border:2px solid #ce93d8"></div><span style="font-size:0.78em;color:#888">Upload new to replace, leave blank to keep existing.</span></div>';
             html += '<div class="form-group" style="margin:0"><label style="font-size:12px;font-weight:700;color:#6a1b9a">Task Order / Number:</label><input id="shEditOrder" type="number" min="1" style="width:100px"></div>';
             html += '<div class="form-group" style="grid-column:1/-1;margin:0"><label style="font-size:12px;font-weight:700;color:#9c27b0">📸 Task Parts (multi-photo, optional):</label>';
             html += '<div id="shEditPartsBox" style="display:flex;flex-direction:column;gap:6px;margin-bottom:6px"></div>';
@@ -12664,16 +12643,6 @@ Davan Institute Team`;
         document.getElementById('shEditId').value    = id;
         document.getElementById('shEditName').value  = t.name  || '';
         document.getElementById('shEditHint').value  = t.hint  || '';
-        // Populate current image in edit form
-        var imgBox = document.getElementById('shEditImgCurrentBox');
-        if (imgBox) {
-            if (t.imageUrl) {
-                imgBox.innerHTML = '<div style="margin-bottom:8px"><img src="'+t.imageUrl+'" style="max-width:180px;border-radius:8px;border:2px solid #ce93d8"><br><label style="font-size:0.82em;color:#555"><input type="checkbox" id="shEditRemoveImage"> Remove existing image</label></div>';
-            } else {
-                imgBox.innerHTML = '';
-            }
-        }
-        document.getElementById('shEditTaskImagePreview').style.display = 'none';
         document.getElementById('shEditOrder').value = t.order || 1;
         // Populate parts
         const editBox = document.getElementById('shEditPartsBox');
@@ -12705,10 +12674,6 @@ Davan Institute Team`;
         const id    = document.getElementById('shEditId').value;
         const name  = document.getElementById('shEditName').value.trim();
         const hint  = document.getElementById('shEditHint').value.trim();
-        // Handle task reference image in edit
-        var editImageFile = document.getElementById('shEditTaskImageFile');
-        var editImageFile = editImageFile && editImageFile.files && editImageFile.files[0] ? editImageFile.files[0] : null;
-        var removeImage = document.getElementById('shEditRemoveImage') && document.getElementById('shEditRemoveImage').checked;
         const order = parseInt(document.getElementById('shEditOrder').value) || 1;
         const fromV = document.getElementById('shEditFrom').value;
         const tillV = document.getElementById('shEditTill').value;
@@ -12740,21 +12705,6 @@ Davan Institute Team`;
         }
 
         try {
-            // Upload task reference image to Cloudinary if new file selected
-            if (editImageFile) {
-                var fd2 = new FormData();
-                fd2.append('file', editImageFile);
-                fd2.append('upload_preset', 'scavenger_hunt');
-                fd2.append('folder', 'scavenger_hunt/task_images');
-                fd2.append('public_id', 'task_'+id+'_ref_'+Date.now());
-                var r2 = await fetch('https://api.cloudinary.com/v1_1/dat0khbet/image/upload',{method:'POST',body:fd2});
-                var d2 = await r2.json();
-                if (d2.secure_url) cleaned.imageUrl = d2.secure_url;
-            } else if (removeImage) {
-                // don't add imageUrl to cleaned = removes it
-            } else if (window._shTasksCache && window._shTasksCache[id] && window._shTasksCache[id].imageUrl) {
-                cleaned.imageUrl = window._shTasksCache[id].imageUrl; // preserve existing
-            }
             await window.db.ref('scavengerHunt/tasks/'+id).set(cleaned);
             const msg = document.getElementById('shEditMsg');
             if (msg) { msg.style.display = 'inline-block'; }
@@ -13929,6 +13879,158 @@ Proceed?`)) return;
     }
 
     // ── Admin: Settings ────────────────────────────────────────────────
+    // ── Remove All Deadlines from all tasks ──────────────────────────
+    async function shRemoveAllDeadlines(){
+        var el=document.getElementById('shChainFixResult');
+        el.style.display='block';
+        el.textContent='Removing deadlines from all tasks...\n';
+        try{
+            var snap=await window.db.ref('scavengerHunt/tasks').once('value');
+            var raw=snap.val()||{};
+            var tasks=Object.entries(raw).map(function(e){return Object.assign({id:e[0]},e[1]);});
+            if(!tasks.length){el.textContent='No tasks found.';return;}
+            var updates={};
+            for(var i=0;i<tasks.length;i++){
+                updates['scavengerHunt/tasks/'+tasks[i].id+'/deadline']=null;
+                updates['scavengerHunt/tasks/'+tasks[i].id+'/availableFrom']=null;
+                el.textContent+='Removing deadline from: "'+tasks[i].name.substring(0,50)+'...\n';
+            }
+            await window.db.ref().update(updates);
+            el.textContent+='Done! All deadlines removed from '+tasks.length+' task(s). Students can now submit. Tell them to refresh.';
+        }catch(e){el.textContent+='Error: '+e.message;}
+    }
+
+    // ── Cloudinary Test ─────────────────────────────────────────────
+    async function shTestCloudinary() {
+        var fileInput=document.getElementById('shCloudTestFile');
+        var resultEl=document.getElementById('shCloudTestResult');
+        resultEl.innerHTML='Testing...'; resultEl.style.color='#555';
+        var file=fileInput&&fileInput.files&&fileInput.files[0];
+        if(!file){
+            var b64='iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
+            var bs=atob(b64),ab=new ArrayBuffer(bs.length),ia=new Uint8Array(ab);
+            for(var i=0;i<bs.length;i++){ia[i]=bs.charCodeAt(i);}
+            file=new Blob([ab],{type:'image/png'});
+        }
+        try{
+            var fd=new FormData();
+            fd.append('file',file);
+            fd.append('upload_preset','scavenger_hunt');
+            fd.append('folder','scavenger_hunt/_test_');
+            fd.append('public_id','test_'+Date.now());
+            var res=await fetch('https://api.cloudinary.com/v1_1/dat0khbet/image/upload',{method:'POST',body:fd});
+            var data=await res.json();
+            if(data.secure_url){
+                resultEl.style.color='#2e7d32';
+                resultEl.innerHTML='<strong>Cloudinary WORKING!</strong><br>URL: <a href="'+data.secure_url+'" target="_blank" style="word-break:break-all;color:#1565c0">'+data.secure_url+'</a><br><small>Size: '+data.bytes+' bytes</small>';
+            } else {
+                resultEl.style.color='red';
+                resultEl.innerHTML='Failed: '+((data.error&&data.error.message)||JSON.stringify(data));
+            }
+        }catch(e){resultEl.style.color='red';resultEl.innerHTML='Error: '+e.message;}
+    }
+
+    // ── Fix Chain Order ───────────────────────────────────────────────
+    async function shFixChainOrder(doWrite){
+        var el=document.getElementById('shChainFixResult');
+        el.style.display='block';
+        el.textContent='Loading tasks...\n';
+        try{
+            var snap=await window.db.ref('scavengerHunt/tasks').once('value');
+            var raw=snap.val()||{};
+            var tasks=Object.entries(raw).map(function(e){return Object.assign({id:e[0]},e[1]);}).sort(function(a,b){return (a.order||0)-(b.order||0);});
+            for(var i=0;i<tasks.length;i++){
+                el.textContent+=(i+1)+'. "'+tasks[i].name+'" current order: '+tasks[i].order+'\n';
+            }
+            if(!doWrite){
+                el.textContent+='\nTap Fix Order Numbers to renumber 1,2,3...';
+                return;
+            }
+            var updates={};
+            for(var j=0;j<tasks.length;j++){
+                updates['scavengerHunt/tasks/'+tasks[j].id+'/order']=j+1;
+            }
+            await window.db.ref().update(updates);
+            el.textContent+='\nFixed! Task 1 = order 1, Task 2 = order 2.\nTell students to refresh — they can now submit Task 1.';
+        }catch(e){el.textContent+='\nError: '+e.message;}
+    }
+
+    // ── Admin Force Submit ────────────────────────────────────────────
+    async function shAdminForceSubmit(){
+        var studentKey=(document.getElementById('afsStudentKey')?document.getElementById('afsStudentKey').value:'').trim();
+        var taskId=(document.getElementById('afsTaskId')?document.getElementById('afsTaskId').value:'').trim();
+        var photoUrl=(document.getElementById('afsPhotoUrl')?document.getElementById('afsPhotoUrl').value:'').trim();
+        var comment=(document.getElementById('afsComment')?document.getElementById('afsComment').value:'').trim();
+        var resultEl=document.getElementById('afsResult');
+        if(!studentKey||!taskId){resultEl.innerHTML='<span style="color:red">Enter student key and select task.</span>';return;}
+        if(!photoUrl){resultEl.innerHTML='<span style="color:red">Enter the Cloudinary photo URL.</span>';return;}
+        try{
+            var tSnap=await window.db.ref('scavengerHunt/tasks/'+taskId).once('value');
+            var sSnap=await window.db.ref('students/'+studentKey).once('value');
+            var task=tSnap.val()||{};
+            var stu=sSnap.val()||{};
+            await window.db.ref('scavengerHunt/submissions/'+studentKey+'/'+taskId).set({
+                taskId:taskId, taskName:task.name||taskId,
+                studentKey:studentKey, studentName:stu.name||studentKey,
+                studentEmail:stu.email||'', studentClass:stu.class||stu.classYear||'',
+                photoUrl:photoUrl, comment:comment||'Admin force-submitted',
+                status:'pending', submittedAt:new Date().toISOString(),
+                lat:null, lng:null, adminForced:true
+            });
+            resultEl.innerHTML='<span style="color:#2e7d32">Done! '+studentKey+' Task is now Pending Review.</span>';
+        }catch(e){resultEl.innerHTML='<span style="color:red">Error: '+e.message+'</span>';}
+    }
+
+    async function shPopulateAfsTaskDropdown(){
+        var sel=document.getElementById('afsTaskId');
+        if(!sel){return;}
+        try{
+            var snap=await window.db.ref('scavengerHunt/tasks').once('value');
+            var raw=snap.val()||{};
+            var tasks=Object.entries(raw).map(function(e){return Object.assign({id:e[0]},e[1]);}).sort(function(a,b){return (a.order||0)-(b.order||0);});
+            sel.innerHTML='<option value="">— Select Task —</option>';
+            for(var i=0;i<tasks.length;i++){
+                var o=document.createElement('option');
+                o.value=tasks[i].id;
+                o.textContent=(tasks[i].order||'?')+'. '+(tasks[i].name||tasks[i].id).substring(0,60);
+                sel.appendChild(o);
+            }
+        }catch(e){}
+    }
+
+    // ── Student Submission Debugger ───────────────────────────────────
+    async function shDebugStudentSubs(){
+        var key=(document.getElementById('shDebugStudentKey')?document.getElementById('shDebugStudentKey').value:'').trim();
+        var resultEl=document.getElementById('shDebugResult');
+        if(!key){alert('Enter a student key');return;}
+        resultEl.style.display='block';
+        resultEl.textContent='Loading...\n';
+        try{
+            var subSnap=await window.db.ref('scavengerHunt/submissions/'+key).once('value');
+            var taskSnap=await window.db.ref('scavengerHunt/tasks').once('value');
+            var subs=subSnap.val();
+            var tasks=taskSnap.val();
+            var out='=== TASKS ===\n';
+            if(tasks){
+                var arr=Object.entries(tasks).map(function(e){return Object.assign({id:e[0]},e[1]);}).sort(function(a,b){return (a.order||0)-(b.order||0);});
+                for(var i=0;i<arr.length;i++){
+                    var t=arr[i];
+                    var sub=subs&&subs[t.id];
+                    out+='\nTask '+(i+1)+': "'+t.name.substring(0,50)+'" (order:'+t.order+')\n';
+                    if(sub){
+                        out+='  status:      '+sub.status+'\n';
+                        out+='  submittedAt: '+(sub.submittedAt||'MISSING - causes Locked!')+'\n';
+                        out+='  photoUrl:    '+(sub.photoUrl?'present':'MISSING')+'\n';
+                    }else{
+                        out+='  No submission found\n';
+                    }
+                }
+            }
+            out+='\n=== RAW ===\n'+(subs?JSON.stringify(subs,null,2):'empty - no submissions for: '+key);
+            resultEl.textContent=out;
+        }catch(e){resultEl.textContent='Error: '+e.message;}
+    }
+
     async function shAdminLoadSettings() {
         try {
             const snap = await window.db.ref('scavengerHunt/settings').once('value');
@@ -14659,7 +14761,7 @@ Proceed?`)) return;
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;">
-                <strong>Version:</strong> 3.1 Scavenger Hunt Event update  | <strong>Last Updated:</strong> February 20, 2026 (1.29am)
+                <strong>Version:</strong> 3.1 Scavenger Hunt Event bug fix  | <strong>Last Updated:</strong> February 20, 2026 (1.51am)
             </p>
             <!-- ============================================ -->
             
