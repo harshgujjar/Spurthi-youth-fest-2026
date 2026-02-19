@@ -828,7 +828,7 @@
         <div style="display:block;width:100%;max-width:1200px;margin:0 auto 22px;border-radius:14px;background:linear-gradient(90deg,#e8722a 0%,#f0a05a 40%,#f0a05a 60%,#e8722a 100%);box-shadow:0 4px 18px rgba(232,114,42,0.35);padding:16px 30px;text-align:center;animation:shimmer 3s linear infinite;background-size:2000px 100%">
             <!-- EDIT BANNER TEXT BELOW -->
             <span id="announcementBannerText" style="color:white;font-size:1.1em;font-weight:700;letter-spacing:0.5px;text-shadow:0 1px 4px rgba(0,0,0,0.18)">
-                🎯 New Speed Slide Challenge coming soon 🎯
+                🎯 New Scavenger Hunt Event Coming Soon Today! 🎯
             </span>
         </div>
         <!-- ============================================================ -->
@@ -1890,6 +1890,12 @@
                             <input type="text" id="shNewTaskHint" placeholder='e.g. "Look near the main building ground floor"'>
                         </div>
                         <div class="form-group">
+                            <label>📸 Task Parts (multi-photo, optional):</label>
+                            <div id="shNewTaskPartsBox" style="display:flex;flex-direction:column;gap:6px;margin-bottom:6px"></div>
+                            <button type="button" onclick="shAddNewTaskPart()" style="background:#e8f5e9;color:#2e7d32;border:2px dashed #4caf50;border-radius:8px;padding:6px 14px;cursor:pointer;font-size:0.88em;font-weight:700">➕ Add Part</button>
+                            <span style="font-size:0.8em;color:#888;display:block;margin-top:4px">Each part = one photo. Student must get each part approved before the next unlocks. Leave empty for single-photo task.</span>
+                        </div>
+                        <div class="form-group">
                             <label>Task Order / Number:</label>
                             <input type="number" id="shNewTaskOrder" value="1" min="1" style="width:100px">
                         </div>
@@ -1946,13 +1952,20 @@
                         <h4 style="color:#6a1b9a;margin:0">📸 Photo Submissions <span style="background:#28a745;color:white;font-size:0.7em;padding:2px 8px;border-radius:20px;margin-left:6px">🔴 LIVE</span></h4>
                         <button class="btn btn-info btn-small" onclick="shAdminLoadSubmissions()">🔄 Refresh</button>
                     </div>
-                    <div style="margin-bottom:14px">
-                        <select id="shSubmissionFilter" onchange="shAdminLoadSubmissions()" style="width:auto;display:inline-block;padding:8px 14px;border-radius:8px;border:2px solid #9c27b0">
-                            <option value="all">📋 All</option>
+                    <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap;align-items:center">
+                        <select id="shSubmissionFilter" onchange="shAdminLoadSubmissions()" style="padding:8px 14px;border-radius:8px;border:2px solid #9c27b0">
+                            <option value="all">📋 All Status</option>
                             <option value="pending">⏳ Pending</option>
                             <option value="approved">✅ Approved</option>
                             <option value="rejected">❌ Rejected</option>
                         </select>
+                        <select id="shSubmissionDateFilter" onchange="shAdminLoadSubmissions()" style="padding:8px 14px;border-radius:8px;border:2px solid #9c27b0">
+                            <option value="all">📅 All Dates</option>
+                        </select>
+                        <select id="shSubmissionTaskFilter" onchange="shAdminLoadSubmissions()" style="padding:8px 14px;border-radius:8px;border:2px solid #9c27b0">
+                            <option value="all">📌 All Tasks</option>
+                        </select>
+                        <button class="btn btn-secondary btn-small" onclick="shResetSubmissionFilters()">✖ Reset</button>
                     </div>
                     <div id="shAdminSubmissionsList">
                         <p style="color:#999">Click Refresh to load submissions.</p>
@@ -1961,9 +1974,20 @@
 
                 <!-- LEADERBOARD TAB -->
                 <div id="shAdminLeaderboard" class="sh-tab-panel" style="display:none">
-                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:10px">
                         <h4 style="color:#6a1b9a;margin:0">🏆 Live Leaderboard</h4>
                         <button class="btn btn-info btn-small" onclick="shAdminLoadLeaderboard()">🔄 Refresh</button>
+                    </div>
+                    <!-- Leaderboard Filters -->
+                    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:16px;background:#f3e5f5;padding:10px 14px;border-radius:10px;border:1px solid #ce93d8">
+                        <span style="font-size:0.82em;font-weight:700;color:#6a1b9a;white-space:nowrap">🔍 Filter:</span>
+                        <select id="shLbTaskFilter" onchange="shAdminRenderLeaderboard()" style="padding:6px 12px;border:2px solid #9c27b0;border-radius:8px;font-weight:600;color:#3d0060;font-size:0.85em">
+                            <option value="all">📌 All Tasks</option>
+                        </select>
+                        <select id="shLbClassFilter" onchange="shAdminRenderLeaderboard()" style="padding:6px 12px;border:2px solid #9c27b0;border-radius:8px;font-weight:600;color:#3d0060;font-size:0.85em">
+                            <option value="all">🏫 All Classes</option>
+                        </select>
+                        <button onclick="document.getElementById('shLbTaskFilter').value='all';document.getElementById('shLbClassFilter').value='all';shAdminRenderLeaderboard();" style="background:#6a1b9a;color:white;border:none;padding:6px 12px;border-radius:8px;cursor:pointer;font-size:0.82em;font-weight:600">✖ Clear</button>
                     </div>
                     <div id="shAdminLeaderboardList">
                         <p style="color:#999">Click Refresh to load leaderboard.</p>
@@ -1972,9 +1996,20 @@
 
                 <!-- CLASS-WISE TAB -->
                 <div id="shAdminClasswise" class="sh-tab-panel" style="display:none">
-                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:10px">
                         <h4 style="color:#6a1b9a;margin:0">📊 Class-wise Participation</h4>
                         <button class="btn btn-info btn-small" onclick="shAdminLoadClasswise()">🔄 Refresh</button>
+                    </div>
+                    <!-- Class-wise Summary Filters -->
+                    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:16px;background:#fffde7;padding:10px 14px;border-radius:10px;border:1px solid #ffc107">
+                        <span style="font-size:0.82em;font-weight:700;color:#856404;white-space:nowrap">🔍 Filter Summary:</span>
+                        <select id="shCwTaskFilter" onchange="shAdminApplyClasswiseFilters()" style="padding:6px 12px;border:2px solid #ffc107;border-radius:8px;font-weight:600;color:#3d0060;font-size:0.85em">
+                            <option value="all">📌 All Tasks</option>
+                        </select>
+                        <select id="shCwDateFilter" onchange="shAdminApplyClasswiseFilters()" style="padding:6px 12px;border:2px solid #ffc107;border-radius:8px;font-weight:600;color:#3d0060;font-size:0.85em">
+                            <option value="all">📅 All Dates</option>
+                        </select>
+                        <button onclick="document.getElementById('shCwTaskFilter').value='all';document.getElementById('shCwDateFilter').value='all';shAdminApplyClasswiseFilters();" style="background:#856404;color:white;border:none;padding:6px 12px;border-radius:8px;cursor:pointer;font-size:0.82em;font-weight:600">✖ Clear</button>
                     </div>
 
                     <!-- SH Summary message box (copyable) -->
@@ -7423,19 +7458,19 @@ Davan Institute Team`;
                 createdBy: quizCurrentUser.email
             };
             
-            // Convert images and audio to base64 if present
+            // Upload images and audio to Cloudinary if present
             try {
                 if (q1ImageFile) {
-                    data.q1.image = await fileToBase64(q1ImageFile);
+                    data.q1.image = await quizUploadToCloudinary(q1ImageFile, 'q1_image');
                 }
                 if (q1AudioFile) {
-                    data.q1.audio = await fileToBase64(q1AudioFile);
+                    data.q1.audio = await quizUploadToCloudinary(q1AudioFile, 'q1_audio');
                 }
                 if (q2ImageFile) {
-                    data.q2.image = await fileToBase64(q2ImageFile);
+                    data.q2.image = await quizUploadToCloudinary(q2ImageFile, 'q2_image');
                 }
                 if (q2AudioFile) {
-                    data.q2.audio = await fileToBase64(q2AudioFile);
+                    data.q2.audio = await quizUploadToCloudinary(q2AudioFile, 'q2_audio');
                 }
                 
                 await db.ref(`quizQuestions/${today}`).set(data);
@@ -7459,7 +7494,7 @@ Davan Institute Team`;
             }
         }
         
-        // Convert file to base64
+        // Convert file to base64 (used for PREVIEWS only — not saved to DB)
         function fileToBase64(file) {
             return new Promise((resolve, reject) => {
                 const reader = new FileReader();
@@ -7467,6 +7502,27 @@ Davan Institute Team`;
                 reader.onerror = reject;
                 reader.readAsDataURL(file);
             });
+        }
+
+        // Upload quiz media (image/audio) to Cloudinary, return secure URL
+        async function quizUploadToCloudinary(file, label) {
+            const isAudio = file.type.startsWith('audio/');
+            const resourceType = isAudio ? 'video' : 'image'; // Cloudinary uses 'video' for audio
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('upload_preset', 'scavenger_hunt');
+            formData.append('folder', 'quiz_media');
+            formData.append('public_id', label + '_' + Date.now());
+            const res = await fetch(
+                `https://api.cloudinary.com/v1_1/dat0khbet/${resourceType}/upload`,
+                { method: 'POST', body: formData }
+            );
+            if (!res.ok) {
+                const err = await res.json();
+                throw new Error(err.error?.message || 'Cloudinary upload failed');
+            }
+            const data = await res.json();
+            return data.secure_url;
         }
         
         async function viewTodayQuestions() {
@@ -8192,28 +8248,28 @@ Davan Institute Team`;
                 // Check if we're in edit mode with deletion tracking
                 const editData = window.editingQuizData || {};
                 
-                // Convert images and audio to base64 if present, otherwise preserve existing (unless marked for deletion)
+                // Convert images and audio to Cloudinary URLs if present, otherwise preserve existing (unless marked for deletion)
                 if (q1ImageFile) {
-                    data.q1.image = await fileToBase64(q1ImageFile);
+                    data.q1.image = await quizUploadToCloudinary(q1ImageFile, 'q1_image');
                 } else if (existingData && existingData.q1 && existingData.q1.image && !editData.deleteQ1Image) {
                     data.q1.image = existingData.q1.image; // Preserve existing image
                 }
                 // If deleteQ1Image is true, we simply don't add the image property
                 
                 if (q1AudioFile) {
-                    data.q1.audio = await fileToBase64(q1AudioFile);
+                    data.q1.audio = await quizUploadToCloudinary(q1AudioFile, 'q1_audio');
                 } else if (existingData && existingData.q1 && existingData.q1.audio && !editData.deleteQ1Audio) {
                     data.q1.audio = existingData.q1.audio; // Preserve existing audio
                 }
                 
                 if (q2ImageFile) {
-                    data.q2.image = await fileToBase64(q2ImageFile);
+                    data.q2.image = await quizUploadToCloudinary(q2ImageFile, 'q2_image');
                 } else if (existingData && existingData.q2 && existingData.q2.image && !editData.deleteQ2Image) {
                     data.q2.image = existingData.q2.image; // Preserve existing image
                 }
                 
                 if (q2AudioFile) {
-                    data.q2.audio = await fileToBase64(q2AudioFile);
+                    data.q2.audio = await quizUploadToCloudinary(q2AudioFile, 'q2_audio');
                 } else if (existingData && existingData.q2 && existingData.q2.audio && !editData.deleteQ2Audio) {
                     data.q2.audio = existingData.q2.audio; // Preserve existing audio
                 }
@@ -11717,59 +11773,12 @@ Davan Institute Team`;
                 setTimeout(() => { t.style.opacity='0'; setTimeout(()=>t.remove(),500); }, 2500);
             }
 
-            // Helper: update progress bar in-place without re-rendering tasks
-            function updateProgressInPlace() {
-                const allCards = document.querySelectorAll('.sh-task-card');
-                let completed = 0, pending = 0, locked = 0, total = allCards.length;
-                allCards.forEach(c => {
-                    if (c.classList.contains('completed')) completed++;
-                    else if (c.classList.contains('pending')) pending++;
-                    else if (c.classList.contains('locked')) locked++;
-                });
-                const pct = total ? Math.round(completed/total*100) : 0;
-                const pt = document.getElementById('shProgressText');
-                const pb = document.getElementById('shProgressBar');
-                const cc = document.getElementById('shCompletedCount');
-                const pc = document.getElementById('shPendingCount');
-                const lc = document.getElementById('shLockedCount');
-                if (pt) pt.textContent = completed+'/'+total+' ('+pct+'%)';
-                if (pb) pb.style.width = pct+'%';
-                if (cc) cc.textContent = completed;
-                if (pc) pc.textContent = pending;
-                if (lc) lc.textContent = locked;
-                // Also update lastRefreshed time
-                const lastEl = document.getElementById('shLastRefreshed');
-                const now = new Date().toLocaleTimeString('en-IN', {hour:'2-digit',minute:'2-digit',second:'2-digit'});
-                if (lastEl) lastEl.textContent = 'Last checked: ' + now;
-                // If all done, show completion message WITHOUT scrolling
-                if (completed === total && total > 0) {
-                    const allDone = document.getElementById('shAllDoneSection');
-                    const tasksList = document.getElementById('shTasksList');
-                    if (allDone) allDone.style.display = 'block';
-                    if (tasksList) tasksList.style.display = 'none';
-                }
-            }
-
             if (sub && sub.status === 'approved') {
-                const card = document.getElementById('shTask_' + taskId);
-                if (card) {
-                    const reviewedTime = sub.reviewedAt ? new Date(sub.reviewedAt).toLocaleString('en-IN',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit',hour12:true}) : '';
-                    // Swap pending box to approved box in-place
-                    const pendingBox = card.querySelector('[data-pending-box]');
-                    if (pendingBox) {
-                        pendingBox.style.background = '#e8f5e9';
-                        pendingBox.style.border = '2px solid #4caf50';
-                        pendingBox.innerHTML = '<div style="display:flex;align-items:center;gap:8px"><span style="font-size:1.3em">✅</span><div><strong style="color:#2e7d32;font-size:0.95em">APPROVED by Super Admin</strong><br><span style="font-size:0.78em;color:#666">Reviewed on: ' + reviewedTime + '</span></div></div>';
-                    }
-                    // Update badge in-place
-                    const badge = card.querySelector('.sh-badge-pending');
-                    if (badge) { badge.className = 'sh-badge sh-badge-done'; badge.textContent = '✅ Completed'; }
-                    card.className = card.className.replace('pending','completed');
-                }
+                if (btn) { btn.disabled = false; btn.textContent = '🔄 Check Approval'; }
                 showToast('✅ Approved by Super Admin!', '#4caf50');
-                updateProgressInPlace();
-                // Reload full dashboard so next locked task gets unlocked
-                setTimeout(() => shLoadStudentDashboard(), 600);
+                // Full reload from Firebase — do NOT touch DOM before this
+                // so task counts are always based on fresh server data
+                await shLoadStudentDashboard();
 
             } else if (sub && sub.status === 'rejected') {
                 if (btn) { btn.disabled = false; btn.textContent = '🔄 Check Approval'; }
@@ -11790,13 +11799,17 @@ Davan Institute Team`;
 
     // ── Student Dashboard ─────────────────────────────────────────────
     async function shLoadStudentDashboard() {
-        // Show loading state
+        // Show loading state — keep progressSection visible during reload to avoid flash
         const notActive = document.getElementById('shNotActiveMsg');
         const progSect  = document.getElementById('shProgressSection');
         if (notActive) notActive.style.display = 'none';
-        if (progSect)  progSect.style.display  = 'none';
+        // Only hide progress section if it was never shown yet (first load)
+        if (progSect && progSect.style.display === 'none') progSect.style.display = 'none';
+        // Hide the All Done banner during reload — will be re-evaluated from fresh Firebase data
+        const allDoneBanner = document.getElementById('shAllDoneSection');
+        if (allDoneBanner) allDoneBanner.style.display = 'none';
         const tasksList = document.getElementById('shTasksList');
-        if (tasksList) tasksList.innerHTML = '<p style="color:#999;text-align:center;padding:20px">⏳ Loading tasks...</p>';
+        if (tasksList) { tasksList.style.display = ''; tasksList.innerHTML = '<p style="color:#999;text-align:center;padding:20px">⏳ Loading tasks...</p>'; }
         let settSnap, taskSnap, subSnap;
         try {
             [settSnap, taskSnap, subSnap] = await Promise.all([
@@ -11821,15 +11834,20 @@ Davan Institute Team`;
         const tasksRaw = taskSnap.val() || {};
         shTasks = Object.entries(tasksRaw).map(([k,v])=>({id:k,...v})).sort((a,b)=>(a.order||0)-(b.order||0));
         const subs = subSnap.val() || {};
-        let completed=0, pendingReview=0, locked=0;
+        let completed=0, pendingReview=0, locked=0, active=0, rejected=0;
         const nowMs = Date.now();
-        // Pre-compute: all tasks require ALL previous tasks to be approved (strict chain)
-        // Build a lookup of which task indices are truly approved (verified chain from task 0)
-        const approvedChain = [];
+        // Pre-compute: all tasks require ALL previous tasks (by order) to be approved (strict chain)
+        // Tasks are sorted by order. We count how many consecutive tasks from the start are approved.
+        // IMPORTANT: we use task.order (not array index) so that if an earlier task is deleted
+        // from the task list, later tasks (with higher order numbers) are NOT accidentally treated
+        // as "first" and unlocked without prerequisite approval.
+        const minOrder = shTasks.length > 0 ? (shTasks[0].order || 1) : 1;
+        let approvedChainCount = 0; // how many consecutive tasks from the start are fully approved
         for (let i = 0; i < shTasks.length; i++) {
             const s = subs[shTasks[i].id];
-            if (s && s.status === 'approved') {
-                approvedChain.push(i);
+            // Only count as approved if it has a real submission (submittedAt present)
+            if (s && s.status === 'approved' && s.submittedAt) {
+                approvedChainCount++;
             } else {
                 break; // chain breaks — no task beyond this is unlocked
             }
@@ -11837,9 +11855,15 @@ Davan Institute Team`;
 
         shTasks.forEach((t, idx) => {
             const sub = subs[t.id];
-            // A task is accessible only if ALL tasks before it are approved (unbroken chain)
-            // idx=0 is always accessible; idx>0 requires idx-1 to be in approvedChain
-            const allPrevApproved = idx === 0 || approvedChain.includes(idx - 1);
+            // A task is accessible only if ALL tasks before it (by sorted order) are approved.
+            // Task at idx=0 is accessible only if its order equals minOrder (i.e. it IS the first
+            // task by design). If a task has order > minOrder and is at idx=0 because earlier
+            // order tasks were deleted, it is NOT automatically unlocked — it requires prior approval.
+            const taskOrder = t.order || (idx + 1);
+            const isFirstByOrder = taskOrder === minOrder;
+            // idx=0 is only freely accessible if it's genuinely order=1 (or the absolute minimum order)
+            // For any task beyond the first, all previous tasks must be approved
+            const allPrevApproved = (idx === 0 && isFirstByOrder) || approvedChainCount >= idx;
             // Check time availability
             const notYet = t.availableFrom && new Date(t.availableFrom).getTime() > nowMs;
             const expired = t.deadline && new Date(t.deadline).getTime() < nowMs;
@@ -11847,18 +11871,34 @@ Davan Institute Team`;
             // Gate 1: ALL previous tasks must be approved — if not, lock immediately
             if (!allPrevApproved) {
                 t._state = 'locked'; locked++;
-            } else if (sub && sub.status === 'approved') {
-                t._state = 'completed'; completed++;
-            } else if (sub && sub.status === 'pending') {
+            } else if (sub && sub.status === 'approved' && sub.submittedAt) {
+                // For multi-part tasks: only fully completed when ALL parts are approved
+                if (t.parts && t.parts.length > 0) {
+                    const subParts = sub.parts || [];
+                    const totalParts = t.parts.length;
+                    const allApproved = subParts.length === totalParts && subParts.every(p => p && p.status === 'approved');
+                    const anyPending  = subParts.some(p => p && p.status === 'pending');
+                    if (allApproved) {
+                        t._state = 'completed'; completed++;
+                    } else if (anyPending) {
+                        t._state = 'pending'; pendingReview++;
+                    } else {
+                        // Part 1 approved but later parts not yet submitted
+                        t._state = 'active'; active++;
+                    }
+                } else {
+                    t._state = 'completed'; completed++;
+                }
+            } else if (sub && sub.status === 'pending' && sub.submittedAt) {
                 t._state = 'pending'; pendingReview++;
-            } else if (sub && sub.status === 'rejected') {
-                t._state = 'rejected';
+            } else if (sub && sub.status === 'rejected' && sub.submittedAt) {
+                t._state = 'rejected'; rejected++;
             } else if (notYet) {
                 t._state = 'locked'; t._lockReason = 'not_yet'; locked++;
             } else if (expired) {
                 t._state = 'locked'; t._lockReason = 'expired'; locked++;
             } else {
-                t._state = 'active';
+                t._state = 'active'; active++;
             }
             t._sub = sub || null;
         });
@@ -11869,7 +11909,8 @@ Davan Institute Team`;
         document.getElementById('shCompletedCount').textContent = completed;
         document.getElementById('shPendingCount').textContent   = pendingReview;
         document.getElementById('shLockedCount').textContent    = locked;
-        if (completed===total && total>0) {
+        // Only show "All Done" when every task is truly approved (zero pending/rejected/locked/active)
+        if (completed===total && total>0 && pendingReview===0 && locked===0 && active===0 && rejected===0) {
             const _sy = window.scrollY;
             document.getElementById('shTasksList').innerHTML = '';
             document.getElementById('shAllDoneSection').style.display = 'block';
@@ -11886,7 +11927,41 @@ Davan Institute Team`;
     function shRenderTasks(tasks, subs) {
         const el = document.getElementById('shTasksList');
         if (!tasks.length) { el.innerHTML = '<p style="color:#999">No tasks available yet.</p>'; return; }
-        let html = '';
+
+        const nowMs  = Date.now();
+        const todayStr = new Date().toLocaleDateString('en-IN',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
+
+        // ── Summary banner ───────────────────────────────────────────────
+        let summaryHtml = '<div style="background:linear-gradient(135deg,#1a0030,#6a1b9a);color:white;border-radius:12px;padding:16px 20px;margin-bottom:16px">';
+        summaryHtml += '<div style="font-size:0.8em;opacity:0.75;margin-bottom:4px">📅 Today</div>';
+        summaryHtml += '<div style="font-size:1.05em;font-weight:700;margin-bottom:12px">'+todayStr+'</div>';
+
+        // Check each task for history
+        tasks.forEach((t, idx) => {
+            const sub  = subs[t.id] || null;
+            const isToday = t.availableFrom && new Date(t.availableFrom).toDateString() === new Date().toDateString();
+            const isPast  = t.availableFrom && new Date(t.availableFrom).getTime() < nowMs;
+            const taskLabel = 'Task '+(idx+1);
+            const statusIcon = sub ? (sub.status==='approved'?'✅':sub.status==='rejected'?'❌':'⏳') : (isPast?'📭':'🔒');
+            const statusText = sub ? (sub.status==='approved'?'Approved':sub.status==='rejected'?'Rejected — Reupload':'Under Review') : (isPast?'Not submitted':'Upcoming');
+            const statusColor = sub ? (sub.status==='approved'?'#a5d6a7':sub.status==='rejected'?'#ef9a9a':'#ffe082') : (isPast?'#ef9a9a':'rgba(255,255,255,.5)');
+            const taskDay = t.availableFrom ? new Date(t.availableFrom).toLocaleDateString('en-IN',{weekday:'short',day:'2-digit',month:'short'}) : '—';
+            summaryHtml += '<div style="display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.1);border-radius:8px;padding:8px 12px;margin-bottom:6px">';
+            summaryHtml += '<span style="font-size:1.3em">'+statusIcon+'</span>';
+            summaryHtml += '<div style="flex:1"><div style="font-weight:700;font-size:.9em">'+taskLabel+'</div><div style="font-size:.75em;opacity:.8">'+taskDay+'</div></div>';
+            summaryHtml += '<span style="font-size:.8em;font-weight:700;color:'+statusColor+'">'+statusText+'</span>';
+            summaryHtml += '</div>';
+        });
+
+        // Next upcoming task info
+        const nextTask = tasks.find(t => t.availableFrom && new Date(t.availableFrom).getTime() > nowMs && !subs[t.id]);
+        if (nextTask) {
+            const nextTime = new Date(nextTask.availableFrom).toLocaleString('en-IN',{weekday:'short',day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit',hour12:true});
+            summaryHtml += '<div style="background:rgba(255,255,255,.15);border-radius:8px;padding:8px 12px;font-size:.85em;margin-top:4px">🚀 <strong>Next hunt:</strong> Task '+(tasks.indexOf(nextTask)+1)+' opens on <strong>'+nextTime+'</strong></div>';
+        }
+        summaryHtml += '</div>';
+
+        let html = summaryHtml;
         tasks.forEach((t,idx) => {
             const state = t._state;
             const sub   = t._sub;
@@ -11897,20 +11972,41 @@ Davan Institute Team`;
                 active:    '<span class="sh-badge sh-badge-active">📍 Active</span>',
                 locked:    '<span class="sh-badge" style="background:#eee;color:#999;border:1px solid #ccc">🔒 Locked</span>'
             }[state] || '';
-            const cardClass = state==='completed' ? 'sh-task-card completed' : state==='pending' ? 'sh-task-card pending' : state==='locked' ? 'sh-task-card locked' : 'sh-task-card';
+            const cardClass = state==='completed' ? 'sh-task-card completed' : state==='pending' ? 'sh-task-card pending' : state==='locked' ? 'sh-task-card locked' : state==='rejected' ? 'sh-task-card rejected' : 'sh-task-card';
+            const fmtDT = iso => new Date(iso).toLocaleString('en-IN',{weekday:'short',day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit',hour12:true});
+            const fmtDate = iso => new Date(iso).toLocaleDateString('en-IN',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
             html += '<div class="' + cardClass + '" id="shTask_' + t.id + '">';
-            html += '<div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px;margin-bottom:10px">';
-            html += '<h4 style="margin:0;color:#6a1b9a">Task ' + (idx+1) + ': ' + shEsc(t.name) + '</h4>' + stateLabel;
+
+            // ── Task header banner ─────────────────────────────────────────
+            const headerBg = state==='completed'?'linear-gradient(135deg,#2e7d32,#43a047)':state==='pending'?'linear-gradient(135deg,#e65100,#ff9800)':state==='rejected'?'linear-gradient(135deg,#b71c1c,#f44336)':state==='locked'?'linear-gradient(135deg,#546e7a,#78909c)':'linear-gradient(135deg,#6a1b9a,#9c27b0)';
+            html += '<div style="background:'+headerBg+';color:white;border-radius:10px 10px 0 0;padding:12px 16px;margin:-1px -1px 14px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">';
+            html += '<div><span style="font-size:0.75em;opacity:0.85;text-transform:uppercase;letter-spacing:1px">Task '+( idx+1)+' of '+shTasks.length+'</span><h4 style="margin:4px 0 0;font-size:1em;font-weight:700">'+shEsc(t.name)+'</h4></div>';
+            html += stateLabel;
             html += '</div>';
-            if (t.hint) html += '<p style="color:#795548;font-size:0.9em;margin-bottom:10px">💡 Hint: ' + shEsc(t.hint) + '</p>';
-            if (t.availableFrom || t.deadline) {
-                html += '<div style="font-size:0.8em;color:#888;margin-bottom:8px;display:flex;gap:14px;flex-wrap:wrap">';
-                if (t.availableFrom) html += '<span>🟢 From: <strong>' + new Date(t.availableFrom).toLocaleString('en-IN',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit',hour12:true}) + '</strong></span>';
-                if (t.deadline)      html += '<span>🔴 Until: <strong>' + new Date(t.deadline).toLocaleString('en-IN',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit',hour12:true}) + '</strong></span>';
-                html += '</div>';
-                if (t._lockReason==='not_yet')  html += '<div style="background:#e3f2fd;padding:8px 12px;border-radius:6px;font-size:0.85em;color:#1565c0;margin-bottom:8px">⏳ This task opens on ' + new Date(t.availableFrom).toLocaleString('en-IN') + '</div>';
-                if (t._lockReason==='expired')  html += '<div style="background:#ffebee;padding:8px 12px;border-radius:6px;font-size:0.85em;color:#c62828;margin-bottom:8px">⛔ This task deadline has passed.</div>';
+
+            // ── Date/Time info panel ───────────────────────────────────────
+            html += '<div style="background:#f8f0ff;border-radius:8px;padding:10px 14px;margin-bottom:12px;font-size:0.85em">';
+            if (t.availableFrom) {
+                const fromDate = fmtDate(t.availableFrom);
+                const fromTime = new Date(t.availableFrom).toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true});
+                html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px"><span style="font-size:1.1em">🗓️</span><span style="color:#6a1b9a;font-weight:700">Task Day:</span> <span style="color:#333">'+fromDate+'</span></div>';
+                html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px"><span style="font-size:1.1em">⏰</span><span style="color:#388e3c;font-weight:700">Starts:</span> <span style="color:#333">'+fmtDT(t.availableFrom)+'</span></div>';
             }
+            if (t.deadline) {
+                html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px"><span style="font-size:1.1em">🔚</span><span style="color:#f44336;font-weight:700">Deadline:</span> <span style="color:#333">'+fmtDT(t.deadline)+'</span></div>';
+            }
+            if (t.createdAt) {
+                html += '<div style="display:flex;align-items:center;gap:8px"><span style="font-size:1.1em">📋</span><span style="color:#888;font-weight:600">Created:</span> <span style="color:#aaa">'+fmtDT(t.createdAt)+'</span></div>';
+            }
+            html += '</div>';
+
+            if (t.hint) html += '<p style="color:#795548;font-size:0.9em;margin-bottom:10px;background:#fff8e1;padding:8px 12px;border-radius:6px;border-left:4px solid #ffb300">💡 <strong>Hint:</strong> ' + shEsc(t.hint) + '</p>';
+
+            // Lock/expiry reason
+            if (t._lockReason==='not_yet')  html += '<div style="background:#e3f2fd;padding:10px 14px;border-radius:6px;font-size:0.88em;color:#1565c0;margin-bottom:10px;border-left:4px solid #2196f3">⏳ <strong>Not open yet.</strong> This task unlocks on '+fmtDT(t.availableFrom)+'</div>';
+            if (t._lockReason==='expired')  html += '<div style="background:#ffebee;padding:10px 14px;border-radius:6px;font-size:0.88em;color:#c62828;margin-bottom:10px;border-left:4px solid #f44336">⛔ <strong>Deadline passed.</strong> This task is no longer available.</div>';
+            if (state==='locked' && !t._lockReason) html += '<div style="background:#f5f5f5;padding:10px 14px;border-radius:6px;font-size:0.88em;color:#546e7a;margin-bottom:10px;border-left:4px solid #78909c">🔒 <strong>Locked.</strong> Complete and get the previous task approved first.</div>';
+
             if (shSettings.gps && t.lat && t.lng) html += '<span class="sh-gps-badge" style="margin-bottom:10px;display:inline-flex">📍 GPS Verified Location</span>';
             // Show submission date/time and review info
             if (sub) {
@@ -11936,22 +12032,185 @@ Davan Institute Team`;
                 }
             }
             if (sub && sub.photoUrl) html += '<div style="margin:10px 0"><img src="' + sub.photoUrl + '" class="sh-preview-img" onclick="shViewPhoto(this.src)" title="Click to enlarge"></div>';
-            if (state==='active' || state==='rejected') {
-                const fid = 'shFileInput_' + t.id;
-                html += '<div class="sh-upload-zone" id="shZone_' + t.id + '" onclick="document.getElementById(\'' + fid + '\').click()">';
-                html += '<div style="font-size:2em;margin-bottom:8px">📸</div>';
-                html += '<p style="color:#9c27b0;font-weight:600;margin:0">Tap to take / upload photo proof</p>';
-                html += '<p style="color:#999;font-size:0.85em;margin:4px 0 0">JPG/PNG, max 5MB</p>';
-                html += '<input type="file" id="' + fid + '" accept="image/*" capture="environment" style="display:none" onchange="shFileSelected(\'' + t.id + '\',this)">';
-                html += '<img id="shThumb_' + t.id + '" class="sh-preview-img" style="display:none"></div>';
-                if (shSettings.gps && t.lat && t.lng) html += '<div id="shDistInfo_' + t.id + '" style="margin-top:8px;font-size:0.88em;color:#1565c0">📡 Checking distance...</div>';
-                html += '<button class="btn btn-success" style="margin-top:12px;width:100%" onclick="shUploadPhoto(\'' + t.id + '\')">📤 Submit Photo Proof</button>';
-                html += '<div id="shUploadMsg_' + t.id + '" style="margin-top:8px;font-size:0.9em;display:none"></div>';
+
+            // ── MULTI-PART TASK LOGIC ──────────────────────────────────────
+            const taskParts = t.parts && t.parts.length ? t.parts : null;
+            if (taskParts) {
+                // Show overview bar of all parts
+                const subParts = (sub && sub.parts) ? sub.parts : [];
+                html += '<div style="background:#f3e5f5;border-left:4px solid #9c27b0;border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:0.88em">';
+                html += '<strong style="color:#6a1b9a">📋 This task has ' + taskParts.length + ' parts</strong> — each part needs admin approval before the next unlocks.<br>';
+                html += '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px">';
+                taskParts.forEach((pName, pi) => {
+                    const ps = subParts[pi];
+                    const icon = !ps ? '⬜' : ps.status === 'approved' ? '✅' : ps.status === 'rejected' ? '❌' : '⏳';
+                    html += '<span style="background:white;border:1px solid #ce93d8;border-radius:6px;padding:3px 8px;font-size:0.82em">' + icon + ' Part ' + (pi+1) + '</span>';
+                });
+                html += '</div></div>';
+
+                if (state === 'active' || state === 'rejected') {
+                    // Find the first part that needs action (not approved yet)
+                    let activePartIdx = 0;
+                    for (let pi = 0; pi < taskParts.length; pi++) {
+                        const ps = subParts[pi];
+                        if (ps && ps.status === 'approved') { activePartIdx = pi + 1; continue; }
+                        if (ps && ps.status === 'pending') {
+                            // This part is under review — show waiting
+                            html += '<div style="background:#fff3e0;border:2px solid #ff9800;border-radius:8px;padding:12px 14px;margin-bottom:10px">';
+                            html += '<strong style="color:#e65100">⏳ Part ' + (pi+1) + ' Under Review</strong><br>';
+                            html += '<span style="font-size:0.85em;color:#666">Part ' + (pi+2) + ' will unlock after Part ' + (pi+1) + ' is approved.</span></div>';
+                        } else {
+                            // This part needs to be submitted (new or rejected)
+                            if (ps && ps.status === 'rejected') {
+                                html += '<div style="background:#ffebee;border:2px solid #f44336;border-radius:8px;padding:10px 14px;margin-bottom:10px">';
+                                html += '<strong style="color:#c62828">❌ Part ' + (pi+1) + ' Rejected — Please reupload</strong>';
+                                if (ps.rejectionReason) html += '<div style="margin-top:6px;font-size:0.85em;background:#fff0f0;border-left:3px solid #f44336;padding:7px 10px;border-radius:0 6px 6px 0"><strong>📝 Reason:</strong> ' + shEsc(ps.rejectionReason) + '</div>';
+                                html += '</div>';
+                            }
+                            if (ps && ps.photoUrl) html += '<div style="margin:8px 0;font-size:0.82em;color:#6a1b9a;font-weight:700">📸 Part ' + (pi+1) + ' previous photo:</div><div style="margin:6px 0"><img src="' + ps.photoUrl + '" class="sh-preview-img" onclick="shViewPhoto(this.src)"></div>';
+                            html += '<div style="font-weight:700;color:#6a1b9a;margin-bottom:6px">📸 Part ' + (pi+1) + ': ' + shEsc(taskParts[pi]) + '</div>';
+                            const fpid = 'shPartFile_' + t.id + '_' + pi;
+                            html += '<div class="sh-upload-zone" id="shPartZone_' + t.id + '_' + pi + '" onclick="document.getElementById(\'' + fpid + '\').click()">';
+                            html += '<div style="font-size:2em;margin-bottom:8px">📸</div>';
+                            html += '<p style="color:#9c27b0;font-weight:600;margin:0">Tap to take / upload Part ' + (pi+1) + ' photo</p>';
+                            html += '<p style="color:#999;font-size:0.85em;margin:4px 0 0">JPG/PNG, max 5MB</p>';
+                            html += '<input type="file" id="' + fpid + '" accept="image/*" capture="environment" style="display:none" onchange="shPartFileSelected(\'' + t.id + '\',' + pi + ',this)">';
+                            html += '<img id="shPartThumb_' + t.id + '_' + pi + '" class="sh-preview-img" style="display:none"></div>';
+                            html += '<div style="margin-top:12px">';
+                            html += '<label style="display:block;font-weight:700;color:#6a1b9a;margin-bottom:6px;font-size:.95em">💬 Comment for Part ' + (pi+1) + ' <span style="color:#f44336">*</span></label>';
+                            html += '<textarea id="shPartComment_' + t.id + '_' + pi + '" rows="2" placeholder="Describe what you did for this part..." style="width:100%;padding:10px 14px;border:2px solid #9c27b0;border-radius:8px;font-size:.95em;resize:vertical;font-family:inherit;box-sizing:border-box"></textarea>';
+                            html += '</div>';
+                            html += '<button class="btn btn-success" style="margin-top:10px;width:100%" onclick="shUploadPart(\'' + t.id + '\',' + pi + ',' + taskParts.length + ')">📤 Submit Part ' + (pi+1) + ' Photo</button>';
+                            html += '<div id="shPartUploadMsg_' + t.id + '_' + pi + '" style="margin-top:8px;font-size:0.9em;display:none"></div>';
+                        }
+                        break; // Only show one part at a time
+                    }
+                    // If all parts done (approved), nothing more to show
+                    if (activePartIdx >= taskParts.length) {
+                        html += '<div style="background:#e8f5e9;border:2px solid #4caf50;border-radius:8px;padding:12px;text-align:center;font-weight:700;color:#2e7d32">🎉 All parts submitted and approved!</div>';
+                    }
+                } else if (state === 'pending') {
+                    // Find which part is pending
+                    for (let pi = 0; pi < taskParts.length; pi++) {
+                        const ps = subParts[pi];
+                        if (ps && ps.status === 'pending') {
+                            html += '<div style="background:#fff3e0;border:2px solid #ff9800;border-radius:8px;padding:10px 14px;margin-bottom:8px;display:flex;align-items:center;gap:8px">';
+                            html += '<span style="font-size:1.3em">⏳</span><div><strong style="color:#e65100">Part ' + (pi+1) + ' Under Review</strong><br>';
+                            html += '<span style="font-size:0.78em;color:#666">Waiting for admin approval</span></div></div>';
+                        }
+                    }
+                }
+            } else {
+                // ── SINGLE-PHOTO TASK (original flow) ─────────────────────
+                if (state==='active' || state==='rejected') {
+                    const fid = 'shFileInput_' + t.id;
+                    html += '<div class="sh-upload-zone" id="shZone_' + t.id + '" onclick="document.getElementById(\'' + fid + '\').click()">';
+                    html += '<div style="font-size:2em;margin-bottom:8px">📸</div>';
+                    html += '<p style="color:#9c27b0;font-weight:600;margin:0">Tap to take / upload photo proof</p>';
+                    html += '<p style="color:#999;font-size:0.85em;margin:4px 0 0">JPG/PNG, max 5MB</p>';
+                    html += '<input type="file" id="' + fid + '" accept="image/*" capture="environment" style="display:none" onchange="shFileSelected(\'' + t.id + '\',this)">';
+                    html += '<img id="shThumb_' + t.id + '" class="sh-preview-img" style="display:none"></div>';
+                    if (shSettings.gps && t.lat && t.lng) html += '<div id="shDistInfo_' + t.id + '" style="margin-top:8px;font-size:0.88em;color:#1565c0">📡 Checking distance...</div>';
+                    html += '<div style="margin-top:14px">';
+                    html += '<label style="display:block;font-weight:700;color:#6a1b9a;margin-bottom:6px;font-size:.95em">💬 Your Comment <span style="color:#f44336">*</span> <span style="font-weight:normal;color:#888;font-size:.85em">(required)</span></label>';
+                    html += '<textarea id="shComment_' + t.id + '" rows="3" placeholder="Describe what you did, who you met, or anything interesting about completing this task..." style="width:100%;padding:10px 14px;border:2px solid #9c27b0;border-radius:8px;font-size:.95em;resize:vertical;font-family:inherit;box-sizing:border-box" oninput="shCommentChanged(\'' + t.id + '\')"></textarea>';
+                    html += '<p style="color:#f44336;font-size:.82em;margin:4px 0 0;display:none" id="shCommentErr_' + t.id + '">⚠️ Please write a comment before submitting.</p>';
+                    html += '</div>';
+                    html += '<button class="btn btn-success" style="margin-top:12px;width:100%" onclick="shUploadPhoto(\'' + t.id + '\')">📤 Submit Photo + Comment</button>';
+                    html += '<div id="shUploadMsg_' + t.id + '" style="margin-top:8px;font-size:0.9em;display:none"></div>';
+                }
             }
             html += '</div>';
         });
         el.innerHTML = html;
         if (shUserLat !== null) shUpdateDistances();
+    }
+
+    // ── N-Parts: dynamic part input helpers ───────────────────────────
+    function shAddNewTaskPart(value) {
+        const box = document.getElementById('shNewTaskPartsBox');
+        const idx = box.children.length;
+        const row = document.createElement('div');
+        row.style.cssText = 'display:flex;gap:6px;align-items:center';
+        row.innerHTML = '<span style="font-size:0.82em;font-weight:700;color:#9c27b0;min-width:52px">Part '+(idx+1)+':</span>'
+            +'<input type="text" class="sh-part-input" value="'+(value||'')+'" placeholder="Describe what to photo for this part" style="flex:1;padding:7px 10px;border:1.5px solid #ce93d8;border-radius:7px;font-size:0.92em">'
+            +'<button type="button" onclick="this.parentElement.remove();shRenumberParts(\'shNewTaskPartsBox\')" style="background:#ffebee;color:#c62828;border:1px solid #ef9a9a;border-radius:6px;padding:4px 8px;cursor:pointer;font-size:0.82em">✕</button>';
+        box.appendChild(row);
+    }
+
+    function shAddEditPart(value, num) {
+        const box = document.getElementById('shEditPartsBox');
+        const idx = num !== undefined ? num - 1 : box.children.length;
+        const row = document.createElement('div');
+        row.style.cssText = 'display:flex;gap:6px;align-items:center';
+        row.innerHTML = '<span style="font-size:0.82em;font-weight:700;color:#9c27b0;min-width:52px">Part '+(idx+1)+':</span>'
+            +'<input type="text" class="sh-part-input" value="'+(value||'')+'" placeholder="Describe what to photo for this part" style="flex:1;padding:7px 10px;border:1.5px solid #ce93d8;border-radius:7px;font-size:0.92em">'
+            +'<button type="button" onclick="this.parentElement.remove();shRenumberParts(\'shEditPartsBox\')" style="background:#ffebee;color:#c62828;border:1px solid #ef9a9a;border-radius:6px;padding:4px 8px;cursor:pointer;font-size:0.82em">✕</button>';
+        box.appendChild(row);
+    }
+
+    function shRenumberParts(boxId) {
+        const box = document.getElementById(boxId);
+        if (!box) return;
+        Array.from(box.children).forEach((row, i) => {
+            const lbl = row.querySelector('span');
+            if (lbl) lbl.textContent = 'Part ' + (i+1) + ':';
+        });
+    }
+
+    // ── N-Parts: student part file selection & upload ─────────────────
+    function shPartFileSelected(taskId, partIdx, input) {
+        if (!input.files || !input.files[0]) return;
+        const reader = new FileReader();
+        reader.onload = e => {
+            const thumb = document.getElementById('shPartThumb_' + taskId + '_' + partIdx);
+            const zone  = document.getElementById('shPartZone_'  + taskId + '_' + partIdx);
+            if (thumb) { thumb.src = e.target.result; thumb.style.display = 'block'; }
+            if (zone)  zone.classList.add('has-file');
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+
+    async function shUploadPart(taskId, partIdx, totalParts) {
+        const input   = document.getElementById('shPartFile_'       + taskId + '_' + partIdx);
+        const msgEl   = document.getElementById('shPartUploadMsg_'  + taskId + '_' + partIdx);
+        const comment = (document.getElementById('shPartComment_'   + taskId + '_' + partIdx)?.value || '').trim();
+        if (!input || !input.files || !input.files[0]) { shShowInlineMsg(msgEl,'error','📸 Select a photo first.'); return; }
+        if (!comment) { shShowInlineMsg(msgEl,'error','⚠️ Please write a comment.'); return; }
+        if (input.files[0].size > 5*1024*1024) { shShowInlineMsg(msgEl,'error','❌ File too large. Max 5MB.'); return; }
+
+        // Server-side guard: verify previous parts are approved
+        const existingSnap = await window.db.ref('scavengerHunt/submissions/'+shCurrentUser.key+'/'+taskId).once('value');
+        const existing = existingSnap.val() || {};
+        const subParts = existing.parts || [];
+        if (partIdx > 0) {
+            const prevPart = subParts[partIdx - 1];
+            if (!prevPart || prevPart.status !== 'approved') {
+                shShowInlineMsg(msgEl,'error','🔒 Part ' + partIdx + ' must be approved before submitting Part ' + (partIdx+1) + '.'); return;
+            }
+        }
+
+        shShowInlineMsg(msgEl,'info','⏳ Uploading Part ' + (partIdx+1) + ' to storage...');
+        try {
+            const photoUrl = await shUploadToStorage(input.files[0], shCurrentUser.key, taskId, 'part' + partIdx);
+            const newParts = [...subParts];
+            newParts[partIdx] = { photoUrl, status: 'pending', comment, submittedAt: new Date().toISOString() };
+
+            // If this is Part 1 (first ever submission), create the main sub record too
+            if (partIdx === 0) {
+                await window.db.ref('scavengerHunt/submissions/'+shCurrentUser.key+'/'+taskId).set({
+                    taskId, taskName: shTasks.find(t=>t.id===taskId)?.name || '',
+                    status: 'pending', submittedAt: new Date().toISOString(),
+                    parts: newParts
+                });
+            } else {
+                await window.db.ref('scavengerHunt/submissions/'+shCurrentUser.key+'/'+taskId+'/parts/'+partIdx).set(newParts[partIdx]);
+            }
+            shShowInlineMsg(msgEl,'success','✅ Part ' + (partIdx+1) + ' submitted! Waiting for admin review.');
+            setTimeout(() => shLoadStudentDashboard(), 1500);
+        } catch(e) {
+            shShowInlineMsg(msgEl,'error','❌ Upload failed: '+e.message);
+        }
     }
 
     // ── GPS ────────────────────────────────────────────────────────────
@@ -12005,27 +12264,80 @@ Davan Institute Team`;
 
     // ── Upload photo ───────────────────────────────────────────────────
     async function shUploadPhoto(taskId) {
-        const task  = shTasks.find(t => t.id === taskId);
-        const input = document.getElementById('shFileInput_' + taskId);
-        const msgEl = document.getElementById('shUploadMsg_' + taskId);
-        const btnEl = document.querySelector('#shTask_' + taskId + ' .btn-success');
+        const task    = shTasks.find(t => t.id === taskId);
+        const input   = document.getElementById('shFileInput_' + taskId);
+        const msgEl   = document.getElementById('shUploadMsg_' + taskId);
+        const btnEl   = document.querySelector('#shTask_' + taskId + ' .btn-success');
+        const comment = (document.getElementById('shComment_' + taskId)?.value || '').trim();
+        const commentErr = document.getElementById('shCommentErr_' + taskId);
+
+        // Validate photo
         if (!input || !input.files || !input.files[0]) { shShowInlineMsg(msgEl,'error','📸 Select a photo first.'); return; }
+
+        // Validate comment — REQUIRED
+        if (!comment) {
+            if (commentErr) { commentErr.style.display = 'block'; }
+            document.getElementById('shComment_' + taskId)?.focus();
+            shShowInlineMsg(msgEl,'error','💬 Please write a comment before submitting.');
+            return;
+        }
+        if (commentErr) commentErr.style.display = 'none';
         if (shSettings.gps && task.lat && task.lng) {
             if (shUserLat===null) { shShowInlineMsg(msgEl,'error','❌ GPS not ready. Wait and retry.'); return; }
             const dist = shHaversine(shUserLat,shUserLng,task.lat,task.lng);
             if (dist > (shSettings.radius||100)) { shShowInlineMsg(msgEl,'error','❌ Too far! '+Math.round(dist)+'m away. Need '+( shSettings.radius||100)+'m.'); return; }
         }
+        // ── Server-side chain guard (re-verify before writing) ─────────────
+        // Re-fetch the full task list and submissions from Firebase right now
+        // to enforce the sequential chain even if the UI state is stale or
+        // a previous task was deleted and caused an incorrect index offset.
+        try {
+            const [liveTaskSnap, liveSubSnap] = await Promise.all([
+                window.db.ref('scavengerHunt/tasks').once('value'),
+                window.db.ref('scavengerHunt/submissions/'+shCurrentUser.key).once('value')
+            ]);
+            const liveTasksRaw  = liveTaskSnap.val() || {};
+            const liveTasks     = Object.entries(liveTasksRaw)
+                                    .map(([k,v])=>({id:k,...v}))
+                                    .sort((a,b)=>(a.order||0)-(b.order||0));
+            const liveSubs      = liveSubSnap.val() || {};
+            // Find where this task sits in the live sorted list
+            const liveTaskIdx   = liveTasks.findIndex(t => t.id === taskId);
+            const liveMinOrder  = liveTasks.length > 0 ? (liveTasks[0].order || 1) : 1;
+            const liveTaskOrder = liveTaskIdx >= 0 ? (liveTasks[liveTaskIdx].order || (liveTaskIdx+1)) : 999;
+            // Count consecutive approved tasks from the beginning of the live list
+            let liveApprovedCount = 0;
+            for (let i = 0; i < liveTasks.length; i++) {
+                const s = liveSubs[liveTasks[i].id];
+                if (s && s.status === 'approved' && s.submittedAt) { liveApprovedCount++; }
+                else { break; }
+            }
+            // Gate: task at liveTaskIdx=0 only if it genuinely has the minimum order;
+            // otherwise require all prior tasks to be approved
+            const liveIsFirstByOrder = liveTaskOrder === liveMinOrder;
+            const liveAllPrevOk = (liveTaskIdx === 0 && liveIsFirstByOrder) || liveApprovedCount >= liveTaskIdx;
+            if (!liveAllPrevOk) {
+                shShowInlineMsg(msgEl,'error','🔒 Cannot submit: previous task(s) must be approved first.');
+                return;
+            }
+        } catch(chainErr) {
+            console.error('Chain guard error:', chainErr);
+            shShowInlineMsg(msgEl,'error','❌ Could not verify task chain. Please retry.');
+            return;
+        }
+        // ── End chain guard ────────────────────────────────────────────────
         if (btnEl) { btnEl.disabled=true; btnEl.textContent='⏳ Uploading...'; }
-        shShowInlineMsg(msgEl,'info','⏳ Uploading photo...');
+        shShowInlineMsg(msgEl,'info','⏳ Uploading photo to storage...');
         try {
             const file = input.files[0];
             if (file.size > 5*1024*1024) { shShowInlineMsg(msgEl,'error','❌ File too large. Max 5MB.'); if(btnEl){btnEl.disabled=false;btnEl.textContent='📤 Submit Photo Proof';} return; }
-            const base64 = await shFileToBase64(file);
+            const photoUrl = await shUploadToStorage(file, shCurrentUser.key, taskId, 'p1');
             const subData = {
                 taskId, taskName:task.name,
                 studentKey:shCurrentUser.key, studentName:shCurrentUser.name,
                 studentEmail:shCurrentUser.email, studentClass:shCurrentUser.class||shCurrentUser.classYear||'',
-                photoUrl:base64,
+                photoUrl,
+                comment: comment,
                 status: shSettings.autoApprove && (!shSettings.gps||!task.lat) ? 'approved' : 'pending',
                 submittedAt:new Date().toISOString(), lat:shUserLat, lng:shUserLng
             };
@@ -12039,6 +12351,43 @@ Davan Institute Team`;
         }
     }
 
+    function shResetSubmissionFilters() {
+        const sf = document.getElementById('shSubmissionFilter');
+        const df = document.getElementById('shSubmissionDateFilter');
+        const tf = document.getElementById('shSubmissionTaskFilter');
+        if (sf) sf.value = 'all';
+        if (df) df.value = 'all';
+        if (tf) tf.value = 'all';
+        shAdminLoadSubmissions();
+    }
+
+    function shCommentChanged(taskId) {
+        const val = (document.getElementById('shComment_' + taskId)?.value || '').trim();
+        const err = document.getElementById('shCommentErr_' + taskId);
+        if (err) err.style.display = val ? 'none' : 'block';
+    }
+
+    // ── Upload photo to Cloudinary, return secure URL ─────────────────
+    // Cloud: dat0khbet | Preset: scavenger_hunt (unsigned)
+    async function shUploadToStorage(file, studentKey, taskId, partLabel) {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('upload_preset', 'scavenger_hunt');
+        formData.append('folder', 'scavenger_hunt/' + studentKey);
+        formData.append('public_id', taskId + '_' + partLabel + '_' + Date.now());
+        const res = await fetch('https://api.cloudinary.com/v1_1/dat0khbet/image/upload', {
+            method: 'POST',
+            body: formData
+        });
+        if (!res.ok) {
+            const err = await res.json();
+            throw new Error(err.error?.message || 'Cloudinary upload failed');
+        }
+        const data = await res.json();
+        return data.secure_url;
+    }
+
+    // Keep shFileToBase64 only for thumbnail previews (not used for storage anymore)
     function shFileToBase64(file) {
         return new Promise((res,rej) => { const r=new FileReader(); r.onload=()=>res(r.result); r.onerror=rej; r.readAsDataURL(file); });
     }
@@ -12078,8 +12427,13 @@ Davan Institute Team`;
         if (!name) { alert('Task name is required'); return; }
         const availFrom = document.getElementById('shNewTaskDate').value;
         const deadline  = document.getElementById('shNewTaskDeadline').value;
+        // Collect parts from dynamic fields
+        const partInputs = document.querySelectorAll('#shNewTaskPartsBox .sh-part-input');
+        const parts = [];
+        partInputs.forEach(inp => { const v = inp.value.trim(); if (v) parts.push(v); });
         const task = { name, order, createdAt:new Date().toISOString() };
-        if (hint)       task.hint = hint;
+        if (hint)          task.hint  = hint;
+        if (parts.length)  task.parts = parts;
         if (lat && lng) { task.lat=lat; task.lng=lng; }
         if (availFrom)  task.availableFrom = new Date(availFrom).toISOString();
         if (deadline)   task.deadline      = new Date(deadline).toISOString();
@@ -12093,6 +12447,7 @@ Davan Institute Team`;
         // Reset form
         document.getElementById('shNewTaskName').value     = '';
         document.getElementById('shNewTaskHint').value     = '';
+        document.getElementById('shNewTaskPartsBox').innerHTML = '';
         document.getElementById('shNewTaskOrder').value    = order + 1;
         document.getElementById('shNewTaskLat').value      = '';
         document.getElementById('shNewTaskLng').value      = '';
@@ -12122,35 +12477,62 @@ Davan Institute Team`;
 
     // ── Build WhatsApp message for ALL tasks ──────────────────────────
     function shBuildWaMsg(tasks) {
-        const fmtDT = iso => iso ? new Date(iso).toLocaleString('en-IN',{weekday:'short',day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit',hour12:true}) : null;
+        const fmtDT = iso => iso ? new Date(iso).toLocaleString('en-IN',{
+            weekday:'short', day:'2-digit', month:'short', year:'numeric',
+            hour:'2-digit', minute:'2-digit', hour12:true
+        }) : null;
+
         if (!tasks || !tasks.length) {
             document.getElementById('shWaText').value = '(No tasks yet — create a task above to generate the announcement message)';
             return;
         }
+
         const lines = [
-            `🗺️ *SCAVENGER HUNT — TASK LIST*`,
+            `🗺️ *SCAVENGER HUNT — SPURTHI YOUTH FEST 2026*`,
+            `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`,
             ``
         ];
+
         tasks.forEach((t, i) => {
-            const fromFmt = t.availableFrom ? fmtDT(t.availableFrom) : null;
-            const tillFmt = t.deadline      ? fmtDT(t.deadline)      : null;
-            const gpsLine = (t.lat && t.lng) ? `   📍 GPS: Set (auto-verify enabled)` : null;
-            lines.push(`*Task ${t.order || (i+1)}: ${t.name}*`);
-            if (t.hint)  lines.push(`   💡 Hint: ${t.hint}`);
-            lines.push(fromFmt ? `   ⏰ Starts at : ${fromFmt}` : `   ⏰ Starts at : Immediately`);
-            lines.push(tillFmt ? `   🔚 Deadline  : ${tillFmt}` : `   🔚 Deadline  : No deadline`);
-            if (gpsLine) lines.push(gpsLine);
-            if (i < tasks.length - 1) lines.push('');
+            const num      = t.order || (i + 1);
+            const fromFmt  = t.availableFrom ? fmtDT(t.availableFrom) : null;
+            const tillFmt  = t.deadline      ? fmtDT(t.deadline)      : null;
+            const hasGPS   = t.lat && t.lng;
+
+            // Task header
+            lines.push(`📌 *Task ${num}*`);
+            lines.push(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
+
+            // Task description (full name — may be long, show as-is)
+            lines.push(`${t.name}`);
+            lines.push(``);
+
+            // Hint
+            if (t.hint) lines.push(`💡 *Hint:* ${t.hint}`);
+
+            // Timing
+            lines.push(fromFmt  ? `⏰ *Starts :* ${fromFmt}`   : `⏰ *Starts :* Immediately`);
+            lines.push(tillFmt  ? `🔚 *Deadline :* ${tillFmt}` : `🔚 *Deadline :* No deadline`);
+
+            // GPS
+            if (hasGPS) lines.push(`📍 *Location:* GPS-verified task`);
+
+            // Separator between tasks
+            if (i < tasks.length - 1) lines.push(``);
         });
-        lines.push('');
+
+        lines.push(``);
+        lines.push(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
         lines.push(`📸 *How to participate:*`);
-        lines.push(`1. Open the Spurthi Youth Fest app`);
-        lines.push(`2. Login → Scavenger Hunt`);
-        lines.push(`3. Complete the task & upload your photo`);
-        lines.push('');
-        lines.push(`⚡ Be quick — points awarded on approval!`);
-        lines.push('');
-        lines.push(`— Spurthi Youth Fest 2026 🎉`);
+        lines.push(`1️⃣ Go to: https://davandegree.github.io/spurthi/`);
+        lines.push(`2️⃣ Select Online Competition → Scavenger Hunt`);
+        lines.push(`3️⃣ Login with your registered number`);
+        lines.push(`4️⃣ Complete the task & upload your photo`);
+        lines.push(``);
+        lines.push(`⚡ *Be quick — points awarded on approval!*`);
+        lines.push(``);
+        lines.push(`🎉 _Spurthi Youth Fest 2026 — Davan Institute_`);
+
         document.getElementById('shWaText').value = lines.join('\n');
     }
 
@@ -12175,6 +12557,10 @@ Davan Institute Team`;
             html += '<div class="form-group" style="margin:0"><label style="font-size:12px;font-weight:700;color:#6a1b9a">Task Name:</label><input id="shEditName" type="text" style="width:100%"></div>';
             html += '<div class="form-group" style="margin:0"><label style="font-size:12px;font-weight:700;color:#6a1b9a">Hint / Clue:</label><input id="shEditHint" type="text" style="width:100%"></div>';
             html += '<div class="form-group" style="margin:0"><label style="font-size:12px;font-weight:700;color:#6a1b9a">Task Order / Number:</label><input id="shEditOrder" type="number" min="1" style="width:100px"></div>';
+            html += '<div class="form-group" style="grid-column:1/-1;margin:0"><label style="font-size:12px;font-weight:700;color:#9c27b0">📸 Task Parts (multi-photo, optional):</label>';
+            html += '<div id="shEditPartsBox" style="display:flex;flex-direction:column;gap:6px;margin-bottom:6px"></div>';
+            html += '<button type="button" onclick="shAddEditPart()" style="background:#e8f5e9;color:#2e7d32;border:2px dashed #4caf50;border-radius:8px;padding:5px 12px;cursor:pointer;font-size:0.85em;font-weight:700">➕ Add Part</button>';
+            html += '<span style="font-size:0.78em;color:#888;display:block;margin-top:3px">Each part = one photo. Leave empty = single-photo task.</span></div>';
             html += '<div class="form-group" style="margin:0"><label style="font-size:12px;font-weight:700;color:#6a1b9a">📅 Available From:</label><input id="shEditFrom" type="datetime-local" style="padding:7px 10px;border:2px solid #9c27b0;border-radius:8px;font-size:0.93em"></div>';
             html += '<div class="form-group" style="margin:0"><label style="font-size:12px;font-weight:700;color:#6a1b9a">⏰ Available Until:</label><input id="shEditTill" type="datetime-local" style="padding:7px 10px;border:2px solid #e91e63;border-radius:8px;font-size:0.93em"></div>';
             html += '<div class="form-group" style="margin:0"><label style="font-size:12px;font-weight:700;color:#1565c0">📍 GPS Lat / Lng (optional):</label>';
@@ -12218,6 +12604,10 @@ Davan Institute Team`;
         document.getElementById('shEditName').value  = t.name  || '';
         document.getElementById('shEditHint').value  = t.hint  || '';
         document.getElementById('shEditOrder').value = t.order || 1;
+        // Populate parts
+        const editBox = document.getElementById('shEditPartsBox');
+        editBox.innerHTML = '';
+        (t.parts || []).forEach((p, i) => shAddEditPart(p, i+1));
         document.getElementById('shEditLat').value   = t.lat   || '';
         document.getElementById('shEditLng').value   = t.lng   || '';
         document.getElementById('shEditFrom').value  = t.availableFrom ? new Date(t.availableFrom).toISOString().slice(0,16) : '';
@@ -12251,10 +12641,15 @@ Davan Institute Team`;
         const lngV  = parseFloat(document.getElementById('shEditLng').value) || null;
         if (!name) { alert('Task name is required'); return; }
 
+        // Collect parts from edit panel
+        const editPartInputs = document.querySelectorAll('#shEditPartsBox .sh-part-input');
+        const editParts = [];
+        editPartInputs.forEach(inp => { const v = inp.value.trim(); if (v) editParts.push(v); });
         const update = {
             name,
             order,
             hint:          hint || null,
+            parts:         editParts.length ? editParts : null,
             availableFrom: fromV ? new Date(fromV).toISOString() : null,
             deadline:      tillV ? new Date(tillV).toISOString() : null,
             lat:           latV,
@@ -12319,7 +12714,7 @@ Davan Institute Team`;
 
     function shAdminStopSubmissionsListener() {
         if (_shSubmissionsListener) {
-            window.db.ref('scavengerHunt/submissions').off('value', _shSubmissionsListener);
+            getDb().ref('scavengerHunt/submissions').off('value', _shSubmissionsListener);
             _shSubmissionsListener = null;
         }
     }
@@ -12329,7 +12724,7 @@ Davan Institute Team`;
         const el = document.getElementById('shAdminSubmissionsList');
         if(!el) return;
         el.innerHTML = '<p style="color:#999">🔄 Loading live submissions...</p>';
-        _shSubmissionsListener = window.db.ref('scavengerHunt/submissions').on('value', snap => {
+        _shSubmissionsListener = getDb().ref('scavengerHunt/submissions').on('value', snap => {
             shAdminRenderSubmissions(snap);
         }, err => {
             if(el) el.innerHTML = '<p style="color:red">Error: ' + err.message + '</p>';
@@ -12342,22 +12737,71 @@ Davan Institute Team`;
     }
 
     function shAdminRenderSubmissions(snap) {
-        const el     = document.getElementById('shAdminSubmissionsList');
-        const filter = (document.getElementById('shSubmissionFilter')||{}).value||'all';
+        const el         = document.getElementById('shAdminSubmissionsList');
+        const filter     = (document.getElementById('shSubmissionFilter')||{}).value||'all';
+        const dateFilter = (document.getElementById('shSubmissionDateFilter')||{}).value||'all';
+        const taskFilter = (document.getElementById('shSubmissionTaskFilter')||{}).value||'all';
         if(!el) return;
         try {
             const allSubs = snap.val() || {};
             let rows = [];
             Object.entries(allSubs).forEach(([sk,ss]) => {
                 Object.entries(ss).forEach(([tid,sub]) => {
-                    if (filter!=='all' && sub.status!==filter) return;
                     rows.push({studentKey:sk, taskId:tid, ...sub});
                 });
+            });
+
+            // Populate date dropdown dynamically
+            const dateSet = new Set(rows.map(r => r.submittedAt ? r.submittedAt.slice(0,10) : 'unknown').filter(Boolean));
+            const dateSel = document.getElementById('shSubmissionDateFilter');
+            const prevDate = dateSel ? dateSel.value : 'all';
+            if (dateSel) {
+                const sortedDates = [...dateSet].sort().reverse();
+                dateSel.innerHTML = '<option value="all">📅 All Dates</option>' +
+                    sortedDates.map(d => `<option value="${d}" ${d===prevDate?'selected':''}>${new Date(d+'T00:00:00').toLocaleDateString('en-IN',{weekday:'short',day:'2-digit',month:'short',year:'numeric'})}</option>`).join('');
+            }
+
+            // Populate task dropdown dynamically
+            const taskMap = {};
+            rows.forEach(r => { if (r.taskId && r.taskName) taskMap[r.taskId] = r.taskName; });
+            const taskSel = document.getElementById('shSubmissionTaskFilter');
+            const prevTask = taskSel ? taskSel.value : 'all';
+            if (taskSel) {
+                taskSel.innerHTML = '<option value="all">📌 All Tasks</option>' +
+                    Object.entries(taskMap).map(([id,name]) => `<option value="${id}" ${id===prevTask?'selected':''}>${name.length>40?name.slice(0,40)+'…':name}</option>`).join('');
+            }
+
+            // Apply all filters
+            rows = rows.filter(r => {
+                const rowDate = r.submittedAt ? r.submittedAt.slice(0,10) : 'unknown';
+                if (filter!=='all'     && r.status!==filter)     return false;
+                if (dateFilter!=='all' && rowDate!==dateFilter)   return false;
+                if (taskFilter!=='all' && r.taskId!==taskFilter)  return false;
+                return true;
             });
             if (!rows.length) { el.innerHTML='<p style="color:#999">No submissions for filter: '+filter+'</p>'; return; }
             rows.sort((a,b)=>new Date(b.submittedAt)-new Date(a.submittedAt));
             let html = '';
+            // Show warning if any phantom submissions exist
+            const phantoms = rows.filter(r => !r.submittedAt);
+            if (phantoms.length) {
+                html += '<div style="background:#fff3e0;border:2px solid #ff9800;border-radius:10px;padding:12px 16px;margin-bottom:16px">';
+                html += '<strong style="color:#e65100">⚠️ '+phantoms.length+' phantom submission(s) found</strong> — these have no photo/timestamp (possibly created by accident). ';
+                html += '<button onclick="shDeleteAllPhantoms()" style="background:#e65100;color:white;border:none;padding:4px 12px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:700;margin-left:8px">🗑️ Delete All Phantoms</button>';
+                html += '</div>';
+            }
+
             rows.forEach(r => {
+                // Phantom = admin-created status with no real submission
+                if (!r.submittedAt) {
+                    html += '<div style="background:#fff8e1;border:2px dashed #ff9800;border-radius:12px;padding:14px 18px;margin-bottom:14px;opacity:0.85">';
+                    html += '<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">';
+                    html += '<div><strong style="color:#e65100">⚠️ PHANTOM</strong> — <strong style="color:#6a1b9a">'+shEsc(r.studentName||r.studentKey)+'</strong> <span style="color:#666;font-size:0.85em">('+shEsc(r.studentClass||'')+')</span><br>';
+                    html += '<span style="color:#555;font-size:0.9em">Task: <strong>'+shEsc(r.taskName||r.taskId)+'</strong></span> &nbsp; <span style="font-size:0.8em;color:#e65100">No photo or timestamp — student never actually submitted this task</span></div>';
+                    html += '<button class="btn btn-danger btn-small" onclick="shAdminDeleteSubmission(\'' + r.studentKey + '\',\'' + r.taskId + '\')">🗑️ Delete Phantom</button>';
+                    html += '</div></div>';
+                    return;
+                }
                 const bg  = r.status==='approved'?'#d4edda':r.status==='rejected'?'#ffebee':'#fff3cd';
                 const brd = r.status==='approved'?'#4caf50':r.status==='rejected'?'#f44336':'#ff9800';
                 html += '<div style="background:'+bg+';border:2px solid '+brd+';border-radius:12px;padding:16px 18px;margin-bottom:14px">';
@@ -12365,14 +12809,62 @@ Davan Institute Team`;
                 html += '<div><strong style="color:#6a1b9a">'+shEsc(r.studentName||r.studentKey)+'</strong> <span style="color:#666;font-size:0.85em">('+shEsc(r.studentClass||'')+')</span><br>';
                 html += '<span style="color:#555;font-size:0.9em">Task: <strong>'+shEsc(r.taskName||r.taskId)+'</strong></span></div>';
                 html += '<div style="text-align:right"><span style="font-size:0.8em;color:#777">'+new Date(r.submittedAt).toLocaleString('en-IN')+'</span></div></div>';
-                if (r.photoUrl) html += '<img src="'+r.photoUrl+'" class="sh-admin-photo" onclick="shViewPhoto(this.src)" title="Click to enlarge"><br>';
+                if (r.photoUrl) html += '<div style="margin:6px 0 2px"><span style="font-size:0.78em;font-weight:700;color:#6a1b9a">📸 Part 1 Photo:</span></div><img src="'+r.photoUrl+'" class="sh-admin-photo" onclick="shViewPhoto(this.src)" title="Click to enlarge"><br>';
                 if (r.lat && r.lng) html += '<a href="https://maps.google.com/?q='+r.lat+','+r.lng+'" target="_blank" style="font-size:0.85em;color:#1565c0">📍 View on Maps</a><br>';
+                if (r.comment) html += '<div style="margin:10px 0;background:white;border-left:4px solid #9c27b0;border-radius:0 8px 8px 0;padding:10px 14px"><span style="font-size:0.8em;font-weight:700;color:#6a1b9a;display:block;margin-bottom:4px">💬 Student Comment:</span><span style="color:#333;font-size:0.93em">'+shEsc(r.comment)+'</span></div>';
+                else html += '<div style="margin:8px 0;font-size:0.82em;color:#f44336;font-style:italic">💬 No comment provided</div>';
+
+                // ── Multi-part submissions ─────────────────────────────────
+                // Check if this task has parts stored in Firebase tasks
+                const taskDef = window._shTasksCache && window._shTasksCache[r.taskId];
+                const taskParts = taskDef && taskDef.parts && taskDef.parts.length ? taskDef.parts : null;
+                const subParts  = r.parts || [];
+
+                if (taskParts) {
+                    // Show each part with approve/reject
+                    taskParts.forEach((pName, pi) => {
+                        const ps = subParts[pi];
+                        if (!ps || !ps.photoUrl) {
+                            // Part not yet submitted by student
+                            const prevApproved = pi === 0 || (subParts[pi-1] && subParts[pi-1].status === 'approved');
+                            if (prevApproved) {
+                                html += '<div style="margin-top:10px;background:#f3e5f5;border-left:4px solid #9c27b0;border-radius:6px;padding:8px 12px;font-size:0.85em;color:#6a1b9a">⏳ Waiting for student to submit <strong>Part '+(pi+1)+': '+shEsc(pName)+'</strong></div>';
+                            }
+                            return;
+                        }
+                        const pbg  = ps.status==='approved'?'#e8f5e9':ps.status==='rejected'?'#ffebee':'#fff3cd';
+                        const pbrd = ps.status==='approved'?'#4caf50':ps.status==='rejected'?'#f44336':'#ff9800';
+                        html += '<div style="margin-top:12px;border-top:2px dashed #ce93d8;padding-top:12px">';
+                        html += '<div style="font-weight:700;color:#6a1b9a;margin-bottom:6px">📸 Part '+(pi+1)+': '+shEsc(pName)+'</div>';
+                        html += '<img src="'+ps.photoUrl+'" class="sh-admin-photo" onclick="shViewPhoto(this.src)" title="Click to enlarge"><br>';
+                        if (ps.submittedAt) html += '<div style="font-size:0.78em;color:#888;margin:3px 0">Submitted: '+new Date(ps.submittedAt).toLocaleString('en-IN')+'</div>';
+                        if (ps.comment) html += '<div style="background:white;border-left:3px solid #9c27b0;padding:6px 10px;border-radius:0 6px 6px 0;font-size:0.85em;margin:4px 0"><strong>💬</strong> '+shEsc(ps.comment)+'</div>';
+                        if (!ps.status || ps.status === 'pending') {
+                            html += '<div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">';
+                            html += '<button class="btn btn-success btn-small" onclick="shAdminVerifyPart(\''+r.studentKey+'\',\''+r.taskId+'\','+pi+',\'approved\')">✅ Approve Part '+(pi+1)+'</button>';
+                            html += '<button class="btn btn-danger btn-small" onclick="shAdminVerifyPart(\''+r.studentKey+'\',\''+r.taskId+'\','+pi+',\'rejected\')">❌ Reject Part '+(pi+1)+'</button>';
+                            html += '</div>';
+                        } else {
+                            const picon = ps.status==='approved'?'✅':'❌';
+                            html += '<div style="margin-top:6px;display:flex;align-items:center;gap:8px;flex-wrap:wrap"><strong>'+picon+' Part '+(pi+1)+' '+ps.status.toUpperCase()+'</strong>';
+                            if (ps.status !== 'approved') html += '<button class="btn btn-success btn-small" onclick="shAdminVerifyPart(\''+r.studentKey+'\',\''+r.taskId+'\','+pi+',\'approved\')">✅ Approve Part '+(pi+1)+'</button>';
+                            html += '</div>';
+                        }
+                        html += '</div>';
+                    });
+                    // Overall task reset/delete
+                    html += '<div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">';
+                    html += '<button class="btn btn-secondary btn-small" onclick="shAdminVerify(\''+r.studentKey+'\',\''+r.taskId+'\',\'pending\',\'\')">↩️ Reset All</button>';
+                    html += '<button class="btn btn-danger btn-small" onclick="shAdminDeleteSubmission(\''+r.studentKey+'\',\''+r.taskId+'\')">🗑️ Delete All</button>';
+                    html += '</div>';
+                } else {
+                    // ── Single-photo task approve/reject (original flow) ───
                 if (r.status==='pending') {
                     const rejectBoxId = 'shRejectBox_' + r.studentKey + '_' + r.taskId;
                     html += '<div style="margin-top:10px">';
                     html += '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">';
-                    html += '<button class="btn btn-success btn-small" onclick="shAdminVerify(\'' + r.studentKey + '\',\'' + r.taskId + '\',\'approved\',\'\')">✅ Approve</button>';
-                    html += '<button class="btn btn-danger btn-small" onclick="shAdminToggleRejectBox(\'' + rejectBoxId + '\')">❌ Reject</button>';
+                    html += '<button class="btn btn-success btn-small" onclick="shAdminVerify(\'' + r.studentKey + '\',\'' + r.taskId + '\',\'approved\',\'\')">✅ Approve Part 1</button>';
+                    html += '<button class="btn btn-danger btn-small" onclick="shAdminToggleRejectBox(\'' + rejectBoxId + '\')">❌ Reject Part 1</button>';
                     html += '</div>';
                     html += '<div id="' + rejectBoxId + '" style="display:none;background:#fff0f0;border:2px solid #f44336;border-radius:10px;padding:14px;margin-top:4px">';
                     html += '<label style="font-size:0.88em;color:#c62828;font-weight:700;display:block;margin-bottom:6px">📝 Reason for rejection (will be shown to student):</label>';
@@ -12401,6 +12893,7 @@ Davan Institute Team`;
                     html += '<button class="btn btn-danger btn-small" onclick="shAdminDeleteSubmission(\'' + r.studentKey + '\',\'' + r.taskId + '\')">🗑️ Delete</button>';
                     html += '</div></div>';
                 }
+                } // end single-photo else
                                 html += '</div>';
             });
             el.innerHTML = html;
@@ -12408,14 +12901,63 @@ Davan Institute Team`;
     }
 
     async function shAdminVerify(studentKey, taskId, status, reason) {
+        // Safety check: only update if a real submission exists (has submittedAt)
+        const existing = await getDb().ref('scavengerHunt/submissions/'+studentKey+'/'+taskId).once('value');
+        if (!existing.exists() || !existing.val().submittedAt) {
+            alert('⚠️ No real submission found for this student/task. Cannot update.');
+            return;
+        }
         const update = {
             status,
             reviewedAt: new Date().toISOString(),
             reviewedBy: (window.currentUser && window.currentUser.name) ? window.currentUser.name : 'Admin',
             rejectionReason: (status === 'rejected' && reason) ? reason : null
         };
-        await window.db.ref('scavengerHunt/submissions/'+studentKey+'/'+taskId).update(update);
+        await getDb().ref('scavengerHunt/submissions/'+studentKey+'/'+taskId).update(update);
         shAdminLoadSubmissions();
+    }
+
+    async function shAdminVerifyPart(studentKey, taskId, partIdx, status) {
+        try {
+            await getDb().ref('scavengerHunt/submissions/'+studentKey+'/'+taskId+'/parts/'+partIdx).update({
+                status,
+                reviewedAt: new Date().toISOString(),
+                reviewedBy: (window.currentUser && window.currentUser.name) ? window.currentUser.name : 'Admin'
+            });
+            // If ALL parts are now approved, also set the top-level status to 'approved'
+            const snap = await getDb().ref('scavengerHunt/submissions/'+studentKey+'/'+taskId).once('value');
+            const sub  = snap.val();
+            const taskDef = window._shTasksCache && window._shTasksCache[taskId];
+            const totalParts = taskDef && taskDef.parts ? taskDef.parts.length : 0;
+            const subParts   = sub && sub.parts ? sub.parts : [];
+            const allApproved = totalParts > 0 && subParts.length >= totalParts && subParts.every(p => p && p.status === 'approved');
+            if (allApproved) {
+                await getDb().ref('scavengerHunt/submissions/'+studentKey+'/'+taskId).update({
+                    status: 'approved', reviewedAt: new Date().toISOString(),
+                    reviewedBy: (window.currentUser && window.currentUser.name) ? window.currentUser.name : 'Admin'
+                });
+            }
+            shAdminLoadSubmissions();
+        } catch(e) { alert('Error: ' + e.message); }
+    }
+
+    async function shDeleteAllPhantoms() {
+        if (!confirm('Delete ALL phantom submissions (entries with no photo/timestamp)? This cannot be undone.')) return;
+        try {
+            const snap = await getDb().ref('scavengerHunt/submissions').once('value');
+            const allSubs = snap.val() || {};
+            const deletes = [];
+            Object.entries(allSubs).forEach(([sk, ss]) => {
+                Object.entries(ss).forEach(([tid, sub]) => {
+                    if (!sub.submittedAt) {
+                        deletes.push(getDb().ref('scavengerHunt/submissions/'+sk+'/'+tid).remove());
+                    }
+                });
+            });
+            await Promise.all(deletes);
+            alert('✅ Deleted '+deletes.length+' phantom submission(s).');
+            shAdminLoadSubmissions();
+        } catch(e) { alert('Error: '+e.message); }
     }
 
     function shAdminToggleRejectBox(boxId) {
@@ -12455,41 +12997,159 @@ Davan Institute Team`;
     }
 
     // ── Admin: Leaderboard ─────────────────────────────────────────────
+    // ── Leaderboard cache ────────────────────────────────────────────
+    let _shLbSubsCache = null;
+    let _shLbTasksCache = null;
+
     async function shAdminLoadLeaderboard() {
         const el = document.getElementById('shAdminLeaderboardList');
         if(!el) return;
         el.innerHTML = '<p style="color:#999">Loading...</p>';
         try {
+            const _db = getDb();
             const [subSnap, taskSnap] = await Promise.all([
-                window.db.ref('scavengerHunt/submissions').once('value'),
-                window.db.ref('scavengerHunt/tasks').once('value')
+                _db.ref('scavengerHunt/submissions').once('value'),
+                _db.ref('scavengerHunt/tasks').once('value')
             ]);
-            const allSubs  = subSnap.val()  || {};
-            const allTasks = taskSnap.val() || {};
-            const totalTasks = Object.keys(allTasks).length;
-            let rows = [];
-            Object.entries(allSubs).forEach(([sk,ss]) => {
-                let approved=0, lastTime=null;
-                Object.values(ss).forEach(sub => {
-                    if (sub.status==='approved') { approved++; if(!lastTime||sub.reviewedAt>lastTime) lastTime=sub.reviewedAt; }
+            _shLbSubsCache  = subSnap.val()  || {};
+            _shLbTasksCache = taskSnap.val() || {};
+
+            // Populate Task filter
+            const taskSel = document.getElementById('shLbTaskFilter');
+            if (taskSel) {
+                const curTask = taskSel.value;
+                taskSel.innerHTML = '<option value="all">📌 All Tasks</option>';
+                Object.entries(_shLbTasksCache)
+                    .sort((a,b)=>(a[1].order||0)-(b[1].order||0))
+                    .forEach(([tid,t]) => {
+                        const o = document.createElement('option');
+                        o.value = tid;
+                        o.textContent = '📍 ' + (t.name||tid);
+                        if (tid===curTask) o.selected=true;
+                        taskSel.appendChild(o);
+                    });
+            }
+
+            // Populate Class filter
+            const classSel = document.getElementById('shLbClassFilter');
+            if (classSel) {
+                const curCls = classSel.value;
+                const classSet = new Set();
+                Object.values(_shLbSubsCache).forEach(ss => {
+                    const first = Object.values(ss)[0]||{};
+                    if (first.studentClass) classSet.add(first.studentClass);
                 });
-                const first = Object.values(ss)[0];
-                rows.push({name:first.studentName||sk, cls:first.studentClass||'', approved, lastTime:lastTime||'', totalTasks});
-            });
-            rows.sort((a,b)=>b.approved-a.approved||(a.lastTime||'zzz').localeCompare(b.lastTime||'zzz'));
-            if (!rows.length) { el.innerHTML='<p style="color:#999">No participants yet.</p>'; return; }
-            const medals=['🥇','🥈','🥉'];
-            let html='';
-            rows.forEach((r,i) => {
-                const pct = totalTasks ? Math.round(r.approved/totalTasks*100) : 0;
-                html += '<div class="sh-leaderboard-row">';
-                html += '<div class="sh-rank">'+(medals[i]||(i+1))+'</div>';
-                html += '<div style="flex:1"><strong style="color:#6a1b9a">'+shEsc(r.name)+'</strong> <span style="color:#999;font-size:0.85em">('+shEsc(r.cls)+')</span><br>';
-                html += '<div class="sh-progress-bar-wrap" style="height:8px;margin-top:6px"><div class="sh-progress-bar" style="width:'+pct+'%"></div></div>';
-                html += '<span style="font-size:0.82em;color:#666">'+r.approved+'/'+r.totalTasks+' tasks ('+pct+'%)</span></div></div>';
-            });
-            el.innerHTML = html;
+                classSel.innerHTML = '<option value="all">🏫 All Classes</option>';
+                [...classSet].sort().forEach(c => {
+                    const o = document.createElement('option');
+                    o.value = c; o.textContent = c;
+                    if (c===curCls) o.selected=true;
+                    classSel.appendChild(o);
+                });
+            }
+
+            shAdminRenderLeaderboard();
         } catch(e) { el.innerHTML='<p style="color:red">Error: '+e.message+'</p>'; }
+    }
+
+    function shAdminRenderLeaderboard() {
+        const el = document.getElementById('shAdminLeaderboardList');
+        if (!el || !_shLbSubsCache || !_shLbTasksCache) return;
+
+        const taskF  = (document.getElementById('shLbTaskFilter')||{}).value||'all';
+        const classF = (document.getElementById('shLbClassFilter')||{}).value||'all';
+
+        // Sorted task list for display
+        const allTasksSorted = Object.entries(_shLbTasksCache)
+            .sort((a,b)=>(a[1].order||0)-(b[1].order||0));
+
+        // Determine which tasks count toward "total" based on filter
+        const taskIds = taskF === 'all'
+            ? allTasksSorted.map(([tid])=>tid)
+            : [taskF];
+        const totalTasks = taskIds.length;
+
+        let rows = [];
+        Object.entries(_shLbSubsCache).forEach(([sk,ss]) => {
+            const first = Object.values(ss)[0]||{};
+            const cls = first.studentClass||'';
+            if (classF !== 'all' && cls !== classF) return;
+
+            let approved=0, submitted=0, lastTime=null;
+            // Per-task status for inline display
+            const taskStatuses = [];
+            taskIds.forEach(tid => {
+                const sub = ss[tid];
+                const tName = (_shLbTasksCache[tid]||{}).name || ('Task '+(allTasksSorted.findIndex(([id])=>id===tid)+1));
+                const tNum  = 'Task '+(allTasksSorted.findIndex(([id])=>id===tid)+1);
+                if (sub) {
+                    submitted++;
+                    if (sub.status==='approved') {
+                        approved++;
+                        if (!lastTime || (sub.reviewedAt||'') > lastTime) lastTime = sub.reviewedAt||'';
+                        taskStatuses.push({tNum, tName, status:'approved'});
+                    } else if (sub.status==='pending') {
+                        taskStatuses.push({tNum, tName, status:'pending'});
+                    } else {
+                        taskStatuses.push({tNum, tName, status:'rejected'});
+                    }
+                }
+                // If no submission, don't add to taskStatuses (not submitted yet)
+            });
+
+            // When a specific task is filtered: only include students who have submitted that task
+            // When "All Tasks": include everyone who has submitted at least one task
+            if (taskF !== 'all' && submitted === 0) return;
+            if (taskF === 'all' && submitted === 0) return;
+
+            rows.push({name:first.studentName||sk, cls, approved, submitted, lastTime:lastTime||'', totalTasks, taskStatuses});
+        });
+
+        rows.sort((a,b)=>b.approved-a.approved||(a.lastTime||'zzz').localeCompare(b.lastTime||'zzz'));
+
+        // Active filter label
+        let filterLabel = '';
+        if (taskF !== 'all') {
+            const tName = (_shLbTasksCache[taskF]||{}).name || taskF;
+            filterLabel += `<span style="background:#e8f5e9;color:#2e7d32;padding:3px 10px;border-radius:12px;font-size:0.8em;font-weight:700;margin-right:6px">📍 ${shEsc(tName)}</span>`;
+        }
+        if (classF !== 'all') {
+            filterLabel += `<span style="background:#e3f2fd;color:#1565c0;padding:3px 10px;border-radius:12px;font-size:0.8em;font-weight:700">🏫 ${shEsc(classF)}</span>`;
+        }
+
+        if (!rows.length) {
+            el.innerHTML = (filterLabel ? `<div style="margin-bottom:10px">${filterLabel}</div>` : '') + '<p style="color:#999">No participants have submitted for the selected filter.</p>';
+            return;
+        }
+
+        const medals=['🥇','🥈','🥉'];
+        let html = filterLabel ? `<div style="margin-bottom:12px">${filterLabel} <span style="color:#888;font-size:0.82em">(${rows.length} participant${rows.length!==1?'s':''} shown)</span></div>` : '';
+        rows.forEach((r,i) => {
+            const pct = totalTasks ? Math.round(r.approved/totalTasks*100) : 0;
+
+            // Build inline task chips
+            let taskChipsInline = '';
+            if (r.taskStatuses && r.taskStatuses.length) {
+                r.taskStatuses.forEach(ts => {
+                    const chipBg  = ts.status==='approved'?'#e8f5e9':ts.status==='pending'?'#fff3e0':'#ffebee';
+                    const chipCol = ts.status==='approved'?'#2e7d32':ts.status==='pending'?'#e65100':'#c62828';
+                    const chipIcon = ts.status==='approved'?'✅':ts.status==='pending'?'⏳':'❌';
+                    taskChipsInline += `<span style="background:${chipBg};color:${chipCol};padding:2px 8px;border-radius:10px;font-size:0.75em;font-weight:700;white-space:nowrap">${chipIcon} ${shEsc(ts.tNum)}</span>`;
+                });
+            }
+
+            html += '<div class="sh-leaderboard-row">';
+            html += '<div class="sh-rank">'+(medals[i]||(i+1))+'</div>';
+            html += '<div style="flex:1">';
+            html += '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px">';
+            html += '<strong style="color:#6a1b9a">'+shEsc(r.name)+'</strong>';
+            html += '<span style="color:#999;font-size:0.85em">('+shEsc(r.cls)+')</span>';
+            if (taskChipsInline) html += taskChipsInline;
+            html += '</div>';
+            html += '<div class="sh-progress-bar-wrap" style="height:8px;margin-top:2px"><div class="sh-progress-bar" style="width:'+pct+'%"></div></div>';
+            html += '<span style="font-size:0.82em;color:#666">'+r.approved+'/'+r.totalTasks+' task'+(r.totalTasks!==1?'s':'')+' ('+pct+'%)</span></div></div>';
+        });
+        el.innerHTML = html;
     }
 
     // ── Admin: Class-wise Participation ───────────────────────────────
@@ -12500,13 +13160,50 @@ Davan Institute Team`;
         const el = document.getElementById('shAdminClasswiseList');
         if (el) el.innerHTML = '<p style="color:#aaa;text-align:center;padding:12px">⏳ Loading…</p>';
         try {
+            const _db = getDb();
             const [subSnap, taskSnap] = await Promise.all([
-                window.db.ref('scavengerHunt/submissions').once('value'),
-                window.db.ref('scavengerHunt/tasks').once('value')
+                _db.ref('scavengerHunt/submissions').once('value'),
+                _db.ref('scavengerHunt/tasks').once('value')
             ]);
             _shAllSubsCache  = subSnap.val()  || {};
             _shAllTasksCache = taskSnap.val() || {};
             const totalTasks = Object.keys(_shAllTasksCache).length;
+
+            // Populate Task filter for Summary
+            const cwTaskSel = document.getElementById('shCwTaskFilter');
+            if (cwTaskSel) {
+                const curCwTask = cwTaskSel.value;
+                cwTaskSel.innerHTML = '<option value="all">📌 All Tasks</option>';
+                Object.entries(_shAllTasksCache)
+                    .sort((a,b)=>(a[1].order||0)-(b[1].order||0))
+                    .forEach(([tid,t]) => {
+                        const o = document.createElement('option');
+                        o.value = tid;
+                        o.textContent = '📍 ' + (t.name||tid);
+                        if (tid===curCwTask) o.selected=true;
+                        cwTaskSel.appendChild(o);
+                    });
+            }
+
+            // Populate Date filter for Summary
+            const cwDateSel = document.getElementById('shCwDateFilter');
+            if (cwDateSel) {
+                const curCwDate = cwDateSel.value;
+                const dateSet = new Set();
+                Object.values(_shAllSubsCache).forEach(ss => {
+                    Object.values(ss).forEach(sub => {
+                        if (sub.submittedAt) dateSet.add(sub.submittedAt.slice(0,10));
+                    });
+                });
+                cwDateSel.innerHTML = '<option value="all">📅 All Dates</option>';
+                [...dateSet].sort().reverse().forEach(d => {
+                    const o = document.createElement('option');
+                    o.value = d;
+                    o.textContent = new Date(d+'T00:00:00').toLocaleDateString('en-IN',{weekday:'short',day:'2-digit',month:'short',year:'numeric'});
+                    if (d===curCwDate) o.selected=true;
+                    cwDateSel.appendChild(o);
+                });
+            }
 
             // Build class map
             const classMap = {}; // class → {total, approved, pending, rejected, students[]}
@@ -12584,7 +13281,7 @@ Davan Institute Team`;
             const summaryText = document.getElementById('shCwSummaryText');
             const nowTime = new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true});
             if (!window._classStrengths) {
-                try { const ss = await window.db.ref('leaderboardConfig/classStrengths').once('value'); window._classStrengths = ss.val() || {}; } catch(e) { window._classStrengths = {}; }
+                try { const ss = await getDb().ref('leaderboardConfig/classStrengths').once('value'); window._classStrengths = ss.val() || {}; } catch(e) { window._classStrengths = {}; }
             }
             const _shStr = window._classStrengths || {};
             function _normCls2(s){ return String(s).toLowerCase().replace(/[^a-z0-9]/g,''); }
@@ -12621,6 +13318,112 @@ Davan Institute Team`;
             const el=document.getElementById('shAdminClasswiseList');
             if(el) el.innerHTML='<p style="color:red">Error: '+e.message+'</p>';
         }
+    }
+
+    // ── Apply task/date filters to the summary box + detail table ────
+    function shAdminApplyClasswiseFilters() {
+        if (!_shAllSubsCache || !_shAllTasksCache) return;
+        const taskF = (document.getElementById('shCwTaskFilter')||{}).value||'all';
+        const dateF = (document.getElementById('shCwDateFilter')||{}).value||'all';
+
+        // Build filtered class map
+        const classMap = {};
+        let grandTotal=0, grandApproved=0, grandPending=0;
+        Object.entries(_shAllSubsCache).forEach(([sk, ss]) => {
+            const first = Object.values(ss)[0] || {};
+            const cls = first.studentClass || 'Unknown';
+            Object.entries(ss).forEach(([tid, sub]) => {
+                if (taskF !== 'all' && tid !== taskF) return;
+                if (dateF !== 'all' && (!sub.submittedAt || !sub.submittedAt.startsWith(dateF))) return;
+                if (!classMap[cls]) classMap[cls] = {total:0, approved:0, pending:0, rejected:0};
+                classMap[cls].total++;
+                grandTotal++;
+                if (sub.status==='approved')  { classMap[cls].approved++; grandApproved++; }
+                else if (sub.status==='pending')  { classMap[cls].pending++;  grandPending++; }
+                else if (sub.status==='rejected') classMap[cls].rejected++;
+            });
+        });
+
+        // Update pills
+        const pt=document.getElementById('shCwPillTotal');
+        const pa=document.getElementById('shCwPillApproved');
+        const pp=document.getElementById('shCwPillPending');
+        const pc=document.getElementById('shCwPillClasses');
+        if(pt) pt.textContent='Total Submissions: '+grandTotal;
+        if(pa) pa.textContent='Approved: '+grandApproved;
+        if(pp) pp.textContent='Pending: '+grandPending;
+        if(pc) pc.textContent='Classes: '+Object.keys(classMap).length;
+
+        // Build filter label for summary
+        let filterLine = '';
+        if (taskF !== 'all') {
+            const tName = (_shAllTasksCache[taskF]||{}).name || taskF;
+            filterLine += `📍 Task: <strong>${tName}</strong>  `;
+        }
+        if (dateF !== 'all') {
+            const dLabel = new Date(dateF+'T00:00:00').toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+            filterLine += `📅 Date: <strong>${dLabel}</strong>`;
+        }
+
+        // Rebuild summary box
+        const sorted = Object.entries(classMap).sort((a,b)=>b[1].approved-a[1].approved||b[1].total-a[1].total);
+        if (!window._classStrengths) window._classStrengths = {};
+        const _shStr = window._classStrengths || {};
+        function _normC(s){ return String(s).toLowerCase().replace(/[^a-z0-9]/g,''); }
+        function _getStr(map,cls){ const n=_normC(cls); const k=Object.keys(map).find(k=>_normC(k)===n); return k?map[k]:0; }
+        const nowTime = new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true});
+        const studentCount = Object.keys(_shAllSubsCache||{}).filter(sk => {
+            const ss = _shAllSubsCache[sk];
+            return Object.entries(ss).some(([tid,sub]) => {
+                if (taskF!=='all' && tid!==taskF) return false;
+                if (dateF!=='all' && (!sub.submittedAt||!sub.submittedAt.startsWith(dateF))) return false;
+                return true;
+            });
+        }).length;
+
+        const summaryDate = document.getElementById('shCwSummaryDate');
+        const summaryText = document.getElementById('shCwSummaryText');
+        const summaryBox  = document.getElementById('shCwSummaryBox');
+        if (summaryDate) {
+            summaryDate.textContent = dateF !== 'all'
+                ? new Date(dateF+'T00:00:00').toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'})
+                : new Date().toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+        }
+        if (summaryText) {
+            let lines = `<span style="color:#888;font-size:12px">🕐 Generated at: <strong>${nowTime}</strong></span>`;
+            if (filterLine) lines += ` &nbsp;·&nbsp; <span style="color:#c44569;font-size:12px">${filterLine}</span>`;
+            lines += `<br><br><strong>${studentCount}</strong> students across <strong>${Object.keys(classMap).length}</strong> classes.<br>`;
+            lines += `<strong>${grandApproved}</strong> approved, <strong>${grandPending}</strong> pending review.<br><br>`;
+            lines += '<strong>Class-wise breakdown:</strong><br>';
+            if (!sorted.length) {
+                lines += '<span style="color:#999">No submissions match the selected filters.</span>';
+            } else {
+                sorted.forEach(([cls,d]) => {
+                    const acc = d.total>0?Math.round((d.approved/d.total)*100):0;
+                    const strength = _getStr(_shStr, cls);
+                    const strengthTag = strength ? `<span style="color:#888;font-size:0.92em">(Class Strength: ${strength})</span> ` : '';
+                    lines += `• ${shEsc(cls)}: ${strengthTag}<strong>${d.total}</strong> submitted, <strong>${d.approved}</strong> approved (${acc}%)<br>`;
+                });
+            }
+            summaryText.innerHTML = lines;
+        }
+        if (summaryBox) summaryBox.style.display = 'block';
+
+        // Build plain text for copy
+        const taskLabel = taskF!=='all' ? `\n📍 Task: ${(_shAllTasksCache[taskF]||{}).name||taskF}` : '';
+        const dateLabel = dateF!=='all' ? `\n📅 Date: ${new Date(dateF+'T00:00:00').toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}` : '';
+        window._shLastSummaryText = `🗺️ Scavenger Hunt Summary\n🕐 Generated at: ${nowTime}${taskLabel}${dateLabel}\n\n` +
+            `${studentCount} students across ${Object.keys(classMap).length} classes.\n` +
+            `${grandApproved} approved, ${grandPending} pending review.\n\nClass-wise breakdown:\n` +
+            sorted.map(([cls,d]) => {
+                const strength = _getStr(_shStr, cls);
+                const strengthTxt = strength ? `[Class Strength: ${strength}] ` : '';
+                return `• ${cls}: ${strengthTxt}${d.total} submitted, ${d.approved} approved (${d.total>0?Math.round((d.approved/d.total)*100):0}%)`;
+            }).join('\n') +
+            `\n\n— Spurthi Youth Fest 2026`;
+
+        // Also update detail table
+        shAdminLoadClasswiseDetail();
     }
 
     function shAdminLoadClasswiseDetail() {
@@ -13766,7 +14569,7 @@ Proceed?`)) return;
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;">
-                <strong>Version:</strong> 3.0 Scavenger Hunt Event  | <strong>Last Updated:</strong> February 19, 2026 (12.30pm)
+                <strong>Version:</strong> 3.0 Scavenger Hunt Event  | <strong>Last Updated:</strong> February 18, 2026 (5.10pm)
             </p>
             <!-- ============================================ -->
             
