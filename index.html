@@ -788,6 +788,22 @@
             color: #666;
             margin-top: 5px;
         }
+
+        /* ── Speed Slide Challenge ─────────────────────────────────── */
+        @keyframes sscPop {
+            from { transform: scale(.7); opacity: 0; }
+            to   { transform: scale(1);  opacity: 1; }
+        }
+        .ssc-tile {
+            background-size: cover; background-position: center;
+            border-radius: 7px; cursor: pointer;
+            transition: transform .12s, box-shadow .12s;
+            box-shadow: inset 0 0 0 2px rgba(255,255,255,.25);
+            aspect-ratio: 1;
+        }
+        .ssc-tile:hover { transform: scale(1.04); box-shadow: 0 4px 12px rgba(0,0,0,.3); }
+        .ssc-tile.ssc-empty { background: #c44569 !important; cursor: default; opacity: .3; }
+        .ssc-tile.ssc-empty:hover { transform: none; box-shadow: none; }
     </style>
 </head>
 <body>
@@ -812,7 +828,7 @@
         <div style="display:block;width:100%;max-width:1200px;margin:0 auto 22px;border-radius:14px;background:linear-gradient(90deg,#e8722a 0%,#f0a05a 40%,#f0a05a 60%,#e8722a 100%);box-shadow:0 4px 18px rgba(232,114,42,0.35);padding:16px 30px;text-align:center;animation:shimmer 3s linear infinite;background-size:2000px 100%">
             <!-- EDIT BANNER TEXT BELOW -->
             <span id="announcementBannerText" style="color:white;font-size:1.1em;font-weight:700;letter-spacing:0.5px;text-shadow:0 1px 4px rgba(0,0,0,0.18)">
-                🎯 New Scavenger Hunt Event Launched 🎯 Rules & Regulations Spurthi Youth Fest– 2026 updated 🎯
+                🎯 New Scavenger Hunt Event Coming Soon Today! 🎯
             </span>
         </div>
         <!-- ============================================================ -->
@@ -920,6 +936,7 @@
                     <option value="">-- Select --</option>
                     <option value="dailyquiz">Daily Quiz Competition</option>
                     <option value="scavengerhunt">🗺️ Scavenger Hunt</option>
+                    <option value="speedslide">🧩 Speed Slide Challenge</option>
                 </select>
             </div>
             
@@ -988,6 +1005,11 @@
                     <label>Password:</label>
                     <input type="password" id="quizLoginPassword" placeholder="Enter password" onkeydown="if(event.key==='Enter') loginQuizStudent()">
                 </div>
+                <div style="margin-bottom:12px">
+                    <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:0.9em;color:#555;font-weight:normal">
+                        <input type="checkbox" id="quizRememberMe" style="width:auto;accent-color:#6a1b9a"> Remember me on this device
+                    </label>
+                </div>
                 <button class="btn btn-success" onclick="loginQuizStudent()">🚀 Login to Quiz</button>
                 <button class="btn btn-secondary" onclick="console.log('TEST: loginQuizStudent type:', typeof loginQuizStudent); alert('Function type: ' + typeof loginQuizStudent)" style="margin-top:8px;font-size:0.85em">🔍 Test Function</button>
             </div>
@@ -1034,6 +1056,39 @@
                     🚀 Enter Scavenger Hunt
                 </button>
                 <button class="btn btn-secondary" onclick="console.log('TEST: shLogin type:', typeof shLogin, 'window.db:', typeof window.db); alert('shLogin: ' + typeof shLogin + ', window.db: ' + typeof window.db)" style="width:100%;margin-top:8px;font-size:0.85em">🔍 Test Scavenger Function</button>
+            </div>
+        </div>
+
+            <!-- ============================================ -->
+            <!-- SPEED SLIDE CHALLENGE LOGIN                   -->
+            <!-- ============================================ -->
+            <div id="speedSlideLogin" style="display:none">
+                <div style="text-align:center;margin-bottom:20px">
+                    <div style="font-size:3em;margin-bottom:8px">🧩</div>
+                    <h3 style="color:#6a1b9a;font-size:1.8em;margin-bottom:6px">Speed Slide Challenge</h3>
+                    <p style="color:#666;font-size:1em">Upload any photo · Solve the sliding puzzle · Win points!</p>
+                </div>
+                <div style="background:linear-gradient(135deg,#6a1b9a,#c44569);border-radius:14px;padding:14px 20px;text-align:center;margin-bottom:18px">
+                    <p style="color:white;margin:0;font-size:.95em;font-weight:600">🧩 3 levels · 8-Puzzle (100pts) · 15-Puzzle (200pts) · 24-Puzzle (300pts)</p>
+                </div>
+                <div style="background:#f3e5f5;padding:12px 16px;border-radius:8px;margin-bottom:18px;border-left:4px solid #9c27b0">
+                    <p style="margin:0;color:#6a1b9a;font-size:.9em"><strong>📋 How it works:</strong> Login → Upload photo → Solve puzzle → Submit score → Leaderboard!</p>
+                </div>
+                <div id="sscLoginMsg" class="message"></div>
+                <div class="form-group">
+                    <label>Phone Number:</label>
+                    <input type="tel" id="sscLoginPhone" placeholder="10-digit mobile number" maxlength="10" inputmode="numeric" onkeydown="if(event.key==='Enter') sscLogin()">
+                </div>
+                <div class="form-group">
+                    <label>Password:</label>
+                    <input type="password" id="sscLoginPassword" placeholder="Your quiz password" onkeydown="if(event.key==='Enter') sscLogin()">
+                </div>
+                <div style="margin-bottom:14px">
+                    <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-weight:normal;color:#555;font-size:.9em">
+                        <input type="checkbox" id="sscRememberMe" style="width:auto;accent-color:#6a1b9a"> Remember me on this device
+                    </label>
+                </div>
+                <button class="btn" onclick="sscLogin()" style="background:linear-gradient(135deg,#6a1b9a,#c44569);width:100%;padding:14px;font-size:1.05em">🚀 Login &amp; Play</button>
             </div>
         </div>
 
@@ -1291,6 +1346,7 @@
                 <button class="tab super-admin-only" onclick="showTab('quizManagement')" id="quizManagementTab">📝 Quiz Management</button>
                 <button class="tab super-admin-only" onclick="showTab('leaderboardAdmin')" id="leaderboardAdminTab">🏆 Leaderboard</button>
                 <button class="tab super-admin-only" onclick="showTab('scavengerAdmin')" id="scavengerAdminTab">🗺️ Scavenger Hunt</button>
+                <button class="tab super-admin-only" onclick="openSpeedSlideAdmin()" id="speedSlideAdminTab">🧩 Speed Slide Admin</button>
             </div>
 
             <div class="content" id="adminContentBox">
@@ -2120,6 +2176,100 @@
             <!-- Accessed via the "🏆 Leaderboard" tab above      -->
             <!-- ================================================ -->
 
+            <!-- ================================================ -->
+            <!-- SPEED SLIDE ADMIN PANEL (Super Admin only)       -->
+            <!-- Accessed via the "🧩 Speed Slide Admin" tab      -->
+            <!-- ================================================ -->
+            <div id="speedSlideAdmin" class="form-section super-admin-only">
+                <h2 style="color:#c44569;margin-bottom:6px">🧩 Speed Slide Challenge — Admin Panel</h2>
+                <p style="color:#888;margin-bottom:20px;font-size:.9em">Manage all submissions, approve scores, view leaderboard and configure the game.</p>
+
+                <!-- Sub-tabs -->
+                <div class="tabs" style="margin-bottom:20px">
+                    <button class="tab active" id="ssa-tab-sub" onclick="ssaShowTab('sub')">📥 Submissions</button>
+                    <button class="tab"        id="ssa-tab-lb"  onclick="ssaShowTab('lb')">🏆 Leaderboard</button>
+                    <button class="tab"        id="ssa-tab-cfg" onclick="ssaShowTab('cfg')">⚙️ Settings</button>
+                </div>
+
+                <!-- ── Submissions ── -->
+                <div id="ssa-sub">
+                    <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap">
+                        <select id="ssaSubFilter" onchange="ssaLoadSubs()" style="flex:1;min-width:160px;padding:9px 12px;border-radius:8px;border:2px solid #ddd">
+                            <option value="">All Difficulties</option>
+                            <option value="easy">😊 8-Puzzle</option>
+                            <option value="medium">😅 15-Puzzle</option>
+                            <option value="hard">🔥 24-Puzzle</option>
+                        </select>
+                        <select id="ssaSubStatus" onchange="ssaLoadSubs()" style="flex:1;min-width:160px;padding:9px 12px;border-radius:8px;border:2px solid #ddd">
+                            <option value="">All Status</option>
+                            <option value="pending">⏳ Pending</option>
+                            <option value="approved">✅ Approved</option>
+                            <option value="rejected">❌ Rejected</option>
+                        </select>
+                        <button class="btn btn-small" onclick="ssaLoadSubs()">🔄 Refresh</button>
+                        <button class="btn btn-small btn-success" onclick="ssaDownloadCSV()">📥 Download CSV</button>
+                    </div>
+                    <div id="ssaSubList">
+                        <p style="color:#aaa;text-align:center;padding:30px">Click Refresh to load submissions.</p>
+                    </div>
+                </div>
+
+                <!-- ── Leaderboard ── -->
+                <div id="ssa-lb" style="display:none">
+                    <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+                        <button class="tab active" id="ssalbt-easy"   onclick="ssaSwitchLB('easy')">😊 8-Puzzle</button>
+                        <button class="tab"        id="ssalbt-medium" onclick="ssaSwitchLB('medium')">😅 15-Puzzle</button>
+                        <button class="tab"        id="ssalbt-hard"   onclick="ssaSwitchLB('hard')">🔥 24-Puzzle</button>
+                        <button class="tab"        id="ssalbt-all"    onclick="ssaSwitchLB('all')">📊 All</button>
+                    </div>
+                    <div id="ssaLbContainer">
+                        <p style="color:#aaa;text-align:center;padding:30px">Loading…</p>
+                    </div>
+                </div>
+
+                <!-- ── Settings ── -->
+                <div id="ssa-cfg" style="display:none">
+                    <div style="background:#fff3cd;padding:18px;border-radius:10px;border-left:5px solid #ffc107;margin-bottom:20px">
+                        <p style="color:#856404;margin:0;font-size:.9em"><strong>Note:</strong> These settings control what players see and can do in Speed Slide Challenge.</p>
+                    </div>
+                    <div class="form-group">
+                        <label>Game Active? (players can play)</label>
+                        <select id="ssaCfgActive" style="padding:10px;border-radius:8px;border:2px solid #ddd">
+                            <option value="1">✅ Yes — Game is ON</option>
+                            <option value="0">❌ No — Game is PAUSED</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Leaderboard visible to players?</label>
+                        <select id="ssaCfgLbVisible" style="padding:10px;border-radius:8px;border:2px solid #ddd">
+                            <option value="1">✅ Yes — Visible</option>
+                            <option value="0">❌ No — Hidden</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Max submissions per player per day</label>
+                        <input type="number" id="ssaCfgMaxSubs" value="3" min="1" max="99" style="padding:10px;border-radius:8px;border:2px solid #ddd;width:120px">
+                    </div>
+                    <button class="btn btn-success" onclick="ssaSaveCfg()">💾 Save Settings</button>
+                    <span id="ssaCfgMsg" style="margin-left:12px;font-size:.9em;display:none"></span>
+
+                    <hr style="margin:24px 0;border-color:#eee">
+                    <h3 style="color:#f44336;margin-bottom:12px">🗑️ Danger Zone</h3>
+                    <div style="display:flex;gap:10px;flex-wrap:wrap">
+                        <button class="btn btn-danger btn-small" onclick="ssaClearAllScores()">🗑️ Clear All Scores</button>
+                        <button class="btn btn-danger btn-small" onclick="ssaClearAllImages()">🗑️ Clear Images (Firebase Storage)</button>
+                    </div>
+                </div>
+
+                <!-- Lightbox for submission images -->
+                <div id="ssaLightbox" onclick="this.style.display='none'" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:99999;align-items:center;justify-content:center;cursor:zoom-out">
+                    <img id="ssaLightboxImg" style="max-width:94vw;max-height:90vh;border-radius:12px" alt="">
+                </div>
+            </div>
+            <!-- ================================================ -->
+            <!-- END SPEED SLIDE ADMIN PANEL                      -->
+            <!-- ================================================ -->
+
             <div id="leaderboardAdmin" class="form-section super-admin-only" style="margin-top:20px">
                 <h2 style="color:#ffd700;margin-bottom:12px;text-shadow:0 2px 8px rgba(0,0,0,0.4)">🏆 Leaderboard Management</h2>
 
@@ -2563,6 +2713,160 @@
         </div>
 
 
+        <!-- ══════════════════════════════════════════════════════════ -->
+        <!-- SPEED SLIDE CHALLENGE — PLAYER DASHBOARD                  -->
+        <!-- ══════════════════════════════════════════════════════════ -->
+        <div id="sscStudentDashboard" style="display:none">
+
+            <!-- Header bar -->
+            <div style="background:linear-gradient(135deg,#6a1b9a,#c44569);color:white;padding:16px 24px;border-radius:12px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;box-shadow:0 4px 15px rgba(106,27,154,0.4)">
+                <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+                    <span style="font-size:1.3em;font-weight:700">🧩 Speed Slide Challenge</span>
+                    <span id="sscPlayerBadge" style="background:rgba(255,255,255,.2);padding:5px 14px;border-radius:20px;font-size:.85em;font-weight:700"></span>
+                </div>
+                <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+                    <button onclick="sscShowSection('play')" id="sscTabPlay" style="background:rgba(255,255,255,.9);color:#6a1b9a;border:none;padding:8px 18px;border-radius:20px;cursor:pointer;font-weight:700;font-size:.9em">🎮 Play</button>
+                    <button onclick="sscShowSection('lb')"   id="sscTabLB"   style="background:rgba(255,255,255,.2);color:white;border:2px solid rgba(255,255,255,.5);padding:8px 18px;border-radius:20px;cursor:pointer;font-weight:700;font-size:.9em">🏆 Leaderboard</button>
+                    <button onclick="sscGoBack()" style="background:rgba(255,255,255,.15);color:white;border:2px solid rgba(255,255,255,.4);padding:8px 18px;border-radius:20px;cursor:pointer;font-weight:700;font-size:.85em">⬅️ Back</button>
+                    <button onclick="logout()" style="background:rgba(0,0,0,.25);color:white;border:none;padding:8px 18px;border-radius:20px;cursor:pointer;font-weight:700;font-size:.85em">Logout</button>
+                </div>
+            </div>
+
+            <!-- PLAY SECTION -->
+            <div id="sscPlaySection" class="content" style="margin-bottom:20px">
+                <div id="sscSetupCard">
+                    <!-- Paused banner (shown when admin pauses game) -->
+                    <div id="sscPausedBanner" style="display:none;background:#fff3e0;border:2px solid #ff9800;border-radius:10px;padding:16px 20px;margin-bottom:18px;border-left:5px solid #ff9800">
+                        <h4 style="color:#e65100;margin:0 0 6px">⏸️ Game Currently Paused</h4>
+                        <p style="color:#bf360c;margin:0;font-size:.9em">The organiser has temporarily paused the Speed Slide Challenge. You can still view the Leaderboard. Check back soon!</p>
+                    </div>
+                    <h2 style="color:#c44569;margin-bottom:20px">🎮 New Game</h2>
+                    <h3 style="color:#333;margin-bottom:14px">1. Choose Difficulty</h3>
+                    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:8px">
+                        <div id="ssdc-easy" onclick="sscSelectDiff('easy')" style="border:3px solid #ddd;border-radius:12px;padding:20px;cursor:pointer;text-align:center;transition:all .3s;background:white">
+                            <div style="font-size:2.2em">😊</div>
+                            <div style="font-weight:700;color:#333;margin-top:6px">8-Puzzle</div>
+                            <div style="font-size:.82em;color:#888;margin-top:4px">3×3 grid · 8 tiles</div>
+                            <span style="display:inline-block;background:linear-gradient(135deg,#6a1b9a,#c44569);color:white;padding:4px 14px;border-radius:14px;font-size:.82em;font-weight:700;margin-top:8px">100 pts max</span>
+                        </div>
+                        <div id="ssdc-medium" onclick="sscSelectDiff('medium')" style="border:3px solid #6a1b9a;border-radius:12px;padding:20px;cursor:pointer;text-align:center;transition:all .3s;background:#f3e5f5">
+                            <div style="font-size:2.2em">😅</div>
+                            <div style="font-weight:700;color:#333;margin-top:6px">15-Puzzle</div>
+                            <div style="font-size:.82em;color:#888;margin-top:4px">4×4 grid · 15 tiles</div>
+                            <span style="display:inline-block;background:linear-gradient(135deg,#6a1b9a,#c44569);color:white;padding:4px 14px;border-radius:14px;font-size:.82em;font-weight:700;margin-top:8px">200 pts max</span>
+                        </div>
+                        <div id="ssdc-hard" onclick="sscSelectDiff('hard')" style="border:3px solid #ddd;border-radius:12px;padding:20px;cursor:pointer;text-align:center;transition:all .3s;background:white">
+                            <div style="font-size:2.2em">🔥</div>
+                            <div style="font-weight:700;color:#333;margin-top:6px">24-Puzzle</div>
+                            <div style="font-size:.82em;color:#888;margin-top:4px">5×5 grid · 24 tiles</div>
+                            <span style="display:inline-block;background:linear-gradient(135deg,#6a1b9a,#c44569);color:white;padding:4px 14px;border-radius:14px;font-size:.82em;font-weight:700;margin-top:8px">300 pts max</span>
+                        </div>
+                    </div>
+                    <p id="sscDiffNote" style="color:#888;font-size:.88em;margin-bottom:20px">15-Puzzle (4×4) · 200 max points</p>
+                    <h3 style="color:#333;margin-bottom:12px">2. Upload Your Photo</h3>
+                    <div id="sscUploadZone" onclick="document.getElementById('sscImgInput').click()" style="border:3px dashed #9c27b0;border-radius:12px;padding:30px;text-align:center;cursor:pointer;background:#faf0ff;transition:all .25s;margin-bottom:16px">
+                        <div style="font-size:2.5em">📸</div>
+                        <p style="color:#6a1b9a;font-weight:600;margin-top:8px">Click to upload an image</p>
+                        <p style="color:#aaa;font-size:.85em">JPG / PNG · max 5 MB</p>
+                        <img id="sscPreviewThumb" style="max-width:100%;max-height:160px;border-radius:10px;margin-top:12px;border:3px solid #9c27b0;display:none" alt="">
+                    </div>
+                    <input type="file" id="sscImgInput" accept="image/*" style="display:none" onchange="sscHandleImage(event)">
+                    <button id="sscStartBtn" onclick="sscStartGame()" disabled style="width:100%;padding:14px;background:linear-gradient(135deg,#28a745,#20c997);color:white;border:none;border-radius:10px;font-size:1.1em;font-weight:700;cursor:pointer;opacity:.5;transition:all .3s">▶ Start Puzzle</button>
+                </div>
+
+                <!-- Live game area -->
+                <div id="sscGameArea" style="display:none">
+                    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:18px">
+                        <div>
+                            <h2 style="color:#c44569;margin:0">🧩 Solving…</h2>
+                            <p id="sscGameDiffLabel" style="color:#888;font-size:.9em;margin-top:3px"></p>
+                        </div>
+                        <div style="display:flex;gap:8px;flex-wrap:wrap">
+                            <button onclick="sscShowSolution()" style="background:#888;color:white;border:none;padding:9px 18px;border-radius:8px;cursor:pointer;font-weight:600;font-size:.9em">👁 Show Solution</button>
+                            <button onclick="sscResetGame()"    style="background:linear-gradient(135deg,#ff9800,#f44336);color:white;border:none;padding:9px 18px;border-radius:8px;cursor:pointer;font-weight:600;font-size:.9em">🔄 New Game</button>
+                        </div>
+                    </div>
+                    <div style="display:grid;grid-template-columns:1fr auto;gap:20px;align-items:start">
+                        <div><div id="sscPuzzleBoard" style="display:grid;gap:4px;background:#6a1b9a;border-radius:12px;padding:8px;touch-action:none;user-select:none"></div></div>
+                        <div style="min-width:155px">
+                            <div style="background:#fff3e0;border:2px solid #ff9800;border-radius:10px;padding:14px;text-align:center;margin-bottom:10px">
+                                <div id="sscTimerDisplay" style="font-size:2em;font-weight:800;color:#e65100">0:00</div>
+                                <div style="font-size:.78em;color:#888">⏱ Time</div>
+                            </div>
+                            <div style="background:#f3e5f5;border:2px solid #d0c0e8;border-radius:10px;padding:14px;text-align:center;margin-bottom:10px">
+                                <div id="sscMovesDisplay" style="font-size:2em;font-weight:800;color:#6a1b9a">0</div>
+                                <div style="font-size:.78em;color:#888">🎯 Moves</div>
+                            </div>
+                            <div style="background:#f3e5f5;border:2px solid #d0c0e8;border-radius:10px;padding:14px;text-align:center;margin-bottom:10px">
+                                <div id="sscPtsDisplay" style="font-size:2em;font-weight:800;color:#6a1b9a">—</div>
+                                <div style="font-size:.78em;color:#888">⭐ Max Pts</div>
+                            </div>
+                            <p style="font-size:.78em;color:#aaa;text-align:center;margin-bottom:4px">Preview:</p>
+                            <img id="sscInGamePreview" style="width:100%;border-radius:10px;border:3px solid #9c27b0;display:none" alt="">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- LEADERBOARD SECTION -->
+            <div id="sscLbSection" class="content" style="display:none;margin-bottom:20px">
+                <h2 style="color:#c44569;margin-bottom:16px">🏆 Leaderboard</h2>
+                <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">
+                    <button class="tab active" id="ssclbt-easy"   onclick="sscSwitchLB('easy')">😊 8-Puzzle</button>
+                    <button class="tab"        id="ssclbt-medium" onclick="sscSwitchLB('medium')">😅 15-Puzzle</button>
+                    <button class="tab"        id="ssclbt-hard"   onclick="sscSwitchLB('hard')">🔥 24-Puzzle</button>
+                    <button class="tab"        id="ssclbt-all"    onclick="sscSwitchLB('all')">📊 All</button>
+                </div>
+                <div id="sscLbContainer"><p style="color:#aaa;text-align:center;padding:30px">Loading…</p></div>
+            </div>
+
+            <!-- WIN MODAL -->
+            <div id="sscWinModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:9999;align-items:center;justify-content:center">
+                <div style="background:white;border-radius:20px;padding:36px;text-align:center;max-width:460px;width:90%">
+                    <div style="font-size:4em;margin-bottom:10px">🏆</div>
+                    <h2 style="color:#c44569;font-size:1.9em;margin-bottom:6px">Puzzle Solved!</h2>
+                    <p style="color:#888;margin-bottom:18px">Amazing — you did it!</p>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">
+                        <div style="background:#f3e5f5;border-radius:10px;padding:14px"><div id="sscWinTime" style="font-size:1.5em;font-weight:800;color:#6a1b9a">—</div><div style="font-size:.8em;color:#888">⏱ Time</div></div>
+                        <div style="background:#f3e5f5;border-radius:10px;padding:14px"><div id="sscWinMoves" style="font-size:1.5em;font-weight:800;color:#6a1b9a">—</div><div style="font-size:.8em;color:#888">🎯 Moves</div></div>
+                        <div style="background:#f3e5f5;border-radius:10px;padding:14px"><div id="sscWinDiff" style="font-size:1.5em;font-weight:800;color:#6a1b9a">—</div><div style="font-size:.8em;color:#888">Difficulty</div></div>
+                        <div style="background:linear-gradient(135deg,#6a1b9a,#c44569);border-radius:10px;padding:14px"><div id="sscWinPts" style="font-size:1.5em;font-weight:800;color:white">—</div><div style="font-size:.8em;color:rgba(255,255,255,.75)">⭐ Points</div></div>
+                    </div>
+                    <p id="sscWinSaveMsg" style="color:#6a1b9a;font-weight:600;margin-bottom:16px;min-height:20px"></p>
+                    <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+                        <button onclick="sscSaveScore()" style="background:linear-gradient(135deg,#28a745,#20c997);color:white;border:none;padding:12px 24px;border-radius:8px;font-size:1em;font-weight:700;cursor:pointer">💾 Save Score</button>
+                        <button onclick="sscResetGame()"  style="background:#888;color:white;border:none;padding:12px 24px;border-radius:8px;font-size:1em;font-weight:700;cursor:pointer">🔄 Play Again</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- GAME OVER MODAL -->
+            <div id="sscGameOverModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:9999;align-items:center;justify-content:center">
+                <div style="background:white;border-radius:20px;padding:36px;text-align:center;max-width:520px;width:90%">
+                    <div style="font-size:3.5em;margin-bottom:8px">😔</div>
+                    <h2 style="color:#f44336;margin-bottom:4px">Game Over</h2>
+                    <p style="color:#888;margin-bottom:16px">You revealed the solution — no score submitted.</p>
+                    <div style="margin-bottom:16px">
+                        <p style="font-weight:600;color:#6a1b9a;margin-bottom:8px">✅ Completed Image:</p>
+                        <img id="sscSolImg" style="width:100%;border-radius:12px;border:3px solid #9c27b0" alt="">
+                    </div>
+                    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px">
+                        <div style="background:#f3e5f5;border-radius:8px;padding:10px"><div id="sscSolTime" style="font-size:1.2em;font-weight:800;color:#6a1b9a">—</div><div style="font-size:.75em;color:#888">⏱ Time</div></div>
+                        <div style="background:#f3e5f5;border-radius:8px;padding:10px"><div id="sscSolMoves" style="font-size:1.2em;font-weight:800;color:#6a1b9a">—</div><div style="font-size:.75em;color:#888">🎯 Moves</div></div>
+                        <div style="background:#f3e5f5;border-radius:8px;padding:10px"><div id="sscSolDiff" style="font-size:1.2em;font-weight:800;color:#6a1b9a">—</div><div style="font-size:.75em;color:#888">Level</div></div>
+                        <div style="background:#ffebee;border-radius:8px;padding:10px"><div style="font-size:1.2em;font-weight:800;color:#f44336">0</div><div style="font-size:.75em;color:#f44336">⭐ Pts</div></div>
+                    </div>
+                    <p style="color:#f44336;font-size:.88em;font-weight:600;margin-bottom:16px">💡 Tip: Try a smaller puzzle to build skills!</p>
+                    <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+                        <button onclick="sscResetGame()" style="background:linear-gradient(135deg,#28a745,#20c997);color:white;border:none;padding:12px 24px;border-radius:8px;font-size:1em;font-weight:700;cursor:pointer">🔄 Try Again</button>
+                        <button onclick="sscShowSection('lb')" style="background:linear-gradient(135deg,#6a1b9a,#c44569);color:white;border:none;padding:12px 24px;border-radius:8px;font-size:1em;font-weight:700;cursor:pointer">🏆 Leaderboard</button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        <!-- ══ END SPEED SLIDE DASHBOARD ══ -->
+
     <!-- Firebase Status Indicator -->
     <div class="firebase-status">
         <div class="status-dot status-disconnected" id="statusDot"></div>
@@ -2625,6 +2929,7 @@
             }
             db = firebase.database();
             window.db = db;  // expose globally so leaderboard script block can use it
+            window.storage = firebase.storage();  // expose for Speed Slide image uploads
             ref = db.ref('youthfest-enrollments');
         } catch (e) {
             console.error('Firebase error:', e);
@@ -2730,6 +3035,10 @@
         let quizStartTime = null;
         let quizAntiCheatActive = false;
         let quizTimerInterval = null;
+
+        // Speed Slide Challenge globals (declared here so logout() can access them)
+        let sscCurrentUser = null;
+        let sscTimerRef    = null;
 
         // Initialize
         window.onload = function() {
@@ -2879,6 +3188,16 @@
             const type = document.getElementById('competitionType').value;
             document.getElementById('dailyQuizLogin').style.display     = type === 'dailyquiz'     ? 'block' : 'none';
             document.getElementById('scavengerHuntLogin').style.display = type === 'scavengerhunt' ? 'block' : 'none';
+            document.getElementById('speedSlideLogin').style.display    = type === 'speedslide'    ? 'block' : 'none';
+            if (type === 'speedslide') {
+                if (localStorage.getItem('ssc_remember') === '1') {
+                    const ph = localStorage.getItem('ssc_ph');
+                    const pw = localStorage.getItem('ssc_pw');
+                    if (ph) document.getElementById('sscLoginPhone').value    = ph;
+                    if (pw) document.getElementById('sscLoginPassword').value = pw;
+                    document.getElementById('sscRememberMe').checked = true;
+                }
+            }
             
             // Reset user type dropdown and hide credentials when competition is selected
             if (type) {
@@ -2893,6 +3212,15 @@
                 fetchServerTimeOffset(); // pre-fetch server time offset early
                 populateQuizClasses();
                 checkPublicQuizStatus();
+                // Auto-fill remembered quiz credentials
+                if (localStorage.getItem('quiz_remember') === '1') {
+                    const ph = localStorage.getItem('quiz_ph');
+                    const pw = localStorage.getItem('quiz_pw');
+                    if (ph) document.getElementById('quizLoginPhone').value    = ph;
+                    if (pw) document.getElementById('quizLoginPassword').value = pw;
+                    const cb = document.getElementById('quizRememberMe');
+                    if (cb) cb.checked = true;
+                }
             }
             if (type === 'scavengerhunt') {
                 shCheckPublicStatus();
@@ -3394,8 +3722,11 @@
             document.getElementById('quizStudentDashboard').style.display = 'none';
             // quizAdminDashboard removed - no longer used
             document.getElementById('quizPage').style.display = 'none';
-            document.getElementById('shStudentDashboard').style.display = 'none';
+            document.getElementById('shStudentDashboard').style.display  = 'none';
+            document.getElementById('sscStudentDashboard').style.display = 'none';
             shCurrentUser = null;
+            sscCurrentUser = null;
+            clearInterval(sscTimerRef);
             if (typeof shAdminStopSubmissionsListener === 'function') shAdminStopSubmissionsListener();
             document.getElementById('userType').value = '';
             document.getElementById('competitionType').value = '';
@@ -4258,6 +4589,9 @@
                 if (typeof shAdminLoadTasks    === 'function') shAdminLoadTasks();
                 if (typeof shAdminLoadSettings === 'function') shAdminLoadSettings();
             }
+            if (tab === 'speedSlideAdmin') {
+                ssaShowTab('sub');
+            }
         }
 
         function updateStats() {
@@ -5085,7 +5419,7 @@
             d.className = 'message '+type+' show';
             d.textContent = (type === 'success' ? '✓ ' : '✗ ') + msg;
             setTimeout(() => d.classList.remove('show'), 5000);
-            scroll(0,0);
+            d.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
 
         // Results Functions
@@ -5617,7 +5951,7 @@
             d.className = 'message success show';
             d.textContent = '✓ '+msg;
             setTimeout(() => d.classList.remove('show'), 5000);
-            scroll(0,0);
+            d.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
 
         function showErr(msg) {
@@ -5625,7 +5959,7 @@
             d.className = 'message error show';
             d.textContent = '✗ '+msg;
             setTimeout(() => d.classList.remove('show'), 5000);
-            scroll(0,0);
+            d.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
 
         window.onclick = function(event) {
@@ -6328,6 +6662,17 @@ Davan Institute Team`;
                 
                 quizCurrentUser = {key: studentKey, ...studentData};
                 quizUserRole = 'student';
+                
+                // Remember Me — save credentials
+                if (document.getElementById('quizRememberMe') && document.getElementById('quizRememberMe').checked) {
+                    localStorage.setItem('quiz_remember', '1');
+                    localStorage.setItem('quiz_ph', phone);
+                    localStorage.setItem('quiz_pw', password);
+                } else {
+                    localStorage.removeItem('quiz_remember');
+                    localStorage.removeItem('quiz_ph');
+                    localStorage.removeItem('quiz_pw');
+                }
                 
                 console.log('quizCurrentUser set:', quizCurrentUser);
                 console.log('quizUserRole set:', quizUserRole);
@@ -7741,8 +8086,9 @@ Davan Institute Team`;
                 // Show success message
                 showQuizMsg('quizAdminMessage', `✏️ Editing quiz for ${date}. Make your changes and click Save.`, 'success');
                 
-                // Scroll to top
-                window.scrollTo({ top: 0, behavior: 'smooth' });
+                // Scroll to quiz editor
+                const qHeading = document.getElementById('quizQuestionsHeading');
+                if (qHeading) qHeading.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 
             } catch (err) {
                 console.error('Edit quiz error:', err);
@@ -8065,8 +8411,9 @@ Davan Institute Team`;
                 document.getElementById('quiz_q2OptD').value = q.q2.options.D;
                 document.getElementById('quiz_q2Correct').value = q.q2.correct;
                 
-                // Scroll to top instead of form center
-                window.scrollTo({ top: 0, behavior: 'smooth' });
+                // Scroll to quiz editor
+                const qHeading2 = document.getElementById('quizQuestionsHeading');
+                if (qHeading2) qHeading2.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 
                 // Show message
                 showQuizMsg('quizAdminMessage', '✏️ Questions loaded for editing. Make changes and click Save.', 'success');
@@ -12714,6 +13061,189 @@ Proceed?`)) return;
         setTimeout(()=>msg.style.display='none', 3000);
     }
 
+    // ── Speed Slide Admin ──────────────────────────────────────────────
+    let ssaAllSubs = [];
+    let ssaLbDiff  = 'easy';
+
+    function ssaShowTab(t) {
+        ['sub','lb','cfg'].forEach(x => {
+            document.getElementById('ssa-'+x).style.display = x===t ? 'block' : 'none';
+            document.getElementById('ssa-tab-'+x).classList.toggle('active', x===t);
+        });
+        if (t==='sub') ssaLoadSubs();
+        if (t==='lb')  ssaLoadLB();
+        if (t==='cfg') ssaLoadCfg();
+    }
+
+    async function ssaLoadSubs() {
+        document.getElementById('ssaSubList').innerHTML = '<p style="color:#aaa;padding:20px;text-align:center">Loading…</p>';
+        const diff   = document.getElementById('ssaSubFilter').value;
+        const status = document.getElementById('ssaSubStatus').value;
+        try {
+            const snap = await window.db.ref('speedSlide/submissions').once('value');
+            ssaAllSubs = [];
+            snap.forEach(c => ssaAllSubs.push({ key: c.key, ...c.val() }));
+            ssaAllSubs.sort((a,b) => b.solvedAt > a.solvedAt ? 1 : -1);
+            let rows = ssaAllSubs.filter(r =>
+                (!diff   || r.difficulty === diff) &&
+                (!status || r.status     === status)
+            );
+            if (!rows.length) {
+                document.getElementById('ssaSubList').innerHTML = '<p style="color:#aaa;text-align:center;padding:30px">No submissions found.</p>';
+                return;
+            }
+            const diffLabel = {easy:'😊 8-Puzzle', medium:'😅 15-Puzzle', hard:'🔥 24-Puzzle'};
+            const statusColor = {approved:'#2e7d32', rejected:'#c62828', pending:'#e65100'};
+            const statusBg    = {approved:'#e8f5e9', rejected:'#ffebee', pending:'#fff3e0'};
+            document.getElementById('ssaSubList').innerHTML = rows.map(r => `
+                <div style="background:white;border-radius:12px;padding:16px;margin-bottom:12px;box-shadow:0 2px 10px rgba(0,0,0,.08);display:flex;align-items:center;gap:16px;flex-wrap:wrap;border-left:5px solid ${r.status==='approved'?'#4caf50':r.status==='rejected'?'#f44336':'#ff9800'}">
+                    ${r.imageUrl
+                        ? `<img src="${r.imageUrl}" onclick="document.getElementById('ssaLightbox').style.display='flex';document.getElementById('ssaLightboxImg').src='${r.imageUrl}'" style="width:90px;height:90px;object-fit:cover;border-radius:8px;border:2px solid #9c27b0;cursor:zoom-in" alt="">`
+                        : `<div style="width:90px;height:90px;background:#f0e6ff;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:2em;color:#9c27b0">📷</div>`
+                    }
+                    <div style="flex:1;min-width:160px">
+                        <div style="font-weight:700;font-size:1em;color:#333">${ssaEsc(r.name)}</div>
+                        <div style="color:#888;font-size:.85em;margin:3px 0">${ssaEsc(r.class||'')} · ${ssaEsc(r.phone||'')}</div>
+                        <div style="font-size:.88em;color:#6a1b9a;margin:3px 0">
+                            ${diffLabel[r.difficulty]||r.difficulty} · ⏱ ${ssaFmtTime(r.timeSec)} · 🎯 ${r.moves} moves · ⭐ ${r.points} pts
+                        </div>
+                        <div style="font-size:.8em;color:#aaa">${r.date||''} at ${(r.solvedAt||'').slice(11,19)}</div>
+                        <span style="display:inline-block;padding:3px 10px;border-radius:10px;font-size:.78em;font-weight:700;background:${statusBg[r.status]||statusBg.pending};color:${statusColor[r.status]||statusColor.pending};margin-top:5px">${r.status||'pending'}</span>
+                    </div>
+                    <div style="display:flex;flex-direction:column;gap:7px">
+                        <button onclick="ssaApprove('${r.key}')" style="background:#4caf50;color:white;border:none;padding:8px 16px;border-radius:7px;cursor:pointer;font-weight:600;font-size:.88em">✅ Approve</button>
+                        <button onclick="ssaReject('${r.key}')"  style="background:#f44336;color:white;border:none;padding:8px 16px;border-radius:7px;cursor:pointer;font-weight:600;font-size:.88em">❌ Reject</button>
+                        <button onclick="ssaDelete('${r.key}')"  style="background:#888;   color:white;border:none;padding:8px 16px;border-radius:7px;cursor:pointer;font-weight:600;font-size:.88em">🗑 Delete</button>
+                    </div>
+                </div>`).join('');
+        } catch(e) {
+            document.getElementById('ssaSubList').innerHTML = '<p style="color:red;padding:20px">Error: '+e.message+'</p>';
+        }
+    }
+
+    async function ssaApprove(key) {
+        await window.db.ref('speedSlide/submissions/'+key+'/status').set('approved');
+        ssaLoadSubs();
+    }
+    async function ssaReject(key) {
+        await window.db.ref('speedSlide/submissions/'+key+'/status').set('rejected');
+        ssaLoadSubs();
+    }
+    async function ssaDelete(key) {
+        if (!confirm('Delete this submission permanently?')) return;
+        await window.db.ref('speedSlide/submissions/'+key).remove();
+        ssaLoadSubs();
+    }
+
+    async function ssaLoadLB() {
+        document.getElementById('ssaLbContainer').innerHTML = '<p style="color:#aaa;padding:20px;text-align:center">Loading…</p>';
+        try {
+            const snap = await window.db.ref('speedSlide/submissions').once('value');
+            let data = [];
+            snap.forEach(c => { const v=c.val(); if(v.status==='approved') data.push(v); });
+            data.sort((a,b) => {
+                if (b.points !== a.points) return b.points - a.points;
+                if (a.timeSec !== b.timeSec) return a.timeSec - b.timeSec;
+                return a.moves - b.moves;
+            });
+            const diff = ssaLbDiff;
+            let rows = diff==='all' ? data : data.filter(r => r.difficulty===diff);
+            const seen = new Set();
+            rows = rows.filter(r => {
+                const k = (r.uid||r.phone)+'|'+r.difficulty;
+                if (seen.has(k)) return false;
+                seen.add(k); return true;
+            });
+            const medals = ['🥇','🥈','🥉'];
+            const diffLabel = {easy:'😊 8-Puzzle', medium:'😅 15-Puzzle', hard:'🔥 24-Puzzle'};
+            document.getElementById('ssaLbContainer').innerHTML = rows.length
+                ? rows.map((r,i) => `
+                    <div style="display:grid;grid-template-columns:44px 1fr auto auto;gap:10px;align-items:center;padding:12px 16px;border-radius:10px;background:white;margin-bottom:8px;box-shadow:0 2px 8px rgba(0,0,0,.07)">
+                        <div style="font-size:1.5em;text-align:center">${medals[i]||'#'+(i+1)}</div>
+                        <div>
+                            <div style="font-weight:700">${ssaEsc(r.name)}</div>
+                            <div style="color:#888;font-size:.82em">${ssaEsc(r.class||'')} · ${r.date||''} · ${diffLabel[r.difficulty]||r.difficulty}</div>
+                        </div>
+                        <div style="color:#e65100;font-weight:700;font-size:.9em">⏱ ${ssaFmtTime(r.timeSec)} · 🎯 ${r.moves}</div>
+                        <div style="color:#6a1b9a;font-weight:800;font-size:1.1em;text-align:right">⭐${r.points}</div>
+                    </div>`).join('')
+                : '<p style="color:#aaa;text-align:center;padding:30px">No approved scores yet.</p>';
+        } catch(e) {
+            document.getElementById('ssaLbContainer').innerHTML = '<p style="color:red">'+e.message+'</p>';
+        }
+    }
+
+    function ssaSwitchLB(d) {
+        ssaLbDiff = d;
+        ['easy','medium','hard','all'].forEach(x =>
+            document.getElementById('ssalbt-'+x)?.classList.toggle('active', x===d)
+        );
+        ssaLoadLB();
+    }
+
+    async function ssaLoadCfg() {
+        try {
+            const snap = await window.db.ref('speedSlide/config').once('value');
+            const cfg  = snap.val() || {};
+            document.getElementById('ssaCfgActive').value    = cfg.active    !== false ? '1' : '0';
+            document.getElementById('ssaCfgLbVisible').value = cfg.lbVisible !== false ? '1' : '0';
+            document.getElementById('ssaCfgMaxSubs').value   = cfg.maxSubs  || 3;
+        } catch(e) { console.error('ssaLoadCfg:', e); }
+    }
+
+    async function ssaSaveCfg() {
+        const cfg = {
+            active    : document.getElementById('ssaCfgActive').value    === '1',
+            lbVisible : document.getElementById('ssaCfgLbVisible').value === '1',
+            maxSubs   : parseInt(document.getElementById('ssaCfgMaxSubs').value) || 3
+        };
+        await window.db.ref('speedSlide/config').set(cfg);
+        const msg = document.getElementById('ssaCfgMsg');
+        msg.style.display = 'inline-block';
+        msg.style.color   = '#2e7d32';
+        msg.textContent   = '✅ Settings saved!';
+        setTimeout(() => msg.style.display='none', 3000);
+    }
+
+    async function ssaClearAllScores() {
+        if (!confirm('⚠️ Delete ALL Speed Slide scores? This cannot be undone.')) return;
+        await window.db.ref('speedSlide/submissions').remove();
+        alert('All scores cleared.');
+        ssaLoadSubs();
+    }
+
+    function ssaClearAllImages() {
+        alert('To clear uploaded images, go to Firebase Console → Storage → speedSlide/ folder and delete files from there.');
+    }
+
+    function ssaDownloadCSV() {
+        const rows = [['Name','Class','Phone','Difficulty','Time(sec)','Moves','Points','Status','Date','SolvedAt']];
+        ssaAllSubs.forEach(r => rows.push([r.name,r.class,r.phone,r.difficulty,r.timeSec,r.moves,r.points,r.status,r.date,r.solvedAt]));
+        const csv = rows.map(r => r.map(v => '"'+(v||'')+'"').join(',')).join('\n');
+        const a = document.createElement('a');
+        a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+        a.download = 'speed_slide_results.csv';
+        a.click();
+    }
+
+    function ssaFmtTime(sec) {
+        if (!sec && sec !== 0) return '—';
+        const m = Math.floor(sec/60);
+        const s = (sec%60).toString().padStart(2,'0');
+        return m+':'+s;
+    }
+    function ssaEsc(s) {
+        if (!s) return '';
+        return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    // ── Speed Slide Admin Access ───────────────────────────────────────
+    function openSpeedSlideAdmin() {
+        showTab('speedSlideAdmin');
+        // Load submissions automatically
+        ssaShowTab('sub');
+    }
+
     // ── Helpers ────────────────────────────────────────────────────────
     function shEsc(str) {
         if (!str) return '';
@@ -12733,6 +13263,406 @@ Proceed?`)) return;
     }
 
     // showTab scavenger logic handled directly inside showTab() in main script
+
+
+    // ═══════════════════════════════════════════════════════════════════
+    // SPEED SLIDE CHALLENGE — Full game logic (runs inside index.html)
+    // ═══════════════════════════════════════════════════════════════════
+    const SSC_DIFF = {
+        easy  : { size:3, maxPts:100,  label:'8-Puzzle (3×3)'  },
+        medium: { size:4, maxPts:200,  label:'15-Puzzle (4×4)' },
+        hard  : { size:5, maxPts:300,  label:'24-Puzzle (5×5)' }
+    };
+
+    sscCurrentUser = null;
+    let sscDiff        = 'medium';
+    let sscSize        = 4;
+    let sscTiles       = [];
+    let sscEmpty       = 0;
+    let sscMoves       = 0;
+    let sscSeconds     = 0;
+    sscTimerRef    = null;
+    let sscSolDisabled = false;
+    let sscSolved      = false;
+    let sscImageData   = null;
+    let sscLbDiff      = 'easy';
+
+    // ── LOGIN ──────────────────────────────────────────────────────────
+    async function sscLogin() {
+        const phone = (document.getElementById('sscLoginPhone').value||'').trim();
+        const pass  = (document.getElementById('sscLoginPassword').value||'').trim();
+        const msg   = document.getElementById('sscLoginMsg');
+        msg.className = 'message'; msg.style.display = 'none';
+        if (!phone || !pass) { msg.className='message error show'; msg.textContent='Enter phone and password.'; return; }
+        try {
+            // Check if game is active before allowing login
+            const cfgSnap = await window.db.ref('speedSlide/config').once('value');
+            const cfg = cfgSnap.val() || {};
+            if (cfg.active === false) {
+                msg.className = 'message error show';
+                msg.style.display = 'block';
+                msg.innerHTML = '⏸️ <strong>Speed Slide Challenge is currently paused.</strong><br>The organiser has temporarily disabled the game. Please check back later!';
+                return;
+            }
+            const snap = await window.db.ref('quizStudents').orderByChild('phone').equalTo(phone).once('value');
+            if (!snap.exists()) { msg.className='message error show'; msg.textContent='Phone not registered. Register via Daily Quiz first.'; return; }
+            let found = null, foundKey = null;
+            snap.forEach(c => { if (c.val().password === pass) { found = c.val(); foundKey = c.key; } });
+            if (!found) { msg.className='message error show'; msg.textContent='Incorrect password.'; return; }
+            if (document.getElementById('sscRememberMe').checked) {
+                localStorage.setItem('ssc_remember', '1');
+                localStorage.setItem('ssc_ph', phone);
+                localStorage.setItem('ssc_pw', pass);
+            } else {
+                localStorage.removeItem('ssc_remember');
+                localStorage.removeItem('ssc_ph');
+                localStorage.removeItem('ssc_pw');
+            }
+            sscCurrentUser = { key: foundKey, ...found };
+            document.getElementById('loginSection').style.display    = 'none';
+            document.getElementById('sscStudentDashboard').style.display = 'block';
+            document.getElementById('sscPlayerBadge').textContent    = (found.name||'') + ' · ' + (found.class||found.classYear||'');
+            document.getElementById('userInfo').innerHTML = 'Logged in as: <span class="admin-badge" style="background:#6a1b9a;color:white">🧩 ' + (found.name||'') + ' – Speed Slide</span>';
+            sscShowSection('play');
+            sscSelectDiff('medium');
+            setTimeout(() => {
+                const dash = document.getElementById('sscStudentDashboard');
+                if (dash) dash.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 80);
+        } catch(e) {
+            msg.className='message error show'; msg.textContent='Error: ' + e.message;
+        }
+    }
+
+    function sscGoBack() {
+        document.getElementById('sscStudentDashboard').style.display = 'none';
+        document.getElementById('loginSection').style.display        = 'block';
+        sscResetGame();
+    }
+
+    // ── SECTIONS ───────────────────────────────────────────────────────
+    function sscShowSection(s) {
+        document.getElementById('sscPlaySection').style.display = s==='play' ? 'block' : 'none';
+        document.getElementById('sscLbSection').style.display   = s==='lb'   ? 'block' : 'none';
+        // Show/hide paused banner when switching to play
+        if (s === 'play') sscCheckPausedBanner();
+        const tabPlay = document.getElementById('sscTabPlay');
+        const tabLB   = document.getElementById('sscTabLB');
+        if (tabPlay) {
+            tabPlay.style.background = s==='play' ? 'rgba(255,255,255,.9)' : 'rgba(255,255,255,.2)';
+            tabPlay.style.color      = s==='play' ? '#6a1b9a' : 'white';
+            tabPlay.style.border     = s==='play' ? 'none' : '2px solid rgba(255,255,255,.5)';
+        }
+        if (tabLB) {
+            tabLB.style.background = s==='lb' ? 'rgba(255,255,255,.9)' : 'rgba(255,255,255,.2)';
+            tabLB.style.color      = s==='lb' ? '#6a1b9a' : 'white';
+        }
+        if (s==='lb') sscLoadLB();
+    }
+
+    // ── PAUSED BANNER CHECK ────────────────────────────────────────────────
+    async function sscCheckPausedBanner() {
+        try {
+            const cfgSnap = await window.db.ref('speedSlide/config').once('value');
+            const cfg = cfgSnap.val() || {};
+            const paused = cfg.active === false;
+            const banner  = document.getElementById('sscPausedBanner');
+            const startBtn = document.getElementById('sscStartBtn');
+            if (banner)   banner.style.display   = paused ? 'block' : 'none';
+            if (startBtn) {
+                startBtn.disabled = paused || !sscImageData;
+                startBtn.style.opacity = (paused || !sscImageData) ? '.5' : '1';
+                startBtn.title = paused ? 'Game is paused by organiser' : '';
+            }
+        } catch(e) { /* ignore */ }
+    }
+
+    // ── DIFFICULTY ─────────────────────────────────────────────────────
+    function sscSelectDiff(d) {
+        sscDiff = d; sscSize = SSC_DIFF[d].size;
+        ['easy','medium','hard'].forEach(x => {
+            const el = document.getElementById('ssdc-'+x);
+            if (!el) return;
+            el.style.border      = x===d ? '3px solid #6a1b9a' : '3px solid #ddd';
+            el.style.background  = x===d ? '#f3e5f5' : 'white';
+        });
+        const note = document.getElementById('sscDiffNote');
+        if (note) note.textContent = SSC_DIFF[d].label + ' · ' + SSC_DIFF[d].maxPts + ' max points';
+        sscCheckReady();
+    }
+
+    // ── IMAGE ──────────────────────────────────────────────────────────
+    function sscHandleImage(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        if (file.size > 5*1024*1024) { alert('Image must be < 5 MB'); return; }
+        const reader = new FileReader();
+        reader.onload = ev => {
+            sscImageData = ev.target.result;
+            const thumb = document.getElementById('sscPreviewThumb');
+            thumb.src = sscImageData; thumb.style.display = 'block';
+            document.getElementById('sscUploadZone').style.background = '#e8f5e9';
+            document.getElementById('sscUploadZone').style.borderColor = '#4caf50';
+            sscCheckReady();
+        };
+        reader.readAsDataURL(file);
+    }
+
+    function sscCheckReady() {
+        const btn = document.getElementById('sscStartBtn');
+        if (!btn) return;
+        const ready = !!(sscDiff && sscImageData);
+        btn.disabled = !ready;
+        btn.style.opacity = ready ? '1' : '.5';
+        btn.style.cursor  = ready ? 'pointer' : 'not-allowed';
+    }
+
+    // ── START GAME ─────────────────────────────────────────────────────
+    async function sscStartGame() {
+        // Re-check game active status in case admin paused after login
+        try {
+            const cfgSnap = await window.db.ref('speedSlide/config').once('value');
+            const cfg = cfgSnap.val() || {};
+            if (cfg.active === false) {
+                alert('⏸️ Speed Slide Challenge has been paused by the organiser. Please try again later.');
+                sscGoBack();
+                return;
+            }
+        } catch(e) { /* allow if config unreadable */ }
+        document.getElementById('sscSetupCard').style.display = 'none';
+        document.getElementById('sscGameArea').style.display  = 'block';
+        document.getElementById('sscGameDiffLabel').textContent = SSC_DIFF[sscDiff].label;
+        document.getElementById('sscPtsDisplay').textContent    = SSC_DIFF[sscDiff].maxPts;
+        sscSolDisabled = false; sscSolved = false;
+        sscInitPuzzle();
+    }
+
+    function sscInitPuzzle() {
+        sscMoves = 0; sscSeconds = 0;
+        clearInterval(sscTimerRef);
+        document.getElementById('sscTimerDisplay').textContent  = '0:00';
+        document.getElementById('sscMovesDisplay').textContent  = '0';
+        const n = sscSize * sscSize;
+        sscTiles = Array.from({length:n}, (_,i) => i);
+        do { sscShuffleTiles(); } while (!sscIsSolvable());
+        sscBuildBoard();
+        const prev = document.getElementById('sscInGamePreview');
+        prev.src = sscImageData; prev.style.display = 'block';
+        sscTimerRef = setInterval(() => {
+            sscSeconds++;
+            document.getElementById('sscTimerDisplay').textContent = sscFmtTime(sscSeconds);
+        }, 1000);
+    }
+
+    function sscShuffleTiles() {
+        const n = sscTiles.length;
+        for (let i=n-1; i>0; i--) {
+            const j = Math.floor(Math.random()*(i+1));
+            [sscTiles[i], sscTiles[j]] = [sscTiles[j], sscTiles[i]];
+        }
+    }
+
+    function sscIsSolvable() {
+        const n = sscSize, t = sscTiles;
+        let inv = 0;
+        for (let i=0; i<t.length-1; i++)
+            for (let j=i+1; j<t.length; j++)
+                if (t[i] && t[j] && t[i]>t[j]) inv++;
+        const blankRow = Math.floor(t.indexOf(0)/n);
+        if (n%2===1) return inv%2===0;
+        const rowFromBottom = n - blankRow;
+        return rowFromBottom%2===0 ? inv%2===1 : inv%2===0;
+    }
+
+    function sscBuildBoard() {
+        const board = document.getElementById('sscPuzzleBoard');
+        board.style.gridTemplateColumns = 'repeat('+sscSize+',1fr)';
+        board.innerHTML = '';
+        const tileSize = Math.min(400, (board.parentElement.clientWidth||400) - 20);
+        const sz = Math.floor(tileSize / sscSize);
+        sscTiles.forEach((val, idx) => {
+            const tile = document.createElement('div');
+            tile.className = 'ssc-tile' + (val===0 ? ' ssc-empty' : '');
+            tile.style.width = sz+'px'; tile.style.height = sz+'px';
+            if (val !== 0) {
+                const col = val % sscSize, row = Math.floor(val/sscSize);
+                const pct = 100/(sscSize-1);
+                tile.style.backgroundImage    = 'url('+sscImageData+')';
+                tile.style.backgroundSize     = (sscSize*100)+'%';
+                tile.style.backgroundPosition = (col*pct)+'% '+(row*pct)+'%';
+            }
+            tile.addEventListener('click', () => sscTryMove(idx));
+            board.appendChild(tile);
+        });
+    }
+
+    function sscTryMove(clickedIdx) {
+        if (sscSolved) return;
+        const emptyIdx = sscTiles.indexOf(0);
+        const eR = Math.floor(emptyIdx/sscSize), eC = emptyIdx%sscSize;
+        const cR = Math.floor(clickedIdx/sscSize), cC = clickedIdx%sscSize;
+        if (!((Math.abs(eR-cR)===1 && eC===cC)||(Math.abs(eC-cC)===1 && eR===cR))) return;
+        [sscTiles[emptyIdx], sscTiles[clickedIdx]] = [sscTiles[clickedIdx], sscTiles[emptyIdx]];
+        sscMoves++;
+        document.getElementById('sscMovesDisplay').textContent = sscMoves;
+        sscBuildBoard();
+        sscCheckWin();
+    }
+
+    function sscCheckWin() {
+        for (let i=0; i<sscTiles.length; i++) if (sscTiles[i]!==i) return;
+        sscSolved = true;
+        clearInterval(sscTimerRef);
+        const pts = sscCalcPoints();
+        setTimeout(() => {
+            document.getElementById('sscWinTime').textContent  = sscFmtTime(sscSeconds);
+            document.getElementById('sscWinMoves').textContent = sscMoves;
+            document.getElementById('sscWinDiff').textContent  = ({easy:'8-Puz',medium:'15-Puz',hard:'24-Puz'})[sscDiff];
+            document.getElementById('sscWinPts').textContent   = pts;
+            document.getElementById('sscWinSaveMsg').textContent = '';
+            const m = document.getElementById('sscWinModal');
+            m.style.display = 'flex';
+        }, 300);
+        sscLaunchConfetti();
+    }
+
+    function sscCalcPoints() {
+        const base = SSC_DIFF[sscDiff].maxPts;
+        const minMoves = sscSize * sscSize * 2;
+        return Math.max(10, base - Math.floor(sscSeconds*0.5) - Math.max(0, sscMoves-minMoves));
+    }
+
+    // ── SAVE SCORE ─────────────────────────────────────────────────────
+    async function sscSaveScore() {
+        if (sscSolDisabled) { alert('Score disabled — solution was viewed.'); return; }
+        if (!sscCurrentUser) { alert('Not logged in.'); return; }
+        const pts = sscCalcPoints();
+        document.getElementById('sscWinSaveMsg').textContent = '⏳ Uploading image & saving score…';
+        try {
+            const imgRef = window.storage.ref('speedSlide/'+sscCurrentUser.key+'_'+Date.now()+'.jpg');
+            const snap   = await imgRef.putString(sscImageData, 'data_url');
+            const imgUrl = await snap.ref.getDownloadURL();
+            const entry = {
+                uid: sscCurrentUser.key, name: sscCurrentUser.name,
+                phone: sscCurrentUser.phone,
+                class: sscCurrentUser.class || sscCurrentUser.classYear || '',
+                difficulty: sscDiff, size: sscSize,
+                timeSec: sscSeconds, moves: sscMoves, points: pts,
+                imageUrl: imgUrl, solvedAt: new Date().toISOString(),
+                date: new Date().toISOString().slice(0,10), status: 'pending'
+            };
+            await window.db.ref('speedSlide/submissions').push(entry);
+            document.getElementById('sscWinSaveMsg').textContent = '✅ Score saved! Pending admin review.';
+        } catch(e) {
+            document.getElementById('sscWinSaveMsg').textContent = '❌ Save failed: ' + e.message;
+        }
+    }
+
+    // ── SHOW SOLUTION ──────────────────────────────────────────────────
+    function sscShowSolution() {
+        if (!confirm('Give up? The solution will be shown and this game will END with 0 points. Continue?')) return;
+        clearInterval(sscTimerRef);
+        sscSolDisabled = true; sscSolved = true;
+        document.getElementById('sscSolTime').textContent  = sscFmtTime(sscSeconds);
+        document.getElementById('sscSolMoves').textContent = sscMoves;
+        document.getElementById('sscSolDiff').textContent  = ({easy:'8-Puz',medium:'15-Puz',hard:'24-Puz'})[sscDiff];
+        document.getElementById('sscSolImg').src = sscImageData;
+        const m = document.getElementById('sscGameOverModal');
+        m.style.display = 'flex';
+    }
+
+    // ── RESET ──────────────────────────────────────────────────────────
+    function sscResetGame() {
+        clearInterval(sscTimerRef);
+        sscSolved = false; sscSolDisabled = false; sscImageData = null;
+        document.getElementById('sscWinModal').style.display     = 'none';
+        document.getElementById('sscGameOverModal').style.display = 'none';
+        document.getElementById('sscGameArea').style.display  = 'none';
+        document.getElementById('sscSetupCard').style.display = 'block';
+        document.getElementById('sscPreviewThumb').style.display = 'none';
+        document.getElementById('sscUploadZone').style.background  = '#faf0ff';
+        document.getElementById('sscUploadZone').style.borderColor = '#9c27b0';
+        document.getElementById('sscImgInput').value = '';
+        sscCheckReady();
+    }
+
+    // ── LEADERBOARD ────────────────────────────────────────────────────
+    async function sscLoadLB() {
+        document.getElementById('sscLbContainer').innerHTML = '<p style="color:#aaa;text-align:center;padding:30px">Loading…</p>';
+        try {
+            const snap = await window.db.ref('speedSlide/submissions').once('value');
+            let data = [];
+            snap.forEach(c => { const v=c.val(); if(v.status==='approved') data.push(v); });
+            data.sort((a,b) => {
+                if (b.points!==a.points) return b.points-a.points;
+                if (a.timeSec!==b.timeSec) return a.timeSec-b.timeSec;
+                return a.moves-b.moves;
+            });
+            const diff = sscLbDiff;
+            let rows = diff==='all' ? data : data.filter(r=>r.difficulty===diff);
+            const seen = new Set();
+            rows = rows.filter(r => {
+                const k=(r.uid||r.phone)+'|'+r.difficulty;
+                if(seen.has(k)) return false; seen.add(k); return true;
+            });
+            if (!rows.length) {
+                document.getElementById('sscLbContainer').innerHTML = '<p style="color:#aaa;text-align:center;padding:30px">No approved scores yet for this category.</p>';
+                return;
+            }
+            const medals = ['🥇','🥈','🥉'];
+            const dLabel = {easy:'😊 8-Puzzle',medium:'😅 15-Puzzle',hard:'🔥 24-Puzzle'};
+            document.getElementById('sscLbContainer').innerHTML = rows.map((r,i) => `
+                <div style="display:grid;grid-template-columns:44px 1fr auto auto;gap:10px;align-items:center;padding:12px 16px;border-radius:10px;background:white;margin-bottom:8px;box-shadow:0 2px 8px rgba(0,0,0,.07)">
+                    <div style="font-size:1.4em;text-align:center">${medals[i]||'#'+(i+1)}</div>
+                    <div>
+                        <div style="font-weight:700">${sscEsc(r.name)}</div>
+                        <div style="color:#888;font-size:.82em">${sscEsc(r.class||'')} · ${r.date||''} · ${dLabel[r.difficulty]||r.difficulty}</div>
+                    </div>
+                    <div style="color:#e65100;font-weight:700;font-size:.88em">⏱ ${sscFmtTime(r.timeSec)} · 🎯 ${r.moves}</div>
+                    <div style="color:#6a1b9a;font-weight:800;font-size:1.05em">⭐${r.points}</div>
+                </div>`).join('');
+        } catch(e) {
+            document.getElementById('sscLbContainer').innerHTML = '<p style="color:red">Error: '+e.message+'</p>';
+        }
+    }
+
+    function sscSwitchLB(d) {
+        sscLbDiff = d;
+        ['easy','medium','hard','all'].forEach(x => {
+            const el = document.getElementById('ssclbt-'+x);
+            if (el) el.classList.toggle('active', x===d);
+        });
+        sscLoadLB();
+    }
+
+    // ── CONFETTI ───────────────────────────────────────────────────────
+    function sscLaunchConfetti() {
+        const colors = ['#c44569','#6a1b9a','#ffd700','#28a745','#ff9800','#2196F3'];
+        for (let i=0; i<60; i++) {
+            const el = document.createElement('div');
+            el.style.cssText = 'position:fixed;z-index:99999;border-radius:2px;animation:confetti 2.5s ease-out forwards;pointer-events:none';
+            el.style.left    = Math.random()*100+'vw';
+            el.style.top     = '-20px';
+            el.style.background = colors[Math.floor(Math.random()*colors.length)];
+            el.style.width   = (8+Math.random()*8)+'px';
+            el.style.height  = (8+Math.random()*8)+'px';
+            el.style.animationDelay = Math.random()*1.5+'s';
+            document.body.appendChild(el);
+            setTimeout(()=>el.remove(), 4000);
+        }
+    }
+
+    // ── HELPERS ────────────────────────────────────────────────────────
+    function sscFmtTime(sec) {
+        if (!sec && sec!==0) return '—';
+        return Math.floor(sec/60)+':'+(sec%60).toString().padStart(2,'0');
+    }
+    function sscEsc(s) {
+        if (!s) return '';
+        return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    // window.storage is initialized alongside window.db in the main script block above
 
     // ── Auto-init when db is ready ────────────────────────────────────────────
     (function hwpInit() {
