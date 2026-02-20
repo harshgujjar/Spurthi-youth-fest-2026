@@ -1111,7 +1111,6 @@
                     </label>
                 </div>
                 <button class="btn btn-success" onclick="loginQuizStudent()">🚀 Login to Quiz</button>
-                <button class="btn btn-secondary" onclick="console.log('TEST: loginQuizStudent type:', typeof loginQuizStudent); alert('Function type: ' + typeof loginQuizStudent)" style="margin-top:8px;font-size:0.85em">🔍 Test Function</button>
             </div>
 
             <!-- ============================================ -->
@@ -12408,7 +12407,7 @@ Davan Institute Team`;
                     </div>
                     <button class="act-banner-cta"
                             style="background:#ffe082;color:#1a5e20;"
-                            onclick="document.getElementById('userType').value='dailyquiz';handleUserTypeChange();window.scrollTo({top:document.getElementById('dailyQuizLogin')?.offsetTop||0,behavior:'smooth'})">
+                            onclick="document.getElementById('competitionType').value='dailyquiz';handleCompetitionChange();document.getElementById('userType').value='';handleUserTypeChange();setTimeout(()=>{const el=document.getElementById('quizLoginPhone');if(el){el.scrollIntoView({behavior:'smooth',block:'center'});el.focus();}},100)">
                         🚀 Play Now
                     </button>
                 </div>`;
@@ -12466,7 +12465,7 @@ Davan Institute Team`;
                         </div>
                         <button class="act-banner-cta"
                                 style="background:#ffe082;color:#4a148c;"
-                                onclick="document.getElementById('userType').value='student';handleUserTypeChange();window.scrollTo({top:document.getElementById('studentLogin')?.offsetTop||0,behavior:'smooth'})">
+                                onclick="document.getElementById('competitionType').value='scavengerhunt';handleCompetitionChange();document.getElementById('userType').value='';handleUserTypeChange();setTimeout(()=>{const el=document.getElementById('scavengerHuntLogin');if(el){el.scrollIntoView({behavior:'smooth',block:'center'});}},100)">
                             🎯 Hunt Now!
                         </button>
                     </div>`;
@@ -13360,7 +13359,11 @@ Davan Institute Team`;
     function shGoBack() {
         // Hide dashboard, show login page — student stays logged in but goes back to login screen
         document.getElementById('shStudentDashboard').style.display = 'none';
+        document.getElementById('loginSection').style.display = 'block';
         document.getElementById('scavengerHuntLogin').style.display = 'block';
+        // Make sure competition dropdown reflects scavenger hunt selection
+        const compDrop = document.getElementById('competitionType');
+        if (compDrop) compDrop.value = 'scavengerhunt';
         shCurrentUser = null;
     }
 
@@ -17088,7 +17091,7 @@ Proceed?`)) return;
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;">
-                <strong>Version:</strong> 3.7 Activity Banners Added  | <strong>Last Updated:</strong> February 20, 2026 10.56pm
+                <strong>Version:</strong> 3.8 Activity Banners Added  | <strong>Last Updated:</strong> February 20, 2026 11.52pm
             </p>
             <!-- ============================================ -->
             
