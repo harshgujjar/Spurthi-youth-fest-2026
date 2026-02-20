@@ -859,6 +859,7 @@
                     <option value="cr">Class Representative (CR)</option>
                     <option value="admin">Admin</option>
                     <option value="superadmin">Super Admin</option>
+                    <option value="manager">Manager</option>
                     <option value="jury">Jury</option>
                 </select>
             </div>
@@ -905,6 +906,20 @@
                 <button class="btn" onclick="superAdminLogin()">Login as Super Admin</button>
             </div>
             
+            <!-- Manager Login -->
+            <div id="managerLogin" style="display:none">
+                <div class="form-group">
+                    <label>Manager Password:</label>
+                    <input type="password" id="managerPassword" placeholder="Enter manager password" onkeydown="if(event.key==='Enter') managerLogin()">
+                </div>
+                <div style="margin-bottom:12px">
+                    <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:0.9em;color:#555;font-weight:normal">
+                        <input type="checkbox" id="managerRememberMe" style="width:auto;accent-color:#2196F3"> Remember password on this device
+                    </label>
+                </div>
+                <button class="btn" style="background:#2196F3" onclick="managerLogin()">Login as Manager</button>
+            </div>
+
             <!-- Jury Login -->
             <div id="juryLogin" style="display:none">
                 <div class="form-group">
@@ -1350,6 +1365,7 @@
                 <button class="tab super-admin-only" onclick="showTab('dbInspector')" id="dbInspectorTab">🔍 DB Inspector</button>
                 <button class="tab super-admin-only" onclick="showTab('cloudinaryInspector')" id="cloudinaryInspectorTab">☁️ Cloudinary</button>
                 <button class="tab super-admin-only" onclick="showTab('firebaseDownloadMonitor')" id="firebaseDownloadMonitorTab">🔥 Download Monitor</button>
+                <button class="tab super-admin-only" onclick="showTab('managerPermissionsPanel')" id="managerPermissionsPanelTab">👔 Manager Permissions</button>
             </div>
 
             <div class="content" id="adminContentBox">
@@ -2705,6 +2721,82 @@
             <!-- ================================================ -->
             <!-- 🔥 FIREBASE DOWNLOAD LIMIT MONITOR (Super Admin) -->
             <!-- ================================================ -->
+            <!-- ══════════════════════════════════════════════════════════════════ -->
+            <!-- MANAGER PERMISSIONS PANEL (Super Admin only)                      -->
+            <!-- TO ADD A NEW PERMISSION: copy a toggle row, change id & label,    -->
+            <!-- then add matching code in managerPermissions & applyManagerPermissions() -->
+            <!-- ══════════════════════════════════════════════════════════════════ -->
+            <div id="managerPermissionsPanel" class="form-section super-admin-only" style="margin-top:20px">
+                <h2 style="color:#2196F3;margin-bottom:8px">👔 Manager Permissions</h2>
+                <p style="color:#555;font-size:13px;margin-bottom:20px;background:#e3f2fd;padding:12px 16px;border-radius:8px;border-left:4px solid #2196F3">
+                    Control exactly what the <strong>Manager</strong> login can see and do.<br>
+                    Changes saved here persist across page reloads.
+                </p>
+                <div style="background:white;border-radius:12px;border:2px solid #e0e0e0;overflow:hidden">
+                    <div style="background:#2196F3;color:white;padding:12px 20px;display:grid;grid-template-columns:1fr auto;align-items:center">
+                        <span style="font-weight:700">Feature / Tab</span>
+                        <span style="font-weight:700">Allow Manager?</span>
+                    </div>
+                    <div style="padding:0 20px">
+
+                        <div style="display:grid;grid-template-columns:1fr auto;align-items:center;padding:16px 0;border-bottom:1px solid #f0f0f0">
+                            <div><strong style="color:#333">📝 Quiz Management</strong>
+                            <p style="color:#777;font-size:12px;margin:3px 0 0">Add/edit quiz questions, publish daily quiz</p></div>
+                            <input type="checkbox" id="mperm_quizManagement" style="width:20px;height:20px;accent-color:#2196F3;cursor:pointer">
+                        </div>
+
+                        <div style="display:grid;grid-template-columns:1fr auto;align-items:center;padding:16px 0;border-bottom:1px solid #f0f0f0">
+                            <div><strong style="color:#333">🗺️ Scavenger Hunt Admin</strong>
+                            <p style="color:#777;font-size:12px;margin:3px 0 0">Add/edit tasks, approve/reject student submissions</p></div>
+                            <input type="checkbox" id="mperm_scavengerAdmin" style="width:20px;height:20px;accent-color:#2196F3;cursor:pointer">
+                        </div>
+
+                        <div style="display:grid;grid-template-columns:1fr auto;align-items:center;padding:16px 0;border-bottom:1px solid #f0f0f0">
+                            <div><strong style="color:#333">📋 View Registrations</strong>
+                            <p style="color:#777;font-size:12px;margin:3px 0 0">See Master List & By Events tabs (read-only)</p></div>
+                            <input type="checkbox" id="mperm_viewRegistrations" style="width:20px;height:20px;accent-color:#2196F3;cursor:pointer">
+                        </div>
+
+                        <div style="display:grid;grid-template-columns:1fr auto;align-items:center;padding:16px 0;border-bottom:1px solid #f0f0f0">
+                            <div><strong style="color:#333">🏆 View Quiz Results</strong>
+                            <p style="color:#777;font-size:12px;margin:3px 0 0">See Results tab and quiz submissions</p></div>
+                            <input type="checkbox" id="mperm_viewResults" style="width:20px;height:20px;accent-color:#2196F3;cursor:pointer">
+                        </div>
+
+                        <div style="display:grid;grid-template-columns:1fr auto;align-items:center;padding:16px 0;border-bottom:1px solid #f0f0f0">
+                            <div><strong style="color:#333">📲 WhatsApp Broadcast Messages</strong>
+                            <p style="color:#777;font-size:12px;margin:3px 0 0">Copy ready-made quiz & scavenger hunt messages</p></div>
+                            <input type="checkbox" id="mperm_whatsappMessages" style="width:20px;height:20px;accent-color:#2196F3;cursor:pointer">
+                        </div>
+
+                        <!-- ── ADD NEW PERMISSION ROWS BELOW THIS LINE ────────────────── -->
+                        <!-- Copy any row above, change id="mperm_yourKey", label & description -->
+                        <!-- Then add matching code in managerPermissions object & applyManagerPermissions() -->
+
+                    </div>
+                    <div style="padding:20px;background:#f9f9f9;border-top:2px solid #e0e0e0;display:flex;align-items:center;gap:15px;flex-wrap:wrap">
+                        <button onclick="saveManagerPermissions()" style="background:#2196F3;color:white;border:none;padding:12px 30px;border-radius:8px;cursor:pointer;font-weight:700;font-size:1em">
+                            💾 Save Permissions
+                        </button>
+                        <span style="color:#777;font-size:12px">Changes persist across page reloads.</span>
+                    </div>
+                </div>
+
+                <div style="margin-top:30px">
+                    <h3 style="color:#25D366;margin-bottom:15px">📲 WhatsApp Broadcast Messages</h3>
+                    <p style="color:#555;font-size:13px;margin-bottom:15px">Preview and copy messages for WhatsApp broadcast:</p>
+                    <div style="display:flex;gap:15px;flex-wrap:wrap">
+                        <button onclick="copyQuizWhatsAppMsg()" style="background:#25D366;color:white;border:none;padding:12px 24px;border-radius:8px;cursor:pointer;font-weight:700">
+                            📋 Copy Quiz WhatsApp Message
+                        </button>
+                        <button onclick="copyScavengerWhatsAppMsg()" style="background:#128C7E;color:white;border:none;padding:12px 24px;border-radius:8px;cursor:pointer;font-weight:700">
+                            📋 Copy Scavenger Hunt WhatsApp Message
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <!-- END MANAGER PERMISSIONS PANEL -->
+
             <div id="firebaseDownloadMonitor" class="form-section super-admin-only" style="margin-top:20px">
                 <h2 style="color:#c44569;margin-bottom:6px">🔥 Firebase Download Monitor</h2>
                 <p style="color:#888;margin-bottom:16px;font-size:.9em">Track your Firebase Storage 10 GB/day download limit. Manually log downloads or paste daily stats to visualise usage.</p>
@@ -3552,6 +3644,7 @@
         let crClass = null;
         let isAdmin = false;
         let isSuperAdmin = false;
+        let isManager = false;
         let isCR = false;
         let isJury = false;
         let juryEvent = null;
@@ -3559,6 +3652,44 @@
         let selectedEvent = null;
         let adminPassword = 'admin123';
         let superAdminPassword = 'superadmin123';
+        let managerPassword = 'manager123'; // Change this to your desired manager password
+
+        // ─────────────────────────────────────────────────────────────────────────
+        // MANAGER PERMISSIONS — Super Admin toggles these in the Manager Permissions
+        // panel (inside the Admin section). Each key = one feature.
+        // true  = manager CAN access it
+        // false = manager CANNOT access it (hidden/blocked)
+        //
+        // TO ADD A NEW PERMISSION IN FUTURE:
+        //   1. Add a new key:value pair here
+        //   2. Add a matching toggle row in the Manager Permissions Panel HTML
+        //      (search "managerPermissionsPanel" in this file)
+        //   3. Use:  if (isManager && !managerPermissions.yourNewKey) return;
+        //      OR:   add your tab button with class "manager-controlled" and
+        //            data-perm="yourNewKey"
+        // ─────────────────────────────────────────────────────────────────────────
+        let managerPermissions = {
+            quizManagement:    true,   // 📝 Quiz Management tab (add/edit questions, publish)
+            scavengerAdmin:    true,   // 🗺️ Scavenger Hunt tab (add tasks, approve submissions)
+            viewRegistrations: true,   // 📋 View Master List & Events tabs (read-only)
+            viewResults:       true,   // 🏆 View Results tab
+            whatsappMessages:  true,   // 📲 Copy WhatsApp broadcast messages
+            // ── Add new permissions below this line ──
+            // featureName:    false,  // description of what this unlocks
+        };
+
+        // Load saved permissions from localStorage on page load
+        (function loadManagerPermissions() {
+            const saved = localStorage.getItem('spurthi_manager_perms');
+            if (saved) {
+                try {
+                    const parsed = JSON.parse(saved);
+                    Object.keys(parsed).forEach(k => {
+                        if (k in managerPermissions) managerPermissions[k] = parsed[k];
+                    });
+                } catch(e) {}
+            }
+        })();
         
         // Quiz Competition Variables
         let quizCurrentUser = null;
@@ -3681,6 +3812,7 @@
             document.getElementById('crLogin').style.display = type === 'cr' ? 'block' : 'none';
             document.getElementById('adminLogin').style.display = type === 'admin' ? 'block' : 'none';
             document.getElementById('superAdminLogin').style.display = type === 'superadmin' ? 'block' : 'none';
+            document.getElementById('managerLogin').style.display = type === 'manager' ? 'block' : 'none';
             document.getElementById('juryLogin').style.display = type === 'jury' ? 'block' : 'none';
 
             // Auto-fill saved credentials
@@ -3706,6 +3838,11 @@
                 const saved = localStorage.getItem('spurthi_superadmin_pwd');
                 if (saved) document.getElementById('superAdminPassword').value = saved;
                 document.getElementById('superAdminRememberMe').checked = true;
+            }
+            if (type === 'manager' && localStorage.getItem('spurthi_manager_remember') === '1') {
+                const saved = localStorage.getItem('spurthi_manager_pwd');
+                if (saved) document.getElementById('managerPassword').value = saved;
+                document.getElementById('managerRememberMe').checked = true;
             }
 
             // Reset competition dropdown when user type is selected
@@ -4000,6 +4137,127 @@
             });
         }
 
+        // ─────────────────────────────────────────────────────────────────────────
+        // MANAGER LOGIN
+        // ─────────────────────────────────────────────────────────────────────────
+        function managerLogin() {
+            const pwd = document.getElementById('managerPassword').value;
+            if (pwd !== managerPassword) { alert('Invalid manager password'); return; }
+
+            if (document.getElementById('managerRememberMe').checked) {
+                localStorage.setItem('spurthi_manager_pwd', pwd);
+                localStorage.setItem('spurthi_manager_remember', '1');
+            } else {
+                localStorage.removeItem('spurthi_manager_pwd');
+                localStorage.removeItem('spurthi_manager_remember');
+            }
+
+            isAdmin   = true;
+            isManager = true;
+            currentUser = 'Manager';
+            document.getElementById('userInfo').innerHTML =
+                'Logged in as: <span style="display:inline-block;background:#2196F3;color:white;padding:5px 15px;border-radius:20px;font-size:0.9em;font-weight:bold;margin-left:10px">👔 Manager</span>';
+            document.getElementById('loginSection').style.display = 'none';
+            document.getElementById('adminSection').style.display = 'block';
+
+            // Hide all super-admin-only elements first
+            document.querySelectorAll('.super-admin-only').forEach(el => el.style.display = 'none');
+
+            // Apply permissions based on managerPermissions object
+            applyManagerPermissions();
+
+            // Load registration data
+            ref.once('value', snap => {
+                all = [];
+                if (snap.exists()) {
+                    snap.forEach(child => { all.push({id: child.key, ...child.val()}); });
+                }
+                updateStats();
+                if (managerPermissions.viewRegistrations) { updateMaster(); updateEvents(); }
+                if (managerPermissions.viewResults) checkResultsPublished();
+            });
+        }
+
+        // ─────────────────────────────────────────────────────────────────────────
+        // applyManagerPermissions()
+        // Shows/hides tabs based on managerPermissions object.
+        // Called on Manager login AND when Super Admin saves from the panel.
+        //
+        // TO ADD A NEW PERMISSION IN FUTURE:
+        //   Step 1 → Add key in managerPermissions object (top of script)
+        //   Step 2 → Add toggle row in Manager Permissions Panel HTML
+        //   Step 3 → Add if-block below to show/hide the element
+        // ─────────────────────────────────────────────────────────────────────────
+        function applyManagerPermissions() {
+            if (!isManager) return;
+
+            const qmTab  = document.getElementById('quizManagementTab');
+            if (qmTab)  qmTab.style.display  = managerPermissions.quizManagement  ? 'inline-block' : 'none';
+
+            const shTab  = document.getElementById('scavengerAdminTab');
+            if (shTab)  shTab.style.display  = managerPermissions.scavengerAdmin  ? 'inline-block' : 'none';
+
+            const resTab = document.getElementById('resultsTab');
+            if (resTab) resTab.style.display = managerPermissions.viewResults      ? 'inline-block' : 'none';
+
+            document.querySelectorAll('.manager-whatsapp-btn').forEach(el => {
+                el.style.display = managerPermissions.whatsappMessages ? 'inline-block' : 'none';
+            });
+
+            // ── ADD NEW PERMISSION CHECKS BELOW THIS LINE ─────────────────────────
+            // const el = document.getElementById('someTabId');
+            // if (el) el.style.display = managerPermissions.featureName ? 'inline-block' : 'none';
+        }
+
+        // ─────────────────────────────────────────────────────────────────────────
+        // saveManagerPermissions() — called by Super Admin from panel
+        // ─────────────────────────────────────────────────────────────────────────
+        function saveManagerPermissions() {
+            managerPermissions.quizManagement    = document.getElementById('mperm_quizManagement').checked;
+            managerPermissions.scavengerAdmin    = document.getElementById('mperm_scavengerAdmin').checked;
+            managerPermissions.viewRegistrations = document.getElementById('mperm_viewRegistrations').checked;
+            managerPermissions.viewResults       = document.getElementById('mperm_viewResults').checked;
+            managerPermissions.whatsappMessages  = document.getElementById('mperm_whatsappMessages').checked;
+            // ── Read new permission toggles below this line ───────────────────────
+            // managerPermissions.featureName = document.getElementById('mperm_featureName').checked;
+
+            localStorage.setItem('spurthi_manager_perms', JSON.stringify(managerPermissions));
+            alert('✅ Manager permissions saved!\nThese apply the next time Manager logs in.');
+        }
+
+        // ─────────────────────────────────────────────────────────────────────────
+        // WHATSAPP MESSAGE HELPERS
+        // ─────────────────────────────────────────────────────────────────────────
+        function copyQuizWhatsAppMsg() {
+            const today = (typeof getQuizToday === 'function') ? getQuizToday() : new Date().toISOString().slice(0,10);
+            const msg =
+                `📝 *Daily Quiz — ${today}*\n\n` +
+                `🎓 Dear Students,\n` +
+                `Today's quiz is now *LIVE!* 🔥\n\n` +
+                `👉 Visit: https://harshgujjar.github.io/Spurthi-youth-fest-2026/\n` +
+                `📱 Select: *Online Competition → Daily Quiz*\n\n` +
+                `⏰ Answer both questions before time runs out!\n` +
+                `🏆 Top scorers win prizes!\n\n` +
+                `— Spurthi Youth Fest 2026 🎉`;
+            navigator.clipboard.writeText(msg)
+                .then(() => alert('✅ Quiz WhatsApp message copied!\nPaste it directly into WhatsApp.'))
+                .catch(() => prompt('Copy this message manually:', msg));
+        }
+
+        function copyScavengerWhatsAppMsg() {
+            const msg =
+                `🗺️ *Scavenger Hunt — Spurthi Youth Fest 2026*\n\n` +
+                `🎯 New tasks are now *LIVE!* 🔥\n\n` +
+                `👉 Visit: https://harshgujjar.github.io/Spurthi-youth-fest-2026/\n` +
+                `📱 Select: *Online Competition → Scavenger Hunt*\n\n` +
+                `📸 Complete tasks, upload proof & earn points!\n` +
+                `🏆 The fastest team *WINS!*\n\n` +
+                `— Spurthi Youth Fest 2026 🎉`;
+            navigator.clipboard.writeText(msg)
+                .then(() => alert('✅ Scavenger Hunt WhatsApp message copied!\nPaste it directly into WhatsApp.'))
+                .catch(() => prompt('Copy this message manually:', msg));
+        }
+
         function juryLogin() {
             const event = document.getElementById('juryEvent').value;
             const pwd = document.getElementById('juryPassword').value;
@@ -4231,6 +4489,7 @@
             isAdmin = false;
             // Note: we do NOT clear localStorage here — saved credentials persist across logouts
             isSuperAdmin = false;
+            isManager = false;
             isCR = false;
             isJury = false;
             juryEvent = null;
@@ -5132,6 +5391,16 @@
             if (tab === 'firebaseDownloadMonitor') {
                 // Firebase Download Monitor — render history on open
                 if (typeof fdmRenderHistory === 'function') fdmRenderHistory();
+            }
+            // Sync Manager Permissions panel checkboxes with current state when opened
+            if (tab === 'managerPermissionsPanel') {
+                document.getElementById('mperm_quizManagement').checked    = managerPermissions.quizManagement;
+                document.getElementById('mperm_scavengerAdmin').checked    = managerPermissions.scavengerAdmin;
+                document.getElementById('mperm_viewRegistrations').checked = managerPermissions.viewRegistrations;
+                document.getElementById('mperm_viewResults').checked       = managerPermissions.viewResults;
+                document.getElementById('mperm_whatsappMessages').checked  = managerPermissions.whatsappMessages;
+                // ── Sync new permission checkboxes below this line ──────────────────
+                // document.getElementById('mperm_featureName').checked = managerPermissions.featureName;
             }
         }
 
@@ -9088,14 +9357,16 @@ Davan Institute Team`;
 
         async function populateQsDateFilter() {
             try {
-                const snap = await db.ref('quizSubmissions').once('value');
+                // Read from quizQuestions so ALL dates with questions appear,
+                // regardless of whether any student submitted on that date
+                const snap = await db.ref('quizQuestions').once('value');
                 const sel  = document.getElementById('qsDateFilter');
                 if (!sel) return;
                 const cur = sel.value;
                 const today = getQuizToday();
                 const dates = [];
                 if (snap.exists()) snap.forEach(d => dates.push(d.key));
-                // Always include today even if no submissions yet
+                // Always include today even if no questions added yet
                 if (!dates.includes(today)) dates.push(today);
                 dates.sort((a,b) => b.localeCompare(a));
                 sel.innerHTML = '<option value="">— Select Date —</option>';
@@ -15854,7 +16125,7 @@ Proceed?`)) return;
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;">
-                <strong>Version:</strong> 3.1 Scavenger Hunt Event bug fix  | <strong>Last Updated:</strong> February 20, 2026 (1.51am)
+                <strong>Version:</strong> 3.1 Scavenger Hunt Event bug fix  | <strong>Last Updated:</strong> February 20, 2026 (12.54Pm)
             </p>
             <!-- ============================================ -->
             
