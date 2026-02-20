@@ -527,7 +527,7 @@
         .content { background: white; border-radius: 12px; padding: 30px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
         #adminContentBox.lb-active { background: transparent; box-shadow: none; padding: 0; }
         .form-section { display: none; }
-        .form-section.active { display: block; }
+        .form-section.active { display: block !important; }
         .form-group { margin-bottom: 20px; }
         label { display: block; margin-bottom: 8px; font-weight: 600; color: #333; }
         input, select, textarea { width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 6px; font-size: 16px; transition: border-color 0.3s; }
@@ -1347,6 +1347,9 @@
                 <button class="tab super-admin-only" onclick="showTab('leaderboardAdmin')" id="leaderboardAdminTab">🏆 Leaderboard</button>
                 <button class="tab super-admin-only" onclick="showTab('scavengerAdmin')" id="scavengerAdminTab">🗺️ Scavenger Hunt</button>
                 <button class="tab super-admin-only" onclick="openSpeedSlideAdmin()" id="speedSlideAdminTab">🧩 Speed Slide Admin</button>
+                <button class="tab super-admin-only" onclick="showTab('dbInspector')" id="dbInspectorTab">🔍 DB Inspector</button>
+                <button class="tab super-admin-only" onclick="showTab('cloudinaryInspector')" id="cloudinaryInspectorTab">☁️ Cloudinary</button>
+                <button class="tab super-admin-only" onclick="showTab('firebaseDownloadMonitor')" id="firebaseDownloadMonitorTab">🔥 Download Monitor</button>
             </div>
 
             <div class="content" id="adminContentBox">
@@ -2345,6 +2348,457 @@
             </div>
             <!-- ================================================ -->
             <!-- END SPEED SLIDE ADMIN PANEL                      -->
+            <!-- ================================================ -->
+
+            <!-- ================================================ -->
+            <!-- DB INSPECTOR PANEL (Super Admin Only)             -->
+            <!-- ================================================ -->
+            <div id="dbInspector" class="form-section super-admin-only" style="margin-top:20px">
+                <h2 style="color:#c44569;margin-bottom:6px">🔍 Database Inspector</h2>
+                <p style="color:#888;margin-bottom:20px;font-size:.9em">Scan your entire Firebase Realtime Database for base64 data, large fields, and suspicious entries.</p>
+
+                <!-- Summary Cards -->
+                <div id="dbi-summary" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:20px">
+                    <div style="background:linear-gradient(135deg,#667eea,#764ba2);border-radius:12px;padding:16px;color:white;text-align:center">
+                        <div style="font-size:2em" id="dbi-total-nodes">—</div>
+                        <div style="font-size:.8em;opacity:.85">Total Nodes Scanned</div>
+                    </div>
+                    <div style="background:linear-gradient(135deg,#f093fb,#f5576c);border-radius:12px;padding:16px;color:white;text-align:center">
+                        <div style="font-size:2em" id="dbi-b64-count">—</div>
+                        <div style="font-size:.8em;opacity:.85">Base64 Fields Found</div>
+                    </div>
+                    <div style="background:linear-gradient(135deg,#4facfe,#00f2fe);border-radius:12px;padding:16px;color:white;text-align:center">
+                        <div style="font-size:2em" id="dbi-total-size">—</div>
+                        <div style="font-size:.8em;opacity:.85">Total DB Size</div>
+                    </div>
+                    <div style="background:linear-gradient(135deg,#43e97b,#38f9d7);border-radius:12px;padding:16px;color:white;text-align:center">
+                        <div style="font-size:2em" id="dbi-b64-size">—</div>
+                        <div style="font-size:.8em;opacity:.85">Base64 Data Size</div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px">
+                    <button class="btn btn-success" onclick="dbiRunScan()" id="dbi-scan-btn">🔍 Scan Database Now</button>
+                    <button class="btn btn-small" onclick="dbiClearResults()" style="background:#888;color:white">🗑️ Clear Results</button>
+                    <button class="btn btn-small" onclick="dbiDownloadReport()" id="dbi-dl-btn" style="display:none;background:#6a1b9a;color:white">📥 Download Report</button>
+                </div>
+
+                <!-- Progress Bar -->
+                <div id="dbi-progress-wrap" style="display:none;margin-bottom:16px">
+                    <div style="background:#eee;border-radius:20px;height:10px;overflow:hidden">
+                        <div id="dbi-progress-bar" style="background:linear-gradient(90deg,#c44569,#6a1b9a);height:100%;width:0%;transition:width .4s ease;border-radius:20px"></div>
+                    </div>
+                    <p id="dbi-progress-label" style="color:#888;font-size:.82em;margin-top:4px;text-align:center">Scanning…</p>
+                </div>
+
+                <!-- Alert Banner -->
+                <div id="dbi-alert" style="display:none;padding:14px 18px;border-radius:10px;margin-bottom:16px;font-weight:600"></div>
+
+                <!-- Results Table -->
+                <div id="dbi-results" style="display:none">
+                    <h3 style="color:#c44569;margin-bottom:10px">📋 Scan Results</h3>
+                    <div style="overflow-x:auto">
+                        <table style="width:100%;border-collapse:collapse;font-size:.85em">
+                            <thead>
+                                <tr style="background:linear-gradient(135deg,#c44569,#6a1b9a);color:white">
+                                    <th style="padding:10px 12px;text-align:left;border-radius:8px 0 0 0">#</th>
+                                    <th style="padding:10px 12px;text-align:left">Firebase Path</th>
+                                    <th style="padding:10px 12px;text-align:left">Field Key</th>
+                                    <th style="padding:10px 12px;text-align:left">Type</th>
+                                    <th style="padding:10px 12px;text-align:left">Size</th>
+                                    <th style="padding:10px 12px;text-align:left;border-radius:0 8px 0 0">Preview</th>
+                                </tr>
+                            </thead>
+                            <tbody id="dbi-table-body"></tbody>
+                        </table>
+                    </div>
+                    <p style="color:#888;font-size:.8em;margin-top:10px" id="dbi-results-note"></p>
+                </div>
+
+                <!-- Node Tree Explorer -->
+                <div style="margin-top:24px">
+                    <h3 style="color:#6a1b9a;margin-bottom:10px">🌳 Top-Level Node Sizes</h3>
+                    <div id="dbi-node-tree" style="background:#f9f5ff;border-radius:10px;padding:16px;min-height:60px;color:#888;font-size:.85em">
+                        Run a scan to see node sizes.
+                    </div>
+                </div>
+            </div>
+            <!-- ================================================ -->
+            <!-- END DB INSPECTOR PANEL                           -->
+            <!-- ================================================ -->
+
+            <!-- ================================================ -->
+            <!-- ☁️ CLOUDINARY INSPECTOR PANEL (Super Admin Only) -->
+            <!-- ================================================ -->
+            <div id="cloudinaryInspector" class="form-section super-admin-only" style="margin-top:20px">
+                <h2 style="color:#c44569;margin-bottom:6px">☁️ Cloudinary Inspector</h2>
+                <p style="color:#888;margin-bottom:16px;font-size:.9em">Two ways to check your Cloudinary usage — pick whichever works for you.</p>
+
+                <!-- ── MODE SWITCHER ── -->
+                <div style="display:flex;gap:0;margin-bottom:20px;border-radius:10px;overflow:hidden;border:2px solid #6a1b9a;width:fit-content">
+                    <button id="cld-mode-manual-btn" onclick="cldSwitchMode('manual')"
+                        style="padding:10px 22px;font-size:.88em;font-weight:700;cursor:pointer;border:none;background:linear-gradient(135deg,#6a1b9a,#c44569);color:white;transition:all .2s">
+                        📋 Option A — Manual Logger
+                    </button>
+                    <button id="cld-mode-live-btn" onclick="cldSwitchMode('live')"
+                        style="padding:10px 22px;font-size:.88em;font-weight:700;cursor:pointer;border:none;background:#f3e8ff;color:#6a1b9a;transition:all .2s">
+                        ⚡ Option B — Live via Proxy
+                    </button>
+                </div>
+
+                <!-- ════════════════════════════════════════════════ -->
+                <!-- OPTION A — MANUAL LOGGER                        -->
+                <!-- ════════════════════════════════════════════════ -->
+                <div id="cld-panel-manual">
+
+                    <!-- How-to banner -->
+                    <div style="background:linear-gradient(135deg,#e8f4fd,#f3e8ff);border-radius:12px;padding:16px;margin-bottom:16px;border-left:5px solid #6a1b9a">
+                        <p style="color:#6a1b9a;font-weight:700;margin-bottom:8px;font-size:.92em">📖 How to get your numbers</p>
+                        <ol style="color:#555;font-size:.84em;margin:0;padding-left:18px;line-height:2">
+                            <li>Go to <a href="https://cloudinary.com/console" target="_blank" style="color:#c44569;font-weight:600">cloudinary.com/console</a> and log in</li>
+                            <li>On the <strong>Home / Dashboard</strong> page you'll see Storage, Bandwidth, and Transformations gauges</li>
+                            <li>For full history: click <strong>Reports → Usage Report</strong> in the left sidebar</li>
+                            <li>Note down the values and enter them below — they're saved in your browser</li>
+                        </ol>
+                    </div>
+
+                    <!-- Input form -->
+                    <div style="background:#f9f5ff;border-radius:12px;padding:16px;margin-bottom:16px;border:1px solid #e0d0f0">
+                        <p style="color:#6a1b9a;font-weight:700;margin-bottom:12px;font-size:.9em">📥 Log Current Usage</p>
+                        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-bottom:12px">
+                            <div>
+                                <label style="font-size:.78em;color:#888;display:block;margin-bottom:4px">🗄️ Storage Used (MB)</label>
+                                <input id="cldm-storage-used" type="number" min="0" step="0.1" placeholder="e.g. 450.5"
+                                    style="width:100%;padding:8px 12px;border:1.5px solid #e0d0f0;border-radius:8px;font-size:.9em;outline:none">
+                            </div>
+                            <div>
+                                <label style="font-size:.78em;color:#888;display:block;margin-bottom:4px">📦 Storage Limit (MB)</label>
+                                <input id="cldm-storage-limit" type="number" min="0" step="0.1" placeholder="e.g. 25600 (25 GB free)"
+                                    style="width:100%;padding:8px 12px;border:1.5px solid #e0d0f0;border-radius:8px;font-size:.9em;outline:none">
+                            </div>
+                            <div>
+                                <label style="font-size:.78em;color:#888;display:block;margin-bottom:4px">🌐 Bandwidth Used (MB)</label>
+                                <input id="cldm-bw-used" type="number" min="0" step="0.1" placeholder="e.g. 1200"
+                                    style="width:100%;padding:8px 12px;border:1.5px solid #e0d0f0;border-radius:8px;font-size:.9em;outline:none">
+                            </div>
+                            <div>
+                                <label style="font-size:.78em;color:#888;display:block;margin-bottom:4px">📡 Bandwidth Limit (MB)</label>
+                                <input id="cldm-bw-limit" type="number" min="0" step="0.1" placeholder="e.g. 25600 (25 GB free)"
+                                    style="width:100%;padding:8px 12px;border:1.5px solid #e0d0f0;border-radius:8px;font-size:.9em;outline:none">
+                            </div>
+                            <div>
+                                <label style="font-size:.78em;color:#888;display:block;margin-bottom:4px">🖼️ Total Assets</label>
+                                <input id="cldm-assets" type="number" min="0" step="1" placeholder="e.g. 342"
+                                    style="width:100%;padding:8px 12px;border:1.5px solid #e0d0f0;border-radius:8px;font-size:.9em;outline:none">
+                            </div>
+                            <div>
+                                <label style="font-size:.78em;color:#888;display:block;margin-bottom:4px">📅 Date Checked</label>
+                                <input id="cldm-date" type="date"
+                                    style="width:100%;padding:8px 12px;border:1.5px solid #e0d0f0;border-radius:8px;font-size:.9em;outline:none">
+                            </div>
+                        </div>
+                        <div style="display:flex;gap:10px;flex-wrap:wrap">
+                            <button class="btn btn-success" onclick="cldmSave()">💾 Save & Visualise</button>
+                            <button class="btn btn-small" onclick="cldmClearAll()" style="background:#dc3545;color:white">🗑️ Clear All</button>
+                        </div>
+                    </div>
+
+                    <!-- Alert -->
+                    <div id="cldm-alert" style="display:none;padding:14px 18px;border-radius:10px;margin-bottom:16px;font-weight:600"></div>
+
+                    <!-- Summary Cards -->
+                    <div id="cldm-cards" style="display:none">
+                        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:16px">
+                            <div style="background:linear-gradient(135deg,#f7971e,#ffd200);border-radius:12px;padding:14px;color:#333;text-align:center">
+                                <div style="font-size:1.6em;font-weight:700" id="cldm-card-storage-used">—</div>
+                                <div style="font-size:.75em;opacity:.85">Storage Used</div>
+                            </div>
+                            <div style="background:linear-gradient(135deg,#11998e,#38ef7d);border-radius:12px;padding:14px;color:white;text-align:center">
+                                <div style="font-size:1.6em;font-weight:700" id="cldm-card-storage-limit">—</div>
+                                <div style="font-size:.75em;opacity:.85">Storage Limit</div>
+                            </div>
+                            <div style="background:linear-gradient(135deg,#4facfe,#00f2fe);border-radius:12px;padding:14px;color:white;text-align:center">
+                                <div style="font-size:1.6em;font-weight:700" id="cldm-card-bw-used">—</div>
+                                <div style="font-size:.75em;opacity:.85">Bandwidth Used</div>
+                            </div>
+                            <div style="background:linear-gradient(135deg,#f093fb,#f5576c);border-radius:12px;padding:14px;color:white;text-align:center">
+                                <div style="font-size:1.6em;font-weight:700" id="cldm-card-bw-limit">—</div>
+                                <div style="font-size:.75em;opacity:.85">Bandwidth Limit</div>
+                            </div>
+                            <div style="background:linear-gradient(135deg,#667eea,#764ba2);border-radius:12px;padding:14px;color:white;text-align:center">
+                                <div style="font-size:1.6em;font-weight:700" id="cldm-card-assets">—</div>
+                                <div style="font-size:.75em;opacity:.85">Total Assets</div>
+                            </div>
+                            <div style="background:linear-gradient(135deg,#43e97b,#38f9d7);border-radius:12px;padding:14px;color:white;text-align:center">
+                                <div style="font-size:1.6em;font-weight:700" id="cldm-card-date">—</div>
+                                <div style="font-size:.75em;opacity:.85">Last Checked</div>
+                            </div>
+                        </div>
+
+                        <!-- Usage bars -->
+                        <div style="background:#f9f5ff;border-radius:12px;padding:16px;margin-bottom:16px">
+                            <h3 style="color:#6a1b9a;margin-bottom:14px;font-size:1em">📊 Usage Overview</h3>
+                            <div style="margin-bottom:14px">
+                                <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+                                    <span style="font-weight:700;color:#333;font-size:.88em">🗄️ Storage</span>
+                                    <span id="cldm-storage-pct-lbl" style="color:#888;font-size:.82em"></span>
+                                </div>
+                                <div style="background:#e0e0e0;border-radius:20px;height:14px;overflow:hidden">
+                                    <div id="cldm-storage-bar" style="height:100%;width:0%;border-radius:20px;transition:width .7s ease;background:linear-gradient(90deg,#43e97b,#38f9d7)"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+                                    <span style="font-weight:700;color:#333;font-size:.88em">🌐 Bandwidth (this month)</span>
+                                    <span id="cldm-bw-pct-lbl" style="color:#888;font-size:.82em"></span>
+                                </div>
+                                <div style="background:#e0e0e0;border-radius:20px;height:14px;overflow:hidden">
+                                    <div id="cldm-bw-bar" style="height:100%;width:0%;border-radius:20px;transition:width .7s ease;background:linear-gradient(90deg,#4facfe,#00f2fe)"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- History -->
+                        <h3 style="color:#6a1b9a;font-size:.95em;margin-bottom:10px">📅 Saved History (Last 7 Entries)</h3>
+                        <div style="overflow-x:auto">
+                            <table style="width:100%;border-collapse:collapse;font-size:.83em">
+                                <thead>
+                                    <tr style="background:linear-gradient(135deg,#c44569,#6a1b9a);color:white">
+                                        <th style="padding:9px 12px;text-align:left;border-radius:8px 0 0 0">Date</th>
+                                        <th style="padding:9px 12px;text-align:left">Storage</th>
+                                        <th style="padding:9px 12px;text-align:left">Bandwidth</th>
+                                        <th style="padding:9px 12px;text-align:left">Assets</th>
+                                        <th style="padding:9px 12px;text-align:left;border-radius:0 8px 0 0">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="cldm-history-body"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div><!-- end panel-manual -->
+
+                <!-- ════════════════════════════════════════════════ -->
+                <!-- OPTION B — LIVE VIA CLOUDFLARE WORKER PROXY     -->
+                <!-- ════════════════════════════════════════════════ -->
+                <div id="cld-panel-live" style="display:none">
+
+                    <!-- Setup guide -->
+                    <div style="background:linear-gradient(135deg,#fff8e1,#f3e8ff);border-radius:12px;padding:16px;margin-bottom:16px;border-left:5px solid #f7971e">
+                        <p style="color:#856404;font-weight:700;margin-bottom:10px;font-size:.92em">⚡ One-time Setup: Create a Free Cloudflare Worker (takes ~10 minutes)</p>
+                        <ol style="color:#555;font-size:.84em;margin:0;padding-left:18px;line-height:2.2">
+                            <li>Go to <a href="https://dash.cloudflare.com" target="_blank" style="color:#c44569;font-weight:600">dash.cloudflare.com</a> → sign up free → click <strong>Workers &amp; Pages → Create</strong></li>
+                            <li>Click <strong>"Hello World"</strong> template → give it a name (e.g. <code style="background:#eee;padding:1px 5px;border-radius:3px">cld-proxy</code>) → click <strong>Deploy</strong></li>
+                            <li>Click <strong>"Edit code"</strong> and replace ALL the code with this:</li>
+                        </ol>
+                        <pre style="background:#1e1e2e;color:#cdd6f4;border-radius:8px;padding:14px;margin:10px 0;font-size:.78em;overflow-x:auto;line-height:1.6"><code>export default {
+  async fetch(request) {
+    // ✏️ Fill in YOUR Cloudinary credentials below
+    const API_KEY    = "YOUR_API_KEY_HERE";
+    const API_SECRET = "YOUR_API_SECRET_HERE";
+    const CLOUD_NAME = "YOUR_CLOUD_NAME_HERE";
+
+    const credentials = btoa(`${API_KEY}:${API_SECRET}`);
+    const resp = await fetch(
+      `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/usage`,
+      { headers: { Authorization: `Basic ${credentials}` } }
+    );
+    const data = await resp.json();
+
+    return new Response(JSON.stringify(data), {
+      headers: {
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*"
+      }
+    });
+  }
+};</code></pre>
+                        <ol start="4" style="color:#555;font-size:.84em;margin:0;padding-left:18px;line-height:2.2">
+                            <li>Fill in your <strong>API_KEY</strong>, <strong>API_SECRET</strong>, and <strong>CLOUD_NAME</strong> in the code above (find them at Cloudinary → Settings → Access Keys)</li>
+                            <li>Click <strong>Deploy</strong> — you'll get a URL like <code style="background:#eee;padding:1px 5px;border-radius:3px">https://cld-proxy.YOUR-NAME.workers.dev</code></li>
+                            <li>Paste that URL into the box below and click <strong>Fetch Live Stats</strong></li>
+                        </ol>
+                    </div>
+
+                    <!-- Worker URL input -->
+                    <div style="background:#f9f5ff;border-radius:12px;padding:16px;margin-bottom:16px;border:1px solid #e0d0f0">
+                        <p style="color:#6a1b9a;font-weight:700;margin-bottom:10px;font-size:.9em">🔗 Your Cloudflare Worker URL</p>
+                        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+                            <input id="cld-worker-url" type="url" placeholder="https://cld-proxy.your-name.workers.dev"
+                                style="flex:1;min-width:250px;padding:9px 14px;border:1.5px solid #e0d0f0;border-radius:8px;font-size:.9em;outline:none">
+                            <button class="btn btn-success" onclick="cldLiveFetch()" id="cld-live-btn">⚡ Fetch Live Stats</button>
+                            <button class="btn btn-small" onclick="cldLiveClear()" style="background:#888;color:white">🗑️ Clear</button>
+                        </div>
+                        <p style="color:#aaa;font-size:.76em;margin-top:8px">The URL is saved in your browser for next time.</p>
+                    </div>
+
+                    <!-- Progress Bar -->
+                    <div id="cld-live-progress-wrap" style="display:none;margin-bottom:14px">
+                        <div style="background:#eee;border-radius:20px;height:10px;overflow:hidden">
+                            <div id="cld-live-progress-bar" style="background:linear-gradient(90deg,#f7971e,#ffd200);height:100%;width:0%;transition:width .4s ease;border-radius:20px"></div>
+                        </div>
+                        <p id="cld-live-progress-label" style="color:#888;font-size:.82em;margin-top:4px;text-align:center">Fetching…</p>
+                    </div>
+
+                    <!-- Alert -->
+                    <div id="cld-live-alert" style="display:none;padding:14px 18px;border-radius:10px;margin-bottom:16px;font-weight:600"></div>
+
+                    <!-- Live Results -->
+                    <div id="cld-live-results" style="display:none">
+                        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:16px">
+                            <div style="background:linear-gradient(135deg,#f7971e,#ffd200);border-radius:12px;padding:14px;color:#333;text-align:center">
+                                <div style="font-size:1.6em;font-weight:700" id="cld-storage">—</div>
+                                <div style="font-size:.75em;opacity:.85">Storage Used</div>
+                            </div>
+                            <div style="background:linear-gradient(135deg,#11998e,#38ef7d);border-radius:12px;padding:14px;color:white;text-align:center">
+                                <div style="font-size:1.6em;font-weight:700" id="cld-storage-limit">—</div>
+                                <div style="font-size:.75em;opacity:.85">Storage Limit</div>
+                            </div>
+                            <div style="background:linear-gradient(135deg,#4facfe,#00f2fe);border-radius:12px;padding:14px;color:white;text-align:center">
+                                <div style="font-size:1.6em;font-weight:700" id="cld-bandwidth">—</div>
+                                <div style="font-size:.75em;opacity:.85">Bandwidth Used</div>
+                            </div>
+                            <div style="background:linear-gradient(135deg,#f093fb,#f5576c);border-radius:12px;padding:14px;color:white;text-align:center">
+                                <div style="font-size:1.6em;font-weight:700" id="cld-bandwidth-limit">—</div>
+                                <div style="font-size:.75em;opacity:.85">Bandwidth Limit</div>
+                            </div>
+                            <div style="background:linear-gradient(135deg,#667eea,#764ba2);border-radius:12px;padding:14px;color:white;text-align:center">
+                                <div style="font-size:1.6em;font-weight:700" id="cld-resources">—</div>
+                                <div style="font-size:.75em;opacity:.85">Total Assets</div>
+                            </div>
+                            <div style="background:linear-gradient(135deg,#43e97b,#38f9d7);border-radius:12px;padding:14px;color:white;text-align:center">
+                                <div style="font-size:1.6em;font-weight:700" id="cld-plan">—</div>
+                                <div style="font-size:.75em;opacity:.85">Plan</div>
+                            </div>
+                        </div>
+                        <!-- Usage bars -->
+                        <div style="background:#f9f5ff;border-radius:12px;padding:16px">
+                            <h3 style="color:#6a1b9a;margin-bottom:14px;font-size:1em">📊 Live Usage Overview</h3>
+                            <div style="margin-bottom:14px">
+                                <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+                                    <span style="font-weight:700;color:#333;font-size:.88em">🗄️ Storage</span>
+                                    <span id="cld-storage-pct-label" style="color:#888;font-size:.82em"></span>
+                                </div>
+                                <div style="background:#e0e0e0;border-radius:20px;height:14px;overflow:hidden">
+                                    <div id="cld-storage-bar" style="height:100%;width:0%;border-radius:20px;transition:width .7s ease"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+                                    <span style="font-weight:700;color:#333;font-size:.88em">🌐 Bandwidth (this month)</span>
+                                    <span id="cld-bandwidth-pct-label" style="color:#888;font-size:.82em"></span>
+                                </div>
+                                <div style="background:#e0e0e0;border-radius:20px;height:14px;overflow:hidden">
+                                    <div id="cld-bandwidth-bar" style="height:100%;width:0%;border-radius:20px;transition:width .7s ease"></div>
+                                </div>
+                            </div>
+                            <div id="cld-asset-breakdown" style="margin-top:16px;display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px"></div>
+                        </div>
+                    </div>
+                </div><!-- end panel-live -->
+
+            </div>
+            <!-- ================================================ -->
+            <!-- END CLOUDINARY INSPECTOR PANEL                   -->
+            <!-- ================================================ -->
+
+            <!-- ================================================ -->
+            <!-- 🔥 FIREBASE DOWNLOAD LIMIT MONITOR (Super Admin) -->
+            <!-- ================================================ -->
+            <div id="firebaseDownloadMonitor" class="form-section super-admin-only" style="margin-top:20px">
+                <h2 style="color:#c44569;margin-bottom:6px">🔥 Firebase Download Monitor</h2>
+                <p style="color:#888;margin-bottom:16px;font-size:.9em">Track your Firebase Storage 10 GB/day download limit. Manually log downloads or paste daily stats to visualise usage.</p>
+
+                <!-- Info Box -->
+                <div style="background:#fff3cd;border-radius:10px;padding:14px;border-left:5px solid #ffc107;margin-bottom:16px">
+                    <p style="color:#856404;font-size:.88em;margin:0"><strong>ℹ️ About the 10 GB Limit:</strong> Firebase Spark (free) plan allows <strong>10 GB of data downloaded per day</strong> from Firebase Storage. If exceeded, downloads are blocked until midnight Pacific Time. Realtime Database reads also count against bandwidth.</p>
+                </div>
+
+                <!-- Current Usage Entry -->
+                <div style="background:#f9f5ff;border-radius:12px;padding:16px;margin-bottom:16px;border:1px solid #e0d0f0">
+                    <p style="color:#6a1b9a;font-weight:700;margin-bottom:12px;font-size:.9em">📥 Log Today's Download Usage</p>
+                    <div style="display:grid;grid-template-columns:1fr 1fr auto;gap:10px;align-items:end">
+                        <div>
+                            <label style="font-size:.8em;color:#888;display:block;margin-bottom:4px">Downloaded Today (GB)</label>
+                            <input id="fdm-today-gb" type="number" min="0" max="10" step="0.01" placeholder="e.g. 3.5" style="width:100%;padding:8px 12px;border:1.5px solid #e0d0f0;border-radius:8px;font-size:.9em;outline:none">
+                        </div>
+                        <div>
+                            <label style="font-size:.8em;color:#888;display:block;margin-bottom:4px">Date</label>
+                            <input id="fdm-date" type="date" style="width:100%;padding:8px 12px;border:1.5px solid #e0d0f0;border-radius:8px;font-size:.9em;outline:none">
+                        </div>
+                        <button class="btn btn-success" onclick="fdmLogUsage()" style="height:38px;padding:0 18px;font-size:.88em">➕ Log</button>
+                    </div>
+                    <p style="color:#aaa;font-size:.76em;margin-top:8px">Get actual numbers from <strong>Firebase Console → Storage → Usage</strong> tab, or check your billing page.</p>
+                </div>
+
+                <!-- Live Gauge -->
+                <div id="fdm-gauge-wrap" style="background:#f9f5ff;border-radius:12px;padding:20px;margin-bottom:16px">
+                    <h3 style="color:#6a1b9a;margin-bottom:14px;font-size:1em">📊 Today's Download Usage</h3>
+                    <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+                        <div style="flex:1;min-width:200px">
+                            <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+                                <span style="font-weight:700;color:#333;font-size:.88em">Downloads Used</span>
+                                <span id="fdm-gauge-label" style="font-weight:700;color:#c44569;font-size:.88em">0 / 10 GB</span>
+                            </div>
+                            <div style="background:#e0e0e0;border-radius:20px;height:18px;overflow:hidden;position:relative">
+                                <div id="fdm-gauge-bar" style="background:linear-gradient(90deg,#43e97b,#38f9d7);height:100%;width:0%;border-radius:20px;transition:width .7s ease"></div>
+                                <!-- Danger zone marker at 80% -->
+                                <div style="position:absolute;left:80%;top:0;height:100%;width:2px;background:rgba(255,100,0,.5)"></div>
+                                <!-- Critical marker at 95% -->
+                                <div style="position:absolute;left:95%;top:0;height:100%;width:2px;background:rgba(220,53,69,.7)"></div>
+                            </div>
+                            <div style="display:flex;justify-content:space-between;margin-top:4px">
+                                <span style="font-size:.72em;color:#888">0 GB</span>
+                                <span style="font-size:.72em;color:#e65100">⚠️ 8 GB</span>
+                                <span style="font-size:.72em;color:#dc3545">🚫 10 GB</span>
+                            </div>
+                        </div>
+                        <div id="fdm-status-badge" style="background:#28a745;color:white;border-radius:50%;width:80px;height:80px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:700;font-size:.78em;text-align:center;flex-shrink:0">
+                            <span style="font-size:1.6em">✅</span>
+                            <span id="fdm-status-text">SAFE</span>
+                        </div>
+                    </div>
+                    <p id="fdm-remaining-label" style="color:#888;font-size:.82em;margin-top:10px;text-align:center">No data logged yet. Use the form above to log usage.</p>
+                </div>
+
+                <!-- History Table -->
+                <div>
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+                        <h3 style="color:#6a1b9a;font-size:1em;margin:0">📅 Download History (Last 7 Days)</h3>
+                        <button class="btn btn-small" onclick="fdmClearHistory()" style="background:#dc3545;color:white;font-size:.78em">🗑️ Clear All</button>
+                    </div>
+                    <div style="overflow-x:auto">
+                        <table style="width:100%;border-collapse:collapse;font-size:.85em">
+                            <thead>
+                                <tr style="background:linear-gradient(135deg,#c44569,#6a1b9a);color:white">
+                                    <th style="padding:9px 12px;text-align:left;border-radius:8px 0 0 0">Date</th>
+                                    <th style="padding:9px 12px;text-align:left">Downloaded</th>
+                                    <th style="padding:9px 12px;text-align:left">% of Limit</th>
+                                    <th style="padding:9px 12px;text-align:left">Status</th>
+                                    <th style="padding:9px 12px;text-align:left;border-radius:0 8px 0 0">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="fdm-history-body">
+                                <tr><td colspan="5" style="padding:16px;text-align:center;color:#aaa">No history yet.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Tips -->
+                <div style="margin-top:16px;background:#e8f4fd;border-radius:10px;padding:14px;border-left:5px solid #4facfe">
+                    <p style="color:#0c5460;font-weight:700;margin-bottom:8px;font-size:.88em">💡 Tips to Reduce Downloads</p>
+                    <ul style="color:#0c5460;font-size:.82em;margin:0;padding-left:18px;line-height:1.8">
+                        <li>Use <strong>Cloudinary</strong> for images instead of Firebase Storage</li>
+                        <li>Enable browser caching with proper Cache-Control headers</li>
+                        <li>Compress images before uploading (use WebP format)</li>
+                        <li>Avoid storing base64 images in Realtime Database (found by DB Inspector above)</li>
+                        <li>Upgrade to Firebase Blaze (pay-as-you-go) if you need more than 10 GB/day</li>
+                    </ul>
+                </div>
+            </div>
+            <!-- ================================================ -->
+            <!-- END FIREBASE DOWNLOAD MONITOR                    -->
             <!-- ================================================ -->
 
             <div id="leaderboardAdmin" class="form-section super-admin-only" style="margin-top:20px">
@@ -4668,6 +5122,16 @@
             }
             if (tab === 'speedSlideAdmin') {
                 ssaShowTab('sub');
+            }
+            if (tab === 'dbInspector') {
+                // DB Inspector tab — ready to scan, nothing auto-loads
+            }
+            if (tab === 'cloudinaryInspector') {
+                // Cloudinary Inspector — ready to use, nothing auto-loads
+            }
+            if (tab === 'firebaseDownloadMonitor') {
+                // Firebase Download Monitor — render history on open
+                if (typeof fdmRenderHistory === 'function') fdmRenderHistory();
             }
         }
 
@@ -14658,6 +15122,635 @@ Proceed?`)) return;
     }
 
     // window.storage is initialized alongside window.db in the main script block above
+
+    // ══════════════════════════════════════════════════════════════════════════
+    // 🔍 DATABASE INSPECTOR — Super Admin Tool
+    // Scans entire Firebase Realtime Database for base64 data & large fields
+    // ══════════════════════════════════════════════════════════════════════════
+    let dbiReportData = [];
+
+    async function dbiRunScan() {
+        const btn = document.getElementById('dbi-scan-btn');
+        btn.disabled = true;
+        btn.textContent = '⏳ Scanning…';
+        dbiReportData = [];
+
+        // Reset UI
+        document.getElementById('dbi-alert').style.display = 'none';
+        document.getElementById('dbi-results').style.display = 'none';
+        document.getElementById('dbi-dl-btn').style.display = 'none';
+        document.getElementById('dbi-table-body').innerHTML = '';
+        document.getElementById('dbi-node-tree').innerHTML = '<p style="color:#888">Loading…</p>';
+        document.getElementById('dbi-total-nodes').textContent = '…';
+        document.getElementById('dbi-b64-count').textContent = '…';
+        document.getElementById('dbi-total-size').textContent = '…';
+        document.getElementById('dbi-b64-size').textContent = '…';
+
+        // Show progress
+        const pw = document.getElementById('dbi-progress-wrap');
+        const pb = document.getElementById('dbi-progress-bar');
+        const pl = document.getElementById('dbi-progress-label');
+        pw.style.display = 'block';
+        pb.style.width = '10%';
+        pl.textContent = 'Fetching database root…';
+
+        try {
+            const db = getDb();
+            const snapshot = await db.ref('/').once('value');
+            pb.style.width = '50%';
+            pl.textContent = 'Analyzing data…';
+
+            const root = snapshot.val();
+            if (!root) {
+                dbiShowAlert('⚠️ Database is empty or could not be read.', '#ffc107', '#856404');
+                btn.disabled = false;
+                btn.textContent = '🔍 Scan Database Now';
+                pw.style.display = 'none';
+                return;
+            }
+
+            const fullJson = JSON.stringify(root);
+            const totalSizeBytes = new Blob([fullJson]).size;
+
+            // Walk the tree
+            let totalNodes = 0;
+            let b64Entries = [];
+            let b64TotalBytes = 0;
+            let nodeTree = {}; // top-level node → size in bytes
+
+            function walkNode(obj, path) {
+                if (obj === null || obj === undefined) return;
+                if (typeof obj !== 'object') {
+                    totalNodes++;
+                    const strVal = String(obj);
+                    const sizeBytes = new Blob([strVal]).size;
+
+                    // Detect base64 patterns
+                    const b64Regex = /^data:[a-z]+\/[a-z+.-]+;base64,/i;
+                    const rawB64Regex = /^[A-Za-z0-9+/]{100,}={0,2}$/;
+                    let type = null;
+                    if (b64Regex.test(strVal)) {
+                        // Extract MIME type
+                        const mime = strVal.match(/data:([^;]+);base64,/);
+                        type = mime ? mime[1] : 'base64 (with header)';
+                    } else if (rawB64Regex.test(strVal) && sizeBytes > 1000) {
+                        type = 'raw base64 (no header)';
+                    }
+
+                    if (type) {
+                        b64TotalBytes += sizeBytes;
+                        const pathParts = path.split('/');
+                        const fieldKey = pathParts[pathParts.length - 1];
+                        const parentPath = pathParts.slice(0, -1).join('/') || '/';
+                        b64Entries.push({
+                            path: parentPath,
+                            key: fieldKey,
+                            type: type,
+                            sizeBytes: sizeBytes,
+                            preview: strVal.substring(0, 60) + '…'
+                        });
+                    }
+                    return;
+                }
+                Object.keys(obj).forEach(key => {
+                    walkNode(obj[key], path ? path + '/' + key : key);
+                });
+            }
+
+            // Count top-level node sizes
+            Object.keys(root).forEach(topKey => {
+                const nodeJson = JSON.stringify(root[topKey]);
+                nodeTree[topKey] = new Blob([nodeJson]).size;
+            });
+
+            pb.style.width = '75%';
+            pl.textContent = 'Walking nodes…';
+
+            walkNode(root, '');
+
+            // Count total nodes (including objects)
+            function countAllNodes(obj) {
+                if (obj === null || typeof obj !== 'object') return 1;
+                return 1 + Object.keys(obj).reduce((s, k) => s + countAllNodes(obj[k]), 0);
+            }
+            totalNodes = countAllNodes(root);
+
+            pb.style.width = '100%';
+            pl.textContent = 'Done!';
+
+            // Update summary cards
+            document.getElementById('dbi-total-nodes').textContent = totalNodes.toLocaleString();
+            document.getElementById('dbi-b64-count').textContent = b64Entries.length;
+            document.getElementById('dbi-total-size').textContent = dbiFormatSize(totalSizeBytes);
+            document.getElementById('dbi-b64-size').textContent = dbiFormatSize(b64TotalBytes);
+
+            // Alert
+            if (b64Entries.length === 0) {
+                dbiShowAlert('✅ Great news! No base64 data found in your Firebase database. Your DB is clean.', '#d4edda', '#155724');
+            } else {
+                dbiShowAlert(`🚨 Found ${b64Entries.length} base64 field(s) using ${dbiFormatSize(b64TotalBytes)} of storage. Consider moving images to Firebase Storage instead.`, '#f8d7da', '#721c24');
+            }
+
+            // Fill results table
+            if (b64Entries.length > 0) {
+                dbiReportData = b64Entries;
+                const tbody = document.getElementById('dbi-table-body');
+                tbody.innerHTML = b64Entries.map((e, i) => `
+                    <tr style="background:${i%2===0?'#fff':'#fdf5ff'};border-bottom:1px solid #eee">
+                        <td style="padding:8px 12px;color:#999;font-size:.8em">${i+1}</td>
+                        <td style="padding:8px 12px;font-family:monospace;font-size:.78em;color:#6a1b9a;word-break:break-all">${dbiEsc(e.path)}</td>
+                        <td style="padding:8px 12px;font-family:monospace;font-size:.82em;font-weight:700;color:#c44569">${dbiEsc(e.key)}</td>
+                        <td style="padding:8px 12px"><span style="background:#fff3cd;color:#856404;padding:2px 8px;border-radius:12px;font-size:.78em;font-weight:600">${dbiEsc(e.type)}</span></td>
+                        <td style="padding:8px 12px;font-weight:700;color:${e.sizeBytes>100000?'#dc3545':'#e65100'}">${dbiFormatSize(e.sizeBytes)}</td>
+                        <td style="padding:8px 12px;font-family:monospace;font-size:.72em;color:#555;word-break:break-all;max-width:200px">${dbiEsc(e.preview)}</td>
+                    </tr>
+                `).join('');
+                document.getElementById('dbi-results-note').textContent = `Showing all ${b64Entries.length} base64 field(s) found in the database.`;
+                document.getElementById('dbi-results').style.display = 'block';
+                document.getElementById('dbi-dl-btn').style.display = 'inline-block';
+            }
+
+            // Node tree
+            const sortedNodes = Object.entries(nodeTree).sort((a, b) => b[1] - a[1]);
+            const maxSize = sortedNodes[0]?.[1] || 1;
+            document.getElementById('dbi-node-tree').innerHTML = sortedNodes.map(([key, size]) => {
+                const pct = Math.max(2, Math.round((size / maxSize) * 100));
+                const color = size > 500000 ? '#f5576c' : size > 100000 ? '#f093fb' : size > 10000 ? '#667eea' : '#43e97b';
+                return `
+                <div style="margin-bottom:10px">
+                    <div style="display:flex;justify-content:space-between;margin-bottom:3px">
+                        <span style="font-family:monospace;font-weight:700;color:#333">/${dbiEsc(key)}</span>
+                        <span style="color:#888;font-size:.82em">${dbiFormatSize(size)}</span>
+                    </div>
+                    <div style="background:#e0e0e0;border-radius:20px;height:8px;overflow:hidden">
+                        <div style="background:${color};height:100%;width:${pct}%;border-radius:20px;transition:width .5s ease"></div>
+                    </div>
+                </div>`;
+            }).join('') || '<p style="color:#888">No top-level nodes found.</p>';
+
+            setTimeout(() => { pw.style.display = 'none'; }, 800);
+
+        } catch(err) {
+            dbiShowAlert('❌ Error scanning database: ' + err.message + '. Check your Firebase rules allow Super Admin reads.', '#f8d7da', '#721c24');
+            pw.style.display = 'none';
+        }
+
+        btn.disabled = false;
+        btn.textContent = '🔍 Scan Database Now';
+    }
+
+    function dbiShowAlert(msg, bg, color) {
+        const el = document.getElementById('dbi-alert');
+        el.style.display = 'block';
+        el.style.background = bg;
+        el.style.color = color;
+        el.style.border = '1.5px solid ' + color;
+        el.textContent = msg;
+    }
+
+    function dbiClearResults() {
+        document.getElementById('dbi-alert').style.display = 'none';
+        document.getElementById('dbi-results').style.display = 'none';
+        document.getElementById('dbi-dl-btn').style.display = 'none';
+        document.getElementById('dbi-table-body').innerHTML = '';
+        document.getElementById('dbi-node-tree').innerHTML = 'Run a scan to see node sizes.';
+        document.getElementById('dbi-total-nodes').textContent = '—';
+        document.getElementById('dbi-b64-count').textContent = '—';
+        document.getElementById('dbi-total-size').textContent = '—';
+        document.getElementById('dbi-b64-size').textContent = '—';
+        dbiReportData = [];
+    }
+
+    function dbiDownloadReport() {
+        if (!dbiReportData.length) return;
+        const rows = [['#','Path','Field Key','Type','Size (bytes)','Preview']];
+        dbiReportData.forEach((e,i) => {
+            rows.push([i+1, e.path, e.key, e.type, e.sizeBytes, e.preview.replace(/,/g,'')]);
+        });
+        const csv = rows.map(r => r.map(c => '"'+String(c).replace(/"/g,'""')+'"').join(',')).join('\n');
+        const blob = new Blob([csv], {type:'text/csv'});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'spurthi_db_inspector_' + new Date().toISOString().slice(0,10) + '.csv';
+        a.click();
+        URL.revokeObjectURL(url);
+    }
+
+    function dbiFormatSize(bytes) {
+        if (bytes < 1024) return bytes + ' B';
+        if (bytes < 1048576) return (bytes/1024).toFixed(1) + ' KB';
+        return (bytes/1048576).toFixed(2) + ' MB';
+    }
+
+    function dbiEsc(s) {
+        if (!s) return '';
+        return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+    // ══════════════════════════════════════════════════════════════════════════
+    // END DB INSPECTOR
+    // ══════════════════════════════════════════════════════════════════════════
+
+    // ══════════════════════════════════════════════════════════════════════════
+    // ☁️ CLOUDINARY INSPECTOR — Dual Mode (Manual Logger + Live Proxy)
+    // ══════════════════════════════════════════════════════════════════════════
+
+    const CLD_HISTORY_KEY  = 'spurthi_cld_history';
+    const CLD_WORKER_KEY   = 'spurthi_cld_worker_url';
+
+    // ── Mode switcher ─────────────────────────────────────────────────────────
+    function cldSwitchMode(mode) {
+        const isManual = (mode === 'manual');
+        document.getElementById('cld-panel-manual').style.display = isManual ? 'block' : 'none';
+        document.getElementById('cld-panel-live').style.display   = isManual ? 'none'  : 'block';
+        document.getElementById('cld-mode-manual-btn').style.background = isManual
+            ? 'linear-gradient(135deg,#6a1b9a,#c44569)' : '#f3e8ff';
+        document.getElementById('cld-mode-manual-btn').style.color = isManual ? 'white' : '#6a1b9a';
+        document.getElementById('cld-mode-live-btn').style.background = isManual
+            ? '#f3e8ff' : 'linear-gradient(135deg,#f7971e,#ffd200)';
+        document.getElementById('cld-mode-live-btn').style.color = isManual ? '#6a1b9a' : '#333';
+    }
+
+    // ── Helpers ───────────────────────────────────────────────────────────────
+    function cldFmtMB(mb) {
+        if (!mb && mb !== 0) return '—';
+        if (mb >= 1024) return (mb / 1024).toFixed(2) + ' GB';
+        return mb.toFixed(1) + ' MB';
+    }
+    function cldFmtBytes(bytes) {
+        if (!bytes || bytes === 0) return '0 B';
+        const gb = bytes / 1073741824;
+        if (gb >= 1) return gb.toFixed(2) + ' GB';
+        const mb = bytes / 1048576;
+        if (mb >= 1) return mb.toFixed(1) + ' MB';
+        return (bytes / 1024).toFixed(0) + ' KB';
+    }
+    function cldBarColor(pct) {
+        return pct > 90 ? 'linear-gradient(90deg,#f5576c,#c44569)'
+             : pct > 70 ? 'linear-gradient(90deg,#f7971e,#ffd200)'
+             :             'linear-gradient(90deg,#43e97b,#38f9d7)';
+    }
+    function cldAlert(id, msg, bg, color) {
+        const el = document.getElementById(id);
+        el.style.display = 'block'; el.style.background = bg;
+        el.style.color = color; el.style.border = '1.5px solid ' + color;
+        el.textContent = msg;
+    }
+
+    // ══ OPTION A — MANUAL LOGGER ══════════════════════════════════════════════
+
+    function cldmLoadHistory() {
+        try { return JSON.parse(localStorage.getItem(CLD_HISTORY_KEY) || '[]'); }
+        catch(e) { return []; }
+    }
+    function cldmSaveHistory(h) { localStorage.setItem(CLD_HISTORY_KEY, JSON.stringify(h)); }
+
+    function cldmSave() {
+        const sUsed  = parseFloat(document.getElementById('cldm-storage-used').value);
+        const sLimit = parseFloat(document.getElementById('cldm-storage-limit').value);
+        const bUsed  = parseFloat(document.getElementById('cldm-bw-used').value);
+        const bLimit = parseFloat(document.getElementById('cldm-bw-limit').value);
+        const assets = parseInt(document.getElementById('cldm-assets').value) || 0;
+        const date   = document.getElementById('cldm-date').value || new Date().toISOString().slice(0,10);
+
+        if (isNaN(sUsed) || isNaN(sLimit) || isNaN(bUsed) || isNaN(bLimit)) {
+            cldAlert('cldm-alert', '⚠️ Please fill in all storage and bandwidth fields.', '#fff3cd', '#856404');
+            return;
+        }
+
+        const entry = { date, sUsed, sLimit, bUsed, bLimit, assets };
+        const history = cldmLoadHistory();
+        const idx = history.findIndex(e => e.date === date);
+        if (idx >= 0) history[idx] = entry; else history.push(entry);
+        cldmSaveHistory(history);
+        cldmRender(entry);
+
+        // Clear inputs
+        ['cldm-storage-used','cldm-storage-limit','cldm-bw-used','cldm-bw-limit','cldm-assets'].forEach(id => {
+            document.getElementById(id).value = '';
+        });
+        document.getElementById('cldm-date').value = new Date().toISOString().slice(0,10);
+    }
+
+    function cldmRender(entry) {
+        if (!entry) return;
+        const sPct = entry.sLimit > 0 ? Math.min(100, Math.round((entry.sUsed / entry.sLimit) * 100)) : 0;
+        const bPct = entry.bLimit > 0 ? Math.min(100, Math.round((entry.bUsed / entry.bLimit) * 100)) : 0;
+
+        document.getElementById('cldm-card-storage-used').textContent  = cldFmtMB(entry.sUsed);
+        document.getElementById('cldm-card-storage-limit').textContent = cldFmtMB(entry.sLimit);
+        document.getElementById('cldm-card-bw-used').textContent       = cldFmtMB(entry.bUsed);
+        document.getElementById('cldm-card-bw-limit').textContent      = cldFmtMB(entry.bLimit);
+        document.getElementById('cldm-card-assets').textContent        = entry.assets.toLocaleString();
+        document.getElementById('cldm-card-date').textContent          = entry.date;
+
+        const sBar = document.getElementById('cldm-storage-bar');
+        sBar.style.width = sPct + '%'; sBar.style.background = cldBarColor(sPct);
+        document.getElementById('cldm-storage-pct-lbl').textContent = `${sPct}% of ${cldFmtMB(entry.sLimit)} used`;
+
+        const bBar = document.getElementById('cldm-bw-bar');
+        bBar.style.width = bPct + '%'; bBar.style.background = cldBarColor(bPct);
+        document.getElementById('cldm-bw-pct-lbl').textContent = `${bPct}% of ${cldFmtMB(entry.bLimit)} used`;
+
+        document.getElementById('cldm-cards').style.display = 'block';
+
+        if (sPct > 90 || bPct > 90) {
+            cldAlert('cldm-alert', `🚨 Warning: ${sPct > 90 ? 'Storage' : 'Bandwidth'} is over 90% of limit!`, '#f8d7da', '#721c24');
+        } else {
+            cldAlert('cldm-alert', `✅ Data saved! Storage: ${sPct}% used | Bandwidth: ${bPct}% used`, '#d4edda', '#155724');
+        }
+
+        cldmRenderHistory();
+    }
+
+    function cldmRenderHistory() {
+        const history = cldmLoadHistory().sort((a,b) => b.date.localeCompare(a.date)).slice(0, 7);
+        const tbody = document.getElementById('cldm-history-body');
+        if (!history.length) {
+            tbody.innerHTML = '<tr><td colspan="5" style="padding:14px;text-align:center;color:#aaa">No entries yet.</td></tr>';
+            return;
+        }
+        tbody.innerHTML = history.map((e, i) => {
+            const sPct = e.sLimit > 0 ? Math.min(100,(e.sUsed/e.sLimit*100)).toFixed(1) : '—';
+            const bPct = e.bLimit > 0 ? Math.min(100,(e.bUsed/e.bLimit*100)).toFixed(1) : '—';
+            return `<tr style="background:${i%2===0?'#fff':'#fdf5ff'};border-bottom:1px solid #eee">
+                <td style="padding:8px 12px;font-weight:600;color:#333">${e.date}</td>
+                <td style="padding:8px 12px;color:#f7971e;font-weight:700">${cldFmtMB(e.sUsed)} <span style="color:#aaa;font-size:.8em">/ ${cldFmtMB(e.sLimit)} (${sPct}%)</span></td>
+                <td style="padding:8px 12px;color:#4facfe;font-weight:700">${cldFmtMB(e.bUsed)} <span style="color:#aaa;font-size:.8em">/ ${cldFmtMB(e.bLimit)} (${bPct}%)</span></td>
+                <td style="padding:8px 12px;color:#667eea;font-weight:700">${e.assets.toLocaleString()}</td>
+                <td style="padding:8px 12px"><button onclick="cldmDelete('${e.date}')" style="background:#f8d7da;color:#721c24;border:none;border-radius:6px;padding:3px 10px;cursor:pointer;font-size:.78em">🗑️</button></td>
+            </tr>`;
+        }).join('');
+    }
+
+    function cldmDelete(date) {
+        if (!confirm('Delete entry for ' + date + '?')) return;
+        cldmSaveHistory(cldmLoadHistory().filter(e => e.date !== date));
+        cldmRenderHistory();
+    }
+
+    function cldmClearAll() {
+        if (!confirm('Clear all Cloudinary history?')) return;
+        cldmSaveHistory([]);
+        document.getElementById('cldm-cards').style.display = 'none';
+        document.getElementById('cldm-alert').style.display = 'none';
+        cldmRenderHistory();
+    }
+
+    // ══ OPTION B — LIVE CLOUDFLARE WORKER PROXY ═══════════════════════════════
+
+    function cldLiveClear() {
+        document.getElementById('cld-live-results').style.display = 'none';
+        document.getElementById('cld-live-alert').style.display = 'none';
+        ['cld-storage','cld-storage-limit','cld-bandwidth','cld-bandwidth-limit','cld-resources','cld-plan'].forEach(id => {
+            const el = document.getElementById(id); if (el) el.textContent = '—';
+        });
+    }
+
+    async function cldLiveFetch() {
+        const workerUrl = document.getElementById('cld-worker-url').value.trim();
+        if (!workerUrl) {
+            cldAlert('cld-live-alert', '⚠️ Please enter your Cloudflare Worker URL.', '#fff3cd', '#856404');
+            return;
+        }
+        // Save worker URL for convenience
+        localStorage.setItem(CLD_WORKER_KEY, workerUrl);
+
+        const btn = document.getElementById('cld-live-btn');
+        btn.disabled = true; btn.textContent = '⏳ Fetching…';
+        document.getElementById('cld-live-alert').style.display = 'none';
+
+        const pw = document.getElementById('cld-live-progress-wrap');
+        const pb = document.getElementById('cld-live-progress-bar');
+        const pl = document.getElementById('cld-live-progress-label');
+        pw.style.display = 'block'; pb.style.width = '20%'; pl.textContent = 'Connecting…';
+
+        try {
+            pb.style.width = '50%'; pl.textContent = 'Fetching from Cloudinary via Worker…';
+            const resp = await fetch(workerUrl);
+            pb.style.width = '85%'; pl.textContent = 'Processing…';
+
+            if (!resp.ok) throw new Error(`Worker returned HTTP ${resp.status}. Check your Worker URL and deployment.`);
+            const data = await resp.json();
+
+            pb.style.width = '100%'; pl.textContent = 'Done!';
+            setTimeout(() => { pw.style.display = 'none'; }, 700);
+
+            const storageUsed  = data.storage?.usage  || 0;
+            const storageLimit = data.storage?.limit  || 0;
+            const bwUsed       = data.bandwidth?.usage || 0;
+            const bwLimit      = data.bandwidth?.limit || 0;
+            const resources    = data.resources        || 0;
+            const plan         = data.plan             || 'Unknown';
+
+            document.getElementById('cld-storage').textContent         = cldFmtBytes(storageUsed);
+            document.getElementById('cld-storage-limit').textContent   = cldFmtBytes(storageLimit);
+            document.getElementById('cld-bandwidth').textContent       = cldFmtBytes(bwUsed);
+            document.getElementById('cld-bandwidth-limit').textContent = cldFmtBytes(bwLimit);
+            document.getElementById('cld-resources').textContent       = resources.toLocaleString();
+            document.getElementById('cld-plan').textContent            = plan.charAt(0).toUpperCase() + plan.slice(1);
+
+            const sPct = storageLimit > 0 ? Math.min(100, Math.round(storageUsed / storageLimit * 100)) : 0;
+            const bPct = bwLimit > 0      ? Math.min(100, Math.round(bwUsed / bwLimit * 100)) : 0;
+
+            const sBar = document.getElementById('cld-storage-bar');
+            sBar.style.width = sPct + '%'; sBar.style.background = cldBarColor(sPct);
+            document.getElementById('cld-storage-pct-label').textContent = `${sPct}% used`;
+
+            const bBar = document.getElementById('cld-bandwidth-bar');
+            bBar.style.width = bPct + '%'; bBar.style.background = cldBarColor(bPct);
+            document.getElementById('cld-bandwidth-pct-label').textContent = `${bPct}% used`;
+
+            // Asset breakdown
+            const cats = [
+                { label: '🖼️ Images',    count: data.derived_resources || 0, color: '#667eea' },
+                { label: '🎬 Videos',    count: data.video?.usage || 0,      color: '#f093fb' },
+                { label: '📦 Raw Files', count: data.raw?.usage   || 0,      color: '#43e97b' },
+                { label: '🔄 Derived',   count: data.derived?.usage || 0,    color: '#4facfe' },
+            ];
+            document.getElementById('cld-asset-breakdown').innerHTML = cats.map(c =>
+                `<div style="background:white;border-radius:8px;padding:10px 14px;text-align:center;border:1px solid #e0d0f0">
+                    <div style="font-size:1.3em;font-weight:700;color:${c.color}">${c.count.toLocaleString()}</div>
+                    <div style="font-size:.75em;color:#888">${c.label}</div>
+                </div>`).join('');
+
+            document.getElementById('cld-live-results').style.display = 'block';
+
+            if (sPct > 90 || bPct > 90) {
+                cldAlert('cld-live-alert', `🚨 Warning: ${sPct > 90 ? 'Storage' : 'Bandwidth'} is over 90% of limit!`, '#f8d7da', '#721c24');
+            } else {
+                cldAlert('cld-live-alert', `✅ Live stats loaded! Storage: ${sPct}% | Bandwidth: ${bPct}%`, '#d4edda', '#155724');
+            }
+
+        } catch(err) {
+            pw.style.display = 'none';
+            let msg = err.message;
+            if (msg.toLowerCase().includes('failed to fetch') || msg.toLowerCase().includes('network') || msg.toLowerCase().includes('cors')) {
+                msg = '❌ Could not reach your Worker URL. Make sure: (1) you deployed the Worker, (2) the URL is correct, (3) your Worker code has Access-Control-Allow-Origin: *.';
+            } else {
+                msg = '❌ ' + msg;
+            }
+            cldAlert('cld-live-alert', msg, '#f8d7da', '#721c24');
+        }
+
+        btn.disabled = false; btn.textContent = '⚡ Fetch Live Stats';
+    }
+
+    // ── Init ──────────────────────────────────────────────────────────────────
+    (function cldInit() {
+        // Restore saved worker URL
+        const savedUrl = localStorage.getItem(CLD_WORKER_KEY);
+        const urlEl = document.getElementById('cld-worker-url');
+        if (savedUrl && urlEl) urlEl.value = savedUrl;
+
+        // Set today's date in manual form
+        const dateEl = document.getElementById('cldm-date');
+        if (dateEl) dateEl.value = new Date().toISOString().slice(0,10);
+
+        // Load latest manual entry if exists
+        const history = cldmLoadHistory().sort((a,b) => b.date.localeCompare(a.date));
+        if (history.length > 0) cldmRender(history[0]);
+        cldmRenderHistory();
+    })();
+
+    // ══════════════════════════════════════════════════════════════════════════
+    // 🔥 FIREBASE DOWNLOAD MONITOR
+    // ══════════════════════════════════════════════════════════════════════════
+
+    const FDM_LIMIT_GB = 10;
+    const FDM_STORAGE_KEY = 'spurthi_fdm_history';
+
+    function fdmLoadHistory() {
+        try {
+            return JSON.parse(localStorage.getItem(FDM_STORAGE_KEY) || '[]');
+        } catch(e) { return []; }
+    }
+
+    function fdmSaveHistory(history) {
+        localStorage.setItem(FDM_STORAGE_KEY, JSON.stringify(history));
+    }
+
+    function fdmGetToday() {
+        return new Date().toISOString().slice(0, 10);
+    }
+
+    function fdmStatusInfo(gb) {
+        const pct = (gb / FDM_LIMIT_GB) * 100;
+        if (pct >= 100) return { label: 'BLOCKED', color: '#dc3545', icon: '🚫', barColor: 'linear-gradient(90deg,#dc3545,#c0392b)' };
+        if (pct >= 90)  return { label: 'CRITICAL', color: '#dc3545', icon: '🔴', barColor: 'linear-gradient(90deg,#f5576c,#c44569)' };
+        if (pct >= 75)  return { label: 'WARNING', color: '#e65100', icon: '⚠️', barColor: 'linear-gradient(90deg,#f7971e,#ffd200)' };
+        return { label: 'SAFE', color: '#28a745', icon: '✅', barColor: 'linear-gradient(90deg,#43e97b,#38f9d7)' };
+    }
+
+    function fdmRenderGauge(todayGb) {
+        const pct = Math.min(100, (todayGb / FDM_LIMIT_GB) * 100);
+        const status = fdmStatusInfo(todayGb);
+        const remaining = Math.max(0, FDM_LIMIT_GB - todayGb);
+
+        document.getElementById('fdm-gauge-bar').style.width = pct + '%';
+        document.getElementById('fdm-gauge-bar').style.background = status.barColor;
+        document.getElementById('fdm-gauge-label').textContent = `${todayGb.toFixed(2)} / ${FDM_LIMIT_GB} GB`;
+        document.getElementById('fdm-gauge-label').style.color = status.color;
+
+        const badge = document.getElementById('fdm-status-badge');
+        badge.style.background = status.color;
+        badge.querySelector('span:first-child').textContent = status.icon;
+        document.getElementById('fdm-status-text').textContent = status.label;
+
+        document.getElementById('fdm-remaining-label').textContent =
+            todayGb === 0
+                ? 'No data logged yet. Use the form above to log usage.'
+                : `${remaining.toFixed(2)} GB remaining today (${(100 - pct).toFixed(1)}% left) — Resets at midnight Pacific Time`;
+        document.getElementById('fdm-remaining-label').style.color = status.color;
+    }
+
+    function fdmRenderHistory() {
+        const history = fdmLoadHistory();
+        const tbody = document.getElementById('fdm-history-body');
+
+        if (history.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" style="padding:16px;text-align:center;color:#aaa">No history yet.</td></tr>';
+            return;
+        }
+
+        // Sort newest first, show last 7
+        const sorted = [...history].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 7);
+        const todayStr = fdmGetToday();
+
+        tbody.innerHTML = sorted.map((entry, i) => {
+            const pct = Math.min(100, (entry.gb / FDM_LIMIT_GB) * 100).toFixed(1);
+            const status = fdmStatusInfo(entry.gb);
+            const isToday = entry.date === todayStr;
+            return `<tr style="background:${i % 2 === 0 ? '#fff' : '#fdf5ff'};border-bottom:1px solid #eee">
+                <td style="padding:8px 12px;font-weight:${isToday ? '700' : '400'};color:${isToday ? '#c44569' : '#333'}">${entry.date}${isToday ? ' 📍' : ''}</td>
+                <td style="padding:8px 12px;font-weight:700;color:${status.color}">${entry.gb.toFixed(2)} GB</td>
+                <td style="padding:8px 12px">
+                    <div style="display:flex;align-items:center;gap:8px">
+                        <div style="flex:1;background:#e0e0e0;border-radius:10px;height:7px;min-width:80px;overflow:hidden">
+                            <div style="background:${status.barColor};height:100%;width:${pct}%;border-radius:10px"></div>
+                        </div>
+                        <span style="font-size:.8em;color:${status.color};font-weight:600">${pct}%</span>
+                    </div>
+                </td>
+                <td style="padding:8px 12px"><span style="background:${status.color};color:white;padding:2px 10px;border-radius:12px;font-size:.76em;font-weight:600">${status.icon} ${status.label}</span></td>
+                <td style="padding:8px 12px">
+                    <button onclick="fdmDeleteEntry('${entry.date}')" style="background:#f8d7da;color:#721c24;border:none;border-radius:6px;padding:3px 10px;cursor:pointer;font-size:.78em">🗑️ Delete</button>
+                </td>
+            </tr>`;
+        }).join('');
+
+        // Update today's gauge
+        const todayEntry = history.find(e => e.date === todayStr);
+        fdmRenderGauge(todayEntry ? todayEntry.gb : 0);
+    }
+
+    function fdmLogUsage() {
+        const gbInput = parseFloat(document.getElementById('fdm-today-gb').value);
+        const dateInput = document.getElementById('fdm-date').value || fdmGetToday();
+
+        if (isNaN(gbInput) || gbInput < 0) {
+            alert('Please enter a valid download amount (GB).');
+            return;
+        }
+        if (gbInput > 100) {
+            alert('Value seems too high. Please enter GB, not MB or bytes.');
+            return;
+        }
+
+        const history = fdmLoadHistory();
+        const existingIdx = history.findIndex(e => e.date === dateInput);
+        if (existingIdx >= 0) {
+            history[existingIdx].gb = gbInput;
+        } else {
+            history.push({ date: dateInput, gb: gbInput });
+        }
+
+        fdmSaveHistory(history);
+        fdmRenderHistory();
+
+        document.getElementById('fdm-today-gb').value = '';
+        document.getElementById('fdm-date').value = '';
+    }
+
+    function fdmDeleteEntry(date) {
+        if (!confirm('Delete entry for ' + date + '?')) return;
+        const history = fdmLoadHistory().filter(e => e.date !== date);
+        fdmSaveHistory(history);
+        fdmRenderHistory();
+    }
+
+    function fdmClearHistory() {
+        if (!confirm('Clear all download history? This cannot be undone.')) return;
+        fdmSaveHistory([]);
+        fdmRenderHistory();
+    }
+
+    // Init: set today's date in the input, render history
+    (function fdmInit() {
+        const dateEl = document.getElementById('fdm-date');
+        if (dateEl) dateEl.value = fdmGetToday();
+        fdmRenderHistory();
+    })();
 
     // ── Auto-init when db is ready ────────────────────────────────────────────
     (function hwpInit() {
