@@ -8318,15 +8318,14 @@ Davan Institute Team`;
 
                         
                         let html = '<div style="background:#f8f9fa;padding:20px;border-radius:10px">';
-                        html += `<p><strong>Your Score:</strong> ${studentSubmission.score}/2</p>`;
                         html += `<p><strong>Submitted:</strong> ${new Date(studentSubmission.submittedAt).toLocaleString()}</p>`;
                         
                         if (results.winner && results.winner.email === quizCurrentUser.email) {
                             html += '<div style="background:#d4edda;color:#155724;padding:15px;border-radius:8px;margin-top:15px"><strong>🏆 CONGRATULATIONS! You are the WINNER!</strong></div>';
                         } else if (results.runnerUp && results.runnerUp.email === quizCurrentUser.email) {
                             html += '<div style="background:#d1ecf1;color:#0c5460;padding:15px;border-radius:8px;margin-top:15px"><strong>🥈 CONGRATULATIONS! You are the RUNNER-UP!</strong></div>';
-                        } else if (studentSubmission.score === 2) {
-                            html += '<div style="background:#d1ecf1;color:#0c5460;padding:15px;border-radius:8px;margin-top:15px"><strong>✅ Great job! Both answers correct!</strong></div>';
+                        } else {
+                            html += '<div style="background:#fff3cd;color:#856404;padding:15px;border-radius:8px;margin-top:15px"><strong>🔒 Score hidden until admin declares winners.</strong></div>';
                         }
                         
                         html += '</div>';
@@ -10141,16 +10140,17 @@ Davan Institute Team`;
                     }
                 });
                 const rate = total>0?Math.round((correct/total)*100):0;
-                if (totEl)  totEl.textContent  = total;
-                if (corrEl) corrEl.textContent = correct;
-                if (partEl) partEl.textContent = partial;
-                if (rateEl) rateEl.textContent = rate+'%';
 
                 // Check if results have been declared for this date (to decide whether to show scores)
                 const resSnap = await db.ref(`quizResults/${date}`).once('value');
                 const resultsPublished = resSnap.exists();
                 // Hide only the score column until results are declared
                 const hideScores = !resultsPublished;
+
+                if (totEl)  totEl.textContent  = total;
+                if (corrEl) corrEl.textContent = hideScores ? '🔒' : correct;
+                if (partEl) partEl.textContent = hideScores ? '🔒' : partial;
+                if (rateEl) rateEl.textContent = hideScores ? '🔒' : rate+'%';
 
                 // Info text
                 if (infoText) {
@@ -17091,7 +17091,7 @@ Proceed?`)) return;
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;">
-                <strong>Version:</strong> 3.8 Activity Banners Added  | <strong>Last Updated:</strong> February 20, 2026 11.52pm
+                <strong>Version:</strong> 3.8 quiz lock applied | <strong>Last Updated:</strong> February 20, 2026 10.56pm
             </p>
             <!-- ============================================ -->
             
