@@ -1960,6 +1960,15 @@
                             <input type="text" id="shNewTaskHint" placeholder='e.g. "Look near the main building ground floor"'>
                         </div>
                         <div class="form-group">
+                            <label>🖼️ Task Image (optional — shown to students as a visual clue or reference):</label>
+                            <input type="file" id="shNewTaskImageFile" accept="image/*" onchange="shPreviewNewTaskImage(this)" style="display:block;margin-bottom:8px">
+                            <div id="shNewTaskImagePreview" style="display:none;margin-bottom:6px">
+                                <img id="shNewTaskImagePreviewImg" style="max-width:220px;max-height:160px;border-radius:8px;border:2px solid #ce93d8;box-shadow:0 2px 8px rgba(0,0,0,0.12)" alt="preview">
+                                <button type="button" onclick="shClearNewTaskImage()" style="display:block;margin-top:5px;background:#ffebee;color:#c62828;border:1px solid #ef9a9a;border-radius:6px;padding:3px 10px;cursor:pointer;font-size:0.82em">✕ Remove</button>
+                            </div>
+                            <span id="shNewTaskImageMsg" style="font-size:0.82em;color:#888">Image will upload automatically when you save the task.</span>
+                        </div>
+                        <div class="form-group">
                             <label>📸 Task Parts (multi-photo, optional):</label>
                             <div id="shNewTaskPartsBox" style="display:flex;flex-direction:column;gap:6px;margin-bottom:6px"></div>
                             <button type="button" onclick="shAddNewTaskPart()" style="background:#e8f5e9;color:#2e7d32;border:2px dashed #4caf50;border-radius:8px;padding:6px 14px;cursor:pointer;font-size:0.88em;font-weight:700">➕ Add Part</button>
@@ -13368,6 +13377,7 @@ Davan Institute Team`;
             html += '</div>';
 
             if (t.hint) html += '<p style="color:#795548;font-size:0.9em;margin-bottom:10px;background:#fff8e1;padding:8px 12px;border-radius:6px;border-left:4px solid #ffb300">💡 <strong>Hint:</strong> ' + shEsc(t.hint) + '</p>';
+            if (t.image) html += '<div style="margin-bottom:12px;text-align:center"><img src="'+t.image+'" style="max-width:100%;max-height:260px;border-radius:10px;border:2px solid #ce93d8;box-shadow:0 3px 12px rgba(106,27,154,0.15);cursor:pointer" onclick="shViewPhoto(this.src)" title="Click to enlarge" alt="Task reference image"><div style="font-size:0.78em;color:#9c27b0;margin-top:4px;opacity:0.8">🖼️ Reference image — click to enlarge</div></div>';
 
             // Lock/expiry reason
             if (t._lockReason==='not_yet')  html += '<div style="background:#e3f2fd;padding:10px 14px;border-radius:6px;font-size:0.88em;color:#1565c0;margin-bottom:10px;border-left:4px solid #2196f3">⏳ <strong>Not open yet.</strong> This task unlocks on '+fmtDT(t.availableFrom)+'</div>';
@@ -13494,6 +13504,42 @@ Davan Institute Team`;
     }
 
     // ── N-Parts: dynamic part input helpers ───────────────────────────
+    // ── Task image preview helpers ────────────────────────────────────
+    function shPreviewNewTaskImage(input) {
+        const file = input.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = e => {
+            document.getElementById('shNewTaskImagePreviewImg').src = e.target.result;
+            document.getElementById('shNewTaskImagePreview').style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+    }
+    function shClearNewTaskImage() {
+        document.getElementById('shNewTaskImageFile').value = '';
+        document.getElementById('shNewTaskImagePreview').style.display = 'none';
+        document.getElementById('shNewTaskImageMsg').textContent = 'Image will upload automatically when you save the task.';
+        document.getElementById('shNewTaskImageMsg').style.color = '#888';
+    }
+    function shPreviewEditTaskImage(input) {
+        const file = input.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = e => {
+            document.getElementById('shEditImagePreviewImg').src = e.target.result;
+            document.getElementById('shEditImagePreview').style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+    }
+    function shClearEditTaskImage() {
+        document.getElementById('shEditImageFile').value = '';
+        document.getElementById('shEditImagePreview').style.display = 'none';
+    }
+    function shRemoveEditCurrentImage() {
+        document.getElementById('shEditCurrentImageUrl').value = '';
+        document.getElementById('shEditImageCurrentBox').innerHTML = '<span style="font-size:0.82em;color:#aaa">Image removed. Save to confirm.</span>';
+    }
+
     function shAddNewTaskPart(value) {
         const box = document.getElementById('shNewTaskPartsBox');
         const idx = box.children.length;
@@ -13798,8 +13844,36 @@ Davan Institute Team`;
         const partInputs = document.querySelectorAll('#shNewTaskPartsBox .sh-part-input');
         const parts = [];
         partInputs.forEach(inp => { const v = inp.value.trim(); if (v) parts.push(v); });
+
+        // Upload image if selected
+        const imgFile = document.getElementById('shNewTaskImageFile').files[0];
+        let imageUrl = null;
+        if (imgFile) {
+            const msgEl = document.getElementById('shNewTaskImageMsg');
+            msgEl.textContent = '⏳ Uploading image…';
+            msgEl.style.color = '#1565c0';
+            try {
+                const fd = new FormData();
+                fd.append('file', imgFile);
+                fd.append('upload_preset', 'scavenger_hunt');
+                fd.append('folder', 'scavenger_hunt/task_images');
+                fd.append('public_id', 'task_img_' + Date.now());
+                const res = await fetch('https://api.cloudinary.com/v1_1/dat0khbet/image/upload', { method:'POST', body:fd });
+                if (!res.ok) throw new Error((await res.json()).error?.message || 'Upload failed');
+                imageUrl = (await res.json()).secure_url;
+                msgEl.textContent = '✅ Image uploaded!';
+                msgEl.style.color = '#2e7d32';
+            } catch(e) {
+                alert('Image upload failed: ' + e.message + '\nTask not saved. Please try again.');
+                document.getElementById('shNewTaskImageMsg').textContent = '❌ Upload failed — try again';
+                document.getElementById('shNewTaskImageMsg').style.color = '#c62828';
+                return;
+            }
+        }
+
         const task = { name, order, createdAt:new Date().toISOString() };
         if (hint)          task.hint  = hint;
+        if (imageUrl)      task.image = imageUrl;
         if (parts.length)  task.parts = parts;
         if (lat && lng) { task.lat=lat; task.lng=lng; }
         if (availFrom)  task.availableFrom = new Date(availFrom).toISOString();
@@ -13820,6 +13894,10 @@ Davan Institute Team`;
         document.getElementById('shNewTaskLng').value      = '';
         document.getElementById('shNewTaskDate').value     = '';
         document.getElementById('shNewTaskDeadline').value = '';
+        document.getElementById('shNewTaskImageFile').value = '';
+        document.getElementById('shNewTaskImagePreview').style.display = 'none';
+        document.getElementById('shNewTaskImageMsg').textContent = 'Image will upload automatically when you save the task.';
+        document.getElementById('shNewTaskImageMsg').style.color = '#888';
         // Reload tasks list — this also rebuilds the WhatsApp message for ALL tasks
         shAdminLoadTasks();
     }
@@ -13924,6 +14002,11 @@ Davan Institute Team`;
             html += '<div class="form-group" style="margin:0"><label style="font-size:12px;font-weight:700;color:#6a1b9a">Task Name:</label><input id="shEditName" type="text" style="width:100%"></div>';
             html += '<div class="form-group" style="margin:0"><label style="font-size:12px;font-weight:700;color:#6a1b9a">Hint / Clue:</label><input id="shEditHint" type="text" style="width:100%"></div>';
             html += '<div class="form-group" style="margin:0"><label style="font-size:12px;font-weight:700;color:#6a1b9a">Task Order / Number:</label><input id="shEditOrder" type="number" min="1" style="width:100px"></div>';
+            html += '<div class="form-group" style="grid-column:1/-1;margin:0"><label style="font-size:12px;font-weight:700;color:#6a1b9a">🖼️ Task Image (optional):</label>';
+            html += '<div id="shEditImageCurrentBox" style="margin-bottom:8px"></div>';
+            html += '<input type="file" id="shEditImageFile" accept="image/*" onchange="shPreviewEditTaskImage(this)" style="display:block;margin-bottom:6px">';
+            html += '<div id="shEditImagePreview" style="display:none;margin-bottom:6px"><img id="shEditImagePreviewImg" style="max-width:200px;max-height:140px;border-radius:8px;border:2px solid #ce93d8" alt="preview"><button type="button" onclick="shClearEditTaskImage()" style="display:block;margin-top:4px;background:#ffebee;color:#c62828;border:1px solid #ef9a9a;border-radius:6px;padding:3px 10px;cursor:pointer;font-size:0.82em">✕ Remove new image</button></div>';
+            html += '<span id="shEditImageMsg" style="font-size:0.82em;color:#888">Upload a new image to replace, or leave empty to keep existing.</span></div>';
             html += '<div class="form-group" style="grid-column:1/-1;margin:0"><label style="font-size:12px;font-weight:700;color:#9c27b0">📸 Task Parts (multi-photo, optional):</label>';
             html += '<div id="shEditPartsBox" style="display:flex;flex-direction:column;gap:6px;margin-bottom:6px"></div>';
             html += '<button type="button" onclick="shAddEditPart()" style="background:#e8f5e9;color:#2e7d32;border:2px dashed #4caf50;border-radius:8px;padding:5px 12px;cursor:pointer;font-size:0.85em;font-weight:700">➕ Add Part</button>';
@@ -13934,6 +14017,7 @@ Davan Institute Team`;
             html += '<div style="display:flex;gap:8px"><input id="shEditLat" type="number" step="0.000001" placeholder="Latitude" style="width:130px"><input id="shEditLng" type="number" step="0.000001" placeholder="Longitude" style="width:130px"></div></div>';
             html += '</div>';
             html += '<input type="hidden" id="shEditId">';
+            html += '<input type="hidden" id="shEditCurrentImageUrl">';
             html += '<div style="display:flex;gap:8px;align-items:center">';
             html += '<button class="btn btn-success" onclick="shAdminSaveTask()">💾 Save Changes</button>';
             html += '<button class="btn btn-secondary" onclick="shAdminCancelEditTask()">✖ Cancel</button>';
@@ -13941,14 +14025,16 @@ Davan Institute Team`;
             html += '</div></div>';
 
             // ── Tasks Table ────────────────────────────────────────────────────
-            html += '<div class="table-wrapper"><table><thead><tr><th>#</th><th>Task</th><th>Hint</th><th>From</th><th>Until</th><th>GPS</th><th style="min-width:70px">Edit</th><th>Delete</th></tr></thead><tbody>';
+            html += '<div class="table-wrapper"><table><thead><tr><th>#</th><th>Task</th><th>Image</th><th>Hint</th><th>From</th><th>Until</th><th>GPS</th><th style="min-width:70px">Edit</th><th>Delete</th></tr></thead><tbody>';
             tasks.forEach(t => {
                 const gps     = t.lat ? '<span class="sh-gps-badge" style="font-size:0.75em">📍 Set</span>' : '<span style="color:#999">—</span>';
                 const fromStr = t.availableFrom ? new Date(t.availableFrom).toLocaleString('en-IN',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit',hour12:true}) : '—';
                 const tillStr = t.deadline      ? new Date(t.deadline).toLocaleString('en-IN',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit',hour12:true}) : '—';
+                const imgCell = t.image ? '<img src="'+t.image+'" style="width:48px;height:36px;object-fit:cover;border-radius:5px;border:1px solid #ce93d8;cursor:pointer" onclick="shViewPhoto(\''+t.image+'\')" title="Click to view">' : '<span style="color:#ccc;font-size:0.82em">—</span>';
                 html += '<tr id="shTaskRow_'+t.id+'">';
                 html += '<td><strong>'+(t.order||'-')+'</strong></td>';
                 html += '<td>'+shEsc(t.name)+'</td>';
+                html += '<td>'+imgCell+'</td>';
                 html += '<td style="color:#795548;font-size:0.9em">'+shEsc(t.hint||'—')+'</td>';
                 html += '<td style="font-size:0.82em;color:#1565c0;white-space:nowrap">'+fromStr+'</td>';
                 html += '<td style="font-size:0.82em;color:#c62828;white-space:nowrap">'+tillStr+'</td>';
@@ -13971,6 +14057,18 @@ Davan Institute Team`;
         document.getElementById('shEditName').value  = t.name  || '';
         document.getElementById('shEditHint').value  = t.hint  || '';
         document.getElementById('shEditOrder').value = t.order || 1;
+        // Populate existing image
+        document.getElementById('shEditCurrentImageUrl').value = t.image || '';
+        document.getElementById('shEditImageFile').value = '';
+        document.getElementById('shEditImagePreview').style.display = 'none';
+        const curBox = document.getElementById('shEditImageCurrentBox');
+        if (t.image) {
+            curBox.innerHTML = '<div style="margin-bottom:6px"><span style="font-size:0.82em;color:#6a1b9a;font-weight:700">Current image:</span><br>'
+                + '<img src="'+t.image+'" style="max-width:180px;max-height:120px;border-radius:8px;border:2px solid #ce93d8;margin-top:4px" alt="current">'
+                + '<button type="button" onclick="shRemoveEditCurrentImage()" style="display:block;margin-top:4px;background:#ffebee;color:#c62828;border:1px solid #ef9a9a;border-radius:6px;padding:3px 10px;cursor:pointer;font-size:0.82em">🗑️ Remove current image</button></div>';
+        } else {
+            curBox.innerHTML = '<span style="font-size:0.82em;color:#aaa">No image set.</span>';
+        }
         // Populate parts
         const editBox = document.getElementById('shEditPartsBox');
         editBox.innerHTML = '';
@@ -14012,10 +14110,38 @@ Davan Institute Team`;
         const editPartInputs = document.querySelectorAll('#shEditPartsBox .sh-part-input');
         const editParts = [];
         editPartInputs.forEach(inp => { const v = inp.value.trim(); if (v) editParts.push(v); });
+
+        // Handle image: new file > existing URL > null
+        let imageUrl = document.getElementById('shEditCurrentImageUrl').value || null;
+        const newImgFile = document.getElementById('shEditImageFile').files[0];
+        if (newImgFile) {
+            const msgEl = document.getElementById('shEditImageMsg');
+            msgEl.textContent = '⏳ Uploading image…';
+            msgEl.style.color = '#1565c0';
+            try {
+                const fd = new FormData();
+                fd.append('file', newImgFile);
+                fd.append('upload_preset', 'scavenger_hunt');
+                fd.append('folder', 'scavenger_hunt/task_images');
+                fd.append('public_id', 'task_img_' + id + '_' + Date.now());
+                const res = await fetch('https://api.cloudinary.com/v1_1/dat0khbet/image/upload', { method:'POST', body:fd });
+                if (!res.ok) throw new Error((await res.json()).error?.message || 'Upload failed');
+                imageUrl = (await res.json()).secure_url;
+                msgEl.textContent = '✅ Image uploaded!';
+                msgEl.style.color = '#2e7d32';
+            } catch(e) {
+                alert('Image upload failed: ' + e.message);
+                document.getElementById('shEditImageMsg').textContent = '❌ Upload failed';
+                document.getElementById('shEditImageMsg').style.color = '#c62828';
+                return;
+            }
+        }
+
         const update = {
             name,
             order,
             hint:          hint || null,
+            image:         imageUrl || null,
             parts:         editParts.length ? editParts : null,
             availableFrom: fromV ? new Date(fromV).toISOString() : null,
             deadline:      tillV ? new Date(tillV).toISOString() : null,
@@ -16717,7 +16843,7 @@ Proceed?`)) return;
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;">
-                <strong>Version:</strong> 3.4 Leaderboard Logic Audit & Fixes  | <strong>Last Updated:</strong> February 20, 2026
+                <strong>Version:</strong> 3.5 Task Image Upload Added  | <strong>Last Updated:</strong> February 20, 2026 10.38pm
             </p>
             <!-- ============================================ -->
             
