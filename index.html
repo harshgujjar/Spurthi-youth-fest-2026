@@ -1357,6 +1357,7 @@
                 <button class="tab active" onclick="showTab('master')">Master List</button>
                 <button class="tab" onclick="showTab('events')">By Events</button>
                 <button class="tab super-admin-only" onclick="showTab('jurySetup')">Jury Setup</button>
+                <button class="tab super-admin-only" onclick="showTab('juryLiveMonitor');startLiveJuryMonitor()">📡 Jury Live Monitor</button>
                 <button class="tab" onclick="showTab('results')" id="resultsTab">Results</button>
                 <button class="tab super-admin-only" onclick="showTab('quizManagement')" id="quizManagementTab">📝 Quiz Management</button>
                 <button class="tab super-admin-only" onclick="showTab('leaderboardAdmin')" id="leaderboardAdminTab">🏆 Leaderboard</button>
@@ -1403,8 +1404,34 @@
                             <option value="">-- Select Event --</option>
                         </select>
                     </div>
+
+                    <!-- Eligibility Info Banner (auto-filled on event select) -->
+                    <div id="eventEligibilityBanner" style="display:none;margin-bottom:15px;padding:12px 16px;border-radius:8px;border-left:5px solid #6a1b9a;background:#f3e5f5">
+                        <strong style="color:#6a1b9a">🎯 Enrollment Criteria for this event:</strong>
+                        <span id="eventEligibilityText" style="color:#333;margin-left:8px"></span>
+                    </div>
                     
                     <div id="eventSetupContainer" style="display:none">
+
+                        <!-- Event Type -->
+                        <div style="background:#e8f5e9;border-radius:10px;padding:15px;margin-bottom:20px;border:2px solid #a5d6a7">
+                            <h3 style="color:#1b5e20;margin-bottom:10px">⚙️ Event Type</h3>
+                            <p style="color:#555;font-size:13px;margin-bottom:12px">Choose how jury scores are aggregated for the leaderboard.</p>
+                            <div style="display:flex;gap:20px;flex-wrap:wrap">
+                                <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-weight:600;color:#1b5e20">
+                                    <input type="radio" name="juryEventType" id="eventTypeClass" value="class" checked style="width:18px;height:18px">
+                                    🏫 Class-based — One team per class, jury scores the class
+                                </label>
+                                <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-weight:600;color:#6a1b9a">
+                                    <input type="radio" name="juryEventType" id="eventTypeIndividual" value="individual" style="width:18px;height:18px">
+                                    🧑 Individual — Multiple students per class; jury scores each student; class gets points from their best performer
+                                </label>
+                                <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-weight:600;color:#e65100">
+                                    <input type="radio" name="juryEventType" id="eventTypeMultiteam" value="multiteam" style="width:18px;height:18px">
+                                    👥 Multi-Team — Multiple teams per class (e.g. Vlog: 3 teams × 3 members); jury scores each team; class gets points from their best team
+                                </label>
+                            </div>
+                        </div>
                         <div class="jury-password-section">
                             <h3 style="color:#6a1b9a;margin-bottom:15px">👥 Jury Details</h3>
                             
@@ -1433,6 +1460,13 @@
                             </div>
                         </div>
                         
+                        <h3 style="color:#6a1b9a;margin:20px 0 15px">🎭 Class Code Names (shown to jury instead of real names)</h3>
+                        <p style="color:#666;font-size:13px;margin-bottom:12px">Assign anonymous code names to each participating class. Jury will only see these names — real class names are revealed after they mark as completed.</p>
+                        <div id="classAliasContainer" style="background:#f9f0ff;border-radius:10px;padding:15px;margin-bottom:15px">
+                            <p style="color:#999;font-size:13px">Save jury passwords and select event to load enrolled classes here.</p>
+                        </div>
+                        <button class="btn btn-small btn-info" onclick="loadClassAliasFields()" style="margin-bottom:15px">🔄 Load Enrolled Classes</button>
+
                         <h3 style="color:#6a1b9a;margin:20px 0 15px">📋 Evaluation Criteria (5 criteria, 10 marks each)</h3>
                         <div id="criteriaContainer"></div>
                         <button class="btn btn-small btn-info" onclick="addCriterion()" style="margin-top:10px">+ Add Criterion</button>
@@ -1442,6 +1476,23 @@
                         </div>
                         
                         <div id="setupMessage" class="message" style="margin-top:20px"></div>
+                    </div>
+                </div>
+
+                <!-- Live Jury Monitor Tab (Super Admin Only) -->
+                <div id="juryLiveMonitor" class="form-section super-admin-only">
+                    <h2 style="color:#c44569;margin-bottom:20px">📡 Live Jury Marks Monitor</h2>
+                    <div class="form-group">
+                        <label>Select Event:</label>
+                        <div style="display:flex;gap:10px;align-items:center">
+                            <select id="liveMonitorEvent" onchange="startLiveJuryMonitor()" style="flex:1">
+                                <option value="">-- Select Event --</option>
+                            </select>
+                            <button class="btn btn-small btn-info" onclick="startLiveJuryMonitor()">🔄 Refresh</button>
+                        </div>
+                    </div>
+                    <div id="liveJuryMonitorContainer" style="margin-top:20px">
+                        <p style="color:#999;text-align:center;padding:30px">Select an event to see live jury marks.</p>
                     </div>
                 </div>
 
@@ -3134,7 +3185,7 @@
                 
                 <div style="margin-bottom:20px;text-align:center">
                     <button class="btn btn-info" onclick="loadJurySheet()" style="margin-right:10px">🔄 Reload Sheet</button>
-                    <button class="btn btn-secondary" onclick="showEnrollmentDebug()">📊 Show Enrollments</button>
+                    <button class="btn btn-secondary" onclick="showEnrollmentDebugProtected()">📊 Show Enrollments</button>
                 </div>
                 
                 <div id="jurySheetContainer"></div>
@@ -3620,19 +3671,22 @@
         // Global Variables
         const classes = ['1st B.Com','2nd B.Com','3rd B.Com','1ST BCA','2ND BCA A SEC','2ND BCA B SEC','3RD BCA A SEC','3RD BCA B SEC','3RD BCA C SEC','2ND BBA','3RD BBA','Faculty/Principal/Vice-Principal/Staff','Others'];
         window._appClasses = classes; // expose to other script blocks
+        // individual: true = multiple students per class compete independently;
+        //   jury scores each student; leaderboard picks best-per-class for winner/runner-up points.
+        //   eligibleClasses is NOT set here — you define it per-event in Jury Setup when needed.
         const events = {
-            'Pod Casting': {size:'Individual',count:1,role:false,topic:true,topicLabel:'Topic',allow:false,maxPerClass:3},
+            'Pod Casting': {size:'Individual',count:1,role:false,topic:true,topicLabel:'Topic',allow:false,maxPerClass:3,individual:true},
             'Mime': {size:'6 Members',count:6,role:true,topic:true,topicLabel:'Theme',allow:false,maxPerClass:1},
             'Interdisciplinary': {size:'5 Members',count:5,role:true,topic:true,topicLabel:'Topic',allow:false,maxPerClass:1},
-            'Ramp Walk': {size:'Individual members',count:0,role:true,topic:true,topicLabel:'Theme',show:true,allow:false,maxPerClass:999,pctMax:30,dynamicCount:true},
+            'Ramp Walk': {size:'Individual members',count:0,role:true,topic:true,topicLabel:'Theme',show:true,allow:false,maxPerClass:999,pctMax:30,dynamicCount:true,individual:true},
             'Quiz': {size:'6 Members',count:6,role:true,allow:false,maxPerClass:1},
             'Vlog': {size:'3 Members',count:3,role:true,topic:true,topicLabel:'Topic',allow:true,maxPerClass:3,vlogTopics:['Travel Vlog','Educational Vlog','Event Vlog','Shops Vlog'],multiTeam:true},
             'YouTube Advertisement': {size:'8 Members',count:8,role:true,prod:true,allow:false,maxPerClass:1},
             'Mad Ads': {size:'8 Members',count:8,role:true,topic:true,topicLabel:'Topic',allow:false,maxPerClass:1},
-            'Hand Writing': {size:'Individual',count:1,role:false,lang:true,allow:false,maxPerClass:999,pctMax:15,oneAtATime:true},
+            'Hand Writing': {size:'Individual',count:1,role:false,lang:true,allow:false,maxPerClass:999,pctMax:15,oneAtATime:true,individual:true},
             'Best out of Waste': {size:'2 Members (or Individual)',count:2,role:true,allow:true,maxPerClass:999,pctMax:10,allowIndividual:true},
             'Social Awareness Skit': {size:'8 Members',count:8,role:true,cause:true,allow:false,maxPerClass:1},
-            'Talent Hunt': {size:'Individual',count:1,role:false,talent:true,allow:true,maxPerClass:6,oneAtATime:true},
+            'Talent Hunt': {size:'Individual',count:1,role:false,talent:true,allow:true,maxPerClass:6,oneAtATime:true,individual:true},
             'Group Dance': {size:'5-8 Members',count:5,role:true,allow:false,maxPerClass:1,minCount:5,maxCount:8},
             'Nukkad Natak': {size:'8 to 30% of class',count:8,role:true,cause:true,causeLabel:'Different Cause',allow:false,maxPerClass:1,pctMax:30,dynamicCount:true,minCount:8,camera:true},
             'Case Analysis': {size:'2 Members',count:2,role:true,allow:false,maxPerClass:1}
@@ -3744,7 +3798,7 @@
         }
 
         function populateEventSelects() {
-            const selects = ['filterEvent','crFilterEvent','setupEventSelect','resultsEventSelect','juryEvent'];
+            const selects = ['filterEvent','crFilterEvent','setupEventSelect','resultsEventSelect','juryEvent','liveMonitorEvent'];
             selects.forEach(id => {
                 const sel = document.getElementById(id);
                 if (sel) {
@@ -4287,6 +4341,11 @@
                     
                     document.getElementById('userInfo').innerHTML = 'Logged in as: <span class="jury-badge">'+juryName+' - '+event+'</span>';
                     document.getElementById('loginSection').style.display = 'none';
+                    document.getElementById('adminSection').style.display = 'block';
+                    // Hide all admin children except jurySection so jury only sees their sheet
+                    Array.from(document.getElementById('adminSection').children).forEach(el => {
+                        if (el.id !== 'jurySection') el.style.display = 'none';
+                    });
                     document.getElementById('jurySection').style.display = 'block';
                     document.getElementById('juryEventTitle').textContent = 'Jury Evaluation - ' + event;
                     document.getElementById('juryInfo').textContent = 'You are ' + juryName + ' for ' + event;
@@ -4507,6 +4566,10 @@
             document.getElementById('loginSection').style.display = 'block';
             document.getElementById('studentSection').style.display = 'none';
             document.getElementById('crSection').style.display = 'none';
+            // Restore any admin children hidden during jury login
+            Array.from(document.getElementById('adminSection').children).forEach(el => {
+                el.style.display = '';
+            });
             document.getElementById('adminSection').style.display = 'none';
             document.getElementById('jurySection').style.display = 'none';
             document.getElementById('quizStudentDashboard').style.display = 'none';
@@ -5638,10 +5701,22 @@
             const event = document.getElementById('setupEventSelect').value;
             if (!event) {
                 document.getElementById('eventSetupContainer').style.display = 'none';
+                document.getElementById('eventEligibilityBanner').style.display = 'none';
                 return;
             }
             
             document.getElementById('eventSetupContainer').style.display = 'block';
+
+            // Show event info banner
+            const cfg = events[event] || {};
+            const banner = document.getElementById('eventEligibilityBanner');
+            const bannerText = document.getElementById('eventEligibilityText');
+            bannerText.textContent = cfg.individual ? 'Individual event — multiple students per class can compete independently' : 'Team/Class event';
+            banner.style.display = 'block';
+
+            // Auto-detect event type from events config
+            const autoIndividual = cfg.individual === true;
+            const autoMultiteam  = cfg.multiTeam  === true && !cfg.individual;
             
             // Load existing setup
             db.ref('jurySetup/'+event).once('value').then(snap => {
@@ -5654,6 +5729,12 @@
                 // Load jury passwords
                 document.getElementById('jury1Password').value = data.jury1Password || '';
                 document.getElementById('jury2Password').value = data.jury2Password || '';
+
+                // Load event type — use saved value, fall back to auto-detected
+                const savedType = data.eventType || (autoIndividual ? 'individual' : autoMultiteam ? 'multiteam' : 'class');
+                document.getElementById('eventTypeClass').checked      = savedType === 'class';
+                document.getElementById('eventTypeIndividual').checked = savedType === 'individual';
+                document.getElementById('eventTypeMultiteam').checked  = savedType === 'multiteam';
                 
                 // Load criteria
                 const criteria = data.criteria || [];
@@ -5721,17 +5802,31 @@
                 return;
             }
             
+            // Collect class aliases + order if loaded
+            let classAliases = {};
+            let classOrder = [];
+            try { classAliases = getClassAliasesFromFields(); } catch(e) {}
+            try { classOrder = getClassOrderFromFields(); } catch(e) {}
+
+            // Event type: individual vs class-based
+            const eventType = document.querySelector('input[name="juryEventType"]:checked')
+                ? document.querySelector('input[name="juryEventType"]:checked').value
+                : 'class';
+
             const setupData = {
                 jury1Name: jury1Name || 'Jury 1',
                 jury2Name: jury2Name || 'Jury 2',
                 jury1Password: jury1Pwd,
                 jury2Password: jury2Pwd,
                 criteria: criteria,
+                classAliases: classAliases,
+                classOrder: classOrder,
+                eventType: eventType,
                 resultsPublished: false
             };
             
             db.ref('jurySetup/'+event).set(setupData).then(() => {
-                showSetupMessage('Setup saved successfully!', 'success');
+                showSetupMessage('Setup saved successfully! Event type: ' + (eventType === 'individual' ? '🧑 Individual' : eventType === 'multiteam' ? '👥 Multi-Team' : '🏫 Class-based'), 'success');
             }).catch(err => {
                 showSetupMessage('Error: '+err.message, 'error');
             });
@@ -5879,7 +5974,17 @@
                     return;
                 }
                 
-                renderJurySheet(enrolledClasses, setup.criteria);
+                // Apply saved class order if available
+                let orderedClasses = enrolledClasses.slice();
+                if (setup.classOrder && setup.classOrder.length > 0) {
+                    const ordered = setup.classOrder.filter(c => enrolledClasses.includes(c));
+                    const remaining = enrolledClasses.filter(c => !ordered.includes(c));
+                    orderedClasses = ordered.concat(remaining);
+                }
+
+                // Pass eventType and full enrollment records so renderJurySheet can handle individual events
+                const eventEnrollmentsForRender = all.filter(e => e.event === juryEvent);
+                renderJurySheet(orderedClasses, setup.criteria, setup.classAliases || {}, setup.eventType || 'class', eventEnrollmentsForRender);
                 loadExistingMarks();
             }).catch(err => {
                 console.error('Error loading jury sheet:', err);
@@ -5887,34 +5992,146 @@
             });
         }
 
-        function renderJurySheet(enrolledClasses, criteria) {
-            let html = '<div class="table-wrapper"><div class="marks-table"><table><thead><tr>';
-            html += '<th>Class</th><th>Theme/Topic</th>';
-            criteria.forEach((crit, i) => {
-                html += '<th>'+crit+'<br><small>(10 marks)</small></th>';
-            });
-            html += '<th>Total</th></tr></thead><tbody>';
-            
-            enrolledClasses.forEach(cls => {
-                const classEnrollments = all.filter(e => e.event === juryEvent && e.classYear === cls);
-                const theme = classEnrollments.length > 0 ? getDet(classEnrollments[0]) : '-';
-                
-                html += '<tr><td><strong>'+cls+'</strong></td><td>'+theme+'</td>';
-                criteria.forEach((crit, i) => {
-                    html += '<td><input type="number" class="marks-input" data-class="'+cls+'" data-criterion="'+i+'" min="0" max="10" step="0.5" placeholder="0-10"></td>';
+        function renderJurySheet(enrolledClasses, criteria, aliasMap, eventType, eventEnrollments) {
+            aliasMap    = aliasMap    || {};
+            eventType   = eventType   || 'class';
+            eventEnrollments = eventEnrollments || all.filter(e => e.event === juryEvent);
+
+            let html = '';
+
+            if (eventType === 'individual') {
+                // ── INDIVIDUAL EVENT ─────────────────────────────────────────────
+                // One row per enrolled student.
+                // jury scores each student; leaderboard picks best per class.
+
+                html += '<div style="background:#e3f2fd;border-left:5px solid #1565c0;padding:10px 16px;border-radius:8px;margin-bottom:14px;font-size:13px;color:#1a237e">';
+                html += '<strong>&#x1F9D1; Individual Event Mode</strong> — Each student is scored separately. The leaderboard will use the <strong>best-scoring student from each class</strong> to determine class rankings.';
+                html += '</div>';
+
+                html += '<div class="table-wrapper"><div class="marks-table"><table><thead><tr>';
+                html += '<th>#</th><th>Code Name</th><th>Class</th><th>Details</th>';
+                criteria.forEach(crit => {
+                    html += '<th>'+crit+'<br><small>(10 marks)</small></th>';
                 });
-                html += '<td class="total-marks" id="total-'+cls.replace(/\s+/g, '-')+'">0</td></tr>';
-            });
-            
-            html += '</tbody></table></div></div>';
+                html += '<th>Total</th></tr></thead><tbody>';
+
+                let seq = 1;
+                enrolledClasses.forEach(cls => {
+                    const safeKey = cls.replace(/[.\[\]#$\/\s]/g, '_');
+                    const classAlias = aliasMap[safeKey] || cls;
+                    const studentsInClass = eventEnrollments.filter(e => e.classYear === cls);
+                    studentsInClass.forEach((enr, idx) => {
+                        const rowKey = safeKey + '__p' + (idx + 1);
+                        const displayLabel = classAlias + ' — P' + (idx + 1);
+                        const detail = getDet(enr) || '-';
+                        html += '<tr>';
+                        html += '<td>'+seq+'</td>';
+                        html += '<td><strong>'+displayLabel+'</strong></td>';
+                        html += '<td><small style="color:#666">'+classAlias+'</small></td>';
+                        html += '<td><small>'+detail+'</small></td>';
+                        criteria.forEach((crit, i) => {
+                            html += '<td><input type="number" class="marks-input" data-class="'+rowKey+'" data-origclass="'+cls+'" data-criterion="'+i+'" min="0" max="10" step="0.5" placeholder="0-10"></td>';
+                        });
+                        html += '<td class="total-marks" id="total-'+rowKey+'">0</td>';
+                        html += '</tr>';
+                        seq++;
+                    });
+                });
+
+                html += '</tbody></table></div></div>';
+
+            } else if (eventType === 'multiteam') {
+                // ── MULTI-TEAM EVENT (e.g. Vlog: up to 3 teams per class) ─────────
+                // Each team is a group of N members enrolled together under the same class.
+                // Enrollment records for the same class are grouped into teams by their
+                // sequential team number (stored as participantNum / teamNum on the record,
+                // or we group by index order).
+                // jury scores each team separately; leaderboard picks best team per class.
+
+                html += '<div style="background:#fff3e0;border-left:5px solid #e65100;padding:10px 16px;border-radius:8px;margin-bottom:14px;font-size:13px;color:#bf360c">';
+                html += '<strong>&#x1F465; Multi-Team Event Mode</strong> — Each team is scored separately. The leaderboard will use the <strong>best-scoring team from each class</strong> to determine class rankings.';
+                html += '</div>';
+
+                html += '<div class="table-wrapper"><div class="marks-table"><table><thead><tr>';
+                html += '<th>#</th><th>Code Name</th><th>Class</th><th>Topic/Detail</th>';
+                criteria.forEach(crit => {
+                    html += '<th>'+crit+'<br><small>(10 marks)</small></th>';
+                });
+                html += '<th>Total</th></tr></thead><tbody>';
+
+                let seq = 1;
+                enrolledClasses.forEach(cls => {
+                    const safeKey = cls.replace(/[.\[\]#$\/\s]/g, '_');
+                    const classAlias = aliasMap[safeKey] || cls;
+
+                    // Group enrollments into teams.
+                    // Each enrollment record = one member. Members of the same team share a teamNum.
+                    // We build unique teams: group by teamNum if present, else treat each record as its own team (for individual fallback).
+                    const classEnrollments = eventEnrollments.filter(e => e.classYear === cls);
+
+                    // Build teams: key = teamNum (or record index if no teamNum)
+                    const teamsMap = {};
+                    classEnrollments.forEach((enr, idx) => {
+                        const tKey = (enr.teamNum !== undefined && enr.teamNum !== null) ? String(enr.teamNum) : String(idx + 1);
+                        if (!teamsMap[tKey]) teamsMap[tKey] = [];
+                        teamsMap[tKey].push(enr);
+                    });
+
+                    const teamNums = Object.keys(teamsMap).sort((a,b) => Number(a)-Number(b));
+                    teamNums.forEach((tNum, tIdx) => {
+                        const teamMembers = teamsMap[tNum];
+                        const rowKey = safeKey + '__t' + (tIdx + 1);
+                        const displayLabel = classAlias + ' — Team ' + (tIdx + 1);
+                        // Use topic/detail from first member of team
+                        const detail = getDet(teamMembers[0]) || '-';
+                        html += '<tr>';
+                        html += '<td>'+seq+'</td>';
+                        html += '<td><strong>'+displayLabel+'</strong></td>';
+                        html += '<td><small style="color:#666">'+classAlias+'</small></td>';
+                        html += '<td><small>'+detail+'</small></td>';
+                        criteria.forEach((crit, i) => {
+                            html += '<td><input type="number" class="marks-input" data-class="'+rowKey+'" data-origclass="'+cls+'" data-criterion="'+i+'" min="0" max="10" step="0.5" placeholder="0-10"></td>';
+                        });
+                        html += '<td class="total-marks" id="total-'+rowKey+'">0</td>';
+                        html += '</tr>';
+                        seq++;
+                    });
+                });
+
+                html += '</tbody></table></div></div>';
+
+            } else {
+                // ── CLASS-BASED EVENT ────────────────────────────────────────────
+                // One row per class (original behaviour)
+                html += '<div class="table-wrapper"><div class="marks-table"><table><thead><tr>';
+                html += '<th>Code Name</th><th>Theme/Topic</th>';
+                criteria.forEach(crit => {
+                    html += '<th>'+crit+'<br><small>(10 marks)</small></th>';
+                });
+                html += '<th>Total</th></tr></thead><tbody>';
+
+                enrolledClasses.forEach(cls => {
+                    const safeKey = cls.replace(/[.\[\]#$\/\s]/g, '_');
+                    const displayName = aliasMap[safeKey] || cls;
+                    const classEnrollments = eventEnrollments.filter(e => e.classYear === cls);
+                    const theme = classEnrollments.length > 0 ? getDet(classEnrollments[0]) : '-';
+
+                    html += '<tr><td><strong>'+displayName+'</strong></td><td>'+theme+'</td>';
+                    criteria.forEach((crit, i) => {
+                        html += '<td><input type="number" class="marks-input" data-class="'+cls+'" data-criterion="'+i+'" min="0" max="10" step="0.5" placeholder="0-10"></td>';
+                    });
+                    html += '<td class="total-marks" id="total-'+cls.replace(/\s+/g, '-')+'">0</td></tr>';
+                });
+
+                html += '</tbody></table></div></div>';
+            }
             
             document.getElementById('jurySheetContainer').innerHTML = html;
             
             // Add event listeners for auto-calculation
             document.querySelectorAll('.marks-input').forEach(inp => {
                 inp.addEventListener('input', function() {
-                    const cls = this.dataset.class;
-                    calculateTotal(cls);
+                    calculateTotal(this.dataset.class);
                 });
             });
         }
@@ -6215,9 +6432,37 @@
             
             const dbPath = 'juryMarks/' + juryEvent + '/jury' + juryNumber;
             
-            db.ref(dbPath).set(marksData).then(() => {
+            db.ref(dbPath).set(marksData).then(async () => {
                 showJuryMessage('Evaluation marked as completed!', 'success');
-                alert('✅ Evaluation marked as completed!\n\nYour marks are now final.');
+                // Reveal real class names and show rankings
+                try {
+                    const setupSnap = await db.ref('jurySetup/' + juryEvent).once('value');
+                    const setup = setupSnap.val() || {};
+                    const aliasMap = setup.classAliases || {};
+                    // Build reverse: safeKey -> real class
+                    const realClasses = {};
+                    all.filter(e => e.event === juryEvent).forEach(e => {
+                        const sk = e.classYear.replace(/[.\[\]#$\/\s]/g, '_');
+                        realClasses[sk] = e.classYear;
+                    });
+                    // Tally totals from submitted marksData
+                    const totals = [];
+                    Object.entries(marksData).forEach(([sk, d]) => {
+                        const total = (d.marks || []).reduce((s, v) => s + (parseFloat(v)||0), 0);
+                        const alias = aliasMap[sk] || sk;
+                        const real = realClasses[sk] || sk;
+                        totals.push({ sk, alias, real, total });
+                    });
+                    totals.sort((a, b) => b.total - a.total);
+                    let msg = 'Evaluation marked as completed!\n\nRESULTS REVEALED:\n';
+                    totals.forEach((t, i) => {
+                        const medal = i === 0 ? 'WINNER' : i === 1 ? 'RUNNER-UP' : (i+1)+'.';
+                        msg += '\n' + medal + ': ' + t.alias + ' = ' + t.real + ' (' + t.total.toFixed(1) + ' marks)';
+                    });
+                    alert(msg);
+                } catch(e) {
+                    alert('Evaluation marked as completed! Your marks are now final.');
+                }
             }).catch(err => {
                 showJuryMessage('Error: '+err.message, 'error');
                 alert('❌ Error: '+err.message);
@@ -6458,6 +6703,338 @@
             }).catch(err => {
                 console.error('Debug load error:', err);
                 alert('Debug load failed: ' + err.message);
+            });
+        }
+
+        // ============================================================
+        // CLASS ALIAS SYSTEM — assigns code names to real class names
+        // ============================================================
+        async function loadClassAliasFields() {
+            const event = document.getElementById('setupEventSelect').value;
+            if (!event) { alert('Please select an event first.'); return; }
+            const container = document.getElementById('classAliasContainer');
+            container.innerHTML = '<p style="color:#aaa;font-size:13px">Loading enrolled classes...</p>';
+            try {
+                const snap = await db.ref('youthfest-enrollments').once('value');
+                const classes = [];
+                if (snap.exists()) {
+                    snap.forEach(child => {
+                        const e = child.val();
+                        if (e.event === event && e.classYear && !classes.includes(e.classYear)) {
+                            classes.push(e.classYear);
+                        }
+                    });
+                }
+                // Load existing setup (aliases + order)
+                const setupSnap = await db.ref('jurySetup/' + event).once('value');
+                const existingSetup = setupSnap.val() || {};
+                const existing = existingSetup.classAliases || {};
+                const existingOrder = existingSetup.classOrder || [];
+
+                if (classes.length === 0) {
+                    container.innerHTML = '<p style="color:#e53935;font-size:13px">No enrolled classes found for this event.</p>';
+                    return;
+                }
+
+                // Apply saved order if available, else default order
+                let orderedClasses = classes.slice();
+                if (existingOrder.length > 0) {
+                    const ordered = existingOrder.filter(c => classes.includes(c));
+                    const remaining = classes.filter(c => !ordered.includes(c));
+                    orderedClasses = ordered.concat(remaining);
+                }
+
+                function rebuildTable() {
+                    const rows = container.querySelectorAll('tr[data-cls]');
+                    const currentOrder = Array.from(rows).map(r => r.dataset.cls);
+                    let html = '';
+                    currentOrder.forEach((cls, i) => {
+                        const safeKey = cls.replace(/[.\[\]#$\/\s]/g, '_');
+                        const currentAlias = (container.querySelector('input[data-safekey="' + safeKey + '"]') || {}).value
+                            || existing[safeKey] || ('Class ' + String.fromCharCode(65 + i));
+                        html += buildRow(cls, safeKey, currentAlias, i, currentOrder.length);
+                    });
+                    tbody.innerHTML = html;
+                    attachDragEvents();
+                }
+
+                function buildRow(cls, safeKey, alias, i, total) {
+                    return '<tr data-cls="' + cls + '" style="background:' + (i%2===0?'#fff':'#f9f0ff') + ';border-bottom:1px solid #e8d5ff">'
+                        + '<td style="padding:8px 6px;cursor:grab;text-align:center;color:#9c27b0;font-size:16px" title="Drag to reorder">&#9776;</td>'
+                        + '<td style="padding:8px 10px;color:#6c757d;font-weight:700;font-size:13px">' + (i+1) + '</td>'
+                        + '<td style="padding:8px 10px;font-size:13px;font-weight:600;color:#333">' + cls + '</td>'
+                        + '<td style="padding:8px 10px">'
+                        +   '<input type="text" data-safekey="' + safeKey + '" value="' + alias + '" '
+                        +   'style="padding:5px 10px;border:1.5px solid #9c27b0;border-radius:6px;width:160px;font-size:13px" '
+                        +   'placeholder="e.g. Class A">'
+                        + '</td>'
+                        + '<td style="padding:8px 6px;text-align:center">'
+                        +   (i > 0 ? '<button onclick="moveClassRow(this,-1)" style="background:#e3d5f7;border:none;border-radius:4px;padding:2px 7px;cursor:pointer;margin-right:2px">&#9650;</button>' : '')
+                        +   (i < total-1 ? '<button onclick="moveClassRow(this,1)" style="background:#e3d5f7;border:none;border-radius:4px;padding:2px 7px;cursor:pointer">&#9660;</button>' : '')
+                        + '</td>'
+                        + '</tr>';
+                }
+
+                let tableHTML = '<table style="width:100%;border-collapse:collapse" id="aliasTable">'
+                    + '<thead><tr style="background:linear-gradient(135deg,#6a1b9a,#c44569);color:white">'
+                    + '<th style="padding:8px 6px;width:30px"></th>'
+                    + '<th style="padding:8px 10px;width:40px;text-align:left">#</th>'
+                    + '<th style="padding:8px 10px;text-align:left">Real Class Name</th>'
+                    + '<th style="padding:8px 10px;text-align:left">Code Name shown to Jury</th>'
+                    + '<th style="padding:8px 6px;width:70px">Order</th>'
+                    + '</tr></thead>'
+                    + '<tbody id="aliasTableBody"></tbody>'
+                    + '</table>';
+
+                container.innerHTML = tableHTML;
+                container.dataset.classes = JSON.stringify(orderedClasses);
+                const tbody = container.querySelector('#aliasTableBody');
+
+                orderedClasses.forEach((cls, i) => {
+                    const safeKey = cls.replace(/[.\[\]#$\/\s]/g, '_');
+                    const alias = existing[safeKey] || ('Class ' + String.fromCharCode(65 + i));
+                    tbody.innerHTML += buildRow(cls, safeKey, alias, i, orderedClasses.length);
+                });
+
+                attachDragEvents();
+
+            } catch(e) {
+                container.innerHTML = '<p style="color:red;font-size:13px">Error: ' + e.message + '</p>';
+            }
+        }
+
+        function moveClassRow(btn, dir) {
+            const row = btn.closest('tr');
+            const tbody = row.parentNode;
+            const rows = Array.from(tbody.querySelectorAll('tr[data-cls]'));
+            const idx = rows.indexOf(row);
+            const newIdx = idx + dir;
+            if (newIdx < 0 || newIdx >= rows.length) return;
+            if (dir === -1) tbody.insertBefore(row, rows[newIdx]);
+            else tbody.insertBefore(rows[newIdx], row);
+            // Renumber
+            Array.from(tbody.querySelectorAll('tr[data-cls]')).forEach((r, i) => {
+                const numCell = r.cells[1];
+                if (numCell) numCell.textContent = i + 1;
+                r.style.background = i%2===0?'#fff':'#f9f0ff';
+            });
+        }
+
+        function attachDragEvents() {
+            const tbody = document.getElementById('aliasTableBody');
+            if (!tbody) return;
+            let dragSrc = null;
+            tbody.querySelectorAll('tr[data-cls]').forEach(row => {
+                row.draggable = true;
+                row.addEventListener('dragstart', function() { dragSrc = this; this.style.opacity='0.5'; });
+                row.addEventListener('dragend', function() { this.style.opacity='1'; });
+                row.addEventListener('dragover', function(e) { e.preventDefault(); });
+                row.addEventListener('drop', function(e) {
+                    e.preventDefault();
+                    if (dragSrc && dragSrc !== this) {
+                        const rows = Array.from(tbody.querySelectorAll('tr[data-cls]'));
+                        const srcIdx = rows.indexOf(dragSrc);
+                        const tgtIdx = rows.indexOf(this);
+                        if (srcIdx < tgtIdx) tbody.insertBefore(dragSrc, this.nextSibling);
+                        else tbody.insertBefore(dragSrc, this);
+                        rows.forEach((r, i) => {
+                            r.cells[1].textContent = i + 1;
+                            r.style.background = i%2===0?'#fff':'#f9f0ff';
+                        });
+                    }
+                });
+            });
+        }
+
+        function getClassAliasesFromFields() {
+            const tbody = document.getElementById('aliasTableBody');
+            if (!tbody) return {};
+            const aliases = {};
+            tbody.querySelectorAll('tr[data-cls]').forEach(row => {
+                const inp = row.querySelector('input[data-safekey]');
+                if (inp) aliases[inp.dataset.safekey] = inp.value.trim() || inp.dataset.safekey;
+            });
+            return aliases;
+        }
+
+        function getClassOrderFromFields() {
+            const tbody = document.getElementById('aliasTableBody');
+            if (!tbody) return [];
+            return Array.from(tbody.querySelectorAll('tr[data-cls]')).map(r => r.dataset.cls);
+        }
+
+        // ============================================================
+        // MODIFIED: saveEventSetup — also saves classAliases
+        // ============================================================
+        const _origSaveEventSetup = window.saveEventSetup;
+
+        // ============================================================
+        // RENDER JURY SHEET WITH ALIASES (replace class names with code names)
+        // ============================================================
+        async function getAliasMap(event) {
+            try {
+                const snap = await db.ref('jurySetup/' + event + '/classAliases').once('value');
+                return snap.val() || {};
+            } catch(e) { return {}; }
+        }
+
+        function realToAlias(cls, aliasMap) {
+            const safeKey = cls.replace(/[.\[\]#$\/\s]/g, '_');
+            return aliasMap[safeKey] || cls;
+        }
+        function aliasToReal(alias, aliasMap) {
+            for (const [key, val] of Object.entries(aliasMap)) {
+                if (val === alias) return key; // safeKey
+            }
+            return alias;
+        }
+        // Build reverse map: safeKey → real class name from enrollment
+        window._juryAliasMap = {};
+        window._juryRealClasses = {}; // safeKey → real class name
+
+        // ============================================================
+        // LIVE JURY MONITOR (Super Admin)
+        // ============================================================
+        let _liveMonitorListeners = [];
+
+        async function startLiveJuryMonitor() {
+            // Stop old listeners
+            _liveMonitorListeners.forEach(off => off());
+            _liveMonitorListeners = [];
+
+            // Populate event dropdown if needed
+            const sel = document.getElementById('liveMonitorEvent');
+            if (sel && sel.options.length <= 1) {
+                const s = await db.ref('jurySetup').once('value');
+                if (s.exists()) s.forEach(child => {
+                    const o = document.createElement('option');
+                    o.value = child.key; o.textContent = child.key;
+                    sel.appendChild(o);
+                });
+            }
+
+            const event = sel ? sel.value : '';
+            const container = document.getElementById('liveJuryMonitorContainer');
+            if (!event) {
+                container.innerHTML = '<p style="color:#999;text-align:center;padding:30px">Select an event above.</p>';
+                return;
+            }
+
+            container.innerHTML = '<p style="color:#aaa;text-align:center;padding:20px">⏳ Loading...</p>';
+
+            try {
+                const [setupSnap, enrollSnap] = await Promise.all([
+                    db.ref('jurySetup/' + event).once('value'),
+                    db.ref('youthfest-enrollments').once('value')
+                ]);
+                const setup = setupSnap.val();
+                if (!setup || !setup.criteria) {
+                    container.innerHTML = '<p style="color:#999;text-align:center;padding:20px">No jury setup found for this event.</p>';
+                    return;
+                }
+                const aliasMap = setup.classAliases || {};
+                const criteria = setup.criteria;
+                // Get enrolled classes
+                const classes = [];
+                if (enrollSnap.exists()) {
+                    enrollSnap.forEach(c => {
+                        const e = c.val();
+                        if (e.event === event && e.classYear && !classes.includes(e.classYear)) classes.push(e.classYear);
+                    });
+                }
+
+                function renderMonitor(j1data, j2data) {
+                    const j1Name = setup.jury1Name || 'Jury 1';
+                    const j2Name = setup.jury2Name || 'Jury 2';
+                    let html = '<div style="margin-bottom:15px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">'
+                        + '<span style="background:#e3f2fd;color:#1565c0;padding:4px 12px;border-radius:20px;font-size:13px;font-weight:600">&#x1F535; ' + j1Name + '</span>'
+                        + '<span style="background:#fce4ec;color:#880e4f;padding:4px 12px;border-radius:20px;font-size:13px;font-weight:600">&#x1F534; ' + j2Name + '</span>'
+                        + '<span style="color:#888;font-size:12px">Live updates every time a jury saves marks</span>'
+                        + '</div>';
+                    html += '<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:13px">';
+                    html += '<thead><tr style="background:linear-gradient(135deg,#6a1b9a,#c44569);color:white">';
+                    html += '<th style="padding:10px;text-align:left">Class</th><th style="padding:10px;text-align:left">Code Name</th>';
+                    criteria.forEach(function(c) { html += '<th style="padding:10px;text-align:center">' + c + '</th>'; });
+                    html += '<th style="padding:10px;text-align:center">J1 Total</th>'
+                         + '<th style="padding:10px;text-align:center">J2 Total</th>'
+                         + '<th style="padding:10px;text-align:center;background:rgba(255,215,0,0.3)">Combined</th>'
+                         + '</tr></thead><tbody>';
+                    classes.forEach(function(cls, idx) {
+                        const safeKey = cls.replace(/[.\[\]#$\/\s]/g, '_');
+                        const alias = aliasMap[safeKey] || cls;
+                        const j1cls = j1data ? (j1data[safeKey] || {}) : {};
+                        const j2cls = j2data ? (j2data[safeKey] || {}) : {};
+                        const j1marks = j1cls.marks || [];
+                        const j2marks = j2cls.marks || [];
+                        const j1total = j1marks.reduce(function(s,v){ return s+(parseFloat(v)||0); }, 0);
+                        const j2total = j2marks.reduce(function(s,v){ return s+(parseFloat(v)||0); }, 0);
+                        const combined = j1total + j2total;
+                        const bg = idx % 2 === 0 ? '#fff' : '#f9f0ff';
+                        html += '<tr style="background:' + bg + ';border-bottom:1px solid #e0e0e0">';
+                        html += '<td style="padding:8px 10px;font-weight:600">' + cls + '</td>';
+                        html += '<td style="padding:8px 10px;color:#6a1b9a">' + alias + '</td>';
+                        criteria.forEach(function(c, i) {
+                            const v1 = j1marks[i] !== undefined ? j1marks[i] : '';
+                            const v2 = j2marks[i] !== undefined ? j2marks[i] : '';
+                            html += '<td style="padding:8px;text-align:center">'
+                                + '<div style="font-size:11px;color:#1565c0">J1: <input type="number" value="' + v1 + '" min="0" max="10" step="0.5"'
+                                + ' onchange="adminEditMark(\'' + event + '\',1,\'' + safeKey + '\',' + i + ',this.value)"'
+                                + ' style="width:45px;padding:2px 4px;border:1.5px solid #90caf9;border-radius:4px;font-size:11px"></div>'
+                                + '<div style="font-size:11px;color:#880e4f;margin-top:3px">J2: <input type="number" value="' + v2 + '" min="0" max="10" step="0.5"'
+                                + ' onchange="adminEditMark(\'' + event + '\',2,\'' + safeKey + '\',' + i + ',this.value)"'
+                                + ' style="width:45px;padding:2px 4px;border:1.5px solid #f48fb1;border-radius:4px;font-size:11px"></div>'
+                                + '</td>';
+                        });
+                        html += '<td style="padding:8px;text-align:center;font-weight:700;color:#1565c0">' + j1total.toFixed(1) + '</td>';
+                        html += '<td style="padding:8px;text-align:center;font-weight:700;color:#880e4f">' + j2total.toFixed(1) + '</td>';
+                        html += '<td style="padding:8px;text-align:center;font-weight:800;color:#4a148c;background:rgba(255,215,0,0.15)">' + combined.toFixed(1) + '</td>';
+                        html += '</tr>';
+                    });
+                    html += '</tbody></table></div>';
+                    container.innerHTML = html;
+                }
+
+                // Subscribe to live updates
+                let j1data = null, j2data = null;
+                const ref1 = db.ref('juryMarks/' + event + '/jury1');
+                const ref2 = db.ref('juryMarks/' + event + '/jury2');
+                const h1 = ref1.on('value', snap => { j1data = snap.val(); renderMonitor(j1data, j2data); });
+                const h2 = ref2.on('value', snap => { j2data = snap.val(); renderMonitor(j1data, j2data); });
+                _liveMonitorListeners.push(() => ref1.off('value', h1));
+                _liveMonitorListeners.push(() => ref2.off('value', h2));
+            } catch(e) {
+                container.innerHTML = '<p style="color:red;text-align:center;padding:20px">Error: ' + e.message + '</p>';
+            }
+        }
+
+        async function adminEditMark(event, juryNum, safeKey, critIndex, value) {
+            try {
+                await db.ref(`juryMarks/\${event}/jury\${juryNum}/\${safeKey}/marks/\${critIndex}`).set(parseFloat(value) || 0);
+            } catch(e) { alert('Save error: ' + e.message); }
+        }
+
+        // ============================================================
+        // POINT 3: Show Enrollments — password protected
+        // ============================================================
+        function showEnrollmentDebugProtected() {
+            const pwd = prompt('Enter admin password to view enrollment data:');
+            if (!pwd) return;
+            db.ref('jurySetup').once('value').then(snap => {
+                // Check any jury password as verification
+                let valid = false;
+                if (snap.exists()) {
+                    snap.forEach(child => {
+                        const s = child.val();
+                        if (s.jury1Password === pwd || s.jury2Password === pwd) valid = true;
+                    });
+                }
+                // Also allow super admin password
+                if (isSuperAdmin) valid = true;
+                if (valid) {
+                    showEnrollmentDebug();
+                } else {
+                    alert('❌ Incorrect password.');
+                }
             });
         }
 
@@ -11157,7 +11734,7 @@ Davan Institute Team`;
 
                         <div style="background:#f3e5ff;border-radius:10px;padding:15px;border-top:4px solid #6a1b9a" data-hwp-card="2">
                             <div style="display:flex;align-items:center;gap:8px;margin-bottom:7px"><span style="font-size:1.3em">🏆</span><strong id="hwpCard2Title" style="color:#4a148c;font-size:0.9em">Event Results</strong></div>
-                            <p id="hwpCard2Body" style="margin:0;color:#555;font-size:12.5px;line-height:1.6">When jury results are published, the <strong>1st place class</strong> gets winner pts and <strong>2nd place</strong> gets runner-up pts — automatically calculated.</p>
+                            <p id="hwpCard2Body" style="margin:0;color:#555;font-size:12.5px;line-height:1.6">When jury results are published, the <strong>1st place class</strong> gets winner pts and <strong>2nd place</strong> gets runner-up pts. For individual &amp; multi-team events, each class is represented by their <strong>best performer or best team</strong>.</p>
                             <div class="hwpCardEditArea" style="display:none;margin-top:8px">
                                 <input type="text" class="hwpCardTitleInput" data-idx="2" placeholder="Card title" style="width:100%;padding:5px 8px;border:1px solid #6a1b9a;border-radius:4px;font-size:12px;margin-bottom:5px">
                                 <textarea class="hwpCardBodyInput" data-idx="2" rows="3" placeholder="Card body text" style="width:100%;padding:5px 8px;border:1px solid #6a1b9a;border-radius:4px;font-size:12px;resize:vertical"></textarea>
@@ -11200,6 +11777,7 @@ Davan Institute Team`;
                             <ul id="hwpNotesList" style="margin:0;padding-left:16px;color:#555;font-size:13px;line-height:1.9">
                                 <li>Only the <strong>Super Admin</strong> can publish or hide the leaderboard.</li>
                                 <li>All point calculations are <strong>fully automatic</strong> — no manual tampering.</li>
+                                <li>For individual events (e.g. Hand Writing, Pod Casting), each class is represented by their <strong>best-scoring student</strong>. For multi-team events (e.g. Vlog), each class is represented by their <strong>best-scoring team</strong>.</li>
                                 <li>The leaderboard refreshes every <strong>60 seconds</strong> once live.</li>
                                 <li>Rankings may be updated progressively as more results are published.</li>
                             </ul>
@@ -11233,7 +11811,7 @@ Davan Institute Team`;
                 </span>
                 <span class="lb-legend-item">
                     <span class="lb-legend-dot" style="background:#28a745"></span>
-                    Quiz: pts/correct answer
+                    Quiz: winner/runner-up bonus + participation rate
                 </span>
                 <span class="lb-legend-item">
                     <span class="lb-legend-dot" style="background:#6a1b9a"></span>
@@ -11498,26 +12076,73 @@ Davan Institute Team`;
             }
 
             // ── 3. Published Youthfest Event Results ──────────────
+            // Class-based events: winner class = highest total → gets winnerPts
+            // Individual events:  jury marks rows are CLASS__pN keys; we group by origclass,
+            //                     take the best score per class, then rank classes by that best score.
+            //                     Winner class + runner-up class get points (same class can get both).
             const setupSnap = await getDb().ref('jurySetup').once('value');
             if (setupSnap.exists()) {
                 for (const [evName, setup] of Object.entries(setupSnap.val())) {
                     if (!setup.resultsPublished) continue;
                     const mSnap = await getDb().ref('juryMarks/' + evName).once('value');
                     if (!mSnap.exists()) continue;
+
+                    const isIndividual  = (setup.eventType === 'individual');
+                    const isMultiteam   = (setup.eventType === 'multiteam');
                     const j1 = mSnap.val().jury1 || {}, j2 = mSnap.val().jury2 || {};
                     const allK = new Set([...Object.keys(j1), ...Object.keys(j2)]);
-                    const evRes = [];
-                    allK.forEach(sk => {
-                        const d1=j1[sk], d2=j2[sk];
-                        const cls=(d1&&d1.originalClassName)||(d2&&d2.originalClassName)||sk;
-                        let t1=0,t2=0;
-                        if(d1&&d1.marks)(Array.isArray(d1.marks)?d1.marks:Object.values(d1.marks)).forEach(m=>t1+=(m||0));
-                        if(d2&&d2.marks)(Array.isArray(d2.marks)?d2.marks:Object.values(d2.marks)).forEach(m=>t2+=(m||0));
-                        evRes.push({cls,avg:(t1+t2)/2});
-                    });
-                    evRes.sort((a,b)=>b.avg-a.avg);
-                    if(evRes[0]&&resultPts[evRes[0].cls]!==undefined) resultPts[evRes[0].cls]+=cfg.winnerPts;
-                    if(evRes[1]&&resultPts[evRes[1].cls]!==undefined) resultPts[evRes[1].cls]+=cfg.runnerUpPts;
+
+                    if (isIndividual || isMultiteam) {
+                        // Individual: rows are CLASS__pN  |  Multi-team: rows are CLASS__tN
+                        // Both follow the same rule: group rows by their source class,
+                        // take the best average score per class, rank classes by that best score.
+                        const bestPerClass = {};
+                        allK.forEach(sk => {
+                            const d1 = j1[sk], d2 = j2[sk];
+                            // Resolve original class from stored originalClassName or parse key prefix
+                            let cls = (d1 && d1.originalClassName) || (d2 && d2.originalClassName) || '';
+                            if (!cls) {
+                                // Key format: SANITISED_CLASS__pN  or  SANITISED_CLASS__tN
+                                const match = sk.match(/^(.+?)__[pt]\d+$/);
+                                if (match) {
+                                    const sanitisedPrefix = match[1];
+                                    cls = LB_CLASSES.find(c => c.replace(/[.\[\]#$\/\s]/g,'_') === sanitisedPrefix) || sanitisedPrefix;
+                                } else {
+                                    cls = sk;
+                                }
+                            }
+                            let t1=0, t2=0;
+                            if(d1&&d1.marks)(Array.isArray(d1.marks)?d1.marks:Object.values(d1.marks)).forEach(m=>t1+=(m||0));
+                            if(d2&&d2.marks)(Array.isArray(d2.marks)?d2.marks:Object.values(d2.marks)).forEach(m=>t2+=(m||0));
+                            const avg = (t1 + t2) / 2;
+                            if (bestPerClass[cls] === undefined || avg > bestPerClass[cls]) {
+                                bestPerClass[cls] = avg;
+                            }
+                        });
+                        // Rank classes by their best performer / best team
+                        const evRes = Object.entries(bestPerClass).map(([cls, best]) => ({cls, avg: best}));
+                        evRes.sort((a,b) => b.avg - a.avg);
+                        if (evRes[0] && resultPts[evRes[0].cls] !== undefined) resultPts[evRes[0].cls] += cfg.winnerPts;
+                        if (evRes[1] && resultPts[evRes[1].cls] !== undefined) resultPts[evRes[1].cls] += cfg.runnerUpPts;
+                        // Edge case: top 2 both from same class → that class gets both points
+                        if (evRes[0] && evRes[1] && evRes[0].cls === evRes[1].cls && resultPts[evRes[0].cls] !== undefined) {
+                            resultPts[evRes[0].cls] += cfg.runnerUpPts;
+                        }
+                    } else {
+                        // Class-based: original logic
+                        const evRes = [];
+                        allK.forEach(sk => {
+                            const d1=j1[sk], d2=j2[sk];
+                            const cls=(d1&&d1.originalClassName)||(d2&&d2.originalClassName)||sk;
+                            let t1=0,t2=0;
+                            if(d1&&d1.marks)(Array.isArray(d1.marks)?d1.marks:Object.values(d1.marks)).forEach(m=>t1+=(m||0));
+                            if(d2&&d2.marks)(Array.isArray(d2.marks)?d2.marks:Object.values(d2.marks)).forEach(m=>t2+=(m||0));
+                            evRes.push({cls,avg:(t1+t2)/2});
+                        });
+                        evRes.sort((a,b)=>b.avg-a.avg);
+                        if(evRes[0]&&resultPts[evRes[0].cls]!==undefined) resultPts[evRes[0].cls]+=cfg.winnerPts;
+                        if(evRes[1]&&resultPts[evRes[1].cls]!==undefined) resultPts[evRes[1].cls]+=cfg.runnerUpPts;
+                    }
                 }
             }
 
@@ -11634,7 +12259,7 @@ Davan Institute Team`;
                 <td><span class="lb-class-chip">${entry.cls}</span></td>
                 <td><span class="lb-score-tag lb-score-yf">🎤 ${entry.yfPts}</span></td>
                 <td><span class="lb-score-tag lb-score-quiz">🧠 ${entry.quizPts}</span></td>
-                <td>${resBadge}${custBadge||(entry.resultPts===0&&entry.customPts===0?'<span style="color:#ddd">—</span>':'')}</td>
+                <td>${resBadge}${custBadge}${(entry.resultPts===0&&entry.customPts===0)?'<span style="color:#ddd">—</span>':''}</td>
                 <td>${shBadge}</td>
                 <td><span class="lb-pts-total">${entry.total}</span> <span class="lb-pts-event">pts</span></td>
                 <td><div class="lb-bar-wrap"><div class="lb-bar-fill" style="width:${barPct}%"></div></div></td>
@@ -11831,21 +12456,48 @@ Davan Institute Team`;
                     if (mSnap.exists()) {
                         const j1=mSnap.val().jury1||{}, j2=mSnap.val().jury2||{};
                         const allK=new Set([...Object.keys(j1),...Object.keys(j2)]);
-                        const evR=[];
-                        allK.forEach(sk=>{
-                            const d1=j1[sk],d2=j2[sk];
-                            const cls=(d1&&d1.originalClassName)||(d2&&d2.originalClassName)||sk;
-                            let t1=0,t2=0;
-                            if(d1&&d1.marks)(Array.isArray(d1.marks)?d1.marks:Object.values(d1.marks)).forEach(m=>t1+=(m||0));
-                            if(d2&&d2.marks)(Array.isArray(d2.marks)?d2.marks:Object.values(d2.marks)).forEach(m=>t2+=(m||0));
-                            evR.push({cls,avg:(t1+t2)/2});
-                        });
-                        evR.sort((a,b)=>b.avg-a.avg);
-                        if(evR[0]) winner=`<strong>${evR[0].cls}</strong> <span style="color:#c44569">+${cfg.winnerPts}pts</span>`;
-                        if(evR[1]) runnerUp=`<strong>${evR[1].cls}</strong> <span style="color:#666">+${cfg.runnerUpPts}pts</span>`;
+                        const isIndividualOrMulti = (setup.eventType === 'individual' || setup.eventType === 'multiteam');
+
+                        if (isIndividualOrMulti) {
+                            // Best score per class
+                            const bestPerClass = {};
+                            allK.forEach(sk => {
+                                const d1=j1[sk], d2=j2[sk];
+                                let cls = (d1&&d1.originalClassName)||(d2&&d2.originalClassName)||'';
+                                if (!cls) {
+                                    const m = sk.match(/^(.+?)__[pt]\d+$/);
+                                    if (m) cls = LB_CLASSES.find(c=>c.replace(/[.\[\]#$\/\s]/g,'_')===m[1]) || m[1];
+                                    else cls = sk;
+                                }
+                                let t1=0,t2=0;
+                                if(d1&&d1.marks)(Array.isArray(d1.marks)?d1.marks:Object.values(d1.marks)).forEach(m=>t1+=(m||0));
+                                if(d2&&d2.marks)(Array.isArray(d2.marks)?d2.marks:Object.values(d2.marks)).forEach(m=>t2+=(m||0));
+                                const avg=(t1+t2)/2;
+                                if (bestPerClass[cls]===undefined || avg>bestPerClass[cls]) bestPerClass[cls]=avg;
+                            });
+                            const evR=Object.entries(bestPerClass).map(([c,a])=>({cls:c,avg:a})).sort((a,b)=>b.avg-a.avg);
+                            if(evR[0]) winner=`<strong>${evR[0].cls}</strong> <span style="color:#c44569">+${cfg.winnerPts}pts</span>`;
+                            if(evR[1]) runnerUp=`<strong>${evR[1].cls}</strong> <span style="color:#666">+${cfg.runnerUpPts}pts</span>`;
+                        } else {
+                            const evR=[];
+                            allK.forEach(sk=>{
+                                const d1=j1[sk],d2=j2[sk];
+                                const cls=(d1&&d1.originalClassName)||(d2&&d2.originalClassName)||sk;
+                                let t1=0,t2=0;
+                                if(d1&&d1.marks)(Array.isArray(d1.marks)?d1.marks:Object.values(d1.marks)).forEach(m=>t1+=(m||0));
+                                if(d2&&d2.marks)(Array.isArray(d2.marks)?d2.marks:Object.values(d2.marks)).forEach(m=>t2+=(m||0));
+                                evR.push({cls,avg:(t1+t2)/2});
+                            });
+                            evR.sort((a,b)=>b.avg-a.avg);
+                            if(evR[0]) winner=`<strong>${evR[0].cls}</strong> <span style="color:#c44569">+${cfg.winnerPts}pts</span>`;
+                            if(evR[1]) runnerUp=`<strong>${evR[1].cls}</strong> <span style="color:#666">+${cfg.runnerUpPts}pts</span>`;
+                        }
                     }
                 }
-                html+=`<tr><td><strong>${evName}</strong></td><td style="color:${setup.resultsPublished?'#155724':'#856404'}">${pub}</td><td>${winner}</td><td>${runnerUp}</td></tr>`;
+                const typeLabel = setup.eventType === 'individual' ? ' <span style="font-size:10px;background:#e3f2fd;color:#1565c0;padding:2px 6px;border-radius:4px">Individual</span>' 
+                                : setup.eventType === 'multiteam'  ? ' <span style="font-size:10px;background:#fff3e0;color:#e65100;padding:2px 6px;border-radius:4px">Multi-Team</span>' 
+                                : '';
+                html+=`<tr><td><strong>${evName}</strong>${typeLabel}</td><td style="color:${setup.resultsPublished?'#155724':'#856404'}">${pub}</td><td>${winner}</td><td>${runnerUp}</td></tr>`;
             }
             html+='</tbody></table></div>';
             container.innerHTML=html;
@@ -11984,18 +12636,42 @@ Davan Institute Team`;
                     if (!mSnap.exists()) continue;
                     const j1=mSnap.val().jury1||{}, j2=mSnap.val().jury2||{};
                     const allK=new Set([...Object.keys(j1),...Object.keys(j2)]);
-                    const evR=[];
-                    allK.forEach(sk => {
-                        const d1=j1[sk], d2=j2[sk];
-                        const cls=(d1&&d1.originalClassName)||(d2&&d2.originalClassName)||sk;
-                        let t1=0,t2=0;
-                        if(d1&&d1.marks)(Array.isArray(d1.marks)?d1.marks:Object.values(d1.marks)).forEach(m=>t1+=(m||0));
-                        if(d2&&d2.marks)(Array.isArray(d2.marks)?d2.marks:Object.values(d2.marks)).forEach(m=>t2+=(m||0));
-                        evR.push({cls, avg:(t1+t2)/2});
-                    });
-                    evR.sort((a,b) => b.avg-a.avg);
-                    if (evR[0] && resP[evR[0].cls] !== undefined) resP[evR[0].cls] += cfg.winnerPts;
-                    if (evR[1] && resP[evR[1].cls] !== undefined) resP[evR[1].cls] += cfg.runnerUpPts;
+                    const isIndividualOrMulti = (setup.eventType === 'individual' || setup.eventType === 'multiteam');
+
+                    if (isIndividualOrMulti) {
+                        const bestPerClass = {};
+                        allK.forEach(sk => {
+                            const d1=j1[sk], d2=j2[sk];
+                            let cls=(d1&&d1.originalClassName)||(d2&&d2.originalClassName)||'';
+                            if (!cls) {
+                                const m=sk.match(/^(.+?)__[pt]\d+$/);
+                                if(m) cls=LB_CLASSES.find(c=>c.replace(/[.\[\]#$\/\s]/g,'_')===m[1])||m[1];
+                                else cls=sk;
+                            }
+                            let t1=0,t2=0;
+                            if(d1&&d1.marks)(Array.isArray(d1.marks)?d1.marks:Object.values(d1.marks)).forEach(m=>t1+=(m||0));
+                            if(d2&&d2.marks)(Array.isArray(d2.marks)?d2.marks:Object.values(d2.marks)).forEach(m=>t2+=(m||0));
+                            const avg=(t1+t2)/2;
+                            if(bestPerClass[cls]===undefined||avg>bestPerClass[cls]) bestPerClass[cls]=avg;
+                        });
+                        const evR=Object.entries(bestPerClass).map(([c,a])=>({cls:c,avg:a})).sort((a,b)=>b.avg-a.avg);
+                        if(evR[0]&&resP[evR[0].cls]!==undefined) resP[evR[0].cls]+=cfg.winnerPts;
+                        if(evR[1]&&resP[evR[1].cls]!==undefined) resP[evR[1].cls]+=cfg.runnerUpPts;
+                        if(evR[0]&&evR[1]&&evR[0].cls===evR[1].cls&&resP[evR[0].cls]!==undefined) resP[evR[0].cls]+=cfg.runnerUpPts;
+                    } else {
+                        const evR=[];
+                        allK.forEach(sk => {
+                            const d1=j1[sk], d2=j2[sk];
+                            const cls=(d1&&d1.originalClassName)||(d2&&d2.originalClassName)||sk;
+                            let t1=0,t2=0;
+                            if(d1&&d1.marks)(Array.isArray(d1.marks)?d1.marks:Object.values(d1.marks)).forEach(m=>t1+=(m||0));
+                            if(d2&&d2.marks)(Array.isArray(d2.marks)?d2.marks:Object.values(d2.marks)).forEach(m=>t2+=(m||0));
+                            evR.push({cls, avg:(t1+t2)/2});
+                        });
+                        evR.sort((a,b) => b.avg-a.avg);
+                        if (evR[0] && resP[evR[0].cls] !== undefined) resP[evR[0].cls] += cfg.winnerPts;
+                        if (evR[1] && resP[evR[1].cls] !== undefined) resP[evR[1].cls] += cfg.runnerUpPts;
+                    }
                 }
             }
 
@@ -12116,12 +12792,12 @@ Davan Institute Team`;
         cards: [
             { title: 'Youthfest Registration', body: 'Each class earns points for <strong>every event they enrol in</strong>. More participation = more points for your class.' },
             { title: 'Quiz Competition',        body: 'Per published quiz day: <strong>flat bonus</strong> to the winner &amp; runner-up class, plus a <strong>participation rate bonus</strong> — fair across all class sizes.' },
-            { title: 'Event Results',           body: 'When jury results are published, the <strong>1st place class</strong> gets winner pts and <strong>2nd place</strong> gets runner-up pts — automatically calculated.' },
+            { title: 'Event Results',           body: 'When jury results are published, the <strong>1st place class</strong> gets winner pts and <strong>2nd place</strong> gets runner-up pts. For individual &amp; multi-team events, each class is represented by their <strong>best performer or best team</strong>.' },
             { title: 'Scavenger Hunt',          body: 'Points are awarded for <strong>approved task submissions</strong> in the Scavenger Hunt. The more tasks a student completes and gets approved, the more points their class earns.' },
             { title: 'Special / Custom Criteria', body: 'The Super Admin may add bonus points for criteria like discipline, attendance, best decorated class, or other special achievements.' }
         ],
         steps: [
-            { title: 'Complete Events & Jury Scoring',  body: 'All events conducted. Jury 1 & Jury 2 fill and submit marks.' },
+            { title: 'Complete Events & Jury Scoring',  body: 'All events conducted. Jury 1 & Jury 2 fill and submit marks for every event.' },
             { title: 'Publish Quiz Results',            body: 'Daily quiz winners & runners-up declared. Only published days count.' },
             { title: 'Verify Scoring Config',           body: 'Points per event, quiz pts, winner/runner-up pts confirmed & saved.' },
             { title: 'Set Class Strengths',             body: 'Total students per class entered to ensure fair participation scoring.' },
@@ -12131,6 +12807,7 @@ Davan Institute Team`;
         notes: [
             'Only the <strong>Super Admin</strong> can publish or hide the leaderboard.',
             'All point calculations are <strong>fully automatic</strong> — no manual tampering.',
+            'For individual events (e.g. Hand Writing, Pod Casting), each class is represented by their <strong>best-scoring student</strong>. For multi-team events (e.g. Vlog), each class is represented by their <strong>best-scoring team</strong>.',
             'The leaderboard refreshes every <strong>60 seconds</strong> once live.',
             'Rankings may be updated progressively as more results are published during the fest period.'
         ]
@@ -16040,7 +16717,7 @@ Proceed?`)) return;
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;">
-                <strong>Version:</strong> 3.2 Scavenger Hunt Event bug fix  | <strong>Last Updated:</strong> February 20, 2026 (01.45Pm)
+                <strong>Version:</strong> 3.4 Leaderboard Logic Audit & Fixes  | <strong>Last Updated:</strong> February 20, 2026
             </p>
             <!-- ============================================ -->
             
