@@ -7578,13 +7578,7 @@ Davan Institute Team`;
         // Check Quiz Status
         async function checkQuizTodayStatus() {
             const today = await getQuizTodayServer();
-            console.log('╔═══════════════════════════════════════════════════════════╗');
-            console.log('║          INTENSIVE DEBUG: checkQuizTodayStatus            ║');
-            console.log('╚═══════════════════════════════════════════════════════════╝');
-            console.log('📅 Today (calculated):', today);
-            console.log('📅 Format check: Should be YYYY-MM-DD like 2026-02-17');
-            console.log('🕐 Current system time:', new Date().toISOString());
-            console.log('🕐 Current local time:', new Date().toString());
+            // Debug logs removed to prevent answer exposure
             
             // Reset all sections first
             document.getElementById('quizStartSection').style.display = 'none';
@@ -7592,96 +7586,19 @@ Davan Institute Team`;
             document.getElementById('quizResultsSection').style.display = 'none';
             
             try {
-                // INTENSIVE CHECK: What dates exist in Firebase
-                console.log('');
-                console.log('🔍 STEP 1: Checking ALL quiz dates in Firebase...');
-                const allQuestionsSnap = await db.ref('quizQuestions').once('value');
-                if (allQuestionsSnap.exists()) {
-                    const allData = allQuestionsSnap.val();
-                    const dates = Object.keys(allData);
-                    console.log('✅ Found quiz dates in Firebase:', dates);
-                    console.log('📊 Total quiz dates found:', dates.length);
-                    
-                    // Check each date and its structure
-                    dates.forEach(date => {
-                        const data = allData[date];
-                        console.log(`   📅 Date: ${date}`);
-                        console.log(`      - Has q1: ${!!data.q1}`);
-                        console.log(`      - Has q2: ${!!data.q2}`);
-                        if (data.q1) console.log(`      - Q1 text: "${data.q1.text.substring(0, 40)}..."`);
-                        if (data.q2) console.log(`      - Q2 text: "${data.q2.text.substring(0, 40)}..."`);
-                    });
-                    
-                    // Check if today's date exists in the list
-                    if (dates.includes(today)) {
-                        console.log(`✅ TODAY'S DATE (${today}) EXISTS IN FIREBASE!`);
-                    } else {
-                        console.log(`❌ TODAY'S DATE (${today}) NOT FOUND IN FIREBASE!`);
-                        console.log(`   Available dates: ${dates.join(', ')}`);
-                    }
-                } else {
-                    console.log('❌ NO quiz questions found in Firebase at all!');
-                    console.log('   Database path checked: quizQuestions/');
-                }
-                
-                console.log('');
-                console.log(`🔍 STEP 2: Checking specifically for today (${today})...`);
+                // Check if today's quiz questions exist
                 const qRef = db.ref(`quizQuestions/${today}`);
-                console.log('   Firebase path:', `quizQuestions/${today}`);
                 const qSnap = await qRef.once('value');
                 
-                console.log('   Query result - exists():', qSnap.exists());
-                
-                if (qSnap.exists()) {
-                    const questionData = qSnap.val();
-                    console.log('✅ QUESTIONS FOUND FOR TODAY!');
-                    console.log('   Full data structure:', JSON.stringify(questionData, null, 2));
-                    console.log('   Has q1:', !!questionData.q1);
-                    console.log('   Has q2:', !!questionData.q2);
-                    if (questionData.q1) {
-                        console.log('   Q1 text:', questionData.q1.text);
-                        console.log('   Q1 options:', questionData.q1.options);
-                        console.log('   Q1 correct answer:', questionData.q1.correct);
-                    }
-                    if (questionData.q2) {
-                        console.log('   Q2 text:', questionData.q2.text);
-                        console.log('   Q2 options:', questionData.q2.options);
-                        console.log('   Q2 correct answer:', questionData.q2.correct);
-                    }
-                } else {
-                    console.log('❌ NO QUESTIONS FOUND FOR TODAY');
-                }
-                
                 if (!qSnap.exists()) {
-                    console.log('');
-                    console.log('⚠️  FINAL DECISION: Showing "not available" message');
-                    console.log('   Reason: No questions exist for today\'s date');
                     document.getElementById('quizStatus').innerHTML = '<div style="background:#fff3cd;padding:15px;border-radius:8px"><p style="margin:0;color:#856404">⏳ Today\'s quiz not yet available. Check back later!</p></div>';
-                    console.log('╔═══════════════════════════════════════════════════════════╗');
-                    console.log('║                    DEBUG END (EARLY EXIT)                 ║');
-                    console.log('╚═══════════════════════════════════════════════════════════╝');
                     return;
                 }
                 
-                // Quiz questions exist - students can take the quiz!
-                console.log('');
-                console.log('🔍 STEP 3: Quiz questions exist! Checking submission status...');
-                console.log('   Current user:', quizCurrentUser);
-                console.log('   User email:', quizCurrentUser ? quizCurrentUser.email : 'NULL/UNDEFINED');
-                console.log('   User name:', quizCurrentUser ? quizCurrentUser.name : 'NULL/UNDEFINED');
-                
-                if (!quizCurrentUser || !quizCurrentUser.email) {
-                    console.log('❌ ERROR: User object or email is missing!');
-                    console.log('   This should not happen - user must be logged in to reach here');
-                }
+                if (!quizCurrentUser || !quizCurrentUser.email) return;
                 
                 const subRef = db.ref(`quizSubmissions/${today}`);
-                console.log('   Checking submissions at path:', `quizSubmissions/${today}`);
-                console.log('   Querying by studentEmail:', quizCurrentUser.email);
-                
                 const subSnap = await subRef.orderByChild('studentEmail').equalTo(quizCurrentUser.email).once('value');
-                
-                console.log('   Submission exists:', subSnap.exists());
                 
                 let studentAlreadySubmitted = false;
                 let studentSubmission = null;
@@ -7696,8 +7613,6 @@ Davan Institute Team`;
                 }
                 
                 if (studentAlreadySubmitted) {
-                    console.log('✅ Student HAS submitted - showing completed section');
-                    console.log('   Submission data:', JSON.stringify(studentSubmission, null, 2));
                     
                     document.getElementById('quizCompletedSection').style.display = 'block';
                     document.getElementById('quizStatus').innerHTML = '<div style="background:#d1ecf1;padding:15px;border-radius:8px"><p style="margin:0;color:#0c5460">✅ You have completed today\'s quiz!</p></div>';
@@ -7730,7 +7645,7 @@ Davan Institute Team`;
                     
                     if (resSnap.exists()) {
                         const results = resSnap.val();
-                        console.log('   Results data:', JSON.stringify(results, null, 2));
+
                         
                         let html = '<div style="background:#f8f9fa;padding:20px;border-radius:10px">';
                         html += `<p><strong>Your Score:</strong> ${studentSubmission.score}/2</p>`;
@@ -7747,33 +7662,14 @@ Davan Institute Team`;
                         html += '</div>';
                         document.getElementById('quizStudentResults').innerHTML = html;
                         document.getElementById('quizResultsSection').style.display = 'block';
-                    } else {
-                        console.log('   No results published yet');
                     }
                 } else {
-                    console.log('✅ Student has NOT submitted yet - SHOWING QUIZ!');
                     document.getElementById('quizStatus').innerHTML = '<div style="background:#d4edda;padding:15px;border-radius:8px"><p style="margin:0;color:#155724"><strong>✅ Ready!</strong> Today\'s quiz is available. Click below to start.</p></div>';
                     document.getElementById('quizStartSection').style.display = 'block';
-                    console.log('✅ QUIZ SHOULD NOW BE VISIBLE TO USER!');
                 }
-                
-                console.log('');
-                console.log('╔═══════════════════════════════════════════════════════════╗');
-                console.log('║                    DEBUG END (SUCCESS)                    ║');
-                console.log('╚═══════════════════════════════════════════════════════════╝');
             } catch (err) {
-                console.log('');
-                console.log('╔═══════════════════════════════════════════════════════════╗');
-                console.log('║                   ERROR OCCURRED!!!                       ║');
-                console.log('╚═══════════════════════════════════════════════════════════╝');
-                console.error('❌ Status check error:', err);
-                console.error('❌ Error message:', err.message);
-                console.error('❌ Error stack:', err.stack);
-                console.error('❌ Error name:', err.name);
+                console.error('Status check error:', err);
                 document.getElementById('quizStatus').innerHTML = '<div style="background:#f8d7da;padding:15px;border-radius:8px"><p style="margin:0;color:#721c24">❌ Error checking quiz status. Please refresh the page.</p></div>';
-                console.log('╔═══════════════════════════════════════════════════════════╗');
-                console.log('║                    DEBUG END (ERROR)                      ║');
-                console.log('╚═══════════════════════════════════════════════════════════╝');
             }
         }
         
@@ -8033,9 +7929,8 @@ Davan Institute Team`;
                 <div class="quiz-success-content">
                     <div class="success-icon">🎉</div>
                     <h2>Quiz Submitted!</h2>
-                    <p style="font-size:1.5em;color:#28a745;font-weight:bold">Your Score: ${score}/2</p>
-                    <p style="margin-top:15px">Results will be announced soon!</p>
-                    <p style="color:#999;font-size:0.9em;margin-top:10px">Good luck! 🍀</p>
+                    <p style="font-size:1.1em;color:#28a745;font-weight:bold;margin-top:10px">Your response has been recorded successfully!</p>
+                    <p style="margin-top:15px;color:#555">Results will be announced soon. Good luck! 🍀</p>
                 </div>
             `;
             document.body.appendChild(modal);
@@ -9357,42 +9252,47 @@ Davan Institute Team`;
 
         async function populateQsDateFilter() {
             try {
-                // Read from quizQuestions so ALL dates with questions appear,
-                // regardless of whether any student submitted on that date
-                const snap = await db.ref('quizQuestions').once('value');
-                const sel  = document.getElementById('qsDateFilter');
-                if (!sel) return;
-                const cur = sel.value;
+                // Read from BOTH quizQuestions AND quizSubmissions so all dates appear
+                const [questSnap, subSnap] = await Promise.all([
+                    db.ref('quizQuestions').once('value'),
+                    db.ref('quizSubmissions').once('value')
+                ]);
                 const today = getQuizToday();
-                const dates = [];
-                if (snap.exists()) snap.forEach(d => dates.push(d.key));
-                // Always include today even if no questions added yet
+                const datesSet = new Set();
+                if (questSnap.exists()) questSnap.forEach(d => datesSet.add(d.key));
+                // Use Object.keys on the raw value to get ALL child keys from quizSubmissions
+                if (subSnap.exists()) {
+                    const subVal = subSnap.val();
+                    if (subVal && typeof subVal === 'object') {
+                        Object.keys(subVal).forEach(k => datesSet.add(k));
+                    }
+                }
+                const dates = Array.from(datesSet);
+                // Always include today even if no questions/submissions yet
                 if (!dates.includes(today)) dates.push(today);
                 dates.sort((a,b) => b.localeCompare(a));
-                sel.innerHTML = '<option value="">— Select Date —</option>';
-                dates.forEach(d => {
-                    const o = document.createElement('option');
-                    o.value = d;
-                    const label = new Date(d + 'T00:00:00').toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
-                    o.textContent = d === today ? label + ' (Today)' : label;
-                    if (d === cur || (!cur && d === today)) o.selected = true;
-                    sel.appendChild(o);
-                });
-                // Also populate CR date filter
-                const crSel = document.getElementById('crQsDateFilter');
-                if (crSel) {
-                    const crCur = crSel.value;
-                    crSel.innerHTML = '<option value="">— Select Date —</option>';
+                console.log('[populateQsDateFilter] dates found:', dates);
+
+                function fillSelect(sel) {
+                    if (!sel) return;
+                    const cur = sel.value;
+                    sel.innerHTML = '<option value="">— Select Date —</option>';
                     dates.forEach(d => {
                         const o = document.createElement('option');
                         o.value = d;
                         const label = new Date(d + 'T00:00:00').toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
                         o.textContent = d === today ? label + ' (Today)' : label;
-                        if (d === crCur || (!crCur && d === today)) o.selected = true;
-                        crSel.appendChild(o);
+                        if (d === cur || (!cur && d === today)) o.selected = true;
+                        sel.appendChild(o);
                     });
                 }
-            } catch(e) { console.warn('populateQsDateFilter:', e); }
+
+                // Populate admin submissions date filter (may not exist if CR logged in)
+                fillSelect(document.getElementById('qsDateFilter'));
+                // Populate CR date filter (may not exist if admin logged in)
+                fillSelect(document.getElementById('crQsDateFilter'));
+
+            } catch(e) { console.warn('populateQsDateFilter error:', e); }
         }
 
         async function loadClassStats() {
@@ -9576,10 +9476,19 @@ Davan Institute Team`;
                 if (partEl) partEl.textContent = partial;
                 if (rateEl) rateEl.textContent = rate+'%';
 
+                // Check if results have been declared for this date (to decide whether to show scores)
+                const resSnap = await db.ref(`quizResults/${date}`).once('value');
+                const resultsPublished = resSnap.exists();
+                // Hide only the score column until results are declared
+                const hideScores = !resultsPublished;
+
                 // Info text
                 if (infoText) {
                     if (total === 0) {
                         infoText.innerHTML = `<strong>No students</strong> from <strong>${crClass}</strong>${crStrengthTag} participated in the quiz on ${dateStr}.`;
+                    } else if (hideScores) {
+                        infoText.innerHTML = `On <strong>${dateStr}</strong>, <strong>${total}</strong> student(s) from <strong>${crClass}</strong>${crStrengthTag} submitted the quiz.<br>
+                            <span style="color:#856404">🔒 Scores are hidden until the admin declares the winners.</span>`;
                     } else {
                         infoText.innerHTML = `On <strong>${dateStr}</strong>, <strong>${total}</strong> student(s) from <strong>${crClass}</strong>${crStrengthTag} participated in the online quiz.<br>
                             <strong>${correct}</strong> got both questions correct (${rate}% accuracy).<br>
@@ -9593,16 +9502,22 @@ Davan Institute Team`;
                     if (classStudents.length === 0) {
                         tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:#999">No submissions from ${crClass} on this date.</td></tr>`;
                     } else {
-                        classStudents.sort((a,b)=>b.score-a.score||(a.timeTaken-b.timeTaken));
+                        classStudents.sort((a,b) => new Date(a.submittedAt) - new Date(b.submittedAt));
                         tbody.innerHTML = '';
                         classStudents.forEach((s,i) => {
                             const row = tbody.insertRow();
                             const mins = Math.floor(s.timeTaken/60), secs = s.timeTaken%60;
-                            const scoreBg = s.score===2?'#d4edda':s.score===1?'#fff3cd':'#f8d7da';
-                            const scoreCol= s.score===2?'#155724':s.score===1?'#856404':'#721c24';
+                            let scoreCell;
+                            if (hideScores) {
+                                scoreCell = `<span style="background:#e9ecef;color:#6c757d;padding:3px 10px;border-radius:10px;font-weight:700">🔒 Hidden</span>`;
+                            } else {
+                                const scoreBg = s.score===2?'#d4edda':s.score===1?'#fff3cd':'#f8d7da';
+                                const scoreCol= s.score===2?'#155724':s.score===1?'#856404':'#721c24';
+                                scoreCell = `<span style="background:${scoreBg};color:${scoreCol};padding:3px 10px;border-radius:10px;font-weight:700">${s.score}/2</span>`;
+                            }
                             row.innerHTML = `<td>${i+1}</td>
                                 <td><strong>${s.studentName||''}</strong></td>
-                                <td><span style="background:${scoreBg};color:${scoreCol};padding:3px 10px;border-radius:10px;font-weight:700">${s.score}/2</span></td>
+                                <td>${scoreCell}</td>
                                 <td>${mins}m ${secs}s</td>
                                 <td style="font-size:12px">${new Date(s.submittedAt).toLocaleString('en-IN')}</td>`;
                         });
@@ -16125,7 +16040,7 @@ Proceed?`)) return;
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;">
-                <strong>Version:</strong> 3.1 Scavenger Hunt Event bug fix  | <strong>Last Updated:</strong> February 20, 2026 (12.54Pm)
+                <strong>Version:</strong> 3.2 Scavenger Hunt Event bug fix  | <strong>Last Updated:</strong> February 20, 2026 (01.45Pm)
             </p>
             <!-- ============================================ -->
             
