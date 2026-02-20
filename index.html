@@ -789,6 +789,82 @@
             margin-top: 5px;
         }
 
+        /* ── Activity Banners: Quiz / Scavenger Hunt / Speed Slide ─── */
+        @keyframes floatIcon {
+            0%,100% { transform: translateY(0px) rotate(-2deg); }
+            50%      { transform: translateY(-7px) rotate(2deg); }
+        }
+        @keyframes glowGreen {
+            0%,100% { box-shadow: 0 6px 28px rgba(40,167,69,.4), 0 0 0 0 rgba(40,167,69,.15); }
+            50%      { box-shadow: 0 10px 38px rgba(40,167,69,.55), 0 0 0 10px rgba(40,167,69,0); }
+        }
+        @keyframes glowPurple {
+            0%,100% { box-shadow: 0 6px 28px rgba(106,27,154,.4), 0 0 0 0 rgba(106,27,154,.15); }
+            50%      { box-shadow: 0 10px 38px rgba(106,27,154,.55), 0 0 0 10px rgba(106,27,154,0); }
+        }
+        @keyframes glowAmber {
+            0%,100% { box-shadow: 0 6px 28px rgba(255,160,0,.4), 0 0 0 0 rgba(255,160,0,.15); }
+            50%      { box-shadow: 0 10px 38px rgba(255,160,0,.55), 0 0 0 10px rgba(255,160,0,0); }
+        }
+        @keyframes liveDot {
+            0%,100% { opacity:1; transform:scale(1); }
+            50%      { opacity:.4; transform:scale(1.4); }
+        }
+        @keyframes ctaPop {
+            0%,100% { transform:scale(1); }
+            50%      { transform:scale(1.04); }
+        }
+        .act-banner-wrap {
+            width:100%;max-width:1200px;margin:0 auto 12px;
+            border-radius:18px;padding:18px 22px 18px 20px;
+            display:flex;align-items:center;gap:16px;flex-wrap:wrap;
+            position:relative;overflow:hidden;
+            animation:slideInUp .45s ease-out both;
+        }
+        .act-banner-wrap::before {
+            content:'';position:absolute;inset:0;
+            background:repeating-linear-gradient(135deg,rgba(255,255,255,.04) 0px,rgba(255,255,255,.04) 1px,transparent 1px,transparent 24px);
+            pointer-events:none;
+        }
+        .act-banner-icon {
+            font-size:2.8em;flex-shrink:0;
+            animation:floatIcon 3.2s ease-in-out infinite;
+            filter:drop-shadow(0 3px 8px rgba(0,0,0,.25));
+        }
+        .act-banner-body { flex:1;min-width:180px; }
+        .act-banner-title {
+            font-size:1.12em;font-weight:800;margin:0 0 3px;
+            letter-spacing:.2px;line-height:1.3;
+        }
+        .act-banner-sub { font-size:.85em;opacity:.9;margin:0;line-height:1.6; }
+        .act-banner-cta {
+            flex-shrink:0;padding:11px 24px;border-radius:30px;font-weight:800;
+            font-size:.88em;border:none;cursor:pointer;letter-spacing:.4px;
+            white-space:nowrap;transition:transform .15s,filter .15s;
+            animation:ctaPop 2.5s ease-in-out infinite;
+        }
+        .act-banner-cta:hover { transform:scale(1.07)!important; filter:brightness(1.1); }
+        .live-dot {
+            display:inline-block;width:9px;height:9px;border-radius:50%;
+            margin-right:6px;vertical-align:middle;
+            animation:liveDot 1.4s ease-in-out infinite;
+        }
+        /* countdown chip inside quiz banner */
+        .quiz-cdown-chip {
+            display:inline-flex;align-items:center;gap:8px;
+            background:rgba(255,255,255,.18);backdrop-filter:blur(4px);
+            border:1.5px solid rgba(255,255,255,.35);border-radius:30px;
+            padding:7px 16px;margin-top:10px;font-size:.88em;font-weight:700;color:white;
+        }
+        .quiz-cdown-chip span { color:#ffe082;font-size:1.1em;letter-spacing:1px; }
+        /* scavenger task pill */
+        .sh-task-pill {
+            display:inline-flex;align-items:center;gap:6px;
+            background:rgba(255,255,255,.18);border:1.5px solid rgba(255,255,255,.35);
+            border-radius:20px;padding:4px 12px;font-size:.8em;font-weight:700;
+            color:white;margin:3px 3px 0 0;white-space:nowrap;
+        }
+
         /* ── Speed Slide Challenge ─────────────────────────────────── */
         @keyframes sscPop {
             from { transform: scale(.7); opacity: 0; }
@@ -828,11 +904,20 @@
         <div style="display:block;width:100%;max-width:1200px;margin:0 auto 22px;border-radius:14px;background:linear-gradient(90deg,#e8722a 0%,#f0a05a 40%,#f0a05a 60%,#e8722a 100%);box-shadow:0 4px 18px rgba(232,114,42,0.35);padding:16px 30px;text-align:center;animation:shimmer 3s linear infinite;background-size:2000px 100%">
             <!-- EDIT BANNER TEXT BELOW -->
             <span id="announcementBannerText" style="color:white;font-size:1.1em;font-weight:700;letter-spacing:0.5px;text-shadow:0 1px 4px rgba(0,0,0,0.18)">
-                🎯 New Scavenger Hunt is live new event 🎯 Speed Slide Challenge coming soon 🎯 
+                🎯 welcome to Spurthi Youth Fest 2026 🎯 The most trending college fest-------
             </span>
         </div>
         <!-- ============================================================ -->
         <!-- END ANNOUNCEMENT BANNER                                      -->
+        <!-- ============================================================ -->
+
+        <!-- ============================================================ -->
+        <!-- ACTIVITY BANNERS (Quiz · Scavenger Hunt · Speed Slide)       -->
+        <!-- These are rendered dynamically by initActivityBanners()      -->
+        <!-- ============================================================ -->
+        <div id="activityBannersContainer" style="width:100%;max-width:1200px;margin:0 auto"></div>
+        <!-- ============================================================ -->
+        <!-- END ACTIVITY BANNERS                                         -->
         <!-- ============================================================ -->
 
         <!-- Login/Logout Section (Visible to all) -->
@@ -12277,6 +12362,166 @@ Davan Institute Team`;
         tbody.innerHTML=html;
     }
 
+    // ============================================================
+    //  ACTIVITY BANNERS ENGINE
+    //  Shows live banners for: Quiz (if available today),
+    //  Scavenger Hunt (active tasks today), Speed Slide, 
+    //  and a "coming soon" banner for Speed Slide.
+    //  Renders into #activityBannersContainer on page load.
+    // ============================================================
+
+    async function initActivityBanners() {
+        const container = document.getElementById('activityBannersContainer');
+        if (!container) return;
+
+        // ── helper: today string ──────────────────────────────────
+        const todayISO = (function() {
+            const d = new Date();
+            return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+        })();
+        const todayFmt = new Date(todayISO + 'T00:00:00').toLocaleDateString('en-IN',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
+        const nowMs = Date.now();
+
+        let html = '';
+
+        // ── 1. QUIZ BANNER (only if today has questions) ─────────
+        try {
+            const qSnap = await db.ref('quizQuestions/' + todayISO).once('value');
+            if (qSnap.exists()) {
+                html += `
+                <div class="act-banner-wrap" id="actQuizBanner"
+                     style="background:linear-gradient(135deg,#1a6b2a 0%,#28a745 55%,#20c997 100%);
+                            animation-delay:.05s;margin-bottom:12px;">
+                    <div class="act-banner-icon" style="animation-delay:.2s">🏆</div>
+                    <div class="act-banner-body">
+                        <div class="act-banner-title" style="color:white">
+                            <span class="live-dot" style="background:#ffe082;box-shadow:0 0 6px #ffe082"></span>
+                            Today's Quiz is Available!
+                        </div>
+                        <div class="act-banner-sub" style="color:rgba(255,255,255,.92)">
+                            📅 ${todayFmt} &nbsp;·&nbsp; ⚡ Be the fastest to answer correctly!
+                        </div>
+                        <div class="quiz-cdown-chip">
+                            ⏳ Quiz ends in: <span id="actQuizCountdown">--:--:--</span>
+                            <span style="opacity:.7;font-size:.82em;font-weight:600">(closes at 11:59 PM today)</span>
+                        </div>
+                    </div>
+                    <button class="act-banner-cta"
+                            style="background:#ffe082;color:#1a5e20;"
+                            onclick="document.getElementById('userType').value='dailyquiz';handleUserTypeChange();window.scrollTo({top:document.getElementById('dailyQuizLogin')?.offsetTop||0,behavior:'smooth'})">
+                        🚀 Play Now
+                    </button>
+                </div>`;
+            }
+        } catch(e) { console.warn('actBanner quiz check:', e.message); }
+
+        // ── 2. SCAVENGER HUNT BANNER (active tasks today) ────────
+        try {
+            const shSnap = await db.ref('scavengerHunt/tasks').once('value');
+            if (shSnap.exists()) {
+                const allTasks = Object.entries(shSnap.val() || {})
+                    .map(([k,v]) => ({id:k,...v}))
+                    .sort((a,b) => (a.order||0)-(b.order||0));
+
+                // Tasks that are currently active (started, not yet expired)
+                const activeTasks = allTasks.filter(t => {
+                    const started  = !t.availableFrom || new Date(t.availableFrom).getTime() <= nowMs;
+                    const notEnded = !t.deadline      || new Date(t.deadline).getTime()      >  nowMs;
+                    return started && notEnded;
+                });
+
+                // Tasks unlocking today (announcements)
+                const todayTasks = allTasks.filter(t => {
+                    if (!t.availableFrom) return false;
+                    const d = new Date(t.availableFrom);
+                    return d.getFullYear()  === new Date().getFullYear()  &&
+                           d.getMonth()     === new Date().getMonth()     &&
+                           d.getDate()      === new Date().getDate();
+                });
+
+                if (activeTasks.length > 0) {
+                    const taskPills = activeTasks.slice(0,4).map(t =>
+                        `<span class="sh-task-pill">🎯 Task ${t.order||'?'}: ${t.name.length>28?t.name.slice(0,26)+'…':t.name}</span>`
+                    ).join('');
+
+                    const newToday = todayTasks.length > 0
+                        ? `<div style="margin-top:6px;font-size:.82em;color:#ffe082;font-weight:700">🆕 ${todayTasks.length} new task${todayTasks.length>1?'s':''} just unlocked today!</div>`
+                        : '';
+
+                    html += `
+                    <div class="act-banner-wrap" id="actShBanner"
+                         style="background:linear-gradient(135deg,#4a148c 0%,#6a1b9a 50%,#c44569 100%);
+                                animation-delay:.15s;margin-bottom:12px;animation:glowPurple 3s ease-in-out infinite,slideInUp .45s ease-out both;">
+                        <div class="act-banner-icon" style="animation-delay:.4s">🗺️</div>
+                        <div class="act-banner-body">
+                            <div class="act-banner-title" style="color:white">
+                                <span class="live-dot" style="background:#ff4081;box-shadow:0 0 6px #ff4081"></span>
+                                Scavenger Hunt is Live!
+                            </div>
+                            <div class="act-banner-sub" style="color:rgba(255,255,255,.9)">
+                                ${activeTasks.length} active task${activeTasks.length>1?'s':''} waiting for you — find, photo &amp; win!
+                            </div>
+                            <div style="margin-top:7px">${taskPills}</div>
+                            ${newToday}
+                        </div>
+                        <button class="act-banner-cta"
+                                style="background:#ffe082;color:#4a148c;"
+                                onclick="document.getElementById('userType').value='student';handleUserTypeChange();window.scrollTo({top:document.getElementById('studentLogin')?.offsetTop||0,behavior:'smooth'})">
+                            🎯 Hunt Now!
+                        </button>
+                    </div>`;
+                }
+            }
+        } catch(e) { console.warn('actBanner SH check:', e.message); }
+
+        // ── 3. SPEED SLIDE BANNER (always shown as coming soon / live) ──
+        html += `
+        <div class="act-banner-wrap" id="actSsBanner"
+             style="background:linear-gradient(135deg,#e65100 0%,#f57c00 45%,#ffa000 100%);
+                    animation-delay:.25s;margin-bottom:12px;animation:glowAmber 3s ease-in-out infinite,slideInUp .45s ease-out .25s both;">
+            <div class="act-banner-icon" style="animation-delay:.6s">🧩</div>
+            <div class="act-banner-body">
+                <div class="act-banner-title" style="color:white">
+                    🎯 Speed Slide Challenge — Coming Soon!
+                </div>
+                <div class="act-banner-sub" style="color:rgba(255,255,255,.92)">
+                    Race against classmates to reassemble a scrambled photo the fastest.<br>
+                    <span style="color:#ffe082;font-weight:700">⚡ New event at Spurthi Youth Fest 2026 — stay tuned!</span>
+                </div>
+            </div>
+            <button class="act-banner-cta"
+                    style="background:#ffe082;color:#bf360c;"
+                    onclick="document.getElementById('userType').value='speedslide';handleUserTypeChange();window.scrollTo({top:document.getElementById('loginSection')?.offsetTop||0,behavior:'smooth'})">
+                👀 Learn More
+            </button>
+        </div>`;
+
+        container.innerHTML = html;
+
+        // ── Start quiz countdown if banner was rendered ───────────
+        const cdownEl = document.getElementById('actQuizCountdown');
+        if (cdownEl) {
+            (function tickCdown() {
+                const now2 = new Date(), end2 = new Date();
+                end2.setHours(23, 59, 59, 0);
+                const diff = end2 - now2;
+                if (diff <= 0) { cdownEl.textContent = 'CLOSED'; cdownEl.style.color = '#ffcdd2'; return; }
+                const h = Math.floor(diff/3600000), m = Math.floor((diff%3600000)/60000), s = Math.floor((diff%60000)/1000);
+                cdownEl.textContent = String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+                setTimeout(tickCdown, 1000);
+            })();
+        }
+    }
+
+    // ── Auto-init after Firebase is ready ────────────────────────
+    (function waitForDbThenBanners() {
+        function tryBanners() {
+            if (typeof db !== 'undefined' && db) { initActivityBanners(); }
+            else { setTimeout(tryBanners, 600); }
+        }
+        tryBanners();
+    })();
+
     // ── Auto-load ────────────────────────────────────────────────
     (function lbInit() {
         function tryLoad() {
@@ -16843,7 +17088,7 @@ Proceed?`)) return;
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;">
-                <strong>Version:</strong> 3.5 Task Image Upload Added  | <strong>Last Updated:</strong> February 20, 2026 10.38pm
+                <strong>Version:</strong> 3.7 Activity Banners Added  | <strong>Last Updated:</strong> February 20, 2026 10.56pm
             </p>
             <!-- ============================================ -->
             
