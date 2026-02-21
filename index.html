@@ -878,8 +878,24 @@
             aspect-ratio: 1;
         }
         .ssc-tile:hover { transform: scale(1.04); box-shadow: 0 4px 12px rgba(0,0,0,.3); }
-        .ssc-tile.ssc-empty { background: #c44569 !important; cursor: default; opacity: .3; }
-        .ssc-tile.ssc-empty:hover { transform: none; box-shadow: none; }
+        @keyframes sscEmptyPulse {
+            0%,100% { box-shadow: inset 0 0 0 3px rgba(255,255,255,.35), 0 0 18px rgba(255,220,0,.3); transform: scale(1); }
+            50%      { box-shadow: inset 0 0 0 4px rgba(255,255,150,.85), 0 0 32px rgba(255,220,0,.6); transform: scale(1.04); }
+        }
+        @keyframes sscEmptyArrow {
+            0%,100% { transform: translateY(0); opacity:1; }
+            50%      { transform: translateY(-5px); opacity:.5; }
+        }
+        .ssc-tile.ssc-empty {
+            background: linear-gradient(135deg,#ffe600,#ff8c00) !important;
+            cursor: default;
+            display: flex !important; flex-direction: column; align-items: center; justify-content: center;
+            color: #3d0000 !important; font-weight: 900;
+            letter-spacing: 1px; text-transform: uppercase;
+            animation: sscEmptyPulse 1.2s ease-in-out infinite !important;
+            border: 3px solid rgba(255,255,255,.6) !important;
+        }
+        .ssc-tile.ssc-empty:hover { transform: scale(1.04); }
         @keyframes sscWinPop {
             from { transform: scale(0.5); opacity: 0; }
             to   { transform: scale(1);   opacity: 1; }
@@ -1169,7 +1185,7 @@
         <div style="display:block;width:100%;max-width:1200px;margin:0 auto 22px;border-radius:14px;background:linear-gradient(90deg,#e8722a 0%,#f0a05a 40%,#f0a05a 60%,#e8722a 100%);box-shadow:0 4px 18px rgba(232,114,42,0.35);padding:16px 30px;text-align:center;animation:shimmer 3s linear infinite;background-size:2000px 100%">
             <!-- EDIT BANNER TEXT BELOW -->
             <span id="announcementBannerText" style="color:white;font-size:1.1em;font-weight:700;letter-spacing:0.5px;text-shadow:0 1px 4px rgba(0,0,0,0.18)">
-                🎯 welcome to Spurthi Youth Fest 2026 🎯 The most trending college fest-------
+                🎯🧩 Speed Slide Challenge is LIVE now 🧩🎯
             </span>
         </div>
         <!-- ============================================================ -->
@@ -3897,43 +3913,45 @@
 
                 <!-- Live game area -->
                 <div id="sscGameArea" style="display:none">
-                    <!-- Top bar: diff label + buttons -->
-                    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:18px">
-                        <div style="display:flex;align-items:center;gap:10px">
-                            <span id="sscGameDiffLabel" style="background:linear-gradient(135deg,#6a1b9a,#c44569);color:white;padding:7px 18px;border-radius:20px;font-weight:800;font-size:.9em;letter-spacing:.3px"></span>
-                            <span id="sscLiveScore" style="background:linear-gradient(135deg,#ffd700,#ffab00);color:#1a0030;padding:7px 18px;border-radius:20px;font-weight:900;font-size:.9em;display:none">⭐ <span id="sscLiveScoreVal">—</span></span>
+                    <!-- Top bar: diff label only -->
+                    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:14px">
+                        <span id="sscGameDiffLabel" style="background:linear-gradient(135deg,#6a1b9a,#c44569);color:white;padding:7px 18px;border-radius:20px;font-weight:800;font-size:.9em;letter-spacing:.3px"></span>
+                        <span id="sscLiveScore" style="background:linear-gradient(135deg,#ffd700,#ffab00);color:#1a0030;padding:7px 18px;border-radius:20px;font-weight:900;font-size:.9em;display:none">⭐ <span id="sscLiveScoreVal">—</span></span>
+                    </div>
+
+                    <!-- Board — full width, max space -->
+                    <div style="width:100%;margin-bottom:16px">
+                        <div id="sscPuzzleBoard" style="display:grid;gap:5px;touch-action:none;user-select:none;width:100%"></div>
+                    </div>
+
+                    <!-- Stats + Preview row below board -->
+                    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:14px">
+                        <div class="ssc-stat-box" style="background:linear-gradient(135deg,#fff3e0,#ffe0b2);border:2px solid #ffb300;margin:0">
+                            <div id="sscTimerDisplay" class="ssc-stat-val" style="color:#e65100;font-family:monospace;font-size:1.3em">0:00</div>
+                            <div class="ssc-stat-lbl">⏱ Time</div>
                         </div>
-                        <div style="display:flex;gap:8px">
-                            <button onclick="sscShowSolution()" style="background:#666;color:white;border:none;padding:8px 16px;border-radius:10px;cursor:pointer;font-weight:600;font-size:.85em;transition:all .2s">👁 Give Up</button>
-                            <button onclick="sscResetGame()" style="background:linear-gradient(135deg,#e53935,#ff7043);color:white;border:none;padding:8px 16px;border-radius:10px;cursor:pointer;font-weight:700;font-size:.85em;transition:all .2s">🔄 New Game</button>
+                        <div class="ssc-stat-box" style="background:linear-gradient(135deg,#f3e5f5,#e1bee7);border:2px solid #9c27b0;margin:0">
+                            <div id="sscMovesDisplay" class="ssc-stat-val" style="color:#6a1b9a;font-size:1.3em">0</div>
+                            <div class="ssc-stat-lbl">🎯 Moves</div>
+                        </div>
+                        <div class="ssc-stat-box" style="background:linear-gradient(135deg,#1a0030,#3d0060);border:2px solid rgba(255,215,0,.3);margin:0">
+                            <div id="sscPtsDisplay" class="ssc-stat-val" style="color:#ffd700;font-size:1.3em">—</div>
+                            <div class="ssc-stat-lbl" style="color:rgba(255,255,255,.6)">⭐ Pts</div>
                         </div>
                     </div>
 
-                    <!-- Main game layout: board + stats -->
-                    <div style="display:grid;grid-template-columns:1fr 140px;gap:16px;align-items:start">
-                        <!-- Board -->
-                        <div>
-                            <div id="sscPuzzleBoard" style="display:grid;gap:5px;touch-action:none;user-select:none"></div>
-                        </div>
-                        <!-- Stats sidebar -->
-                        <div style="display:flex;flex-direction:column;gap:10px">
-                            <div class="ssc-stat-box" style="background:linear-gradient(135deg,#fff3e0,#ffe0b2);border:2px solid #ffb300">
-                                <div id="sscTimerDisplay" class="ssc-stat-val" style="color:#e65100;font-family:monospace">0:00</div>
-                                <div class="ssc-stat-lbl">⏱ Time</div>
-                            </div>
-                            <div class="ssc-stat-box" style="background:linear-gradient(135deg,#f3e5f5,#e1bee7);border:2px solid #9c27b0">
-                                <div id="sscMovesDisplay" class="ssc-stat-val" style="color:#6a1b9a">0</div>
-                                <div class="ssc-stat-lbl">🎯 Moves</div>
-                            </div>
-                            <div class="ssc-stat-box" style="background:linear-gradient(135deg,#1a0030,#3d0060);border:2px solid rgba(255,215,0,.3)">
-                                <div id="sscPtsDisplay" class="ssc-stat-val" style="color:#ffd700">—</div>
-                                <div class="ssc-stat-lbl" style="color:rgba(255,255,255,.6)">⭐ Pts</div>
-                            </div>
-                            <div style="text-align:center">
-                                <p style="font-size:.7em;color:#bbb;margin:0 0 5px;font-weight:600;text-transform:uppercase;letter-spacing:.5px">Preview</p>
-                                <img id="sscInGamePreview" style="width:100%;border-radius:10px;border:3px solid rgba(106,27,154,.4);box-shadow:0 4px 12px rgba(0,0,0,.2);display:none" alt="">
-                            </div>
-                        </div>
+                    <!-- Preview image full width below stats -->
+                    <div id="sscInGamePreviewWrap" style="text-align:center;margin-bottom:16px;display:none">
+                        <p style="font-size:.72em;color:#9c27b0;margin:0 0 6px;font-weight:700;text-transform:uppercase;letter-spacing:.8px">📸 Preview</p>
+                        <img id="sscInGamePreview" style="max-width:180px;width:100%;object-fit:cover;border-radius:12px;border:2px solid rgba(106,27,154,.4);box-shadow:0 4px 16px rgba(0,0,0,.15)" alt="">
+                    </div>
+
+                    <!-- Action buttons: Give Up, New Game, Back, Logout -->
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+                        <button onclick="sscShowSolution()" style="background:linear-gradient(135deg,#555,#777);color:white;border:none;padding:12px 10px;border-radius:12px;cursor:pointer;font-weight:700;font-size:.9em;transition:all .2s;box-shadow:0 3px 10px rgba(0,0,0,.2)">👁 Give Up</button>
+                        <button onclick="sscResetGame()" style="background:linear-gradient(135deg,#e53935,#ff7043);color:white;border:none;padding:12px 10px;border-radius:12px;cursor:pointer;font-weight:700;font-size:.9em;transition:all .2s;box-shadow:0 3px 10px rgba(229,57,53,.35)">🔄 New Game</button>
+                        <button onclick="sscGoBack()" style="background:linear-gradient(135deg,#1565c0,#1976d2);color:white;border:none;padding:12px 10px;border-radius:12px;cursor:pointer;font-weight:700;font-size:.9em;transition:all .2s;box-shadow:0 3px 10px rgba(21,101,192,.3)">⬅️ Back</button>
+                        <button onclick="logout()" style="background:linear-gradient(135deg,#2d2d2d,#444);color:rgba(255,255,255,.9);border:none;padding:12px 10px;border-radius:12px;cursor:pointer;font-weight:700;font-size:.9em;transition:all .2s;box-shadow:0 3px 10px rgba(0,0,0,.25)">🚪 Logout</button>
                     </div>
                 </div>
             </div>
@@ -4060,6 +4078,7 @@
                     <div style="padding:0 20px 24px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
                         <button onclick="sscResetGame()" style="background:linear-gradient(135deg,#2e7d32,#43a047);color:white;border:none;padding:13px 26px;border-radius:12px;font-size:.95em;font-weight:800;cursor:pointer;box-shadow:0 4px 16px rgba(67,160,71,.3)">🔄 Try Again</button>
                         <button onclick="sscShowSection('lb')" style="background:rgba(255,255,255,.1);color:white;border:1px solid rgba(255,255,255,.2);padding:13px 22px;border-radius:12px;font-size:.95em;font-weight:700;cursor:pointer">🏆 Leaderboard</button>
+                        <button onclick="document.getElementById('sscGameOverModal').style.display='none';logout();" style="background:rgba(220,53,69,.25);color:#ff8a80;border:1px solid rgba(220,53,69,.4);padding:13px 22px;border-radius:12px;font-size:.95em;font-weight:700;cursor:pointer">🚪 Logout</button>
                     </div>
                 </div>
             </div>
@@ -16836,24 +16855,40 @@ Proceed?`)) return;
             const statusColor = {approved:'#2e7d32', rejected:'#c62828', pending:'#e65100'};
             const statusBg    = {approved:'#e8f5e9', rejected:'#ffebee', pending:'#fff3e0'};
             document.getElementById('ssaSubList').innerHTML = rows.map(r => `
-                <div style="background:white;border-radius:12px;padding:16px;margin-bottom:12px;box-shadow:0 2px 10px rgba(0,0,0,.08);display:flex;align-items:center;gap:16px;flex-wrap:wrap;border-left:5px solid ${r.status==='approved'?'#4caf50':r.status==='rejected'?'#f44336':'#ff9800'}">
-                    ${r.imageUrl
-                        ? `<img src="${r.imageUrl}" onclick="document.getElementById('ssaLightbox').style.display='flex';document.getElementById('ssaLightboxImg').src='${r.imageUrl}'" style="width:90px;height:90px;object-fit:cover;border-radius:8px;border:2px solid #9c27b0;cursor:zoom-in" alt="">`
-                        : `<div style="width:90px;height:90px;background:#f0e6ff;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:2em;color:#9c27b0">📷</div>`
-                    }
-                    <div style="flex:1;min-width:160px">
-                        <div style="font-weight:700;font-size:1em;color:#333">${ssaEsc(r.name)}</div>
-                        <div style="color:#888;font-size:.85em;margin:3px 0">${ssaEsc(r.class||'')} · ${ssaEsc(r.phone||'')}</div>
-                        <div style="font-size:.88em;color:#6a1b9a;margin:3px 0">
-                            ${diffLabel[r.difficulty]||r.difficulty} · ⏱ ${ssaFmtTime(r.timeSec)} · 🎯 ${r.moves} moves · ⭐ ${r.points} pts
+                <div style="background:white;border-radius:14px;padding:16px;margin-bottom:14px;box-shadow:0 2px 12px rgba(0,0,0,.1);border-left:5px solid ${r.status==='approved'?'#4caf50':r.status==='rejected'?'#f44336':'#ff9800'}">
+                    <div style="display:flex;align-items:flex-start;gap:16px;flex-wrap:wrap">
+                        <!-- Puzzle Photo -->
+                        <div style="display:flex;flex-direction:column;align-items:center;gap:6px">
+                            ${r.imageUrl
+                                ? `<div style="position:relative;cursor:zoom-in" onclick="document.getElementById('ssaLightbox').style.display='flex';document.getElementById('ssaLightboxImg').src='${r.imageUrl}'">
+                                    <img src="${r.imageUrl}" style="width:130px;height:130px;object-fit:cover;border-radius:10px;border:3px solid #9c27b0;display:block" alt="">
+                                    <div style="position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(106,27,154,.85));border-radius:0 0 8px 8px;padding:5px 6px;text-align:center">
+                                        <span style="color:white;font-size:.68em;font-weight:700">🔍 Tap to enlarge</span>
+                                    </div>
+                                   </div>
+                                   <span style="font-size:.72em;font-weight:700;color:#6a1b9a;background:#f3e5f5;padding:3px 10px;border-radius:8px">🖼️ Puzzle Photo</span>`
+                                : `<div style="width:130px;height:130px;background:#f0e6ff;border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;border:3px dashed #ce93d8">
+                                    <span style="font-size:2.2em">📷</span>
+                                    <span style="font-size:.7em;color:#9c27b0;font-weight:600">No Photo</span>
+                                   </div>`
+                            }
                         </div>
-                        <div style="font-size:.8em;color:#aaa">${r.date||''} at ${(r.solvedAt||'').slice(11,19)}</div>
-                        <span style="display:inline-block;padding:3px 10px;border-radius:10px;font-size:.78em;font-weight:700;background:${statusBg[r.status]||statusBg.pending};color:${statusColor[r.status]||statusColor.pending};margin-top:5px">${r.status||'pending'}</span>
-                    </div>
-                    <div style="display:flex;flex-direction:column;gap:7px">
-                        <button onclick="ssaApprove('${r.key}')" style="background:#4caf50;color:white;border:none;padding:8px 16px;border-radius:7px;cursor:pointer;font-weight:600;font-size:.88em">✅ Approve</button>
-                        <button onclick="ssaReject('${r.key}')"  style="background:#f44336;color:white;border:none;padding:8px 16px;border-radius:7px;cursor:pointer;font-weight:600;font-size:.88em">❌ Reject</button>
-                        <button onclick="ssaDelete('${r.key}')"  style="background:#888;   color:white;border:none;padding:8px 16px;border-radius:7px;cursor:pointer;font-weight:600;font-size:.88em">🗑 Delete</button>
+                        <!-- Info -->
+                        <div style="flex:1;min-width:160px">
+                            <div style="font-weight:700;font-size:1.05em;color:#333">${ssaEsc(r.name)}</div>
+                            <div style="color:#888;font-size:.85em;margin:3px 0">${ssaEsc(r.class||'')} · ${ssaEsc(r.phone||'')}</div>
+                            <div style="font-size:.88em;color:#6a1b9a;margin:3px 0">
+                                ${diffLabel[r.difficulty]||r.difficulty} · ⏱ ${ssaFmtTime(r.timeSec)} · 🎯 ${r.moves} moves · ⭐ ${r.points} pts
+                            </div>
+                            <div style="font-size:.8em;color:#aaa">${r.date||''} at ${(r.solvedAt||'').slice(11,19)}</div>
+                            <span style="display:inline-block;padding:3px 10px;border-radius:10px;font-size:.78em;font-weight:700;background:${statusBg[r.status]||statusBg.pending};color:${statusColor[r.status]||statusColor.pending};margin-top:5px">${r.status||'pending'}</span>
+                        </div>
+                        <!-- Action Buttons -->
+                        <div style="display:flex;flex-direction:column;gap:7px">
+                            <button onclick="ssaApprove('${r.key}')" style="background:#4caf50;color:white;border:none;padding:8px 16px;border-radius:7px;cursor:pointer;font-weight:600;font-size:.88em">✅ Approve</button>
+                            <button onclick="ssaReject('${r.key}')"  style="background:#f44336;color:white;border:none;padding:8px 16px;border-radius:7px;cursor:pointer;font-weight:600;font-size:.88em">❌ Reject</button>
+                            <button onclick="ssaDelete('${r.key}')"  style="background:#888;   color:white;border:none;padding:8px 16px;border-radius:7px;cursor:pointer;font-weight:600;font-size:.88em">🗑 Delete</button>
+                        </div>
                     </div>
                 </div>`).join('');
         } catch(e) {
@@ -17314,10 +17349,12 @@ Proceed?`)) return;
         const n = sscSize * sscSize;
         // Goal: [1,2,...,n²-1, 0] — blank at bottom-right
         sscTiles = Array.from({length:n}, (_,i) => i===n-1 ? 0 : i+1);
-        do { sscShuffleTiles(); } while (!sscIsSolvable());
+        sscShuffleTiles(); // random-walk shuffle always produces a solvable puzzle
         sscBuildBoard();
         const prev = document.getElementById('sscInGamePreview');
+        const prevWrap = document.getElementById('sscInGamePreviewWrap');
         prev.src = sscImageData; prev.style.display = 'block';
+        if (prevWrap) prevWrap.style.display = 'block';
         sscTimerRef = setInterval(() => {
             sscSeconds++;
             document.getElementById('sscTimerDisplay').textContent = sscFmtTime(sscSeconds);
@@ -17327,10 +17364,27 @@ Proceed?`)) return;
     }
 
     function sscShuffleTiles() {
-        const n = sscTiles.length;
-        for (let i=n-1; i>0; i--) {
-            const j = Math.floor(Math.random()*(i+1));
-            [sscTiles[i], sscTiles[j]] = [sscTiles[j], sscTiles[i]];
+        // Random-walk shuffle: slide tiles from solved state for a controlled number of moves.
+        // This ensures the puzzle is NEVER too heavily shuffled to solve.
+        // Max moves: 3×3 = 25, 4×4 = 45, 5×5 = 60
+        const maxMoves = sscSize === 3 ? 25 : sscSize === 4 ? 45 : 60;
+        const gridSize = sscSize;
+        let blankIdx = sscTiles.indexOf(0);
+        let lastBlank = -1;
+        for (let m = 0; m < maxMoves; m++) {
+            const r = Math.floor(blankIdx / gridSize);
+            const c = blankIdx % gridSize;
+            const neighbors = [];
+            if (r > 0)           neighbors.push(blankIdx - gridSize);
+            if (r < gridSize-1)  neighbors.push(blankIdx + gridSize);
+            if (c > 0)           neighbors.push(blankIdx - 1);
+            if (c < gridSize-1)  neighbors.push(blankIdx + 1);
+            // Avoid immediately undoing last move to ensure real shuffling
+            const choices = neighbors.filter(idx => idx !== lastBlank);
+            const pick = choices[Math.floor(Math.random() * choices.length)];
+            lastBlank = blankIdx;
+            [sscTiles[blankIdx], sscTiles[pick]] = [sscTiles[pick], sscTiles[blankIdx]];
+            blankIdx = pick;
         }
     }
 
@@ -17350,13 +17404,28 @@ Proceed?`)) return;
         const board = document.getElementById('sscPuzzleBoard');
         board.style.gridTemplateColumns = 'repeat('+sscSize+',1fr)';
         board.innerHTML = '';
-        const tileSize = Math.min(440, (board.parentElement.clientWidth||440) - 16);
+        const parentW = board.parentElement ? board.parentElement.clientWidth : 0;
+        const tileSize = Math.max(200, (parentW || window.innerWidth - 40) - 10);
         const sz = Math.floor(tileSize / sscSize);
         sscTiles.forEach((val, idx) => {
             const tile = document.createElement('div');
             tile.className = 'ssc-tile' + (val===0 ? ' ssc-empty' : '') + (idx===movedIdx ? ' ssc-moved' : '');
             tile.style.width = sz+'px'; tile.style.height = sz+'px';
-            if (val !== 0) {
+            if (val === 0) {
+                const logoEl = document.createElement('img');
+                logoEl.src = 'davan_degree1.png';
+                const logoSize = Math.floor(sz * 0.45);
+                logoEl.style.cssText = `width:${logoSize}px;height:${logoSize}px;object-fit:contain;margin-bottom:3px;opacity:0.9;filter:drop-shadow(0 1px 3px rgba(0,0,0,.3))`;
+                const iconEl = document.createElement('div');
+                iconEl.style.cssText = 'font-size:1.3em;line-height:1;animation:sscEmptyArrow 0.9s ease-in-out infinite';
+                iconEl.textContent = '👆';
+                const lblEl = document.createElement('div');
+                lblEl.style.cssText = 'font-size:.55em;font-weight:900;letter-spacing:1px;color:#3d0000';
+                lblEl.textContent = 'MOVE HERE';
+                tile.appendChild(logoEl);
+                tile.appendChild(iconEl);
+                tile.appendChild(lblEl);
+            } else {
                 // val is 1-based tile number; map to 0-based grid position
                 const zeroVal = val - 1;  // 0-based index in the image grid
                 const col = zeroVal % sscSize;
@@ -17444,11 +17513,16 @@ Proceed?`)) return;
                     `❌ Daily limit reached! You can submit a maximum of ${maxSubs} times per day. Come back tomorrow!`;
                 return;
             }
-            // ── Save score ────────────────────────────────────────────
+            // ── Upload image to Cloudinary ────────────────────────────
             document.getElementById('sscWinSaveMsg').textContent = '⏳ Uploading image & saving score…';
-            const imgRef = window.storage.ref('speedSlide/'+sscCurrentUser.key+'_'+Date.now()+'.jpg');
-            const snap   = await imgRef.putString(sscImageData, 'data_url');
-            const imgUrl = await snap.ref.getDownloadURL();
+            const cldFd = new FormData();
+            cldFd.append('file', sscImageData);
+            cldFd.append('upload_preset', 'scavenger_hunt');
+            cldFd.append('folder', 'speedSlide');
+            const cldRes  = await fetch('https://api.cloudinary.com/v1_1/dat0khbet/image/upload', { method: 'POST', body: cldFd });
+            const cldData = await cldRes.json();
+            if (!cldData.secure_url) throw new Error('Cloudinary upload failed: ' + (cldData.error && cldData.error.message || 'Unknown error'));
+            const imgUrl = cldData.secure_url;
             const entry = {
                 uid: sscCurrentUser.key, name: sscCurrentUser.name,
                 phone: sscCurrentUser.phone,
@@ -17498,11 +17572,11 @@ Proceed?`)) return;
         setTimeout(() => sscRunSolverAsync([...sscTiles], sscSize), 100);
     }
 
-    // ── CHUNKED A* SOLVER ─────────────────────────────────────────────
-    // A* with Manhattan heuristic + visited set = optimal short path, no loops.
-    // Runs in time-sliced chunks so the browser never freezes.
+    // ── CHUNKED A* / IDA* SOLVER ──────────────────────────────────────
+    // 8-puzzle  (n=3): A* — fast & optimal
+    // 15-puzzle (n=4): IDA* with Manhattan + Linear-Conflict heuristic
+    // 24-puzzle (n=5): IDA* with Manhattan + Linear-Conflict heuristic
     function sscRunSolverAsync(startTiles, n) {
-        // Goal: [1,2,...,n²-1, 0] — blank at bottom-right
         const goalArr = Array.from({length:n*n}, (_,i) => i===n*n-1 ? 0 : i+1);
         const goalStr = goalArr.join(',');
         const startStr = startTiles.join(',');
@@ -17512,108 +17586,177 @@ Proceed?`)) return;
             sscRenderSolStep(0); return;
         }
 
-        const dirs = [[-1,0],[1,0],[0,-1],[0,1]];
-
-        function mh(t) {
-            let h=0;
-            for(let i=0;i<t.length;i++){
-                const v=t[i]; if(!v) continue;
-                h+=Math.abs(Math.floor(v/n)-Math.floor(i/n))+Math.abs(v%n-i%n);
+        // ── Heuristic: Manhattan + Linear Conflict ────────────────────
+        function heuristic(t) {
+            let h = 0;
+            // Manhattan
+            for (let i = 0; i < t.length; i++) {
+                const v = t[i]; if (!v) continue;
+                const goalR = Math.floor((v-1)/n), goalC = (v-1)%n;
+                const curR  = Math.floor(i/n),    curC  = i%n;
+                h += Math.abs(goalR - curR) + Math.abs(goalC - curC);
+            }
+            // Linear conflict — rows
+            for (let r = 0; r < n; r++) {
+                const row = [];
+                for (let c = 0; c < n; c++) {
+                    const v = t[r*n+c];
+                    if (v && Math.floor((v-1)/n) === r) row.push(v);
+                }
+                for (let a = 0; a < row.length; a++)
+                    for (let b = a+1; b < row.length; b++)
+                        if (row[a] > row[b]) h += 2;
+            }
+            // Linear conflict — cols
+            for (let c = 0; c < n; c++) {
+                const col = [];
+                for (let r = 0; r < n; r++) {
+                    const v = t[r*n+c];
+                    if (v && (v-1)%n === c) col.push(v);
+                }
+                for (let a = 0; a < col.length; a++)
+                    for (let b = a+1; b < col.length; b++)
+                        if (col[a] > col[b]) h += 2;
             }
             return h;
         }
 
-        // Simple min-heap for A*
-        class Heap {
-            constructor(){ this.d=[]; }
-            push(item){ this.d.push(item); this._up(this.d.length-1); }
-            pop(){ const t=this.d[0]; const b=this.d.pop(); if(this.d.length){this.d[0]=b;this._down(0);} return t; }
-            get size(){ return this.d.length; }
-            _up(i){ while(i>0){const p=(i-1)>>1; if(this.d[p][0]<=this.d[i][0])break; [this.d[p],this.d[i]]=[this.d[i],this.d[p]]; i=p;} }
-            _down(i){ const n=this.d.length; while(true){ let s=i,l=2*i+1,r=2*i+2; if(l<n&&this.d[l][0]<this.d[s][0])s=l; if(r<n&&this.d[r][0]<this.d[s][0])s=r; if(s===i)break; [this.d[s],this.d[i]]=[this.d[i],this.d[s]]; i=s; } }
-        }
-
-        // State: [f, g, tiles, parentKey]
-        // We store parent pointers in a map to reconstruct path
-        const cameFrom = new Map(); // key -> {tiles, parentKey}
-        const gScore   = new Map();
-        const heap     = new Heap();
-
-        const sh = mh(startTiles);
-        heap.push([sh, 0, startTiles]);
-        gScore.set(startStr, 0);
-        cameFrom.set(startStr, {tiles: startTiles.slice(), parent: null});
-
-        const CHUNK = 200; // nodes per time slice
-        const MAX_NODES = 150000; // safety cap
-        let totalNodes = 0;
-
-        function reconstruct(endKey) {
-            const path = [];
-            let k = endKey;
-            while(k !== null) {
-                const entry = cameFrom.get(k);
-                if(!entry) break;
-                path.unshift(entry.tiles);
-                k = entry.parent;
+        if (n <= 3) {
+            // ── A* for 8-puzzle ───────────────────────────────────────
+            class Heap {
+                constructor(){ this.d=[]; }
+                push(item){ this.d.push(item); this._up(this.d.length-1); }
+                pop(){ const t=this.d[0]; const b=this.d.pop(); if(this.d.length){this.d[0]=b;this._down(0);} return t; }
+                get size(){ return this.d.length; }
+                _up(i){ while(i>0){const p=(i-1)>>1; if(this.d[p][0]<=this.d[i][0])break; [this.d[p],this.d[i]]=[this.d[i],this.d[p]]; i=p;} }
+                _down(i){ const n=this.d.length; while(true){ let s=i,l=2*i+1,r=2*i+2; if(l<n&&this.d[l][0]<this.d[s][0])s=l; if(r<n&&this.d[r][0]<this.d[s][0])s=r; if(s===i)break; [this.d[s],this.d[i]]=[this.d[i],this.d[s]]; i=s; } }
             }
-            return path;
-        }
+            const dirs = [[-1,0],[1,0],[0,-1],[0,1]];
+            const cameFrom = new Map();
+            const gScore   = new Map();
+            const heap     = new Heap();
+            const sh = heuristic(startTiles);
+            heap.push([sh, 0, startTiles]);
+            gScore.set(startStr, 0);
+            cameFrom.set(startStr, {tiles: startTiles.slice(), parent: null});
+            const CHUNK = 500, MAX_NODES = 500000;
+            let totalNodes = 0;
+            function reconstruct(endKey) {
+                const path = [];
+                let k = endKey;
+                while(k !== null) { const e=cameFrom.get(k); if(!e) break; path.unshift(e.tiles); k=e.parent; }
+                return path;
+            }
+            function processChunk() {
+                let c = 0;
+                while(heap.size > 0 && c < CHUNK && totalNodes < MAX_NODES) {
+                    const [f,g,cur] = heap.pop();
+                    const curKey = cur.join(',');
+                    totalNodes++;
+                    if(gScore.has(curKey) && gScore.get(curKey) < g) continue;
+                    if(curKey === goalStr) {
+                        sscSolSteps = reconstruct(curKey); sscSolStepIdx = 0;
+                        sscRenderSolStep(0); setTimeout(()=>sscSolStartPlay(), 500); return;
+                    }
+                    const ei=cur.indexOf(0), er=Math.floor(ei/n), ec=ei%n;
+                    for(const [dr,dc] of dirs){
+                        const nr=er+dr, nc=ec+dc;
+                        if(nr<0||nr>=n||nc<0||nc>=n) continue;
+                        const ni=nr*n+nc;
+                        const next=cur.slice(); [next[ei],next[ni]]=[next[ni],next[ei]];
+                        const nextKey=next.join(',');
+                        const ng = g+1;
+                        if(!gScore.has(nextKey) || ng < gScore.get(nextKey)){
+                            gScore.set(nextKey, ng);
+                            cameFrom.set(nextKey, {tiles: next.slice(), parent: curKey});
+                            heap.push([ng + heuristic(next), ng, next]);
+                        }
+                    }
+                    c++;
+                }
+                if(heap.size === 0 || totalNodes >= MAX_NODES) {
+                    sscRenderSolBoard(goalArr, n, -1);
+                    document.getElementById('sscSolMoveDesc').innerHTML = '<span style="color:#ef9a9a;font-size:.85em">⚠️ Puzzle too complex for instant solve — showing the goal state.</span>';
+                    document.getElementById('sscSolStepCounter').textContent = 'N/A';
+                    return;
+                }
+                setTimeout(processChunk, 0);
+            }
+            processChunk();
 
-        function processChunk() {
-            let c = 0;
-            while(heap.size > 0 && c < CHUNK && totalNodes < MAX_NODES) {
-                const [f, g, cur] = heap.pop();
-                const curKey = cur.join(',');
-                totalNodes++;
+        } else {
+            // ── IDA* for 15-puzzle and 24-puzzle ─────────────────────
+            // IDA* is memory-efficient and can solve large puzzles
+            const dirs = [[-1,0,'U'],[1,0,'D'],[0,-1,'L'],[0,1,'R']];
+            const oppDir = {U:'D',D:'U',L:'R',R:'L'};
+            let bound = heuristic(startTiles);
+            let path  = [startTiles.slice()];
+            let found = false;
+            let totalIter = 0;
+            const MAX_ITER = 8000000;
+            // Limit solution depth to avoid infinite loops on unsolvable states
+            const MAX_DEPTH = n <= 4 ? 100 : 150;
 
-                // Skip stale entries
-                if(gScore.has(curKey) && gScore.get(curKey) < g) continue;
+            function idaSearch(tiles, g, bound, lastDir) {
+                const f = g + heuristic(tiles);
+                if (f > bound) return f;
+                if (tiles.join(',') === goalStr) { found = true; return -1; }
+                if (g >= MAX_DEPTH) return Infinity;
+                let minF = Infinity;
+                const ei = tiles.indexOf(0);
+                const er = Math.floor(ei/n), ec = ei%n;
+                for (const [dr, dc, dName] of dirs) {
+                    if (lastDir && dName === oppDir[lastDir]) continue; // no backtrack
+                    const nr = er+dr, nc = ec+dc;
+                    if (nr<0||nr>=n||nc<0||nc>=n) continue;
+                    totalIter++;
+                    if (totalIter > MAX_ITER) return Infinity;
+                    const ni = nr*n+nc;
+                    const next = tiles.slice();
+                    [next[ei], next[ni]] = [next[ni], next[ei]];
+                    path.push(next.slice());
+                    const t = idaSearch(next, g+1, bound, dName);
+                    if (found) return -1;
+                    if (t < minF) minF = t;
+                    path.pop();
+                }
+                return minF;
+            }
 
-                if(curKey === goalStr) {
-                    sscSolSteps   = reconstruct(curKey);
+            function runIDAChunk() {
+                // Run one bound iteration per chunk
+                totalIter = 0;
+                path = [startTiles.slice()];
+                found = false;
+                const t = idaSearch(startTiles, 0, bound, null);
+                if (found) {
+                    sscSolSteps = path.map(s => s.slice());
                     sscSolStepIdx = 0;
                     sscRenderSolStep(0);
                     setTimeout(()=>sscSolStartPlay(), 500);
                     return;
                 }
-
-                const ei=cur.indexOf(0), er=Math.floor(ei/n), ec=ei%n;
-                for(const [dr,dc] of dirs){
-                    const nr=er+dr, nc=ec+dc;
-                    if(nr<0||nr>=n||nc<0||nc>=n) continue;
-                    const ni=nr*n+nc;
-                    const next=cur.slice(); [next[ei],next[ni]]=[next[ni],next[ei]];
-                    const nextKey=next.join(',');
-                    const ng = g+1;
-                    if(!gScore.has(nextKey) || ng < gScore.get(nextKey)){
-                        gScore.set(nextKey, ng);
-                        cameFrom.set(nextKey, {tiles: next.slice(), parent: curKey});
-                        heap.push([ng + mh(next), ng, next]);
-                    }
+                if (t === Infinity || bound > MAX_DEPTH) {
+                    // Too deeply shuffled — just show a message, do not display goal state
+                    document.getElementById('sscSolMoveDesc').innerHTML =
+                        '<span style="color:#ffe082;font-size:.85em">⚠️ This puzzle is too heavily shuffled to solve automatically. Please tap <strong>New Game</strong> for a fresh start!</span>';
+                    document.getElementById('sscSolStepCounter').textContent = 'N/A';
+                    return;
                 }
-                c++;
-            }
-
-            if(heap.size === 0 || totalNodes >= MAX_NODES) {
-                sscRenderSolBoard(goalArr, n, -1);
+                bound = t;
+                // Update progress message
                 document.getElementById('sscSolMoveDesc').innerHTML =
-                    '<span style="color:#ef9a9a;font-size:.85em">⚠️ Too complex to auto-solve — showing the goal state.</span>';
-                document.getElementById('sscSolStepCounter').textContent = 'N/A';
-                return;
+                    '<span style="color:rgba(255,255,255,.6);font-size:.88em">⏳ Solving… exploring depth '+bound+' — please wait</span>';
+                setTimeout(runIDAChunk, 0);
             }
-
-            // Yield to browser then continue
-            setTimeout(processChunk, 0);
+            runIDAChunk();
         }
-
-        processChunk();
     }
 
     // ── RENDER SOL BOARD ──────────────────────────────────────────────
     function sscRenderSolBoard(tiles, n, highlightIdx) {
         const board = document.getElementById('sscSolBoard');
-        const maxW = Math.min(260, (window.innerWidth * 0.80) - 40);
+        const maxW = Math.min(320, (window.innerWidth * 0.85) - 40);
         const sz = Math.floor(maxW / n);
         board.style.gridTemplateColumns = 'repeat('+n+',1fr)';
         board.innerHTML = '';
@@ -17626,8 +17769,32 @@ Proceed?`)) return;
             tile.style.borderRadius = '5px';
             tile.style.transition = 'all .3s ease';
             if (isEmpty) {
-                tile.style.background = 'rgba(196,69,105,.2)';
-                tile.style.border = '2px dashed rgba(196,69,105,.4)';
+                tile.style.background = 'rgba(196,69,105,.35)';
+                tile.style.border = '2px dashed rgba(196,69,105,.6)';
+                tile.style.background = 'linear-gradient(135deg,#ffe600,#ff8c00)';
+                tile.style.display = 'flex';
+                tile.style.alignItems = 'center';
+                tile.style.justifyContent = 'center';
+                tile.style.flexDirection = 'column';
+                tile.style.color = '#3d0000';
+                tile.style.fontSize = '0.75em';
+                tile.style.fontWeight = '900';
+                tile.style.letterSpacing = '1px';
+                tile.style.border = '3px solid rgba(255,255,255,.6)';
+                tile.style.animation = 'sscEmptyPulse 1.2s ease-in-out infinite';
+                const solLogoEl = document.createElement('img');
+                solLogoEl.src = 'davan_degree1.png';
+                const solLogoSize = Math.floor(sz * 0.45);
+                solLogoEl.style.cssText = `width:${solLogoSize}px;height:${solLogoSize}px;object-fit:contain;margin-bottom:2px;opacity:0.9;filter:drop-shadow(0 1px 3px rgba(0,0,0,.3))`;
+                tile.appendChild(solLogoEl);
+                const solEmptyIcon = document.createElement('div');
+                solEmptyIcon.style.cssText = 'font-size:1.2em;margin-bottom:2px;animation:sscEmptyArrow 0.9s ease-in-out infinite';
+                solEmptyIcon.textContent = '👆';
+                tile.appendChild(solEmptyIcon);
+                const solEmptyLbl = document.createElement('div');
+                solEmptyLbl.style.cssText = 'font-size:0.75em;font-weight:900;letter-spacing:1px;color:#3d0000';
+                solEmptyLbl.textContent = 'EMPTY';
+                tile.appendChild(solEmptyLbl);
             } else {
                 tile.style.border = isHL
                     ? '3px solid #ffd54f'
@@ -18578,7 +18745,7 @@ Proceed?`)) return;
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;">
-                <strong>Version:</strong> 4.1 Speed Slide Challenge updated   | <strong>Last Updated:</strong> February 21, 2026 01.38pm
+                <strong>Version:</strong> 3.7 Speed Slide Challenge updated   | <strong>Last Updated:</strong> February 21, 2026 02.15pm
             </p>
             <!-- ============================================ -->
             
