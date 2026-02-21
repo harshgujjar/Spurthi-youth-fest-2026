@@ -880,6 +880,271 @@
         .ssc-tile:hover { transform: scale(1.04); box-shadow: 0 4px 12px rgba(0,0,0,.3); }
         .ssc-tile.ssc-empty { background: #c44569 !important; cursor: default; opacity: .3; }
         .ssc-tile.ssc-empty:hover { transform: none; box-shadow: none; }
+        @keyframes sscWinPop {
+            from { transform: scale(0.5); opacity: 0; }
+            to   { transform: scale(1);   opacity: 1; }
+        }
+        @keyframes sscWinBounce {
+            0%   { transform: scale(0) rotate(-15deg); opacity:0; }
+            60%  { transform: scale(1.3) rotate(5deg); }
+            80%  { transform: scale(0.9) rotate(-3deg); }
+            100% { transform: scale(1) rotate(0); opacity:1; }
+        }
+        @keyframes sscScoreCount {
+            from { transform: scale(0.4); opacity:0; }
+            to   { transform: scale(1);   opacity:1; }
+        }
+        @keyframes sscDiffFloat {
+            0%,100% { transform: translateY(0); }
+            50%     { transform: translateY(-10px); }
+        }
+        @keyframes sscBoardShake {
+            0%,100% { transform: translateX(0); }
+            20%,60% { transform: translateX(-6px); }
+            40%,80% { transform: translateX(6px); }
+        }
+        @keyframes sscBooShake {
+            0%,100% { transform: translateX(0) rotate(0); }
+            20%     { transform: translateX(-8px) rotate(-5deg); }
+            40%     { transform: translateX(8px) rotate(5deg); }
+            60%     { transform: translateX(-5px) rotate(-3deg); }
+            80%     { transform: translateX(5px) rotate(3deg); }
+        }
+        @keyframes sscEmojiFloat {
+            0%   { transform: translateY(0) rotate(0deg) scale(1); opacity:1; }
+            100% { transform: translateY(-260px) rotate(720deg) scale(0.1); opacity:0; }
+        }
+        @keyframes sscBooDrop {
+            0%   { transform: translateY(-20px) rotate(0deg); opacity:1; }
+            100% { transform: translateY(200px) rotate(-360deg) scale(0.2); opacity:0; }
+        }
+        .ssc-board-shake { animation: sscBoardShake 0.4s ease; }
+    </style>
+
+    <style>
+        /* ══════════════════════════════════════════════════
+           SPEED SLIDE CHALLENGE — NEW GAME SETUP REDESIGN
+           Professional, mobile-first layout
+           ══════════════════════════════════════════════════ */
+
+        /* ── Play section wrapper ── */
+        #sscPlaySection {
+            max-width: 680px !important;
+            margin-left: auto !important;
+            margin-right: auto !important;
+            border-radius: 24px !important;
+            padding: 0 !important;
+            overflow: hidden;
+            background: #ffffff !important;
+            border: none !important;
+            box-shadow: 0 24px 64px rgba(106,27,154,0.16), 0 4px 20px rgba(0,0,0,0.07) !important;
+        }
+
+        /* ── Setup card container ── */
+        #sscSetupCard {
+            padding: 32px 28px 28px;
+        }
+
+        /* ── Title area ── */
+        #sscSetupCard > div[style*="text-align:center"] {
+            background: linear-gradient(135deg, #6a1b9a 0%, #c44569 100%);
+            margin: -32px -28px 28px !important;
+            padding: 34px 28px 28px !important;
+            border-radius: 0 !important;
+            position: relative;
+            overflow: hidden;
+        }
+        #sscSetupCard > div[style*="text-align:center"]::before {
+            content: '';
+            position: absolute; top: -50px; right: -50px;
+            width: 160px; height: 160px; border-radius: 50%;
+            background: rgba(255,255,255,0.06);
+            pointer-events: none;
+        }
+        #sscSetupCard > div[style*="text-align:center"]::after {
+            content: '';
+            position: absolute; bottom: -40px; left: -30px;
+            width: 120px; height: 120px; border-radius: 50%;
+            background: rgba(255,255,255,0.05);
+            pointer-events: none;
+        }
+        #sscSetupCard > div[style*="text-align:center"] > div:first-child {
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2));
+        }
+        #sscSetupCard > div[style*="text-align:center"] h2 {
+            color: white !important;
+            font-size: 2em !important;
+            font-weight: 900 !important;
+            letter-spacing: -0.5px !important;
+            text-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+        #sscSetupCard > div[style*="text-align:center"] p {
+            color: rgba(255,255,255,0.82) !important;
+            font-size: 0.95em !important;
+        }
+
+        /* ── Step number badges ── */
+        #sscSetupCard div[style*="width:30px"] {
+            box-shadow: 0 4px 12px rgba(106,27,154,0.4);
+        }
+
+        /* ── Difficulty cards ── */
+        .ssc-diff-card {
+            background: #fafafa;
+            border: 2.5px solid #e0e0e0;
+            border-radius: 16px;
+            padding: 20px 16px 16px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.25s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .ssc-diff-card:hover {
+            border-color: #9c27b0;
+            background: #faf0ff;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 24px rgba(106,27,154,0.15);
+        }
+        .ssc-diff-card.ssc-selected {
+            border-color: #6a1b9a;
+            background: linear-gradient(135deg, #faf0ff 0%, #fce4ec 100%);
+            box-shadow: 0 8px 24px rgba(106,27,154,0.2);
+            transform: translateY(-2px);
+        }
+        .ssc-diff-card.ssc-selected::after {
+            content: '✓';
+            position: absolute;
+            top: 8px; right: 10px;
+            width: 22px; height: 22px;
+            background: linear-gradient(135deg, #6a1b9a, #c44569);
+            color: white;
+            border-radius: 50%;
+            font-size: 0.7em;
+            font-weight: 900;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 22px;
+            text-align: center;
+        }
+        .diff-emoji {
+            font-size: 2.2em;
+            display: block;
+            margin-bottom: 2px;
+        }
+
+        /* Grid responsive for difficulty cards */
+        #sscSetupCard div[style*="repeat(auto-fit"] {
+            grid-template-columns: repeat(3, 1fr) !important;
+        }
+        @media (max-width: 480px) {
+            #sscSetupCard div[style*="repeat(auto-fit"] {
+                grid-template-columns: 1fr !important;
+                gap: 10px !important;
+            }
+            .ssc-diff-card {
+                display: flex;
+                align-items: center;
+                gap: 14px;
+                padding: 14px 16px;
+                text-align: left;
+            }
+            .diff-emoji { font-size: 1.8em; margin-bottom: 0; flex-shrink: 0; }
+            .ssc-diff-card > div:not(.diff-emoji) { flex: 1; }
+        }
+
+        /* ── Upload zone ── */
+        .ssc-upload-zone {
+            border: 2.5px dashed #ce93d8;
+            border-radius: 16px;
+            padding: 32px 20px;
+            text-align: center;
+            cursor: pointer;
+            background: linear-gradient(135deg, #faf0ff 0%, #fce4ec 100%);
+            transition: all 0.25s ease;
+            position: relative;
+        }
+        .ssc-upload-zone:hover {
+            border-color: #6a1b9a;
+            background: linear-gradient(135deg, #f3e5f5 0%, #fce4ec 100%);
+            box-shadow: 0 6px 20px rgba(106,27,154,0.12);
+        }
+        .ssc-upload-zone.has-image {
+            border-color: #4caf50;
+            border-style: solid;
+            background: linear-gradient(135deg, #f1f8e9, #e8f5e9);
+        }
+
+        /* ── Start button ── */
+        #sscStartBtn {
+            border-radius: 14px !important;
+            font-size: 1.1em !important;
+            font-weight: 800 !important;
+            letter-spacing: 0.5px !important;
+            transition: all 0.3s ease !important;
+        }
+        #sscStartBtn:not([disabled]):hover {
+            transform: translateY(-2px) !important;
+            box-shadow: 0 12px 32px rgba(67,160,71,0.5) !important;
+        }
+
+        /* ── Paused banner polish ── */
+        #sscPausedBanner {
+            border-radius: 14px !important;
+            border-left-width: 5px !important;
+        }
+
+        /* ── Stat boxes in game area ── */
+        .ssc-stat-box {
+            border-radius: 14px;
+            padding: 14px 10px;
+            text-align: center;
+        }
+        .ssc-stat-val {
+            font-size: 1.6em;
+            font-weight: 900;
+            line-height: 1;
+        }
+        .ssc-stat-lbl {
+            font-size: 0.72em;
+            color: #888;
+            margin-top: 5px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* ── Win modal ── */
+        .ssc-win-inner {
+            background: linear-gradient(160deg, #1a0030 0%, #3d0060 60%, #6a1b9a 100%);
+            border-radius: 24px;
+            padding: 40px 32px 36px;
+            max-width: 440px;
+            width: 90vw;
+            text-align: center;
+            box-shadow: 0 32px 80px rgba(0,0,0,0.5);
+        }
+        .ssc-win-stat {
+            background: rgba(255,255,255,0.08);
+            border-radius: 12px;
+            padding: 14px 10px;
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.12);
+            flex: 1;
+        }
+
+        /* ── Responsive ── */
+        @media (max-width: 600px) {
+            #sscPlaySection { border-radius: 18px !important; }
+            #sscSetupCard { padding: 24px 16px 22px; }
+            #sscSetupCard > div[style*="text-align:center"] {
+                margin: -24px -16px 22px !important;
+                padding: 26px 18px 22px !important;
+            }
+            #sscSetupCard > div[style*="text-align:center"] h2 { font-size: 1.6em !important; }
+            .ssc-win-inner { padding: 28px 20px 24px; }
+        }
     </style>
 </head>
 <body>
@@ -1154,9 +1419,7 @@
                 <button class="btn sh-glow" onclick="shLogin()" style="background:linear-gradient(135deg,#9c27b0,#e91e63);color:white;width:100%;font-size:1.1em;padding:15px;border-radius:12px;font-weight:700;letter-spacing:0.5px;margin-bottom:8px">
                     🚀 Enter Scavenger Hunt
                 </button>
-                <button class="btn btn-secondary" onclick="console.log('TEST: shLogin type:', typeof shLogin, 'window.db:', typeof window.db); alert('shLogin: ' + typeof shLogin + ', window.db: ' + typeof window.db)" style="width:100%;margin-top:8px;font-size:0.85em">🔍 Test Scavenger Function</button>
             </div>
-        </div>
 
             <!-- ============================================ -->
             <!-- SPEED SLIDE CHALLENGE LOGIN                   -->
@@ -1295,18 +1558,18 @@
 
             <!-- ── CR SCAVENGER HUNT STATS TAB ─────────────────────────────────── -->
             <div id="crScavengerStats" class="form-section">
-                <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:18px">
+                <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:14px">
                     <h3 style="color:#6a1b9a;margin:0">🗺️ Scavenger Hunt — Your Class Stats</h3>
                     <button class="btn btn-small btn-info" onclick="loadCRScavengerStats()">🔄 Refresh</button>
                 </div>
 
-                <!-- Task Filter -->
-                <div style="background:#f3e5f5;border-radius:10px;padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
-                    <label style="font-weight:700;color:#6a1b9a;font-size:0.9em;white-space:nowrap">🔍 Filter by Task:</label>
-                    <select id="crShTaskFilter" onchange="crShApplyTaskFilter()" style="flex:1;min-width:180px;padding:7px 12px;border:2px solid #9c27b0;border-radius:8px;color:#3d0060;font-weight:600;background:white;outline:none;font-size:0.9em">
+                <!-- Task Filter Bar -->
+                <div style="background:linear-gradient(135deg,#6a1b9a,#c44569);border-radius:12px;padding:12px 18px;margin-bottom:16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+                    <label style="color:white;font-weight:700;font-size:0.9em;white-space:nowrap">🔍 Filter by Task:</label>
+                    <select id="crShTaskFilter" onchange="crShApplyTaskFilter()" style="flex:1;min-width:200px;padding:8px 12px;border-radius:8px;border:none;font-size:0.9em;color:#3d0060;font-weight:600;outline:none">
                         <option value="">— All Tasks —</option>
                     </select>
-                    <span id="crShTaskFilterBadge" style="background:#9c27b0;color:white;padding:3px 12px;border-radius:12px;font-size:0.8em;font-weight:700;display:none"></span>
+                    <span id="crShTaskBadge" style="display:none;background:white;color:#6a1b9a;padding:4px 12px;border-radius:20px;font-size:0.8em;font-weight:700;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
                 </div>
 
                 <!-- Info summary box -->
@@ -1337,11 +1600,11 @@
 
                 <!-- Student list -->
                 <div style="background:white;border-radius:10px;border:2px solid #e0c8f5;overflow:hidden">
-                    <div style="background:linear-gradient(135deg,#6a1b9a,#c44569);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
-                        <h4 style="color:white;margin:0;font-size:0.95em" id="crShTableTitle">Your Class Students — Scavenger Hunt Submissions</h4>
+                    <div style="background:linear-gradient(135deg,#6a1b9a,#c44569);padding:12px 16px">
+                        <h4 style="color:white;margin:0;font-size:0.95em">Your Class Students — Scavenger Hunt Submissions</h4>
                     </div>
                     <div class="table-wrapper" style="margin:0">
-                        <table id="crShTableEl">
+                        <table>
                             <thead id="crShTableHead">
                                 <tr>
                                     <th>#</th>
@@ -1788,10 +2051,42 @@
                     
                     <!-- Students Sub-Tab -->
                     <div id="quizStudentsContent" class="form-section">
-                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+                        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:14px">
                             <h3 style="color:#6a1b9a;margin:0">Registered Quiz Students</h3>
                             <button class="btn btn-info btn-small" onclick="loadQuizStudentsAdmin()">🔄 Refresh Students</button>
                         </div>
+                        <!-- Filter Bar -->
+                        <div style="background:#f3e5f5;border-radius:12px;padding:14px 18px;margin-bottom:12px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;border:2px solid #e0c8f5">
+                            <input id="qsAdminSearch" type="text" placeholder="🔍 Search by name / phone / email…" oninput="qsAdminApplyFilters()" style="flex:1;min-width:180px;padding:8px 12px;border:2px solid #9c27b0;border-radius:8px;font-size:0.9em;color:#3d0060;outline:none">
+                            <select id="qsAdminClassFilter" onchange="qsAdminApplyFilters()" style="padding:8px 12px;border:2px solid #9c27b0;border-radius:8px;color:#3d0060;font-weight:600;background:white;outline:none">
+                                <option value="">— All Classes —</option>
+                            </select>
+                            <button onclick="qsAdminResetFilters()" style="padding:8px 14px;background:#9c27b0;color:white;border:none;border-radius:8px;font-weight:700;cursor:pointer;font-size:0.85em">✖ Reset</button>
+                            <button onclick="qsAdminShowDuplicates()" style="padding:8px 14px;background:linear-gradient(135deg,#e65100,#f44336);color:white;border:none;border-radius:8px;font-weight:700;cursor:pointer;font-size:0.85em">⚠️ Duplicates</button>
+                            <button onclick="qsAdminShowEmailFailed()" style="padding:8px 14px;background:linear-gradient(135deg,#1565c0,#0288d1);color:white;border:none;border-radius:8px;font-weight:700;cursor:pointer;font-size:0.85em">📧 Email Failed</button>
+                            <button onclick="qsAdminShowSummary()" style="padding:8px 14px;background:linear-gradient(135deg,#6a1b9a,#c44569);color:white;border:none;border-radius:8px;font-weight:700;cursor:pointer;font-size:0.85em">📊 Summary</button>
+                            <span id="qsAdminCount" style="color:#6a1b9a;font-weight:700;font-size:0.9em"></span>
+                        </div>
+
+                        <!-- Summary Report Box -->
+                        <div id="qsAdminSummaryBox" style="display:none;background:white;border:2px solid #6a1b9a;border-radius:14px;margin-bottom:16px;overflow:hidden">
+                            <div style="background:linear-gradient(135deg,#6a1b9a,#c44569);padding:14px 20px;display:flex;justify-content:space-between;align-items:center">
+                                <h4 style="color:white;margin:0;font-size:1em">📊 Class-wise Registration Summary (vs Class Strength)</h4>
+                                <button onclick="document.getElementById('qsAdminSummaryBox').style.display='none'" style="background:rgba(255,255,255,0.2);color:white;border:none;border-radius:6px;padding:4px 10px;cursor:pointer;font-size:12px;font-weight:700">✕ Close</button>
+                            </div>
+                            <div id="qsAdminSummaryContent" style="padding:16px 20px">
+                                <p style="color:#999;text-align:center">Click 📊 Summary Report to generate</p>
+                            </div>
+                            <!-- Copy-ready message box -->
+                            <div id="qsAdminMsgBox" style="display:none;margin:0 16px 16px;background:#f3e5f5;border-radius:10px;border:2px solid #9c27b0;padding:14px">
+                                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+                                    <span style="color:#6a1b9a;font-weight:700;font-size:0.9em">📋 WhatsApp / Message Ready Text:</span>
+                                    <button onclick="qsAdminCopyMsg()" style="background:#25d366;color:white;border:none;border-radius:6px;padding:5px 14px;cursor:pointer;font-size:12px;font-weight:700">📋 Copy</button>
+                                </div>
+                                <textarea id="qsAdminMsgText" rows="10" readonly style="width:100%;padding:10px;border:1.5px solid #9c27b0;border-radius:8px;font-size:13px;font-family:monospace;box-sizing:border-box;background:white;resize:vertical;color:#333"></textarea>
+                            </div>
+                        </div>
+
                         <div class="table-wrapper">
                             <table>
                                 <thead>
@@ -1803,6 +2098,7 @@
                                         <th>Password</th>
                                         <th>Class</th>
                                         <th>Registered</th>
+                                        <th>Email Status</th>
                                     </tr>
                                 </thead>
                                 <tbody id="quizStudentsTableAdmin"></tbody>
@@ -3208,6 +3504,28 @@
                         </div>
                     </div>
 
+                    <!-- Speed Slide Challenge scoring -->
+                    <div style="margin-top:18px;padding:15px;background:#e3f2fd;border-radius:10px;border:2px solid #90caf9">
+                        <h4 style="color:#0d47a1;margin-bottom:12px">🧩 Speed Slide Challenge — Points</h4>
+                        <p style="color:#444;font-size:12px;margin-bottom:14px">
+                            Points are awarded based on each student's best approved puzzle score (0–300 depending on difficulty).<br>
+                            Each student's best score contributes directly to their class total — no winner/runner-up bonuses, purely performance-based.
+                        </p>
+                        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px">
+                            <div class="form-group" style="margin:0">
+                                <label style="color:#0d47a1">📐 Score contribution factor (leaderboard pts per 10 game pts)</label>
+                                <input type="number" id="lbCfgSscScorePts" value="1" min="0" max="20" style="border:2px solid #64b5f6">
+                                <small style="color:#555">Each student's best score ÷ 10 × factor = class pts<br>Easy max 100→10pts · Medium 200→20pts · Hard 300→30pts</small>
+                            </div>
+                        </div>
+                        <div style="margin-top:12px;background:#e1f5fe;padding:10px;border-radius:8px;border:1px solid #81d4fa">
+                            <p style="margin:0;color:#01579b;font-size:12px">
+                                <strong>Example (Factor = 1):</strong> 1ST BCA has 3 students: one scores 300 (Hard) = 30pts, one 200 (Medium) = 20pts, one 100 (Easy) = 10pts.<br>
+                                Class total from SSC = <strong>60 pts</strong>. Every student's score counts — harder puzzles earn more! 🎯
+                            </p>
+                        </div>
+                    </div>
+
                     <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:15px">
                         <button class="btn btn-success" onclick="saveLbConfig()">💾 Save Config</button>
                         <span id="lbCfgSaveMsg" style="display:none;background:#d4edda;color:#155724;border:1px solid #c3e6cb;padding:7px 14px;border-radius:6px;font-size:13px;font-weight:600">✅ Config saved! Leaderboard updates in ≤60s</span>
@@ -3495,90 +3813,126 @@
         <div id="sscStudentDashboard" style="display:none">
 
             <!-- Header bar -->
-            <div style="background:linear-gradient(135deg,#6a1b9a,#c44569);color:white;padding:16px 24px;border-radius:12px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;box-shadow:0 4px 15px rgba(106,27,154,0.4)">
-                <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
-                    <span style="font-size:1.3em;font-weight:700">🧩 Speed Slide Challenge</span>
-                    <span id="sscPlayerBadge" style="background:rgba(255,255,255,.2);padding:5px 14px;border-radius:20px;font-size:.85em;font-weight:700"></span>
+            <div style="background:linear-gradient(135deg,#1a0030 0%,#4a148c 50%,#c44569 100%);color:white;padding:18px 24px;border-radius:16px;margin-bottom:18px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;box-shadow:0 8px 28px rgba(106,27,154,0.5),0 0 0 1px rgba(255,255,255,.08)">
+                <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+                    <span style="font-size:1.5em;font-weight:800;letter-spacing:.5px;text-shadow:0 2px 8px rgba(0,0,0,.3)">🧩 Speed Slide Challenge</span>
+                    <span id="sscPlayerBadge" style="background:rgba(255,255,255,.15);padding:6px 16px;border-radius:20px;font-size:.83em;font-weight:700;border:1px solid rgba(255,255,255,.2);backdrop-filter:blur(4px)"></span>
                 </div>
-                <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-                    <button onclick="sscShowSection('play')" id="sscTabPlay" style="background:rgba(255,255,255,.9);color:#6a1b9a;border:none;padding:8px 18px;border-radius:20px;cursor:pointer;font-weight:700;font-size:.9em">🎮 Play</button>
-                    <button onclick="sscShowSection('lb')"   id="sscTabLB"   style="background:rgba(255,255,255,.2);color:white;border:2px solid rgba(255,255,255,.5);padding:8px 18px;border-radius:20px;cursor:pointer;font-weight:700;font-size:.9em">🏆 Leaderboard</button>
-                    <button onclick="sscGoBack()" style="background:rgba(255,255,255,.15);color:white;border:2px solid rgba(255,255,255,.4);padding:8px 18px;border-radius:20px;cursor:pointer;font-weight:700;font-size:.85em">⬅️ Back</button>
-                    <button onclick="logout()" style="background:rgba(0,0,0,.25);color:white;border:none;padding:8px 18px;border-radius:20px;cursor:pointer;font-weight:700;font-size:.85em">Logout</button>
+                <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+                    <button onclick="sscShowSection('play')" id="sscTabPlay" style="background:rgba(255,255,255,.92);color:#4a148c;border:none;padding:9px 20px;border-radius:22px;cursor:pointer;font-weight:800;font-size:.88em;transition:all .2s;box-shadow:0 3px 10px rgba(0,0,0,.2)">🎮 Play</button>
+                    <button onclick="sscShowSection('lb')" id="sscTabLB" style="background:rgba(255,255,255,.15);color:white;border:2px solid rgba(255,255,255,.4);padding:9px 20px;border-radius:22px;cursor:pointer;font-weight:700;font-size:.88em;transition:all .2s">🏆 Leaderboard</button>
+                    <button onclick="sscGoBack()" style="background:rgba(255,255,255,.1);color:white;border:1px solid rgba(255,255,255,.3);padding:9px 18px;border-radius:22px;cursor:pointer;font-weight:600;font-size:.83em;transition:all .2s">⬅️ Back</button>
+                    <button onclick="logout()" style="background:rgba(0,0,0,.3);color:rgba(255,255,255,.85);border:none;padding:9px 18px;border-radius:22px;cursor:pointer;font-weight:600;font-size:.83em;transition:all .2s">Logout</button>
                 </div>
             </div>
 
             <!-- PLAY SECTION -->
-            <div id="sscPlaySection" class="content" style="margin-bottom:20px">
+            <div id="sscPlaySection" class="content" style="margin-bottom:20px;background:linear-gradient(160deg,#faf0ff 0%,#fff5fb 100%);border:1px solid rgba(106,27,154,.1);box-shadow:0 8px 32px rgba(106,27,154,.08)">
                 <div id="sscSetupCard">
-                    <!-- Paused banner (shown when admin pauses game) -->
-                    <div id="sscPausedBanner" style="display:none;background:#fff3e0;border:2px solid #ff9800;border-radius:10px;padding:16px 20px;margin-bottom:18px;border-left:5px solid #ff9800">
-                        <h4 style="color:#e65100;margin:0 0 6px">⏸️ Game Currently Paused</h4>
+                    <!-- Paused banner -->
+                    <div id="sscPausedBanner" style="display:none;background:linear-gradient(135deg,#fff3e0,#ffe0b2);border:2px solid #ff9800;border-radius:12px;padding:18px 22px;margin-bottom:22px;border-left:6px solid #ff6f00">
+                        <h4 style="color:#e65100;margin:0 0 6px;font-size:1.05em">⏸️ Game Currently Paused</h4>
                         <p style="color:#bf360c;margin:0;font-size:.9em">The organiser has temporarily paused the Speed Slide Challenge. You can still view the Leaderboard. Check back soon!</p>
                     </div>
-                    <h2 style="color:#c44569;margin-bottom:20px">🎮 New Game</h2>
-                    <h3 style="color:#333;margin-bottom:14px">1. Choose Difficulty</h3>
-                    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:8px">
-                        <div id="ssdc-easy" onclick="sscSelectDiff('easy')" style="border:3px solid #ddd;border-radius:12px;padding:20px;cursor:pointer;text-align:center;transition:all .3s;background:white">
-                            <div style="font-size:2.2em">😊</div>
-                            <div style="font-weight:700;color:#333;margin-top:6px">8-Puzzle</div>
-                            <div style="font-size:.82em;color:#888;margin-top:4px">3×3 grid · 8 tiles</div>
-                            <span style="display:inline-block;background:linear-gradient(135deg,#6a1b9a,#c44569);color:white;padding:4px 14px;border-radius:14px;font-size:.82em;font-weight:700;margin-top:8px">100 pts max</span>
+
+                    <!-- Title -->
+                    <div style="text-align:center;margin-bottom:28px">
+                        <div style="font-size:3em;margin-bottom:6px">🧩</div>
+                        <h2 style="color:#4a148c;margin:0;font-size:1.9em;font-weight:900;letter-spacing:-.5px">New Game</h2>
+                        <p style="color:#9c27b0;margin:6px 0 0;font-size:.95em;font-weight:500">Choose your difficulty and upload a photo to begin</p>
+                    </div>
+
+                    <!-- Step 1: Difficulty -->
+                    <div style="margin-bottom:24px">
+                        <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+                            <div style="background:linear-gradient(135deg,#6a1b9a,#c44569);color:white;width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.95em;flex-shrink:0">1</div>
+                            <h3 style="color:#333;margin:0;font-size:1.05em;font-weight:700">Choose Difficulty</h3>
                         </div>
-                        <div id="ssdc-medium" onclick="sscSelectDiff('medium')" style="border:3px solid #6a1b9a;border-radius:12px;padding:20px;cursor:pointer;text-align:center;transition:all .3s;background:#f3e5f5">
-                            <div style="font-size:2.2em">😅</div>
-                            <div style="font-weight:700;color:#333;margin-top:6px">15-Puzzle</div>
-                            <div style="font-size:.82em;color:#888;margin-top:4px">4×4 grid · 15 tiles</div>
-                            <span style="display:inline-block;background:linear-gradient(135deg,#6a1b9a,#c44569);color:white;padding:4px 14px;border-radius:14px;font-size:.82em;font-weight:700;margin-top:8px">200 pts max</span>
+                        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:10px">
+                            <div id="ssdc-easy" onclick="sscSelectDiff('easy')" class="ssc-diff-card">
+                                <div class="diff-emoji">😊</div>
+                                <div style="font-weight:800;color:#333;margin-top:8px;font-size:1.1em">8-Puzzle</div>
+                                <div style="font-size:.8em;color:#999;margin-top:4px">3×3 grid · 8 tiles</div>
+                                <div style="font-size:.75em;color:#888;margin-top:2px">Beginner</div>
+                                <span style="display:inline-block;background:linear-gradient(135deg,#43a047,#66bb6a);color:white;padding:5px 16px;border-radius:14px;font-size:.82em;font-weight:800;margin-top:10px;letter-spacing:.3px">100 pts max</span>
+                            </div>
+                            <div id="ssdc-medium" onclick="sscSelectDiff('medium')" class="ssc-diff-card ssc-selected">
+                                <div class="diff-emoji">😄</div>
+                                <div style="font-weight:800;color:#333;margin-top:8px;font-size:1.1em">15-Puzzle</div>
+                                <div style="font-size:.8em;color:#999;margin-top:4px">4×4 grid · 15 tiles</div>
+                                <div style="font-size:.75em;color:#9c27b0;margin-top:2px;font-weight:700">⭐ Popular</div>
+                                <span style="display:inline-block;background:linear-gradient(135deg,#6a1b9a,#c44569);color:white;padding:5px 16px;border-radius:14px;font-size:.82em;font-weight:800;margin-top:10px;letter-spacing:.3px">200 pts max</span>
+                            </div>
+                            <div id="ssdc-hard" onclick="sscSelectDiff('hard')" class="ssc-diff-card">
+                                <div class="diff-emoji">🔥</div>
+                                <div style="font-weight:800;color:#333;margin-top:8px;font-size:1.1em">24-Puzzle</div>
+                                <div style="font-size:.8em;color:#999;margin-top:4px">5×5 grid · 24 tiles</div>
+                                <div style="font-size:.75em;color:#e65100;margin-top:2px;font-weight:700">🔥 Expert</div>
+                                <span style="display:inline-block;background:linear-gradient(135deg,#e65100,#ff6f00);color:white;padding:5px 16px;border-radius:14px;font-size:.82em;font-weight:800;margin-top:10px;letter-spacing:.3px">300 pts max</span>
+                            </div>
                         </div>
-                        <div id="ssdc-hard" onclick="sscSelectDiff('hard')" style="border:3px solid #ddd;border-radius:12px;padding:20px;cursor:pointer;text-align:center;transition:all .3s;background:white">
-                            <div style="font-size:2.2em">🔥</div>
-                            <div style="font-weight:700;color:#333;margin-top:6px">24-Puzzle</div>
-                            <div style="font-size:.82em;color:#888;margin-top:4px">5×5 grid · 24 tiles</div>
-                            <span style="display:inline-block;background:linear-gradient(135deg,#6a1b9a,#c44569);color:white;padding:4px 14px;border-radius:14px;font-size:.82em;font-weight:700;margin-top:8px">300 pts max</span>
+                        <div style="background:rgba(106,27,154,.06);border-radius:10px;padding:10px 14px;border-left:3px solid #9c27b0">
+                            <p id="sscDiffNote" style="color:#6a1b9a;font-size:.88em;margin:0;font-weight:600">15-Puzzle (4×4) · 200 max points</p>
                         </div>
                     </div>
-                    <p id="sscDiffNote" style="color:#888;font-size:.88em;margin-bottom:20px">15-Puzzle (4×4) · 200 max points</p>
-                    <h3 style="color:#333;margin-bottom:12px">2. Upload Your Photo</h3>
-                    <div id="sscUploadZone" onclick="document.getElementById('sscImgInput').click()" style="border:3px dashed #9c27b0;border-radius:12px;padding:30px;text-align:center;cursor:pointer;background:#faf0ff;transition:all .25s;margin-bottom:16px">
-                        <div style="font-size:2.5em">📸</div>
-                        <p style="color:#6a1b9a;font-weight:600;margin-top:8px">Click to upload an image</p>
-                        <p style="color:#aaa;font-size:.85em">JPG / PNG · max 5 MB</p>
-                        <img id="sscPreviewThumb" style="max-width:100%;max-height:160px;border-radius:10px;margin-top:12px;border:3px solid #9c27b0;display:none" alt="">
+
+                    <!-- Step 2: Upload -->
+                    <div style="margin-bottom:24px">
+                        <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+                            <div style="background:linear-gradient(135deg,#6a1b9a,#c44569);color:white;width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.95em;flex-shrink:0">2</div>
+                            <h3 style="color:#333;margin:0;font-size:1.05em;font-weight:700">Upload Your Photo</h3>
+                        </div>
+                        <div id="sscUploadZone" onclick="document.getElementById('sscImgInput').click()" class="ssc-upload-zone">
+                            <div style="font-size:2.8em;margin-bottom:6px">📸</div>
+                            <p style="color:#6a1b9a;font-weight:700;margin:0 0 4px;font-size:1.05em">Tap to upload a photo</p>
+                            <p style="color:#bbb;font-size:.82em;margin:0">JPG / PNG · max 5 MB</p>
+                            <img id="sscPreviewThumb" style="max-width:100%;max-height:180px;border-radius:12px;margin-top:14px;border:3px solid #4caf50;box-shadow:0 4px 16px rgba(0,0,0,.15);display:none" alt="">
+                        </div>
+                        <input type="file" id="sscImgInput" accept="image/*" style="display:none" onchange="sscHandleImage(event)">
                     </div>
-                    <input type="file" id="sscImgInput" accept="image/*" style="display:none" onchange="sscHandleImage(event)">
-                    <button id="sscStartBtn" onclick="sscStartGame()" disabled style="width:100%;padding:14px;background:linear-gradient(135deg,#28a745,#20c997);color:white;border:none;border-radius:10px;font-size:1.1em;font-weight:700;cursor:pointer;opacity:.5;transition:all .3s">▶ Start Puzzle</button>
+
+                    <!-- Start button -->
+                    <button id="sscStartBtn" onclick="sscStartGame()" disabled style="width:100%;padding:18px;background:linear-gradient(135deg,#1b5e20,#2e7d32,#43a047);color:white;border:none;border-radius:14px;font-size:1.2em;font-weight:800;cursor:pointer;opacity:.45;transition:all .3s;letter-spacing:.5px;box-shadow:0 6px 20px rgba(67,160,71,.4)">▶ &nbsp;Start Puzzle</button>
                 </div>
 
                 <!-- Live game area -->
                 <div id="sscGameArea" style="display:none">
+                    <!-- Top bar: diff label + buttons -->
                     <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:18px">
-                        <div>
-                            <h2 style="color:#c44569;margin:0">🧩 Solving…</h2>
-                            <p id="sscGameDiffLabel" style="color:#888;font-size:.9em;margin-top:3px"></p>
+                        <div style="display:flex;align-items:center;gap:10px">
+                            <span id="sscGameDiffLabel" style="background:linear-gradient(135deg,#6a1b9a,#c44569);color:white;padding:7px 18px;border-radius:20px;font-weight:800;font-size:.9em;letter-spacing:.3px"></span>
+                            <span id="sscLiveScore" style="background:linear-gradient(135deg,#ffd700,#ffab00);color:#1a0030;padding:7px 18px;border-radius:20px;font-weight:900;font-size:.9em;display:none">⭐ <span id="sscLiveScoreVal">—</span></span>
                         </div>
-                        <div style="display:flex;gap:8px;flex-wrap:wrap">
-                            <button onclick="sscShowSolution()" style="background:#888;color:white;border:none;padding:9px 18px;border-radius:8px;cursor:pointer;font-weight:600;font-size:.9em">👁 Show Solution</button>
-                            <button onclick="sscResetGame()"    style="background:linear-gradient(135deg,#ff9800,#f44336);color:white;border:none;padding:9px 18px;border-radius:8px;cursor:pointer;font-weight:600;font-size:.9em">🔄 New Game</button>
+                        <div style="display:flex;gap:8px">
+                            <button onclick="sscShowSolution()" style="background:#666;color:white;border:none;padding:8px 16px;border-radius:10px;cursor:pointer;font-weight:600;font-size:.85em;transition:all .2s">👁 Give Up</button>
+                            <button onclick="sscResetGame()" style="background:linear-gradient(135deg,#e53935,#ff7043);color:white;border:none;padding:8px 16px;border-radius:10px;cursor:pointer;font-weight:700;font-size:.85em;transition:all .2s">🔄 New Game</button>
                         </div>
                     </div>
-                    <div style="display:grid;grid-template-columns:1fr auto;gap:20px;align-items:start">
-                        <div><div id="sscPuzzleBoard" style="display:grid;gap:4px;background:#6a1b9a;border-radius:12px;padding:8px;touch-action:none;user-select:none"></div></div>
-                        <div style="min-width:155px">
-                            <div style="background:#fff3e0;border:2px solid #ff9800;border-radius:10px;padding:14px;text-align:center;margin-bottom:10px">
-                                <div id="sscTimerDisplay" style="font-size:2em;font-weight:800;color:#e65100">0:00</div>
-                                <div style="font-size:.78em;color:#888">⏱ Time</div>
+
+                    <!-- Main game layout: board + stats -->
+                    <div style="display:grid;grid-template-columns:1fr 140px;gap:16px;align-items:start">
+                        <!-- Board -->
+                        <div>
+                            <div id="sscPuzzleBoard" style="display:grid;gap:5px;touch-action:none;user-select:none"></div>
+                        </div>
+                        <!-- Stats sidebar -->
+                        <div style="display:flex;flex-direction:column;gap:10px">
+                            <div class="ssc-stat-box" style="background:linear-gradient(135deg,#fff3e0,#ffe0b2);border:2px solid #ffb300">
+                                <div id="sscTimerDisplay" class="ssc-stat-val" style="color:#e65100;font-family:monospace">0:00</div>
+                                <div class="ssc-stat-lbl">⏱ Time</div>
                             </div>
-                            <div style="background:#f3e5f5;border:2px solid #d0c0e8;border-radius:10px;padding:14px;text-align:center;margin-bottom:10px">
-                                <div id="sscMovesDisplay" style="font-size:2em;font-weight:800;color:#6a1b9a">0</div>
-                                <div style="font-size:.78em;color:#888">🎯 Moves</div>
+                            <div class="ssc-stat-box" style="background:linear-gradient(135deg,#f3e5f5,#e1bee7);border:2px solid #9c27b0">
+                                <div id="sscMovesDisplay" class="ssc-stat-val" style="color:#6a1b9a">0</div>
+                                <div class="ssc-stat-lbl">🎯 Moves</div>
                             </div>
-                            <div style="background:#f3e5f5;border:2px solid #d0c0e8;border-radius:10px;padding:14px;text-align:center;margin-bottom:10px">
-                                <div id="sscPtsDisplay" style="font-size:2em;font-weight:800;color:#6a1b9a">—</div>
-                                <div style="font-size:.78em;color:#888">⭐ Max Pts</div>
+                            <div class="ssc-stat-box" style="background:linear-gradient(135deg,#1a0030,#3d0060);border:2px solid rgba(255,215,0,.3)">
+                                <div id="sscPtsDisplay" class="ssc-stat-val" style="color:#ffd700">—</div>
+                                <div class="ssc-stat-lbl" style="color:rgba(255,255,255,.6)">⭐ Pts</div>
                             </div>
-                            <p style="font-size:.78em;color:#aaa;text-align:center;margin-bottom:4px">Preview:</p>
-                            <img id="sscInGamePreview" style="width:100%;border-radius:10px;border:3px solid #9c27b0;display:none" alt="">
+                            <div style="text-align:center">
+                                <p style="font-size:.7em;color:#bbb;margin:0 0 5px;font-weight:600;text-transform:uppercase;letter-spacing:.5px">Preview</p>
+                                <img id="sscInGamePreview" style="width:100%;border-radius:10px;border:3px solid rgba(106,27,154,.4);box-shadow:0 4px 12px rgba(0,0,0,.2);display:none" alt="">
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -3589,7 +3943,7 @@
                 <h2 style="color:#c44569;margin-bottom:16px">🏆 Leaderboard</h2>
                 <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">
                     <button class="tab active" id="ssclbt-easy"   onclick="sscSwitchLB('easy')">😊 8-Puzzle</button>
-                    <button class="tab"        id="ssclbt-medium" onclick="sscSwitchLB('medium')">😅 15-Puzzle</button>
+                    <button class="tab"        id="ssclbt-medium" onclick="sscSwitchLB('medium')">😄 15-Puzzle</button>
                     <button class="tab"        id="ssclbt-hard"   onclick="sscSwitchLB('hard')">🔥 24-Puzzle</button>
                     <button class="tab"        id="ssclbt-all"    onclick="sscSwitchLB('all')">📊 All</button>
                 </div>
@@ -3597,50 +3951,120 @@
             </div>
 
             <!-- WIN MODAL -->
-            <div id="sscWinModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:9999;align-items:center;justify-content:center">
-                <div style="background:white;border-radius:20px;padding:36px;text-align:center;max-width:460px;width:90%">
-                    <div style="font-size:4em;margin-bottom:10px">🏆</div>
-                    <h2 style="color:#c44569;font-size:1.9em;margin-bottom:6px">Puzzle Solved!</h2>
-                    <p style="color:#888;margin-bottom:18px">Amazing — you did it!</p>
-                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">
-                        <div style="background:#f3e5f5;border-radius:10px;padding:14px"><div id="sscWinTime" style="font-size:1.5em;font-weight:800;color:#6a1b9a">—</div><div style="font-size:.8em;color:#888">⏱ Time</div></div>
-                        <div style="background:#f3e5f5;border-radius:10px;padding:14px"><div id="sscWinMoves" style="font-size:1.5em;font-weight:800;color:#6a1b9a">—</div><div style="font-size:.8em;color:#888">🎯 Moves</div></div>
-                        <div style="background:#f3e5f5;border-radius:10px;padding:14px"><div id="sscWinDiff" style="font-size:1.5em;font-weight:800;color:#6a1b9a">—</div><div style="font-size:.8em;color:#888">Difficulty</div></div>
-                        <div style="background:linear-gradient(135deg,#6a1b9a,#c44569);border-radius:10px;padding:14px"><div id="sscWinPts" style="font-size:1.5em;font-weight:800;color:white">—</div><div style="font-size:.8em;color:rgba(255,255,255,.75)">⭐ Points</div></div>
+            <div id="sscWinModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:9999;align-items:center;justify-content:center;backdrop-filter:blur(6px)">
+                <div class="ssc-win-inner" style="position:relative;overflow:hidden">
+                    <!-- Animated celebration bg -->
+                    <div style="position:absolute;inset:0;background:radial-gradient(circle at 30% 20%,rgba(255,215,0,.15) 0%,transparent 55%),radial-gradient(circle at 70% 80%,rgba(196,69,105,.18) 0%,transparent 55%);pointer-events:none"></div>
+
+                    <!-- Floating emoji burst -->
+                    <div id="sscWinEmojiBurst" style="position:absolute;inset:0;pointer-events:none;overflow:hidden"></div>
+
+                    <div style="font-size:5em;margin-bottom:4px;animation:sscWinBounce 0.6s cubic-bezier(.36,.07,.19,.97) both">🏆</div>
+                    <div style="font-size:2em;margin-bottom:6px;letter-spacing:4px;animation:sscWinPop 0.5s ease both">🎉🎊🥳</div>
+                    <h2 style="color:#ffd700;font-size:2em;margin:0 0 2px;font-weight:900;text-shadow:0 2px 16px rgba(255,215,0,.6);animation:sscWinPop 0.4s ease both">Puzzle Solved!</h2>
+                    <p style="color:rgba(255,255,255,.75);margin:0 0 20px;font-size:1em;animation:sscWinPop 0.5s .1s ease both">🌟 Outstanding! You crushed it! 🌟</p>
+
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px">
+                        <div class="ssc-win-stat">
+                            <div id="sscWinTime" style="font-size:1.6em;font-weight:900;color:#80deea">—</div>
+                            <div style="font-size:.75em;color:rgba(255,255,255,.5);margin-top:3px;text-transform:uppercase;letter-spacing:.5px">⏱ Time</div>
+                        </div>
+                        <div class="ssc-win-stat">
+                            <div id="sscWinMoves" style="font-size:1.6em;font-weight:900;color:#ce93d8">—</div>
+                            <div style="font-size:.75em;color:rgba(255,255,255,.5);margin-top:3px;text-transform:uppercase;letter-spacing:.5px">🎯 Moves</div>
+                        </div>
+                        <div class="ssc-win-stat">
+                            <div id="sscWinDiff" style="font-size:1.4em;font-weight:900;color:#a5d6a7">—</div>
+                            <div style="font-size:.75em;color:rgba(255,255,255,.5);margin-top:3px;text-transform:uppercase;letter-spacing:.5px">🎮 Level</div>
+                        </div>
+                        <div style="background:linear-gradient(135deg,rgba(255,215,0,.3),rgba(255,171,0,.2));border-radius:12px;padding:14px 8px;border:2px solid rgba(255,215,0,.5);box-shadow:0 0 20px rgba(255,215,0,.2)">
+                            <div id="sscWinPts" style="font-size:1.9em;font-weight:900;color:#ffd700;animation:sscScoreCount .6s ease both">—</div>
+                            <div style="font-size:.75em;color:rgba(255,215,0,.8);margin-top:3px;text-transform:uppercase;letter-spacing:.5px;font-weight:700">⭐ Points</div>
+                        </div>
                     </div>
-                    <p id="sscWinSaveMsg" style="color:#6a1b9a;font-weight:600;margin-bottom:16px;min-height:20px"></p>
+
+                    <p id="sscWinSaveMsg" style="color:#a5d6a7;font-weight:600;margin-bottom:16px;min-height:22px;font-size:.92em"></p>
+
                     <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
-                        <button onclick="sscSaveScore()" style="background:linear-gradient(135deg,#28a745,#20c997);color:white;border:none;padding:12px 24px;border-radius:8px;font-size:1em;font-weight:700;cursor:pointer">💾 Save Score</button>
-                        <button onclick="sscResetGame()"  style="background:#888;color:white;border:none;padding:12px 24px;border-radius:8px;font-size:1em;font-weight:700;cursor:pointer">🔄 Play Again</button>
+                        <button onclick="sscSaveScore()" style="background:linear-gradient(135deg,#2e7d32,#43a047);color:white;border:none;padding:14px 28px;border-radius:12px;font-size:1em;font-weight:800;cursor:pointer;box-shadow:0 4px 20px rgba(67,160,71,.5);transition:all .2s;letter-spacing:.3px">💾 Save Score</button>
+                        <button onclick="sscResetGame()" style="background:rgba(255,255,255,.12);color:white;border:1px solid rgba(255,255,255,.25);padding:14px 28px;border-radius:12px;font-size:1em;font-weight:700;cursor:pointer;transition:all .2s">🔄 Play Again</button>
                     </div>
                 </div>
             </div>
 
             <!-- GAME OVER MODAL -->
-            <div id="sscGameOverModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:9999;align-items:center;justify-content:center">
-                <div style="background:white;border-radius:20px;padding:36px;text-align:center;max-width:520px;width:90%">
-                    <div style="font-size:3.5em;margin-bottom:8px">😔</div>
-                    <h2 style="color:#f44336;margin-bottom:4px">Game Over</h2>
-                    <p style="color:#888;margin-bottom:16px">You revealed the solution — no score submitted.</p>
-                    <div style="margin-bottom:16px">
-                        <p style="font-weight:600;color:#6a1b9a;margin-bottom:8px">✅ Completed Image:</p>
-                        <img id="sscSolImg" style="width:100%;border-radius:12px;border:3px solid #9c27b0" alt="">
+            <!-- GIVE UP / GAME OVER MODAL -->
+            <div id="sscGameOverModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:9999;align-items:center;justify-content:center;backdrop-filter:blur(8px);overflow-y:auto;padding:16px 0">
+                <div style="background:linear-gradient(160deg,#12001a 0%,#2d0045 60%,#1a0008 100%);border-radius:24px;padding:0;max-width:540px;width:94%;animation:sscWinPop .45s ease both;box-shadow:0 28px 70px rgba(0,0,0,.7),0 0 0 2px rgba(196,69,105,.25);overflow:hidden;position:relative;margin:auto">
+
+                    <!-- Header band -->
+                    <div style="background:linear-gradient(135deg,#b71c1c,#c44569);padding:26px 24px 20px;text-align:center;position:relative">
+                        <div id="sscBooEmojiBurst" style="position:absolute;inset:0;pointer-events:none;overflow:hidden"></div>
+                        <div style="font-size:3.2em;margin-bottom:6px;animation:sscBooShake 0.4s ease both">😔</div>
+                        <div style="font-size:1.6em;margin-bottom:6px;letter-spacing:2px;animation:sscBooShake 0.5s .1s ease both">👎👎👎</div>
+                        <h2 style="color:white;font-size:1.6em;margin:0 0 4px;font-weight:900;letter-spacing:-.3px">You Gave Up!</h2>
+                        <p style="color:rgba(255,255,255,.7);margin:0;font-size:.88em">Score not saved · Watch how it's solved below</p>
                     </div>
-                    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px">
-                        <div style="background:#f3e5f5;border-radius:8px;padding:10px"><div id="sscSolTime" style="font-size:1.2em;font-weight:800;color:#6a1b9a">—</div><div style="font-size:.75em;color:#888">⏱ Time</div></div>
-                        <div style="background:#f3e5f5;border-radius:8px;padding:10px"><div id="sscSolMoves" style="font-size:1.2em;font-weight:800;color:#6a1b9a">—</div><div style="font-size:.75em;color:#888">🎯 Moves</div></div>
-                        <div style="background:#f3e5f5;border-radius:8px;padding:10px"><div id="sscSolDiff" style="font-size:1.2em;font-weight:800;color:#6a1b9a">—</div><div style="font-size:.75em;color:#888">Level</div></div>
-                        <div style="background:#ffebee;border-radius:8px;padding:10px"><div style="font-size:1.2em;font-weight:800;color:#f44336">0</div><div style="font-size:.75em;color:#f44336">⭐ Pts</div></div>
+
+                    <!-- Stats row -->
+                    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:20px 20px 0">
+                        <div style="background:rgba(255,255,255,.07);border-radius:12px;padding:14px 8px;text-align:center;border:1px solid rgba(255,255,255,.1)">
+                            <div id="sscSolTime" style="font-size:1.4em;font-weight:900;color:#80deea">—</div>
+                            <div style="font-size:.7em;color:rgba(255,255,255,.45);margin-top:4px;text-transform:uppercase;letter-spacing:.5px">⏱ Time</div>
+                        </div>
+                        <div style="background:rgba(255,255,255,.07);border-radius:12px;padding:14px 8px;text-align:center;border:1px solid rgba(255,255,255,.1)">
+                            <div id="sscSolMoves" style="font-size:1.4em;font-weight:900;color:#ce93d8">—</div>
+                            <div style="font-size:.7em;color:rgba(255,255,255,.45);margin-top:4px;text-transform:uppercase;letter-spacing:.5px">🎯 Moves Made</div>
+                        </div>
+                        <div style="background:rgba(255,255,255,.07);border-radius:12px;padding:14px 8px;text-align:center;border:1px solid rgba(255,255,255,.1)">
+                            <div id="sscSolDiff" style="font-size:1.4em;font-weight:900;color:#a5d6a7">—</div>
+                            <div style="font-size:.7em;color:rgba(255,255,255,.45);margin-top:4px;text-transform:uppercase;letter-spacing:.5px">🎮 Level</div>
+                        </div>
                     </div>
-                    <p style="color:#f44336;font-size:.88em;font-weight:600;margin-bottom:16px">💡 Tip: Try a smaller puzzle to build skills!</p>
-                    <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
-                        <button onclick="sscResetGame()" style="background:linear-gradient(135deg,#28a745,#20c997);color:white;border:none;padding:12px 24px;border-radius:8px;font-size:1em;font-weight:700;cursor:pointer">🔄 Try Again</button>
-                        <button onclick="sscShowSection('lb')" style="background:linear-gradient(135deg,#6a1b9a,#c44569);color:white;border:none;padding:12px 24px;border-radius:8px;font-size:1em;font-weight:700;cursor:pointer">🏆 Leaderboard</button>
+
+                    <!-- Solution section -->
+                    <div style="padding:18px 20px 0">
+                        <div style="background:rgba(255,193,7,.08);border:1px solid rgba(255,193,7,.25);border-radius:12px;padding:12px 14px;margin-bottom:16px;display:flex;align-items:flex-start;gap:10px">
+                            <span style="font-size:1.3em;flex-shrink:0">💡</span>
+                            <div>
+                                <div style="color:#ffd54f;font-weight:700;font-size:.9em;margin-bottom:2px">Watch the Solution</div>
+                                <div style="color:rgba(255,255,255,.55);font-size:.8em;line-height:1.5">The tiles will animate to show you every move needed to solve the puzzle from where you left off.</div>
+                            </div>
+                        </div>
+
+                        <!-- Step counter -->
+                        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+                            <div style="color:rgba(255,255,255,.5);font-size:.8em;text-transform:uppercase;letter-spacing:.5px;font-weight:600">Solution Progress</div>
+                            <div style="color:#ffd54f;font-size:.85em;font-weight:700" id="sscSolStepCounter">—</div>
+                        </div>
+
+                        <!-- Mini board replay -->
+                        <div style="background:rgba(0,0,0,.35);border-radius:16px;padding:14px;margin-bottom:14px;border:1px solid rgba(255,255,255,.08)">
+                            <div id="sscSolBoard" style="display:grid;gap:4px;margin:0 auto;width:fit-content"></div>
+                        </div>
+
+                        <!-- Step description -->
+                        <div id="sscSolMoveDesc" style="background:rgba(255,255,255,.06);border-radius:10px;padding:12px 14px;text-align:center;margin-bottom:16px;min-height:42px;border:1px solid rgba(255,255,255,.08)">
+                            <span style="color:rgba(255,255,255,.6);font-size:.88em">Calculating solution…</span>
+                        </div>
+
+                        <!-- Replay controls -->
+                        <div style="display:flex;gap:8px;justify-content:center;margin-bottom:18px;flex-wrap:wrap">
+                            <button id="sscSolPlayBtn" onclick="sscSolPlayPause()" style="background:linear-gradient(135deg,#6a1b9a,#c44569);color:white;border:none;padding:10px 20px;border-radius:10px;font-size:.88em;font-weight:700;cursor:pointer;min-width:90px">▶ Play</button>
+                            <button onclick="sscSolStepBack()" style="background:rgba(255,255,255,.1);color:white;border:1px solid rgba(255,255,255,.2);padding:10px 16px;border-radius:10px;font-size:.88em;font-weight:600;cursor:pointer">⏮ Back</button>
+                            <button onclick="sscSolStepFwd()" style="background:rgba(255,255,255,.1);color:white;border:1px solid rgba(255,255,255,.2);padding:10px 16px;border-radius:10px;font-size:.88em;font-weight:600;cursor:pointer">Fwd ⏭</button>
+                        </div>
+                    </div>
+
+                    <!-- Footer buttons -->
+                    <div style="padding:0 20px 24px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+                        <button onclick="sscResetGame()" style="background:linear-gradient(135deg,#2e7d32,#43a047);color:white;border:none;padding:13px 26px;border-radius:12px;font-size:.95em;font-weight:800;cursor:pointer;box-shadow:0 4px 16px rgba(67,160,71,.3)">🔄 Try Again</button>
+                        <button onclick="sscShowSection('lb')" style="background:rgba(255,255,255,.1);color:white;border:1px solid rgba(255,255,255,.2);padding:13px 22px;border-radius:12px;font-size:.95em;font-weight:700;cursor:pointer">🏆 Leaderboard</button>
                     </div>
                 </div>
             </div>
 
-        </div>
+                </div>
         <!-- ══ END SPEED SLIDE DASHBOARD ══ -->
 
     <!-- Firebase Status Indicator -->
@@ -3772,6 +4196,9 @@
 
         // Global Variables
         const classes = ['1st B.Com','2nd B.Com','3rd B.Com','1ST BCA','2ND BCA A SEC','2ND BCA B SEC','3RD BCA A SEC','3RD BCA B SEC','3RD BCA C SEC','2ND BBA','3RD BBA','Faculty/Principal/Vice-Principal/Staff','Others'];
+        // NOTE: Firebase stores '.' as '_' in keys. The summary report's getStrength()
+        // normalises both forms so '1st B.Com' and '1st B_Com' both match correctly.
+        // DO NOT add '_Com' variants here — they are not real classes.
         window._appClasses = classes; // expose to other script blocks
         // individual: true = multiple students per class compete independently;
         //   jury scores each student; leaderboard picks best-per-class for winner/runner-up points.
@@ -7958,10 +8385,13 @@
                 console.log('Password generated');
                 
                 console.log('Saving to Firebase...');
-                await studRef.push({
+                const newStudentRef = studRef.push();
+                const studentKey   = newStudentRef.key;
+                await newStudentRef.set({
                     email, phone, name, class: cls, password,
                     registeredAt: new Date().toISOString(),
-                    status: 'active'
+                    status: 'active',
+                    emailStatus: 'pending'
                 });
                 console.log('✅ Saved to Firebase successfully!');
                 
@@ -7980,11 +8410,20 @@ Good luck!
 Davan Institute Team`;
                 
                 console.log('Attempting to send email...');
-                // Try to send email but don't let it block registration
+                // Try to send email — record success/failure in Firebase
                 try {
-                    await sendQuizEmail(email, 'Daily Quiz - Your Password', emailBody);
-                    console.log('✅ Email sent successfully');
+                    const emailResult = await sendQuizEmail(email, 'Daily Quiz - Your Password', emailBody);
+                    const emailStatusUpdate = emailResult
+                        ? { emailStatus: 'sent', emailSentAt: new Date().toISOString() }
+                        : { emailStatus: 'failed', emailFailedAt: new Date().toISOString(), emailError: 'send_returned_false' };
+                    await studRef.child(studentKey).update(emailStatusUpdate);
+                    console.log('✅ Email status saved:', emailStatusUpdate.emailStatus);
                 } catch (emailErr) {
+                    await studRef.child(studentKey).update({
+                        emailStatus: 'failed',
+                        emailFailedAt: new Date().toISOString(),
+                        emailError: emailErr.message || 'unknown'
+                    });
                     console.warn('⚠️ Email send failed but registration successful:', emailErr);
                 }
                 
@@ -9831,24 +10270,373 @@ Davan Institute Team`;
         async function loadQuizStudentsAdmin() {
             try {
                 const snap = await db.ref('quizStudents').once('value');
+                window._qsAdminAllStudents = [];
                 const tbody = document.getElementById('quizStudentsTableAdmin');
                 tbody.innerHTML = '';
-                
                 if (!snap.exists()) {
                     tbody.innerHTML = '<tr><td colspan="7" style="text-align:center">No students registered yet.</td></tr>';
+                    const ce = document.getElementById('qsAdminCount'); if(ce) ce.textContent='';
                     return;
                 }
-                
-                let idx = 1;
+                const classSet = new Set();
                 snap.forEach(child => {
                     const s = child.val();
-                    const row = tbody.insertRow();
-                    row.innerHTML = `<td>${idx++}</td><td>${s.name}</td><td>${s.email}</td><td>${s.phone}</td><td style="background:#fff3cd;font-family:monospace;font-weight:bold">${s.password}</td><td>${s.class}</td><td>${new Date(s.registeredAt).toLocaleDateString()}</td>`;
+                    window._qsAdminAllStudents.push(s);
+                    if (s.class) classSet.add(s.class);
                 });
+                const classSel = document.getElementById('qsAdminClassFilter');
+                if (classSel) {
+                    const prev = classSel.value;
+                    classSel.innerHTML = '<option value="">— All Classes —</option>';
+                    [...classSet].sort().forEach(c => {
+                        const o = document.createElement('option');
+                        o.value = c; o.textContent = c;
+                        if (c === prev) o.selected = true;
+                        classSel.appendChild(o);
+                    });
+                }
+                qsAdminApplyFilters();
             } catch (err) {
                 console.error('Load students error:', err);
             }
         }
+
+        function qsAdminApplyFilters() {
+            const all    = window._qsAdminAllStudents || [];
+            const search = (document.getElementById('qsAdminSearch')||{value:''}).value.toLowerCase().trim();
+            const cls    = (document.getElementById('qsAdminClassFilter')||{value:''}).value;
+            const tbody  = document.getElementById('quizStudentsTableAdmin');
+            const countEl= document.getElementById('qsAdminCount');
+            if (!tbody) return;
+            const filtered = all.filter(s => {
+                if (cls && s.class !== cls) return false;
+                if (search) {
+                    const hay = ((s.name||'')+(s.phone||'')+(s.email||'')).toLowerCase();
+                    if (!hay.includes(search)) return false;
+                }
+                return true;
+            });
+            qsAdminRenderRows(filtered, tbody, all.length);
+            if (countEl) countEl.textContent = filtered.length + ' of ' + all.length + ' students';
+        }
+
+        function qsAdminEmailBadge(s) {
+            const st = s.emailStatus || 'unknown';
+            if (st === 'sent')    return '<span style="background:#e8f5e9;color:#2e7d32;padding:2px 9px;border-radius:8px;font-size:11px;font-weight:700">✅ Sent</span>';
+            if (st === 'failed')  return `<span style="background:#ffebee;color:#c62828;padding:2px 9px;border-radius:8px;font-size:11px;font-weight:700" title="${s.emailError||''}">❌ Failed</span>`;
+            if (st === 'pending') return '<span style="background:#fff3cd;color:#856404;padding:2px 9px;border-radius:8px;font-size:11px;font-weight:700">⏳ Pending</span>';
+            return '<span style="background:#f5f5f5;color:#757575;padding:2px 9px;border-radius:8px;font-size:11px">— Unknown</span>';
+        }
+
+        function qsAdminRenderRows(filtered, tbody, total) {
+            tbody.innerHTML = '';
+            if (!filtered.length) {
+                tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#999;padding:16px">No students match the filter.</td></tr>';
+                return;
+            }
+            filtered.forEach((s,i) => {
+                const row = tbody.insertRow();
+                row.innerHTML = `<td>${i+1}</td>
+                    <td><strong>${s.name||''}</strong></td>
+                    <td style="font-size:12px">${s.email||''}</td>
+                    <td>${s.phone||''}</td>
+                    <td style="background:#fff3cd;font-family:monospace;font-weight:bold">${s.password||''}</td>
+                    <td><span style="background:#e8f5e9;color:#2e7d32;padding:2px 8px;border-radius:8px;font-size:12px;font-weight:700">${s.class||''}</span></td>
+                    <td style="font-size:12px">${s.registeredAt ? new Date(s.registeredAt).toLocaleDateString('en-IN') : '—'}</td>
+                    <td>${qsAdminEmailBadge(s)}</td>`;
+            });
+        }
+
+        function qsAdminShowDuplicates() {
+            const all    = window._qsAdminAllStudents || [];
+            const tbody  = document.getElementById('quizStudentsTableAdmin');
+            const countEl= document.getElementById('qsAdminCount');
+            if (!tbody) return;
+
+            // Find duplicate phones
+            const phoneMap = {}, emailMap = {};
+            all.forEach(s => {
+                if (s.phone) { if (!phoneMap[s.phone]) phoneMap[s.phone]=[]; phoneMap[s.phone].push(s); }
+                if (s.email) { const em=(s.email||'').toLowerCase(); if (!emailMap[em]) emailMap[em]=[]; emailMap[em].push(s); }
+            });
+            const dupPhones = Object.entries(phoneMap).filter(([,arr])=>arr.length>1);
+            const dupEmails = Object.entries(emailMap).filter(([,arr])=>arr.length>1);
+
+            tbody.innerHTML = '';
+            if (!dupPhones.length && !dupEmails.length) {
+                tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:20px"><span style="background:#e8f5e9;color:#2e7d32;padding:8px 20px;border-radius:10px;font-weight:700">✅ No duplicate phones or emails found!</span></td></tr>';
+                if (countEl) countEl.textContent = '0 duplicates found';
+                return;
+            }
+
+            let count = 0;
+            const rendered = new Set();
+
+            if (dupPhones.length) {
+                const hdr = tbody.insertRow();
+                hdr.innerHTML = '<td colspan="8" style="background:#fff3e0;color:#e65100;font-weight:800;padding:8px 14px;font-size:0.9em">📞 DUPLICATE PHONE NUMBERS</td>';
+                dupPhones.forEach(([phone, students]) => {
+                    students.forEach((s, si) => {
+                        const key = (s.email||'')+s.phone;
+                        if (rendered.has(key)) return;
+                        rendered.add(key);
+                        const row = tbody.insertRow();
+                        row.style.background = '#fff8e1';
+                        row.innerHTML = `<td style="color:#e65100;font-weight:700">⚠️</td>
+                            <td><strong>${s.name||''}</strong></td>
+                            <td style="font-size:12px">${s.email||''}</td>
+                            <td style="background:#ffecb3;font-weight:800;color:#e65100">${s.phone||''} <span style="font-size:10px">(${students.length} accounts)</span></td>
+                            <td style="background:#fff3cd;font-family:monospace;font-weight:bold">${s.password||''}</td>
+                            <td><span style="background:#e8f5e9;color:#2e7d32;padding:2px 8px;border-radius:8px;font-size:12px">${s.class||''}</span></td>
+                            <td style="font-size:12px">${s.registeredAt ? new Date(s.registeredAt).toLocaleDateString('en-IN') : '—'}</td>
+                            <td>${qsAdminEmailBadge(s)}</td>`;
+                        count++;
+                    });
+                });
+            }
+
+            if (dupEmails.length) {
+                const hdr = tbody.insertRow();
+                hdr.innerHTML = '<td colspan="8" style="background:#fce4ec;color:#880e4f;font-weight:800;padding:8px 14px;font-size:0.9em">📧 DUPLICATE EMAIL ADDRESSES</td>';
+                dupEmails.forEach(([email, students]) => {
+                    students.forEach((s, si) => {
+                        const key = 'em_'+(s.email||'')+s.phone;
+                        if (rendered.has(key)) return;
+                        rendered.add(key);
+                        const row = tbody.insertRow();
+                        row.style.background = '#fce4ec';
+                        row.innerHTML = `<td style="color:#880e4f;font-weight:700">⚠️</td>
+                            <td><strong>${s.name||''}</strong></td>
+                            <td style="background:#f8bbd0;font-weight:800;color:#880e4f;font-size:12px">${s.email||''} <span style="font-size:10px">(${students.length} accounts)</span></td>
+                            <td>${s.phone||''}</td>
+                            <td style="background:#fff3cd;font-family:monospace;font-weight:bold">${s.password||''}</td>
+                            <td><span style="background:#e8f5e9;color:#2e7d32;padding:2px 8px;border-radius:8px;font-size:12px">${s.class||''}</span></td>
+                            <td style="font-size:12px">${s.registeredAt ? new Date(s.registeredAt).toLocaleDateString('en-IN') : '—'}</td>
+                            <td>${qsAdminEmailBadge(s)}</td>`;
+                        count++;
+                    });
+                });
+            }
+
+            if (countEl) countEl.textContent = `⚠️ ${dupPhones.length} dup phone group(s), ${dupEmails.length} dup email group(s)`;
+        }
+
+        function qsAdminShowEmailFailed() {
+            const all    = window._qsAdminAllStudents || [];
+            const tbody  = document.getElementById('quizStudentsTableAdmin');
+            const countEl= document.getElementById('qsAdminCount');
+            if (!tbody) return;
+
+            const failed = all.filter(s => s.emailStatus === 'failed' || (!s.emailStatus && s.registeredAt));
+            const unknown = all.filter(s => !s.emailStatus);
+
+            tbody.innerHTML = '';
+
+            if (failed.length || unknown.length) {
+                if (failed.length) {
+                    const hdr = tbody.insertRow();
+                    hdr.innerHTML = '<td colspan="8" style="background:#ffebee;color:#c62828;font-weight:800;padding:8px 14px;font-size:0.9em">❌ EMAIL DELIVERY FAILED</td>';
+                    failed.forEach((s,i) => {
+                        const row = tbody.insertRow();
+                        row.style.background = '#fff5f5';
+                        row.innerHTML = `<td>${i+1}</td>
+                            <td><strong>${s.name||''}</strong></td>
+                            <td style="background:#ffebee;font-size:12px">${s.email||''}</td>
+                            <td>${s.phone||''}</td>
+                            <td style="background:#fff3cd;font-family:monospace;font-weight:bold">${s.password||''}</td>
+                            <td><span style="background:#e8f5e9;color:#2e7d32;padding:2px 8px;border-radius:8px;font-size:12px">${s.class||''}</span></td>
+                            <td style="font-size:12px">${s.registeredAt ? new Date(s.registeredAt).toLocaleDateString('en-IN') : '—'}</td>
+                            <td><span style="background:#ffebee;color:#c62828;padding:2px 9px;border-radius:8px;font-size:11px;font-weight:700" title="${s.emailError||''}">❌ Failed${s.emailError?'<br><span style=font-size:10px>'+s.emailError+'</span>':''}</span></td>`;
+                    });
+                }
+                if (unknown.length) {
+                    const hdr2 = tbody.insertRow();
+                    hdr2.innerHTML = '<td colspan="8" style="background:#e3f2fd;color:#1565c0;font-weight:800;padding:8px 14px;font-size:0.9em">⚠️ EMAIL STATUS UNKNOWN (registered before tracking was added)</td>';
+                    unknown.forEach((s,i) => {
+                        const row = tbody.insertRow();
+                        row.innerHTML = `<td>${i+1}</td>
+                            <td><strong>${s.name||''}</strong></td>
+                            <td style="font-size:12px">${s.email||''}</td>
+                            <td>${s.phone||''}</td>
+                            <td style="background:#fff3cd;font-family:monospace;font-weight:bold">${s.password||''}</td>
+                            <td><span style="background:#e8f5e9;color:#2e7d32;padding:2px 8px;border-radius:8px;font-size:12px">${s.class||''}</span></td>
+                            <td style="font-size:12px">${s.registeredAt ? new Date(s.registeredAt).toLocaleDateString('en-IN') : '—'}</td>
+                            <td><span style="background:#e3f2fd;color:#1565c0;padding:2px 9px;border-radius:8px;font-size:11px">⚠️ Unknown</span></td>`;
+                    });
+                }
+            } else {
+                tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:20px"><span style="background:#e8f5e9;color:#2e7d32;padding:8px 20px;border-radius:10px;font-weight:700">✅ All emails delivered successfully!</span></td></tr>';
+            }
+
+            if (countEl) countEl.textContent = `${failed.length} failed · ${unknown.length} unknown`;
+        }
+
+        function qsAdminResetFilters() {
+            const si = document.getElementById('qsAdminSearch');
+            const ci = document.getElementById('qsAdminClassFilter');
+            if (si) si.value = '';
+            if (ci) ci.value = '';
+            qsAdminApplyFilters();
+        }
+
+        async function qsAdminShowSummary() {
+            const box        = document.getElementById('qsAdminSummaryBox');
+            const contentEl  = document.getElementById('qsAdminSummaryContent');
+            const msgBox     = document.getElementById('qsAdminMsgBox');
+            if (!box) return;
+            box.style.display = 'block';
+            contentEl.innerHTML = '<p style="color:#999;text-align:center;padding:12px">&#9203; Loading class strengths&hellip;</p>';
+            if (msgBox) msgBox.style.display = 'none';
+
+            try {
+                const ss = await db.ref('leaderboardConfig/classStrengths').once('value');
+                window._classStrengths = ss.val() || {};
+            } catch(e) { window._classStrengths = window._classStrengths || {}; }
+
+            const all       = window._qsAdminAllStudents || [];
+            const strengths = window._classStrengths || {};
+
+            function normKey(s) {
+                return String(s||'').toLowerCase().replace(/\./g,'_').replace(/\s+/g,' ').trim();
+            }
+            function getStrength(cls) {
+                // Firebase sanitises '.' → '_' in keys, so check both forms
+                const sk = cls.replace(/[.\[\]#$\/]/g,'_');
+                const nk = normKey(cls);
+                return strengths[cls] || strengths[sk] ||
+                    ((Object.entries(strengths).find(([k]) => normKey(k)===nk))||[])[1] || 0;
+            }
+
+            const regMap = {};
+            all.forEach(s => {
+                const cls = (s.class||'Unknown').trim();
+                if (!regMap[cls]) regMap[cls] = [];
+                regMap[cls].push(s);
+            });
+
+            // Also show classes that have strength set but 0 registrations
+            Object.keys(strengths).forEach(k => {
+                const match = Object.keys(regMap).find(c => normKey(c)===normKey(k));
+                if (!match && strengths[k] > 0) regMap[k] = regMap[k] || [];
+            });
+
+            const sortedClasses = Object.keys(regMap).filter(c=>c!=='Unknown').sort();
+            if (regMap['Unknown'] && regMap['Unknown'].length) sortedClasses.push('Unknown');
+
+            let totalReg=0, totalStrength=0, totalMissing=0;
+            const classLines = [];
+
+            let tableHTML = `<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:13px">
+            <thead><tr style="background:#6a1b9a;color:white">
+                <th style="padding:10px 14px;text-align:left">Class</th>
+                <th style="padding:10px 14px;text-align:center">Strength</th>
+                <th style="padding:10px 14px;text-align:center">Registered</th>
+                <th style="padding:10px 14px;text-align:center">Missing</th>
+                <th style="padding:10px 14px;text-align:center">Coverage</th>
+                <th style="padding:10px 14px;text-align:center">Progress</th>
+            </tr></thead><tbody>`;
+
+            sortedClasses.forEach((cls, i) => {
+                const students = regMap[cls] || [];
+                const reg      = students.length;
+                const strength = getStrength(cls);
+                const missing  = strength ? Math.max(0, strength - reg) : null;
+                const pct      = strength ? Math.round((reg/strength)*100) : null;
+                const extra    = strength && reg > strength ? reg - strength : 0;
+                totalReg += reg;
+                if (strength) { totalStrength += strength; totalMissing += (missing||0); }
+
+                const pctColor  = pct===null?'#9e9e9e':pct>=80?'#2e7d32':pct>=50?'#e65100':'#c62828';
+                const barColor  = pct===null?'#bdbdbd':pct>=80?'#4caf50':pct>=50?'#ff9800':'#f44336';
+                const rowBg     = i%2===0?'#fafafa':'white';
+                const barFill   = pct!=null ? Math.min(100,pct) : 0;
+                const barHTML   = `<div style="background:#e0e0e0;border-radius:6px;height:10px;width:90px;display:inline-block;vertical-align:middle"><div style="background:${barColor};height:10px;border-radius:6px;width:${barFill}%"></div></div>`;
+
+                tableHTML += `<tr style="background:${rowBg}">
+                    <td style="padding:9px 14px;font-weight:600;color:#3d0060">${cls}</td>
+                    <td style="padding:9px 14px;text-align:center;color:#555">${strength||'&mdash;'}</td>
+                    <td style="padding:9px 14px;text-align:center">
+                        <span style="background:#e8f5e9;color:#2e7d32;padding:3px 10px;border-radius:10px;font-weight:700">${reg}</span>
+                        ${extra>0?`<span style="font-size:11px;color:#1565c0;margin-left:4px">+${extra} extra</span>`:''}
+                    </td>
+                    <td style="padding:9px 14px;text-align:center">
+                        ${missing!=null?`<span style="background:${missing>0?'#fff3cd':'#e8f5e9'};color:${missing>0?'#856404':'#2e7d32'};padding:3px 10px;border-radius:10px;font-weight:700">${missing}</span>`:'&mdash;'}
+                    </td>
+                    <td style="padding:9px 14px;text-align:center;font-weight:800;color:${pctColor}">
+                        ${pct!=null?pct+'%':'&mdash;'}
+                    </td>
+                    <td style="padding:9px 14px;text-align:center">${barHTML}</td>
+                </tr>`;
+
+                const coverageStr = pct!=null ? ` (${pct}% of ${strength})` : '';
+                const missingStr  = missing>0 ? `, ${missing} yet to register` : (missing===0?' \u2705 full coverage':'');
+                classLines.push(`\u2022 ${cls}: ${reg} registered${coverageStr}${missingStr}`);
+            });
+
+            const totalPct = totalStrength ? Math.round((totalReg/totalStrength)*100) : null;
+            tableHTML += `<tr style="background:#f3e5f5;font-weight:800">
+                <td style="padding:10px 14px;color:#6a1b9a">TOTAL</td>
+                <td style="padding:10px 14px;text-align:center;color:#6a1b9a">${totalStrength||'&mdash;'}</td>
+                <td style="padding:10px 14px;text-align:center"><span style="background:#6a1b9a;color:white;padding:3px 10px;border-radius:10px;font-weight:700">${totalReg}</span></td>
+                <td style="padding:10px 14px;text-align:center"><span style="background:#fff3cd;color:#856404;padding:3px 10px;border-radius:10px;font-weight:700">${totalMissing}</span></td>
+                <td style="padding:10px 14px;text-align:center;color:#6a1b9a;font-size:1.1em">${totalPct!=null?totalPct+'%':'&mdash;'}</td>
+                <td style="padding:10px 14px;text-align:center">
+                    <div style="background:#e0e0e0;border-radius:6px;height:10px;width:90px;display:inline-block;vertical-align:middle">
+                        <div style="background:#6a1b9a;height:10px;border-radius:6px;width:${Math.min(100,totalPct||0)}%"></div>
+                    </div>
+                </td>
+            </tr></tbody></table></div>`;
+
+            contentEl.innerHTML = tableHTML;
+
+            // Build copyable WhatsApp message
+            const now      = new Date();
+            const dateStr  = now.toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+            const timeStr  = now.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true});
+            const coverLine = totalPct!=null
+                ? `Overall coverage: ${totalReg}/${totalStrength} students (${totalPct}%)`
+                : `Total registered: ${totalReg} students`;
+            const alertLine = totalMissing>0
+                ? `\u26a0\ufe0f ${totalMissing} student(s) still not registered`
+                : `\u2705 All tracked classes have full registration!`;
+
+            const msgText = [
+                `\ud83d\udcca *Quiz Registration Summary*`,
+                `\ud83d\udcc5 ${dateStr}  \ud83d\udd50 ${timeStr}`,
+                ``,
+                coverLine,
+                alertLine,
+                ``,
+                `*Class-wise Breakdown:*`,
+                ...classLines,
+                ``,
+                `_Please remind unregistered students to sign up._`
+            ].join('\n');
+
+            const msgTextEl = document.getElementById('qsAdminMsgText');
+            if (msgTextEl) msgTextEl.value = msgText;
+            if (msgBox) msgBox.style.display = 'block';
+            box.scrollIntoView({behavior:'smooth', block:'nearest'});
+        }
+
+        function qsAdminCopyMsg() {
+            const el = document.getElementById('qsAdminMsgText');
+            if (!el) return;
+            const btn = event.currentTarget || event.target;
+            const origText = btn.textContent;
+            const origBg   = btn.style.background;
+            navigator.clipboard.writeText(el.value).then(() => {
+                btn.textContent = '\u2705 Copied!';
+                btn.style.background = '#4caf50';
+                setTimeout(() => { btn.textContent = origText; btn.style.background = origBg; }, 2200);
+            }).catch(() => {
+                el.select();
+                document.execCommand('copy');
+                btn.textContent = '\u2705 Copied!';
+                setTimeout(() => { btn.textContent = origText; }, 2000);
+            });
+        }
+
         
         async function loadQuizSubmissionsAdmin() {
             const today = getQuizToday();
@@ -10221,7 +11009,6 @@ Davan Institute Team`;
             if (infoText) infoText.textContent = '⏳ Loading…';
             if (tbody) tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#aaa">⏳ Loading…</td></tr>';
             try {
-                // Fetch class strength — always re-fetch fresh for accuracy
                 try { const ss = await db.ref('leaderboardConfig/classStrengths').once('value'); window._classStrengths = ss.val() || {}; } catch(e) { window._classStrengths = window._classStrengths || {}; }
                 const _shSafeKey = crClass ? crClass.replace(/[.\[\]#$\/]/g,'_') : '';
                 const crClassStrengthSH = (window._classStrengths[_shSafeKey] || window._classStrengths[crClass] || 0);
@@ -10235,70 +11022,30 @@ Davan Institute Team`;
                 const allTasks = taskSnap.val() || {};
                 const totalTasks = Object.keys(allTasks).length;
 
-                // Populate task filter dropdown
-                const taskFilter = document.getElementById('crShTaskFilter');
-                if (taskFilter) {
-                    const prevVal = taskFilter.value;
-                    taskFilter.innerHTML = '<option value="">— All Tasks —</option>';
+                // ── Store data globally for task filter re-use ────────────
+                window._crShAllSubs  = allSubs;
+                window._crShAllTasks = allTasks;
+                window._crShClass    = crClass;
+                window._crShStrengthTag = crStrengthTagSH;
+
+                // ── Populate task filter dropdown ─────────────────────────
+                const taskSel = document.getElementById('crShTaskFilter');
+                if (taskSel) {
+                    const prevVal = taskSel.value;
+                    taskSel.innerHTML = '<option value="">— All Tasks —</option>';
                     Object.entries(allTasks).forEach(([tid, t]) => {
-                        const label = t.title || t.name || tid;
+                        const name = t.name || t.title || tid;
                         const opt = document.createElement('option');
                         opt.value = tid;
-                        opt.textContent = label;
-                        taskFilter.appendChild(opt);
+                        opt.textContent = name.length > 60 ? name.slice(0,60)+'…' : name;
+                        if (tid === prevVal) opt.selected = true;
+                        taskSel.appendChild(opt);
                     });
-                    if (prevVal) taskFilter.value = prevVal;
                 }
 
-                // Filter to CR's class — build per-student, per-task data
-                const classStudents = [];
-                let grandApproved=0, grandPending=0, grandRejected=0;
-                Object.entries(allSubs).forEach(([sk, ss]) => {
-                    const first = Object.values(ss)[0] || {};
-                    const cls = first.studentClass || '';
-                    if (crClass && cls !== crClass) return;
-                    const name = first.studentName || sk;
-                    let approved=0, pending=0, rejected=0;
-                    // taskMap: taskId -> submission object
-                    const taskMap = {};
-                    Object.entries(ss).forEach(([subKey, sub]) => {
-                        const tid = sub.taskId || subKey;
-                        taskMap[tid] = sub;
-                        if (sub.status==='approved')  { approved++;  grandApproved++; }
-                        else if (sub.status==='pending')  { pending++;   grandPending++; }
-                        else if (sub.status==='rejected') { rejected++;  grandRejected++; }
-                    });
-                    classStudents.push({name, approved, pending, rejected, total: approved+pending+rejected, taskMap});
-                });
-                classStudents.sort((a,b)=>b.approved-a.approved||b.total-a.total);
-                const participantCount = classStudents.length;
+                // ── Render based on selected task filter ──────────────────
+                crShRenderView();
 
-                // Store for filtering
-                window._crShClassStudents = classStudents;
-                window._crShAllTasks = allTasks;
-                window._crShTotalTasks = totalTasks;
-                window._crShCrClass = crClass;
-                window._crShCrStrengthTag = crStrengthTagSH;
-
-                if (totalEl)  totalEl.textContent  = participantCount;
-                if (appEl)    appEl.textContent    = grandApproved;
-                if (penEl)    penEl.textContent    = grandPending;
-                if (rejEl)    rejEl.textContent    = grandRejected;
-
-                const nowTime = new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true});
-                if (infoText) {
-                    if (participantCount === 0) {
-                        infoText.innerHTML = `<span style="color:#888;font-size:12px">🕐 Generated at: <strong>${nowTime}</strong></span><br><br>`
-                            + `<strong>No students</strong> from <strong>${crClass}</strong>${crStrengthTagSH} have participated in the Scavenger Hunt yet.`;
-                    } else {
-                        infoText.innerHTML = `<span style="color:#888;font-size:12px">🕐 Generated at: <strong>${nowTime}</strong></span><br><br>`
-                            + `<strong>${participantCount}</strong> student(s) from <strong>${crClass}</strong>${crStrengthTagSH} have participated in the Scavenger Hunt.<br>`
-                            + `<strong>${grandApproved}</strong> task(s) approved, <strong>${grandPending}</strong> pending review, <strong>${grandRejected}</strong> rejected.<br>`
-                            + (totalTasks ? `Total tasks available: <strong>${totalTasks}</strong>.` : '');
-                    }
-                }
-
-                crShApplyTaskFilter();
             } catch(e) {
                 if (infoText) infoText.textContent = 'Error loading data: ' + e.message;
                 if (tbody) tbody.innerHTML = `<tr><td colspan="6" style="color:red;text-align:center">Error: ${e.message}</td></tr>`;
@@ -10306,85 +11053,152 @@ Davan Institute Team`;
         }
 
         function crShApplyTaskFilter() {
-            const taskFilter = document.getElementById('crShTaskFilter');
-            const selectedTaskId = taskFilter ? taskFilter.value : '';
-            const tbody = document.getElementById('crShTable');
-            const tableTitle = document.getElementById('crShTableTitle');
-            const theadEl = document.getElementById('crShTableHead');
-            const badge = document.getElementById('crShTaskFilterBadge');
-            const classStudents = window._crShClassStudents || [];
-            const allTasks = window._crShAllTasks || {};
-            const totalTasks = window._crShTotalTasks || 0;
-            const crClass = window._crShCrClass || '';
+            const sel    = document.getElementById('crShTaskFilter');
+            const badge  = document.getElementById('crShTaskBadge');
+            const taskId = sel ? sel.value : '';
+            const taskName = sel && sel.value ? sel.options[sel.selectedIndex].textContent : '';
+            if (badge) {
+                if (taskId) { badge.textContent = '📌 ' + taskName; badge.style.display = 'inline-block'; }
+                else        { badge.style.display = 'none'; }
+            }
+            crShRenderView();
+        }
 
-            if (!tbody) return;
+        function crShRenderView() {
+            const allSubs   = window._crShAllSubs  || {};
+            const allTasks  = window._crShAllTasks || {};
+            const crClass   = window._crShClass    || '';
+            const crStrengthTagSH = window._crShStrengthTag || '';
+            const totalTasks = Object.keys(allTasks).length;
+            const taskSel   = document.getElementById('crShTaskFilter');
+            const selectedTask = taskSel ? taskSel.value : '';
 
-            if (!selectedTaskId) {
-                // Show all tasks — normal summary view
-                if (badge) badge.style.display = 'none';
-                if (tableTitle) tableTitle.textContent = 'Your Class Students — Scavenger Hunt Submissions';
-                if (theadEl) theadEl.innerHTML = `<tr><th>#</th><th>Student Name</th><th>Tasks Submitted</th><th>Approved</th><th>Pending</th><th>Rejected</th></tr>`;
-                if (classStudents.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:#999">No scavenger hunt submissions from ${crClass} yet.</td></tr>`;
-                } else {
-                    tbody.innerHTML = '';
-                    classStudents.forEach((s,i) => {
-                        const row = tbody.insertRow();
-                        row.innerHTML = `<td>${i+1}</td>
-                            <td><strong>${s.name}</strong></td>
-                            <td style="text-align:center;font-weight:700">${s.total}${totalTasks?' / '+totalTasks:''}</td>
-                            <td style="text-align:center"><span style="background:#d4edda;color:#155724;padding:3px 10px;border-radius:10px;font-weight:700">${s.approved}</span></td>
-                            <td style="text-align:center"><span style="background:#fff3cd;color:#856404;padding:3px 10px;border-radius:10px;font-weight:700">${s.pending}</span></td>
-                            <td style="text-align:center"><span style="background:#f8d7da;color:#721c24;padding:3px 10px;border-radius:10px;font-weight:700">${s.rejected}</span></td>`;
-                    });
+            const infoText = document.getElementById('crShInfoText');
+            const totalEl  = document.getElementById('crShTotal');
+            const appEl    = document.getElementById('crShApproved');
+            const penEl    = document.getElementById('crShPending');
+            const rejEl    = document.getElementById('crShRejected');
+            const tbody    = document.getElementById('crShTable');
+            const tableHead = document.getElementById('crShTableHead');
+            const nowTime   = new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true});
+
+            if (selectedTask) {
+                // ── TASK-WISE VIEW ────────────────────────────────────────
+                const taskDef  = allTasks[selectedTask] || {};
+                const taskName = taskDef.name || taskDef.title || selectedTask;
+
+                // Build student rows: submitted + not-submitted
+                const submittedRows = [];
+                let tApproved=0, tPending=0, tRejected=0;
+
+                Object.entries(allSubs).forEach(([sk, ss]) => {
+                    const firstSub = Object.values(ss)[0] || {};
+                    if (crClass && firstSub.studentClass !== crClass) return;
+                    const name = firstSub.studentName || sk;
+                    const sub  = ss[selectedTask];
+                    if (sub) {
+                        const st = sub.status || 'pending';
+                        if (st==='approved') tApproved++;
+                        else if (st==='rejected') tRejected++;
+                        else tPending++;
+                        submittedRows.push({ name, status: st, submittedAt: sub.submittedAt, reviewedBy: sub.reviewedBy });
+                    } else {
+                        submittedRows.push({ name, status: 'not_submitted' });
+                    }
+                });
+
+                submittedRows.sort((a,b) => {
+                    const order = {approved:0,pending:1,rejected:2,not_submitted:3};
+                    return (order[a.status]||3) - (order[b.status]||3);
+                });
+
+                const participated = submittedRows.filter(r => r.status !== 'not_submitted').length;
+                if (totalEl) totalEl.textContent = participated;
+                if (appEl)   appEl.textContent   = tApproved;
+                if (penEl)   penEl.textContent   = tPending;
+                if (rejEl)   rejEl.textContent   = tRejected;
+
+                if (infoText) infoText.innerHTML =
+                    `<span style="color:#888;font-size:12px">🕐 Generated at: <strong>${nowTime}</strong></span><br><br>` +
+                    `Showing task: <strong style="color:#6a1b9a">${taskName}</strong><br>` +
+                    `<strong>${participated}</strong> student(s) submitted · <strong>${tApproved}</strong> approved · <strong>${tPending}</strong> pending · <strong>${tRejected}</strong> rejected`;
+
+                // Update table headers for task view
+                if (tableHead) tableHead.innerHTML = `<tr><th>#</th><th>Student Name</th><th>Status</th><th>Submitted At</th><th>Reviewed By</th></tr>`;
+
+                if (tbody) {
+                    if (!submittedRows.length) {
+                        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:#999">No students from ${crClass} yet.</td></tr>`;
+                    } else {
+                        tbody.innerHTML = '';
+                        submittedRows.forEach((s,i) => {
+                            const row = tbody.insertRow();
+                            let statusBadge, rowStyle='';
+                            if (s.status==='approved')       { statusBadge = '<span style="background:#d4edda;color:#155724;padding:3px 12px;border-radius:10px;font-weight:700">✅ Approved</span>'; }
+                            else if (s.status==='pending')   { statusBadge = '<span style="background:#fff3cd;color:#856404;padding:3px 12px;border-radius:10px;font-weight:700">⏳ Pending</span>'; }
+                            else if (s.status==='rejected')  { statusBadge = '<span style="background:#f8d7da;color:#721c24;padding:3px 12px;border-radius:10px;font-weight:700">❌ Rejected</span>'; }
+                            else { statusBadge = '<span style="color:#aaa;font-style:italic">— Not Submitted</span>'; rowStyle='opacity:0.5'; }
+                            const timeStr = s.submittedAt ? new Date(s.submittedAt).toLocaleString('en-IN',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit',hour12:true}) : '—';
+                            row.setAttribute('style', rowStyle);
+                            row.innerHTML = `<td>${i+1}</td><td><strong>${s.name}</strong></td><td>${statusBadge}</td><td style="font-size:12px;color:#555">${timeStr}</td><td style="font-size:12px;color:#777">${s.reviewedBy||'—'}</td>`;
+                        });
+                    }
                 }
             } else {
-                // Task-wise filter view
-                const taskInfo = allTasks[selectedTaskId] || {};
-                const taskLabel = taskInfo.title || taskInfo.name || selectedTaskId;
-                if (badge) { badge.style.display = 'inline-block'; badge.textContent = taskLabel; }
-                if (tableTitle) tableTitle.textContent = `Task: ${taskLabel} — Submission Status`;
-                if (theadEl) theadEl.innerHTML = `<tr><th>#</th><th>Student Name</th><th>Status</th><th>Submitted At</th></tr>`;
+                // ── SUMMARY VIEW (All Tasks) ──────────────────────────────
+                const classStudents = [];
+                let grandApproved=0, grandPending=0, grandRejected=0;
 
-                // Build rows — submitted students first, then not-submitted
-                const submitted = [];
-                const notSubmitted = [];
-                classStudents.forEach(s => {
-                    // Find submission for this task
-                    const sub = s.taskMap ? (s.taskMap[selectedTaskId] || null) : null;
-                    if (sub) submitted.push({name: s.name, sub});
-                    else notSubmitted.push({name: s.name});
+                Object.entries(allSubs).forEach(([sk, ss]) => {
+                    const first = Object.values(ss)[0] || {};
+                    if (crClass && first.studentClass !== crClass) return;
+                    const name = first.studentName || sk;
+                    let approved=0, pending=0, rejected=0;
+                    Object.values(ss).forEach(sub => {
+                        if (sub.status==='approved')       { approved++; grandApproved++; }
+                        else if (sub.status==='pending')   { pending++;  grandPending++;  }
+                        else if (sub.status==='rejected')  { rejected++; grandRejected++; }
+                    });
+                    classStudents.push({name, approved, pending, rejected, total: approved+pending+rejected});
                 });
+                classStudents.sort((a,b)=>b.approved-a.approved||b.total-a.total);
+                const participantCount = classStudents.length;
 
-                if (submitted.length === 0 && notSubmitted.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;color:#999">No data available for this task.</td></tr>`;
-                    return;
+                if (totalEl) totalEl.textContent = participantCount;
+                if (appEl)   appEl.textContent   = grandApproved;
+                if (penEl)   penEl.textContent   = grandPending;
+                if (rejEl)   rejEl.textContent   = grandRejected;
+
+                if (infoText) {
+                    if (participantCount === 0) {
+                        infoText.innerHTML = `<span style="color:#888;font-size:12px">🕐 Generated at: <strong>${nowTime}</strong></span><br><br><strong>No students</strong> from <strong>${crClass}</strong>${crStrengthTagSH} have participated in the Scavenger Hunt yet.`;
+                    } else {
+                        infoText.innerHTML = `<span style="color:#888;font-size:12px">🕐 Generated at: <strong>${nowTime}</strong></span><br><br>`
+                            + `<strong>${participantCount}</strong> student(s) from <strong>${crClass}</strong>${crStrengthTagSH} have participated in the Scavenger Hunt.<br>`
+                            + `<strong>${grandApproved}</strong> task(s) approved · <strong>${grandPending}</strong> pending review · <strong>${grandRejected}</strong> rejected.`
+                            + (totalTasks ? ` | Total tasks: <strong>${totalTasks}</strong>` : '');
+                    }
                 }
 
-                tbody.innerHTML = '';
-                let idx = 1;
-                submitted.forEach(({name, sub}) => {
-                    const statusColors = {
-                        approved:  {bg:'#d4edda',color:'#155724',icon:'✅'},
-                        pending:   {bg:'#fff3cd',color:'#856404',icon:'⏳'},
-                        rejected:  {bg:'#f8d7da',color:'#721c24',icon:'❌'}
-                    };
-                    const sc = statusColors[sub.status] || {bg:'#e2e3e5',color:'#383d41',icon:'❓'};
-                    const submittedAt = sub.submittedAt ? new Date(sub.submittedAt).toLocaleString('en-IN',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit',hour12:true}) : '—';
-                    const row = tbody.insertRow();
-                    row.innerHTML = `<td>${idx++}</td>
-                        <td><strong>${name}</strong></td>
-                        <td style="text-align:center"><span style="background:${sc.bg};color:${sc.color};padding:3px 12px;border-radius:10px;font-weight:700">${sc.icon} ${sub.status||'unknown'}</span></td>
-                        <td style="text-align:center;font-size:0.85em;color:#555">${submittedAt}</td>`;
-                });
-                notSubmitted.forEach(({name}) => {
-                    const row = tbody.insertRow();
-                    row.style.opacity = '0.5';
-                    row.innerHTML = `<td>${idx++}</td>
-                        <td style="color:#888">${name}</td>
-                        <td style="text-align:center"><span style="background:#e2e3e5;color:#6c757d;padding:3px 12px;border-radius:10px;font-weight:600">— Not Submitted</span></td>
-                        <td style="text-align:center;color:#aaa">—</td>`;
-                });
+                // Restore summary headers
+                if (tableHead) tableHead.innerHTML = `<tr><th>#</th><th>Student Name</th><th>Tasks Submitted</th><th>Approved</th><th>Pending</th><th>Rejected</th></tr>`;
+
+                if (tbody) {
+                    if (!classStudents.length) {
+                        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:#999">No scavenger hunt submissions from ${crClass} yet.</td></tr>`;
+                    } else {
+                        tbody.innerHTML = '';
+                        classStudents.forEach((s,i) => {
+                            const row = tbody.insertRow();
+                            row.innerHTML = `<td>${i+1}</td>
+                                <td><strong>${s.name}</strong></td>
+                                <td style="text-align:center;font-weight:700">${s.total}${totalTasks?' / '+totalTasks:''}</td>
+                                <td style="text-align:center"><span style="background:#d4edda;color:#155724;padding:3px 10px;border-radius:10px;font-weight:700">${s.approved}</span></td>
+                                <td style="text-align:center"><span style="background:#fff3cd;color:#856404;padding:3px 10px;border-radius:10px;font-weight:700">${s.pending}</span></td>
+                                <td style="text-align:center"><span style="background:#f8d7da;color:#721c24;padding:3px 10px;border-radius:10px;font-weight:700">${s.rejected}</span></td>`;
+                        });
+                    }
+                }
             }
         }
         
@@ -12043,13 +12857,14 @@ Davan Institute Team`;
                                 <th>🧠 Quiz</th>
                                 <th>🏆 Results</th>
                                 <th>🗺️ Hunt</th>
+                                <th>🧩 Slide</th>
                                 <th>Total</th>
                                 <th>Progress</th>
                             </tr>
                         </thead>
                         <tbody id="lbTableBody">
                             <tr>
-                                <td colspan="6" style="text-align:center;padding:40px;color:#bbb">
+                                <td colspan="7" style="text-align:center;padding:40px;color:#bbb">
                                     <div class="lb-loading-spinner" style="margin:0 auto 10px"></div>
                                     Loading…
                                 </td>
@@ -12389,10 +13204,26 @@ Davan Institute Team`;
                 }
             } catch(e) { console.warn('SH points error:', e); }
 
-            // ── 6. Merge, sort, render ─────────────────────────────
+            // ── 6. Speed Slide Challenge Points ───────────────────────
+            const sscPts = init();
+            try {
+                const sscSnap = await getDb().ref('speedSlide/submissions').once('value');
+                if (sscSnap.exists()) {
+                    // ALL approved submissions add to class total (not just best)
+                    sscSnap.forEach(child => {
+                        const s = child.val();
+                        if (!s || !s.class || s.points === undefined) return;
+                        if (s.status !== 'approved') return;
+                        if (sscPts[s.class] !== undefined)
+                            sscPts[s.class] += Math.floor(s.points / 10) * (cfg.sscScoreFactor || 1);
+                    });
+                }
+            } catch(e) { console.warn('SSC points error:', e); }
+
+            // ── 7. Merge, sort, render ─────────────────────────────
             const ranked = LB_CLASSES.map(cls => {
-                const total=(yfPts[cls]||0)+(quizPts[cls]||0)+(resultPts[cls]||0)+(customPts[cls]||0)+(shPts[cls]||0);
-                return {cls,yfPts:yfPts[cls]||0,quizPts:quizPts[cls]||0,resultPts:resultPts[cls]||0,customPts:customPts[cls]||0,shPts:shPts[cls]||0,total};
+                const total=(yfPts[cls]||0)+(quizPts[cls]||0)+(resultPts[cls]||0)+(customPts[cls]||0)+(shPts[cls]||0)+(sscPts[cls]||0);
+                return {cls,yfPts:yfPts[cls]||0,quizPts:quizPts[cls]||0,resultPts:resultPts[cls]||0,customPts:customPts[cls]||0,shPts:shPts[cls]||0,sscPts:sscPts[cls]||0,total};
             }).sort((a,b)=>b.total-a.total||b.yfPts-a.yfPts||b.quizPts-a.quizPts);
 
             const maxTotal = ranked[0]?.total || 1;
@@ -12407,7 +13238,7 @@ Davan Institute Team`;
         } catch (err) {
             console.error('Leaderboard error:', err);
             document.getElementById('lbPodium').innerHTML='<div class="lb-empty">⚠️ Could not load data. Please refresh.</div>';
-            document.getElementById('lbTableBody').innerHTML='<tr><td colspan="7" class="lb-empty">⚠️ Could not load data.</td></tr>';
+            document.getElementById('lbTableBody').innerHTML='<tr><td colspan="9" class="lb-empty">⚠️ Could not load data.</td></tr>';
         }
     }
 
@@ -12437,7 +13268,7 @@ Davan Institute Team`;
 
     function renderTable(ranked, maxTotal) {
         const tbody=document.getElementById('lbTableBody');
-        if(!ranked||ranked.length===0){tbody.innerHTML='<tr><td colspan="8" class="lb-empty">No data yet!</td></tr>';return;}
+        if(!ranked||ranked.length===0){tbody.innerHTML='<tr><td colspan="9" class="lb-empty">No data yet!</td></tr>';return;}
         let html='';
         ranked.forEach((entry,i)=>{
             const rank=i+1;
@@ -12449,6 +13280,7 @@ Davan Institute Team`;
             const resBadge=entry.resultPts>0?`<span class="lb-score-tag" style="background:#d4edda;color:#155724;border:1px solid #28a745">🏆 ${entry.resultPts}</span> `:'';
             const custBadge=entry.customPts>0?`<span class="lb-score-tag" style="background:#e8f4fd;color:#0c5460;border:1px solid #17a2b8">✨ ${entry.customPts}</span>`:'';
             const shBadge=entry.shPts>0?`<span class="lb-score-tag" style="background:#f3e5f5;color:#6a1b9a;border:1px solid #ce93d8">🗺️ ${entry.shPts}</span>`:'<span style="color:#ddd">—</span>';
+            const sscBadge=entry.sscPts>0?`<span class="lb-score-tag" style="background:#e3f2fd;color:#0d47a1;border:1px solid #90caf9">🧩 ${entry.sscPts}</span>`:'<span style="color:#ddd">—</span>';
             html+=`<tr style="${rowBg}animation-delay:${delay}s">
                 <td><span class="lb-rank-badge ${rankClass}">${rankMedal}</span></td>
                 <td><span class="lb-class-chip">${entry.cls}</span></td>
@@ -12456,6 +13288,7 @@ Davan Institute Team`;
                 <td><span class="lb-score-tag lb-score-quiz">🧠 ${entry.quizPts}</span></td>
                 <td>${resBadge}${custBadge}${(entry.resultPts===0&&entry.customPts===0)?'<span style="color:#ddd">—</span>':''}</td>
                 <td>${shBadge}</td>
+                <td>${sscBadge}</td>
                 <td><span class="lb-pts-total">${entry.total}</span> <span class="lb-pts-event">pts</span></td>
                 <td><div class="lb-bar-wrap"><div class="lb-bar-fill" style="width:${barPct}%"></div></div></td>
             </tr>`;
@@ -12701,11 +13534,13 @@ Davan Institute Team`;
         const shRun   = parseInt(document.getElementById('lbCfgShRunPts').value)   || 15;
         const shTask  = parseInt(document.getElementById('lbCfgShTaskPts').value)  || 5;
         const shComp  = parseInt(document.getElementById('lbCfgShCompletePts').value) || 20;
+        const sscScore= parseInt(document.getElementById('lbCfgSscScorePts').value)|| 1;
         try {
             await getDb().ref('leaderboardConfig/scoring').set({
                 yfPtsPerEvent: yfPts, winnerPts: winPts, runnerUpPts: runPts,
                 quizWinnerPts: qWin, quizRunnerUpPts: qRun, quizMaxPts: qMax,
                 shWinnerPts: shWin, shRunnerUpPts: shRun, shTaskPts: shTask, shCompletePts: shComp,
+                sscScoreFactor: sscScore,
                 updatedAt: new Date().toISOString()
             });
             document.getElementById('lbWinPtsDisplay').textContent = winPts;
@@ -12741,6 +13576,7 @@ Davan Institute Team`;
                 if (document.getElementById('lbCfgShRunPts'))      document.getElementById('lbCfgShRunPts').value      = d.shRunnerUpPts || 15;
                 if (document.getElementById('lbCfgShTaskPts'))     document.getElementById('lbCfgShTaskPts').value     = d.shTaskPts     || 5;
                 if (document.getElementById('lbCfgShCompletePts')) document.getElementById('lbCfgShCompletePts').value = d.shCompletePts || 20;
+                if (document.getElementById('lbCfgSscScorePts'))   document.getElementById('lbCfgSscScorePts').value   = d.sscScoreFactor|| 1;
             }
             // Build class strength grid
             const savedStr = strSnap.exists() ? strSnap.val() : {};
@@ -13069,10 +13905,26 @@ Davan Institute Team`;
                 }
             } catch(e) { console.warn('SH preview pts error:', e); }
 
+            // ── 6. Speed Slide Challenge Points ──────────────────────────
+            const sscP = init();
+            try {
+                const sscSnap = await getDb().ref('speedSlide/submissions').once('value');
+                if (sscSnap.exists()) {
+                    // ALL approved submissions add to class total
+                    sscSnap.forEach(child => {
+                        const s = child.val();
+                        if (!s || !s.class || s.points === undefined) return;
+                        if (s.status !== 'approved') return;
+                        if (sscP[s.class] !== undefined)
+                            sscP[s.class] += Math.floor(s.points / 10) * (cfg.sscScoreFactor || 1);
+                    });
+                }
+            } catch(e) { console.warn('SSC preview pts error:', e); }
+
             // ── Rank & render ─────────────────────────────────────────────
             const ranked = LB_CLASSES.map(cl => ({
-                cl, yfP:yfP[cl]||0, quizP:quizP[cl]||0, resP:resP[cl]||0, custP:custP[cl]||0, shP:shP[cl]||0,
-                total:(yfP[cl]||0)+(quizP[cl]||0)+(resP[cl]||0)+(custP[cl]||0)+(shP[cl]||0)
+                cl, yfP:yfP[cl]||0, quizP:quizP[cl]||0, resP:resP[cl]||0, custP:custP[cl]||0, shP:shP[cl]||0, sscP:sscP[cl]||0,
+                total:(yfP[cl]||0)+(quizP[cl]||0)+(resP[cl]||0)+(custP[cl]||0)+(shP[cl]||0)+(sscP[cl]||0)
             })).sort((a,b) => b.total-a.total);
 
             const medals = ['🥇','🥈','🥉'];
@@ -13085,6 +13937,7 @@ Davan Institute Team`;
                      + '<th style="background:#1a0030;color:#ce93d8">🏆 Results</th>'
                      + '<th style="background:#1a0030;color:#80deea">✨ Custom</th>'
                      + '<th style="background:#1a0030;color:#e1bee7">🗺️ Hunt</th>'
+                     + '<th style="background:#1a0030;color:#90caf9">🧩 Slide</th>'
                      + '<th style="background:#c44569;color:white;font-size:1.05em">TOTAL</th>'
                      + '</tr></thead><tbody>';
 
@@ -13100,6 +13953,7 @@ Davan Institute Team`;
                     <td style="color:#6a1b9a;text-align:center">${e.resP}</td>
                     <td style="color:#0c5460;text-align:center">${e.custP}</td>
                     <td style="color:#6a1b9a;font-weight:600;text-align:center">${e.shP || '<span style=\'color:#ccc\'>—</span>'}</td>
+                    <td style="color:#0d47a1;font-weight:600;text-align:center">${e.sscP || '<span style=\'color:#ccc\'>—</span>'}</td>
                     <td style="${totalStyle};text-align:center">${e.total}</td>
                 </tr>`;
             });
@@ -13112,6 +13966,7 @@ Davan Institute Team`;
                 🧠 Quiz winner: ${cfg.quizWinnerPts}pts, runner-up: ${cfg.quizRunnerUpPts}pts, participation max: ${cfg.quizMaxPts}pts &nbsp;|&nbsp;
                 🏆 Event winner: ${cfg.winnerPts}pts, runner-up: ${cfg.runnerUpPts}pts &nbsp;|&nbsp;
                 🗺️ Hunt task: ${cfg.shTaskPts}pts, completion bonus: ${cfg.shCompletePts}pts, winner: ${cfg.shWinnerPts}pts, runner-up: ${cfg.shRunnerUpPts}pts &nbsp;|&nbsp;
+                🧩 Slide score factor: ${cfg.sscScoreFactor||1}pt per 10 game pts (Easy 100→10, Medium 200→20, Hard 300→30) &nbsp;|&nbsp;
                 Quiz days counted: ${pubDates.size}
             </div>`;
 
@@ -14703,11 +15558,18 @@ Davan Institute Team`;
                 } else {
                     // ── Single-photo task approve/reject (original flow) ───
                 if (r.status==='pending') {
-                    const rejectBoxId = 'shRejectBox_' + r.studentKey + '_' + r.taskId;
+                    const rejectBoxId  = 'shRejectBox_' + r.studentKey + '_' + r.taskId;
+                    const replyBoxId   = 'shReplyBox_'  + r.studentKey + '_' + r.taskId;
                     html += '<div style="margin-top:10px">';
+                    // ── Admin reply/note box ──────────────────────────────
+                    html += '<div style="background:#e8f5e9;border:2px solid #4caf50;border-radius:10px;padding:12px 14px;margin-bottom:10px">';
+                    html += '<label style="font-size:0.85em;color:#2e7d32;font-weight:700;display:block;margin-bottom:5px">💬 Reply / Note to Student <span style="color:#888;font-weight:400">(optional — shown to student on approval or rejection)</span></label>';
+                    html += '<textarea id="' + replyBoxId + '" placeholder="e.g. Great work! Well done. / Please resubmit with clearer photo…" rows="2" style="width:100%;padding:8px;border:1.5px solid #4caf50;border-radius:6px;font-size:13px;box-sizing:border-box;resize:vertical;outline:none"></textarea>';
+                    html += '</div>';
+                    // ── Action buttons ────────────────────────────────────
                     html += '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">';
-                    html += '<button class="btn btn-success btn-small" onclick="shAdminVerify(\'' + r.studentKey + '\',\'' + r.taskId + '\',\'approved\',\'\')">✅ Approve Part 1</button>';
-                    html += '<button class="btn btn-danger btn-small" onclick="shAdminToggleRejectBox(\'' + rejectBoxId + '\')">❌ Reject Part 1</button>';
+                    html += '<button class="btn btn-success btn-small" onclick="shAdminVerifyWithNote(\'' + r.studentKey + '\',\'' + r.taskId + '\',\'approved\',\'' + replyBoxId + '\')">✅ Approve</button>';
+                    html += '<button class="btn btn-danger btn-small" onclick="shAdminToggleRejectBox(\'' + rejectBoxId + '\')">❌ Reject</button>';
                     html += '</div>';
                     html += '<div id="' + rejectBoxId + '" style="display:none;background:#fff0f0;border:2px solid #f44336;border-radius:10px;padding:14px;margin-top:4px">';
                     html += '<label style="font-size:0.88em;color:#c62828;font-weight:700;display:block;margin-bottom:6px">📝 Reason for rejection (will be shown to student):</label>';
@@ -14718,7 +15580,7 @@ Davan Institute Team`;
                     html += '</div>';
                     html += '<textarea id="' + rejectBoxId + '_txt" placeholder="Or type a custom reason…" rows="2" style="width:100%;padding:8px;border:1px solid #f44336;border-radius:6px;font-size:13px;box-sizing:border-box;margin-bottom:10px;resize:vertical"></textarea>';
                     html += '<div style="display:flex;gap:8px">';
-                    html += '<button class="btn btn-danger btn-small" onclick="shAdminVerifyWithReason(\'' + r.studentKey + '\',\'' + r.taskId + '\',\'' + rejectBoxId + '\')">❌ Confirm Reject</button>';
+                    html += '<button class="btn btn-danger btn-small" onclick="shAdminVerifyWithReason(\'' + r.studentKey + '\',\'' + r.taskId + '\',\'' + replyBoxId + '\',\'' + rejectBoxId + '\')">❌ Confirm Reject</button>';
                     html += '<button class="btn btn-secondary btn-small" onclick="shAdminToggleRejectBox(\'' + rejectBoxId + '\')">Cancel</button>';
                     html += '</div></div></div>';
                 } else {
@@ -14730,7 +15592,8 @@ Davan Institute Team`;
                     html += '<strong>' + statusIcon + ' ' + r.status.toUpperCase() + '</strong>' + reviewerHtml;
                     if (reviewedTime2) html += '<span style="font-size:0.78em;color:#888">· ' + reviewedTime2 + '</span>';
                     html += '</div>';
-                    if (r.rejectionReason) html += '<div style="margin-top:6px;background:#fff0f0;border-left:3px solid #f44336;padding:7px 10px;border-radius:0 6px 6px 0;font-size:0.85em;color:#b71c1c"><strong>📝 Reason:</strong> ' + shEsc(r.rejectionReason) + '</div>';
+                    if (r.rejectionReason) html += '<div style="margin-top:6px;background:#fff0f0;border-left:3px solid #f44336;padding:7px 10px;border-radius:0 6px 6px 0;font-size:0.85em;color:#b71c1c"><strong>📝 Rejection Reason:</strong> ' + shEsc(r.rejectionReason) + '</div>';
+                    if (r.adminNote) html += '<div style="margin-top:6px;background:#e8f5e9;border-left:3px solid #4caf50;padding:7px 10px;border-radius:0 6px 6px 0;font-size:0.85em;color:#2e7d32"><strong>💬 Admin Note:</strong> ' + shEsc(r.adminNote) + '</div>';
                     html += '<div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">';
                     html += '<button class="btn btn-secondary btn-small" onclick="shAdminVerify(\'' + r.studentKey + '\',\'' + r.taskId + '\',\'pending\',\'\')">↩️ Reset</button>';
                     html += '<button class="btn btn-danger btn-small" onclick="shAdminDeleteSubmission(\'' + r.studentKey + '\',\'' + r.taskId + '\')">🗑️ Delete</button>';
@@ -14743,8 +15606,7 @@ Davan Institute Team`;
         } catch(e) { el.innerHTML='<p style="color:red">Error: '+e.message+'</p>'; }
     }
 
-    async function shAdminVerify(studentKey, taskId, status, reason) {
-        // Safety check: only update if a real submission exists (has submittedAt)
+    async function shAdminVerify(studentKey, taskId, status, reason, adminNote) {
         const existing = await getDb().ref('scavengerHunt/submissions/'+studentKey+'/'+taskId).once('value');
         if (!existing.exists() || !existing.val().submittedAt) {
             alert('⚠️ No real submission found for this student/task. Cannot update.');
@@ -14754,7 +15616,8 @@ Davan Institute Team`;
             status,
             reviewedAt: new Date().toISOString(),
             reviewedBy: (window.currentUser && window.currentUser.name) ? window.currentUser.name : 'Admin',
-            rejectionReason: (status === 'rejected' && reason) ? reason : null
+            rejectionReason: (status === 'rejected' && reason) ? reason : null,
+            adminNote: (adminNote && adminNote.trim()) ? adminNote.trim() : null
         };
         await getDb().ref('scavengerHunt/submissions/'+studentKey+'/'+taskId).update(update);
         shAdminLoadSubmissions();
@@ -14818,10 +15681,18 @@ Davan Institute Team`;
         btn.style.color = 'white';
     }
 
-    async function shAdminVerifyWithReason(studentKey, taskId, boxId) {
-        const txt = document.getElementById(boxId + '_txt');
+    async function shAdminVerifyWithReason(studentKey, taskId, replyBoxId, boxId) {
+        const txt    = document.getElementById(boxId + '_txt');
+        const reply  = document.getElementById(replyBoxId);
         const reason = (txt ? txt.value.trim() : '') || 'Rejected by admin';
-        await shAdminVerify(studentKey, taskId, 'rejected', reason);
+        const adminNote = reply ? reply.value.trim() : '';
+        await shAdminVerify(studentKey, taskId, 'rejected', reason, adminNote);
+    }
+
+    async function shAdminVerifyWithNote(studentKey, taskId, status, replyBoxId) {
+        const reply = document.getElementById(replyBoxId);
+        const adminNote = reply ? reply.value.trim() : '';
+        await shAdminVerify(studentKey, taskId, status, '', adminNote);
     }
 
     async function shAdminDeleteSubmission(studentKey, taskId) {
@@ -16085,6 +16956,132 @@ Proceed?`)) return;
     let sscImageData   = null;
     let sscLbDiff      = 'easy';
 
+    // ══ SSC SOUND ENGINE (Web Audio API) ═══════════════════════════════
+    const sscAudioCtx = (function() {
+        try { return new (window.AudioContext || window.webkitAudioContext)(); } catch(e) { return null; }
+    })();
+
+    function sscPlaySound(type) {
+        if (!sscAudioCtx) return;
+        try {
+            const ctx = sscAudioCtx;
+            if (ctx.state === 'suspended') ctx.resume();
+            const o = ctx.createOscillator();
+            const g = ctx.createGain();
+            o.connect(g); g.connect(ctx.destination);
+            const t = ctx.currentTime;
+            if (type === 'move') {
+                // Soft click: short blip
+                o.type = 'sine';
+                o.frequency.setValueAtTime(520, t);
+                o.frequency.exponentialRampToValueAtTime(420, t + 0.06);
+                g.gain.setValueAtTime(0.18, t);
+                g.gain.exponentialRampToValueAtTime(0.001, t + 0.08);
+                o.start(t); o.stop(t + 0.08);
+            } else if (type === 'invalid') {
+                // Dull thud for invalid move
+                o.type = 'square';
+                o.frequency.setValueAtTime(120, t);
+                g.gain.setValueAtTime(0.12, t);
+                g.gain.exponentialRampToValueAtTime(0.001, t + 0.1);
+                o.start(t); o.stop(t + 0.1);
+            } else if (type === 'select') {
+                // UI selection pop
+                o.type = 'sine';
+                o.frequency.setValueAtTime(700, t);
+                o.frequency.exponentialRampToValueAtTime(900, t + 0.07);
+                g.gain.setValueAtTime(0.12, t);
+                g.gain.exponentialRampToValueAtTime(0.001, t + 0.1);
+                o.start(t); o.stop(t + 0.1);
+            } else if (type === 'win') {
+                // 🎉 VICTORY FANFARE — rising chords + triumphant finish
+                const winNotes = [
+                    {f:523,d:0,dur:0.25},{f:659,d:0.18,dur:0.25},{f:784,d:0.36,dur:0.25},
+                    {f:1047,d:0.55,dur:0.5},{f:988,d:0.6,dur:0.4},{f:1047,d:0.75,dur:0.6}
+                ];
+                winNotes.forEach(({f,d,dur}) => {
+                    const o2=ctx.createOscillator(), g2=ctx.createGain();
+                    o2.connect(g2); g2.connect(ctx.destination);
+                    o2.type='triangle';
+                    o2.frequency.setValueAtTime(f, t+d);
+                    g2.gain.setValueAtTime(0.28, t+d);
+                    g2.gain.exponentialRampToValueAtTime(0.001, t+d+dur);
+                    o2.start(t+d); o2.stop(t+d+dur+0.05);
+                });
+                // Crowd cheer — layered noise bursts
+                for(let w=0;w<3;w++){
+                    const buf=ctx.createBuffer(1,ctx.sampleRate*0.6,ctx.sampleRate);
+                    const data=buf.getChannelData(0);
+                    for(let i=0;i<data.length;i++) data[i]=(Math.random()*2-1)*0.35;
+                    const src=ctx.createBufferSource(), gn=ctx.createGain();
+                    const fil=ctx.createBiquadFilter(); fil.type='bandpass';
+                    fil.frequency.value=1200+w*400; fil.Q.value=0.8;
+                    src.buffer=buf; src.connect(fil); fil.connect(gn); gn.connect(ctx.destination);
+                    gn.gain.setValueAtTime(0, t+w*0.25);
+                    gn.gain.linearRampToValueAtTime(0.18, t+w*0.25+0.1);
+                    gn.gain.exponentialRampToValueAtTime(0.001, t+w*0.25+0.55);
+                    src.start(t+w*0.25); src.stop(t+w*0.25+0.6);
+                }
+                // Clapping rhythm — sharp percussive hits
+                [0.05,0.25,0.45,0.65,0.85,1.05,1.15,1.25].forEach(d => {
+                    const buf=ctx.createBuffer(1,ctx.sampleRate*0.08,ctx.sampleRate);
+                    const data=buf.getChannelData(0);
+                    for(let i=0;i<data.length;i++) data[i]=(Math.random()*2-1)*Math.exp(-i/(ctx.sampleRate*0.025));
+                    const src=ctx.createBufferSource(), gn=ctx.createGain();
+                    const fil=ctx.createBiquadFilter(); fil.type='highpass'; fil.frequency.value=800;
+                    src.buffer=buf; src.connect(fil); fil.connect(gn); gn.connect(ctx.destination);
+                    gn.gain.setValueAtTime(0.4, t+d);
+                    gn.gain.exponentialRampToValueAtTime(0.001, t+d+0.07);
+                    src.start(t+d); src.stop(t+d+0.08);
+                });
+                return;
+            } else if (type === 'gameover') {
+                // 😤 BOO BOO — descending sad trombone + crowd boo
+                const booNotes = [
+                    {f:466,d:0,dur:0.3},{f:415,d:0.25,dur:0.3},{f:370,d:0.5,dur:0.3},{f:311,d:0.75,dur:0.55}
+                ];
+                booNotes.forEach(({f,d,dur}) => {
+                    const o2=ctx.createOscillator(), g2=ctx.createGain();
+                    o2.connect(g2); g2.connect(ctx.destination);
+                    o2.type='sawtooth';
+                    o2.frequency.setValueAtTime(f, t+d);
+                    o2.frequency.exponentialRampToValueAtTime(f*0.88, t+d+dur);
+                    g2.gain.setValueAtTime(0.2, t+d);
+                    g2.gain.exponentialRampToValueAtTime(0.001, t+d+dur);
+                    o2.start(t+d); o2.stop(t+d+dur+0.05);
+                });
+                // Crowd boo noise — low rumble
+                for(let w=0;w<2;w++){
+                    const buf=ctx.createBuffer(1,ctx.sampleRate*0.9,ctx.sampleRate);
+                    const data=buf.getChannelData(0);
+                    for(let i=0;i<data.length;i++) data[i]=(Math.random()*2-1)*0.25;
+                    const src=ctx.createBufferSource(), gn=ctx.createGain();
+                    const fil=ctx.createBiquadFilter(); fil.type='bandpass';
+                    fil.frequency.value=300+w*120; fil.Q.value=1.2;
+                    src.buffer=buf; src.connect(fil); fil.connect(gn); gn.connect(ctx.destination);
+                    gn.gain.setValueAtTime(0, t+w*0.15);
+                    gn.gain.linearRampToValueAtTime(0.15, t+w*0.15+0.2);
+                    gn.gain.exponentialRampToValueAtTime(0.001, t+w*0.15+0.85);
+                    src.start(t+w*0.15); src.stop(t+w*0.15+0.9);
+                }
+                return;
+            }
+        } catch(e) { /* ignore audio errors */ }
+    }
+
+    function sscUpdateLiveScore() {
+        const base = SSC_DIFF[sscDiff] ? SSC_DIFF[sscDiff].maxPts : 0;
+        const minMoves = sscSize * sscSize * 2;
+        const live = Math.max(10, base - Math.floor(sscSeconds*0.5) - Math.max(0, sscMoves-minMoves));
+        const el = document.getElementById('sscPtsDisplay');
+        if (el) {
+            el.textContent = live;
+            el.classList.remove('ssc-score-drop');
+            void el.offsetWidth; // reflow
+            el.classList.add('ssc-score-drop');
+        }
+    }
+
     // ── LOGIN ──────────────────────────────────────────────────────────
     async function sscLogin() {
         const phone = (document.getElementById('sscLoginPhone').value||'').trim();
@@ -16181,11 +17178,12 @@ Proceed?`)) return;
         ['easy','medium','hard'].forEach(x => {
             const el = document.getElementById('ssdc-'+x);
             if (!el) return;
-            el.style.border      = x===d ? '3px solid #6a1b9a' : '3px solid #ddd';
-            el.style.background  = x===d ? '#f3e5f5' : 'white';
+            el.className = 'ssc-diff-card' + (x===d ? ' ssc-selected' : '');
         });
         const note = document.getElementById('sscDiffNote');
         if (note) note.textContent = SSC_DIFF[d].label + ' · ' + SSC_DIFF[d].maxPts + ' max points';
+        // Play selection sound
+        sscPlaySound('select');
         sscCheckReady();
     }
 
@@ -16199,8 +17197,9 @@ Proceed?`)) return;
             sscImageData = ev.target.result;
             const thumb = document.getElementById('sscPreviewThumb');
             thumb.src = sscImageData; thumb.style.display = 'block';
-            document.getElementById('sscUploadZone').style.background = '#e8f5e9';
-            document.getElementById('sscUploadZone').style.borderColor = '#4caf50';
+            const zone = document.getElementById('sscUploadZone');
+            zone.className = 'ssc-upload-zone has-image';
+            sscPlaySound('select');
             sscCheckReady();
         };
         reader.readAsDataURL(file);
@@ -16229,9 +17228,10 @@ Proceed?`)) return;
         } catch(e) { /* allow if config unreadable */ }
         document.getElementById('sscSetupCard').style.display = 'none';
         document.getElementById('sscGameArea').style.display  = 'block';
-        document.getElementById('sscGameDiffLabel').textContent = SSC_DIFF[sscDiff].label;
+        document.getElementById('sscGameDiffLabel').textContent = ({easy:'😊 Easy',medium:'😄 Medium',hard:'🔥 Hard'})[sscDiff] || SSC_DIFF[sscDiff].label;
         document.getElementById('sscPtsDisplay').textContent    = SSC_DIFF[sscDiff].maxPts;
         sscSolDisabled = false; sscSolved = false;
+        sscPlaySound('select');
         sscInitPuzzle();
     }
 
@@ -16241,7 +17241,8 @@ Proceed?`)) return;
         document.getElementById('sscTimerDisplay').textContent  = '0:00';
         document.getElementById('sscMovesDisplay').textContent  = '0';
         const n = sscSize * sscSize;
-        sscTiles = Array.from({length:n}, (_,i) => i);
+        // Goal: [1,2,...,n²-1, 0] — blank at bottom-right
+        sscTiles = Array.from({length:n}, (_,i) => i===n-1 ? 0 : i+1);
         do { sscShuffleTiles(); } while (!sscIsSolvable());
         sscBuildBoard();
         const prev = document.getElementById('sscInGamePreview');
@@ -16249,7 +17250,9 @@ Proceed?`)) return;
         sscTimerRef = setInterval(() => {
             sscSeconds++;
             document.getElementById('sscTimerDisplay').textContent = sscFmtTime(sscSeconds);
+            if (sscSeconds % 2 === 0) sscUpdateLiveScore(); // refresh score every 2s
         }, 1000);
+        sscUpdateLiveScore(); // init immediately
     }
 
     function sscShuffleTiles() {
@@ -16272,22 +17275,26 @@ Proceed?`)) return;
         return rowFromBottom%2===0 ? inv%2===1 : inv%2===0;
     }
 
-    function sscBuildBoard() {
+    function sscBuildBoard(movedIdx) {
         const board = document.getElementById('sscPuzzleBoard');
         board.style.gridTemplateColumns = 'repeat('+sscSize+',1fr)';
         board.innerHTML = '';
-        const tileSize = Math.min(400, (board.parentElement.clientWidth||400) - 20);
+        const tileSize = Math.min(440, (board.parentElement.clientWidth||440) - 16);
         const sz = Math.floor(tileSize / sscSize);
         sscTiles.forEach((val, idx) => {
             const tile = document.createElement('div');
-            tile.className = 'ssc-tile' + (val===0 ? ' ssc-empty' : '');
+            tile.className = 'ssc-tile' + (val===0 ? ' ssc-empty' : '') + (idx===movedIdx ? ' ssc-moved' : '');
             tile.style.width = sz+'px'; tile.style.height = sz+'px';
             if (val !== 0) {
-                const col = val % sscSize, row = Math.floor(val/sscSize);
-                const pct = 100/(sscSize-1);
+                // val is 1-based tile number; map to 0-based grid position
+                const zeroVal = val - 1;  // 0-based index in the image grid
+                const col = zeroVal % sscSize;
+                const row = Math.floor(zeroVal / sscSize);
+                // Use pixel-based positioning: backgroundSize = full image scaled to board,
+                // backgroundPosition = negative offset of this tile's position
                 tile.style.backgroundImage    = 'url('+sscImageData+')';
-                tile.style.backgroundSize     = (sscSize*100)+'%';
-                tile.style.backgroundPosition = (col*pct)+'% '+(row*pct)+'%';
+                tile.style.backgroundSize     = (sz * sscSize) + 'px ' + (sz * sscSize) + 'px';
+                tile.style.backgroundPosition = (-col * sz) + 'px ' + (-row * sz) + 'px';
             }
             tile.addEventListener('click', () => sscTryMove(idx));
             board.appendChild(tile);
@@ -16299,29 +17306,45 @@ Proceed?`)) return;
         const emptyIdx = sscTiles.indexOf(0);
         const eR = Math.floor(emptyIdx/sscSize), eC = emptyIdx%sscSize;
         const cR = Math.floor(clickedIdx/sscSize), cC = clickedIdx%sscSize;
-        if (!((Math.abs(eR-cR)===1 && eC===cC)||(Math.abs(eC-cC)===1 && eR===cR))) return;
+        const valid = (Math.abs(eR-cR)===1 && eC===cC)||(Math.abs(eC-cC)===1 && eR===cR);
+        if (!valid) {
+            // Shake the board briefly for invalid move
+            sscPlaySound('invalid');
+            const board = document.getElementById('sscPuzzleBoard');
+            board.classList.remove('ssc-board-shake');
+            void board.offsetWidth;
+            board.classList.add('ssc-board-shake');
+            setTimeout(() => board.classList.remove('ssc-board-shake'), 400);
+            return;
+        }
         [sscTiles[emptyIdx], sscTiles[clickedIdx]] = [sscTiles[clickedIdx], sscTiles[emptyIdx]];
         sscMoves++;
         document.getElementById('sscMovesDisplay').textContent = sscMoves;
-        sscBuildBoard();
+        sscPlaySound('move');
+        sscBuildBoard(clickedIdx); // pass moved tile index for animation
+        sscUpdateLiveScore();
         sscCheckWin();
     }
 
     function sscCheckWin() {
-        for (let i=0; i<sscTiles.length; i++) if (sscTiles[i]!==i) return;
+        // Goal: tiles [1,2,3,...,n²-1, 0] — blank at last position (bottom-right)
+        const n2 = sscTiles.length;
+        for (let i=0; i<n2-1; i++) if (sscTiles[i] !== i+1) return;
+        if (sscTiles[n2-1] !== 0) return;
         sscSolved = true;
         clearInterval(sscTimerRef);
         const pts = sscCalcPoints();
+        sscPlaySound('win');
+        sscLaunchConfetti();
         setTimeout(() => {
             document.getElementById('sscWinTime').textContent  = sscFmtTime(sscSeconds);
             document.getElementById('sscWinMoves').textContent = sscMoves;
-            document.getElementById('sscWinDiff').textContent  = ({easy:'8-Puz',medium:'15-Puz',hard:'24-Puz'})[sscDiff];
+            document.getElementById('sscWinDiff').textContent  = ({easy:'😊 Easy',medium:'😄 Medium',hard:'🔥 Hard'})[sscDiff];
             document.getElementById('sscWinPts').textContent   = pts;
             document.getElementById('sscWinSaveMsg').textContent = '';
             const m = document.getElementById('sscWinModal');
             m.style.display = 'flex';
-        }, 300);
-        sscLaunchConfetti();
+        }, 400);
     }
 
     function sscCalcPoints() {
@@ -16335,8 +17358,23 @@ Proceed?`)) return;
         if (sscSolDisabled) { alert('Score disabled — solution was viewed.'); return; }
         if (!sscCurrentUser) { alert('Not logged in.'); return; }
         const pts = sscCalcPoints();
-        document.getElementById('sscWinSaveMsg').textContent = '⏳ Uploading image & saving score…';
+        document.getElementById('sscWinSaveMsg').textContent = '⏳ Checking daily limit…';
         try {
+            // ── Enforce max submissions per day ──────────────────────
+            const cfgSnap = await window.db.ref('speedSlide/config').once('value');
+            const maxSubs = (cfgSnap.val() || {}).maxSubs || 3;
+            const today   = new Date().toISOString().slice(0, 10);
+            const allSnap = await window.db.ref('speedSlide/submissions')
+                .orderByChild('phone').equalTo(sscCurrentUser.phone).once('value');
+            let todayCount = 0;
+            allSnap.forEach(c => { if ((c.val().date || '') === today) todayCount++; });
+            if (todayCount >= maxSubs) {
+                document.getElementById('sscWinSaveMsg').textContent =
+                    `❌ Daily limit reached! You can submit a maximum of ${maxSubs} times per day. Come back tomorrow!`;
+                return;
+            }
+            // ── Save score ────────────────────────────────────────────
+            document.getElementById('sscWinSaveMsg').textContent = '⏳ Uploading image & saving score…';
             const imgRef = window.storage.ref('speedSlide/'+sscCurrentUser.key+'_'+Date.now()+'.jpg');
             const snap   = await imgRef.putString(sscImageData, 'data_url');
             const imgUrl = await snap.ref.getDownloadURL();
@@ -16347,31 +17385,274 @@ Proceed?`)) return;
                 difficulty: sscDiff, size: sscSize,
                 timeSec: sscSeconds, moves: sscMoves, points: pts,
                 imageUrl: imgUrl, solvedAt: new Date().toISOString(),
-                date: new Date().toISOString().slice(0,10), status: 'pending'
+                date: today, status: 'pending'
             };
             await window.db.ref('speedSlide/submissions').push(entry);
-            document.getElementById('sscWinSaveMsg').textContent = '✅ Score saved! Pending admin review.';
+            const remaining = maxSubs - todayCount - 1;
+            document.getElementById('sscWinSaveMsg').textContent =
+                `✅ Score saved! Pending admin review. (${remaining} submission${remaining !== 1 ? 's' : ''} left today)`;
         } catch(e) {
             document.getElementById('sscWinSaveMsg').textContent = '❌ Save failed: ' + e.message;
         }
     }
 
-    // ── SHOW SOLUTION ──────────────────────────────────────────────────
+    // ── GIVE UP / SOLUTION ENGINE ──────────────────────────────────────
+    let sscSolSteps     = [];
+    let sscSolStepIdx   = 0;
+    let sscSolAutoRef   = null;
+    let sscSolPlaying   = false;
+
     function sscShowSolution() {
-        if (!confirm('Give up? The solution will be shown and this game will END with 0 points. Continue?')) return;
+        if (!confirm('Give up? The solution will be shown step-by-step and the game will end. Continue?')) return;
         clearInterval(sscTimerRef);
         sscSolDisabled = true; sscSolved = true;
+        sscPlaySound('gameover');
+
         document.getElementById('sscSolTime').textContent  = sscFmtTime(sscSeconds);
         document.getElementById('sscSolMoves').textContent = sscMoves;
-        document.getElementById('sscSolDiff').textContent  = ({easy:'8-Puz',medium:'15-Puz',hard:'24-Puz'})[sscDiff];
-        document.getElementById('sscSolImg').src = sscImageData;
+        document.getElementById('sscSolDiff').textContent  = ({easy:'8-Puzzle',medium:'15-Puzzle',hard:'24-Puzzle'})[sscDiff] || sscDiff;
+
         const m = document.getElementById('sscGameOverModal');
         m.style.display = 'flex';
+        setTimeout(() => sscLaunchBoo(), 150);
+
+        sscSolSteps = []; sscSolStepIdx = 0; sscSolPlaying = false;
+        clearInterval(sscSolAutoRef);
+        document.getElementById('sscSolPlayBtn').textContent = '▶ Play';
+        document.getElementById('sscSolMoveDesc').innerHTML =
+            '<span style="color:rgba(255,255,255,.6);font-size:.88em">🔍 Computing solution…</span>';
+        document.getElementById('sscSolStepCounter').textContent = '…';
+
+        // Run A* solver in chunked async slices — no blocking, no loops
+        setTimeout(() => sscRunSolverAsync([...sscTiles], sscSize), 100);
+    }
+
+    // ── CHUNKED A* SOLVER ─────────────────────────────────────────────
+    // A* with Manhattan heuristic + visited set = optimal short path, no loops.
+    // Runs in time-sliced chunks so the browser never freezes.
+    function sscRunSolverAsync(startTiles, n) {
+        // Goal: [1,2,...,n²-1, 0] — blank at bottom-right
+        const goalArr = Array.from({length:n*n}, (_,i) => i===n*n-1 ? 0 : i+1);
+        const goalStr = goalArr.join(',');
+        const startStr = startTiles.join(',');
+
+        if (startStr === goalStr) {
+            sscSolSteps = [startTiles]; sscSolStepIdx = 0;
+            sscRenderSolStep(0); return;
+        }
+
+        const dirs = [[-1,0],[1,0],[0,-1],[0,1]];
+
+        function mh(t) {
+            let h=0;
+            for(let i=0;i<t.length;i++){
+                const v=t[i]; if(!v) continue;
+                h+=Math.abs(Math.floor(v/n)-Math.floor(i/n))+Math.abs(v%n-i%n);
+            }
+            return h;
+        }
+
+        // Simple min-heap for A*
+        class Heap {
+            constructor(){ this.d=[]; }
+            push(item){ this.d.push(item); this._up(this.d.length-1); }
+            pop(){ const t=this.d[0]; const b=this.d.pop(); if(this.d.length){this.d[0]=b;this._down(0);} return t; }
+            get size(){ return this.d.length; }
+            _up(i){ while(i>0){const p=(i-1)>>1; if(this.d[p][0]<=this.d[i][0])break; [this.d[p],this.d[i]]=[this.d[i],this.d[p]]; i=p;} }
+            _down(i){ const n=this.d.length; while(true){ let s=i,l=2*i+1,r=2*i+2; if(l<n&&this.d[l][0]<this.d[s][0])s=l; if(r<n&&this.d[r][0]<this.d[s][0])s=r; if(s===i)break; [this.d[s],this.d[i]]=[this.d[i],this.d[s]]; i=s; } }
+        }
+
+        // State: [f, g, tiles, parentKey]
+        // We store parent pointers in a map to reconstruct path
+        const cameFrom = new Map(); // key -> {tiles, parentKey}
+        const gScore   = new Map();
+        const heap     = new Heap();
+
+        const sh = mh(startTiles);
+        heap.push([sh, 0, startTiles]);
+        gScore.set(startStr, 0);
+        cameFrom.set(startStr, {tiles: startTiles.slice(), parent: null});
+
+        const CHUNK = 200; // nodes per time slice
+        const MAX_NODES = 150000; // safety cap
+        let totalNodes = 0;
+
+        function reconstruct(endKey) {
+            const path = [];
+            let k = endKey;
+            while(k !== null) {
+                const entry = cameFrom.get(k);
+                if(!entry) break;
+                path.unshift(entry.tiles);
+                k = entry.parent;
+            }
+            return path;
+        }
+
+        function processChunk() {
+            let c = 0;
+            while(heap.size > 0 && c < CHUNK && totalNodes < MAX_NODES) {
+                const [f, g, cur] = heap.pop();
+                const curKey = cur.join(',');
+                totalNodes++;
+
+                // Skip stale entries
+                if(gScore.has(curKey) && gScore.get(curKey) < g) continue;
+
+                if(curKey === goalStr) {
+                    sscSolSteps   = reconstruct(curKey);
+                    sscSolStepIdx = 0;
+                    sscRenderSolStep(0);
+                    setTimeout(()=>sscSolStartPlay(), 500);
+                    return;
+                }
+
+                const ei=cur.indexOf(0), er=Math.floor(ei/n), ec=ei%n;
+                for(const [dr,dc] of dirs){
+                    const nr=er+dr, nc=ec+dc;
+                    if(nr<0||nr>=n||nc<0||nc>=n) continue;
+                    const ni=nr*n+nc;
+                    const next=cur.slice(); [next[ei],next[ni]]=[next[ni],next[ei]];
+                    const nextKey=next.join(',');
+                    const ng = g+1;
+                    if(!gScore.has(nextKey) || ng < gScore.get(nextKey)){
+                        gScore.set(nextKey, ng);
+                        cameFrom.set(nextKey, {tiles: next.slice(), parent: curKey});
+                        heap.push([ng + mh(next), ng, next]);
+                    }
+                }
+                c++;
+            }
+
+            if(heap.size === 0 || totalNodes >= MAX_NODES) {
+                sscRenderSolBoard(goalArr, n, -1);
+                document.getElementById('sscSolMoveDesc').innerHTML =
+                    '<span style="color:#ef9a9a;font-size:.85em">⚠️ Too complex to auto-solve — showing the goal state.</span>';
+                document.getElementById('sscSolStepCounter').textContent = 'N/A';
+                return;
+            }
+
+            // Yield to browser then continue
+            setTimeout(processChunk, 0);
+        }
+
+        processChunk();
+    }
+
+    // ── RENDER SOL BOARD ──────────────────────────────────────────────
+    function sscRenderSolBoard(tiles, n, highlightIdx) {
+        const board = document.getElementById('sscSolBoard');
+        const maxW = Math.min(260, (window.innerWidth * 0.80) - 40);
+        const sz = Math.floor(maxW / n);
+        board.style.gridTemplateColumns = 'repeat('+n+',1fr)';
+        board.innerHTML = '';
+        tiles.forEach((val, idx) => {
+            const tile = document.createElement('div');
+            const isEmpty = val === 0;
+            const isHL = idx === highlightIdx;
+            tile.style.width  = sz+'px';
+            tile.style.height = sz+'px';
+            tile.style.borderRadius = '5px';
+            tile.style.transition = 'all .3s ease';
+            if (isEmpty) {
+                tile.style.background = 'rgba(196,69,105,.2)';
+                tile.style.border = '2px dashed rgba(196,69,105,.4)';
+            } else {
+                tile.style.border = isHL
+                    ? '3px solid #ffd54f'
+                    : '1.5px solid rgba(255,255,255,.12)';
+                if (isHL) tile.style.boxShadow = '0 0 14px rgba(255,213,79,.7)';
+                const zv=val-1, col=zv%n, row=Math.floor(zv/n);
+                tile.style.backgroundImage = 'url('+sscImageData+')';
+                tile.style.backgroundSize = (sz*n)+'px '+(sz*n)+'px';
+                tile.style.backgroundPosition = (-col*sz)+'px '+(-row*sz)+'px';
+            }
+            board.appendChild(tile);
+        });
+    }
+
+    function sscRenderSolStep(idx) {
+        if (!sscSolSteps.length) return;
+        const tiles = sscSolSteps[idx];
+        const n = sscSize;
+        const total = sscSolSteps.length - 1;
+
+        let movedTileIdx = -1;
+        if (idx > 0) movedTileIdx = sscSolSteps[idx-1].indexOf(0);
+
+        sscRenderSolBoard(tiles, n, movedTileIdx);
+
+        // Counter
+        document.getElementById('sscSolStepCounter').textContent =
+            idx === 0 ? 'Start position' : ('Move '+idx+' / '+total);
+
+        // Description
+        let desc = '';
+        if (idx === 0) {
+            desc = `<span style="color:rgba(255,255,255,.75);font-size:.87em">📍 <strong style="color:#ffd54f">Starting position</strong> — ${total} moves needed to solve</span>`;
+        } else if (idx >= total) {
+            desc = `<span style="color:#a5d6a7;font-size:.87em">✅ <strong>That's how it's done!</strong> Only ${total} moves needed — try again and beat it!</span>`;
+        } else {
+            const prev = sscSolSteps[idx-1], cur = sscSolSteps[idx];
+            const prevEi = prev.indexOf(0), curEi = cur.indexOf(0);
+            const dr = Math.floor(curEi/n) - Math.floor(prevEi/n);
+            const dc = curEi%n - prevEi%n;
+            const dirMap = {'-10':'slide tile ↓ Down','10':'slide tile ↑ Up','0-1':'slide tile → Right','01':'slide tile ← Left'};
+            const dirStr = dirMap[''+dr+dc] || 'slide tile';
+            const tileVal = cur[prevEi];
+            desc = `<span style="color:rgba(255,255,255,.8);font-size:.87em">Move <strong style="color:#ffd54f">${idx}</strong> of ${total} — <strong style="color:#ce93d8">${dirStr}</strong></span>`;
+        }
+        document.getElementById('sscSolMoveDesc').innerHTML = desc;
+    }
+
+    function sscSolPlayPause() {
+        if (sscSolPlaying) {
+            sscSolPlaying = false;
+            clearInterval(sscSolAutoRef);
+            document.getElementById('sscSolPlayBtn').textContent = '▶ Play';
+        } else {
+            if (sscSolStepIdx >= sscSolSteps.length - 1) sscSolStepIdx = 0;
+            sscSolStartPlay();
+        }
+    }
+
+    function sscSolStartPlay() {
+        if (!sscSolSteps.length) return;
+        sscSolPlaying = true;
+        document.getElementById('sscSolPlayBtn').textContent = '⏸ Pause';
+        clearInterval(sscSolAutoRef);
+        const delay = sscSize <= 3 ? 650 : (sscSize <= 4 ? 480 : 320);
+        sscSolAutoRef = setInterval(() => {
+            if (sscSolStepIdx < sscSolSteps.length - 1) {
+                sscSolStepIdx++;
+                sscRenderSolStep(sscSolStepIdx);
+            } else {
+                clearInterval(sscSolAutoRef);
+                sscSolPlaying = false;
+                document.getElementById('sscSolPlayBtn').textContent = '↺ Replay';
+            }
+        }, delay);
+    }
+
+    function sscSolStepBack() {
+        clearInterval(sscSolAutoRef); sscSolPlaying = false;
+        document.getElementById('sscSolPlayBtn').textContent = '▶ Play';
+        if (sscSolStepIdx > 0) { sscSolStepIdx--; sscRenderSolStep(sscSolStepIdx); }
+    }
+
+    function sscSolStepFwd() {
+        clearInterval(sscSolAutoRef); sscSolPlaying = false;
+        document.getElementById('sscSolPlayBtn').textContent = '▶ Play';
+        if (sscSolStepIdx < sscSolSteps.length - 1) { sscSolStepIdx++; sscRenderSolStep(sscSolStepIdx); }
     }
 
     // ── RESET ──────────────────────────────────────────────────────────
     function sscResetGame() {
         clearInterval(sscTimerRef);
+        clearInterval(sscSolAutoRef);
+        sscSolPlaying = false;
+        sscSolSteps = [];
+        sscSolStepIdx = 0;
         sscSolved = false; sscSolDisabled = false; sscImageData = null;
         document.getElementById('sscWinModal').style.display     = 'none';
         document.getElementById('sscGameOverModal').style.display = 'none';
@@ -16435,18 +17716,51 @@ Proceed?`)) return;
 
     // ── CONFETTI ───────────────────────────────────────────────────────
     function sscLaunchConfetti() {
-        const colors = ['#c44569','#6a1b9a','#ffd700','#28a745','#ff9800','#2196F3'];
-        for (let i=0; i<60; i++) {
+        const colors = ['#c44569','#6a1b9a','#ffd700','#28a745','#ff9800','#2196F3','#e91e63','#00bcd4'];
+        // Big confetti shower
+        for (let i=0; i<100; i++) {
             const el = document.createElement('div');
-            el.style.cssText = 'position:fixed;z-index:99999;border-radius:2px;animation:confetti 2.5s ease-out forwards;pointer-events:none';
+            el.style.cssText = 'position:fixed;z-index:99999;border-radius:2px;pointer-events:none';
             el.style.left    = Math.random()*100+'vw';
             el.style.top     = '-20px';
             el.style.background = colors[Math.floor(Math.random()*colors.length)];
-            el.style.width   = (8+Math.random()*8)+'px';
-            el.style.height  = (8+Math.random()*8)+'px';
-            el.style.animationDelay = Math.random()*1.5+'s';
+            el.style.width   = (6+Math.random()*10)+'px';
+            el.style.height  = (6+Math.random()*10)+'px';
+            el.style.animation = `confetti ${2+Math.random()}s ease-out forwards`;
+            el.style.animationDelay = Math.random()*1.8+'s';
             document.body.appendChild(el);
-            setTimeout(()=>el.remove(), 4000);
+            setTimeout(()=>el.remove(), 4500);
+        }
+        // Floating emoji burst inside the modal
+        const burst = document.getElementById('sscWinEmojiBurst');
+        if (burst) {
+            const emojis = ['🎉','🎊','⭐','🏆','✨','🥳','🎈','💫','🌟','👏'];
+            for(let i=0;i<18;i++){
+                const e=document.createElement('span');
+                e.textContent = emojis[Math.floor(Math.random()*emojis.length)];
+                e.style.cssText = `position:absolute;font-size:${1.2+Math.random()*1.4}em;
+                    left:${5+Math.random()*90}%;bottom:10%;
+                    animation:sscEmojiFloat ${1.2+Math.random()*1}s ease-out ${Math.random()*0.8}s both;
+                    pointer-events:none;`;
+                burst.appendChild(e);
+                setTimeout(()=>e.remove(), 3000);
+            }
+        }
+    }
+
+    function sscLaunchBoo() {
+        const burst = document.getElementById('sscBooEmojiBurst');
+        if (!burst) return;
+        const emojis = ['👎','😤','💀','😬','🙈','😩','👎','💔','😤','🤦'];
+        for(let i=0;i<14;i++){
+            const e=document.createElement('span');
+            e.textContent = emojis[Math.floor(Math.random()*emojis.length)];
+            e.style.cssText = `position:absolute;font-size:${1+Math.random()*1.2}em;
+                left:${5+Math.random()*90}%;top:5%;
+                animation:sscBooDrop ${0.9+Math.random()*0.8}s ease-in ${Math.random()*0.6}s both;
+                pointer-events:none;`;
+            burst.appendChild(e);
+            setTimeout(()=>e.remove(), 2500);
         }
     }
 
@@ -17193,9 +18507,9 @@ Proceed?`)) return;
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;">
-                <strong>Version:</strong> 3.8 quiz lock applied | <strong>Last Updated:</strong> February 21, 2026 09.06am
+                <strong>Version:</strong> 3.7 Speed Slide Challenge updated   | <strong>Last Updated:</strong> February 21, 2026 01.19pm
             </p>
-            <!-- ============================================ -->1
+            <!-- ============================================ -->
             
             <p style="color: #c44569; font-size: 0.85em; font-weight: 600; margin-bottom: 8px;">
                 Built by Harsha Gujjar, Director - Davan College
