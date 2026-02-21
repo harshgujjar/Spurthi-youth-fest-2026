@@ -15563,7 +15563,18 @@ Davan Institute Team`;
                     html += '<div style="margin-top:10px">';
                     // ── Admin reply/note box ──────────────────────────────
                     html += '<div style="background:#e8f5e9;border:2px solid #4caf50;border-radius:10px;padding:12px 14px;margin-bottom:10px">';
-                    html += '<label style="font-size:0.85em;color:#2e7d32;font-weight:700;display:block;margin-bottom:5px">💬 Reply / Note to Student <span style="color:#888;font-weight:400">(optional — shown to student on approval or rejection)</span></label>';
+                    html += '<label style="font-size:0.85em;color:#2e7d32;font-weight:700;display:block;margin-bottom:6px">💬 Reply / Note to Student <span style="color:#888;font-weight:400">(optional — shown to student on approval or rejection)</span></label>';
+                    html += '<div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px">';
+                    [
+                        '👍 Great work!',
+                        '🌟 Excellent effort!',
+                        '✅ Well done, keep it up!',
+                        '👏 Perfect submission!',
+                        '😊 Good job, proud of you!'
+                    ].forEach(function(q) {
+                        html += '<button type="button" onclick="document.getElementById(\'' + replyBoxId + '\').value=\'' + q.replace(/'/g,"\\'") + '\'" style="background:#c8e6c9;color:#1b5e20;border:1.5px solid #4caf50;border-radius:20px;padding:4px 11px;cursor:pointer;font-size:12px;font-weight:600;transition:background 0.15s" onmouseover="this.style.background=\'#a5d6a7\'" onmouseout="this.style.background=\'#c8e6c9\'">' + q + '</button>';
+                    });
+                    html += '</div>';
                     html += '<textarea id="' + replyBoxId + '" placeholder="e.g. Great work! Well done. / Please resubmit with clearer photo…" rows="2" style="width:100%;padding:8px;border:1.5px solid #4caf50;border-radius:6px;font-size:13px;box-sizing:border-box;resize:vertical;outline:none"></textarea>';
                     html += '</div>';
                     // ── Action buttons ────────────────────────────────────
@@ -15602,7 +15613,9 @@ Davan Institute Team`;
                 } // end single-photo else
                                 html += '</div>';
             });
+            const _scrollY = window.scrollY;
             el.innerHTML = html;
+            requestAnimationFrame(() => window.scrollTo({ top: _scrollY, behavior: 'instant' }));
         } catch(e) { el.innerHTML='<p style="color:red">Error: '+e.message+'</p>'; }
     }
 
@@ -15863,7 +15876,65 @@ Davan Institute Team`;
             html += '<div class="sh-progress-bar-wrap" style="height:8px;margin-top:2px"><div class="sh-progress-bar" style="width:'+pct+'%"></div></div>';
             html += '<span style="font-size:0.82em;color:#666">'+r.approved+'/'+r.totalTasks+' task'+(r.totalTasks!==1?'s':'')+' ('+pct+'%)</span></div></div>';
         });
+
+        // ── Summary Report Box ────────────────────────────────────────────
+        const totalParticipants = rows.length;
+        const fullCompleters    = rows.filter(r => r.approved === r.totalTasks && r.totalTasks > 0).length;
+        const partialCompleters = rows.filter(r => r.approved > 0 && r.approved < r.totalTasks).length;
+        const noApproval        = rows.filter(r => r.approved === 0).length;
+        const topStudents       = rows.slice(0,3).map((r,i)=>(medals[i]||'#'+(i+1))+' '+r.name+' ('+r.cls+') — '+r.approved+'/'+r.totalTasks+' tasks').join('\n');
+        const filterNote        = (taskF!=='all'||classF!=='all')
+            ? '\nFilter: '+(taskF!=='all'?'Task: '+((_shLbTasksCache[taskF]||{}).name||taskF):'All Tasks')+' | '+(classF!=='all'?'Class: '+classF:'All Classes')
+            : '';
+        const now               = new Date().toLocaleString('en-IN',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit',hour12:true});
+
+        const reportText =
+`📊 Scavenger Hunt — Summary Report
+📅 Generated: ${now}${filterNote}
+──────────────────────────────
+👥 Total Participants : ${totalParticipants}
+✅ Fully Completed    : ${fullCompleters}
+⏳ Partially Done     : ${partialCompleters}
+❌ No Approval Yet    : ${noApproval}
+──────────────────────────────
+🏆 Top 3 Students:
+${topStudents}
+──────────────────────────────`;
+
+        html += `
+        <div style="margin-top:28px;background:linear-gradient(135deg,#f3e5f5 0%,#e8f5e9 100%);border:2px solid #9c27b0;border-radius:14px;padding:18px 20px">
+            <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px">
+                <span style="font-weight:800;color:#6a1b9a;font-size:1em">📊 Summary Report</span>
+                <div style="display:flex;gap:8px;flex-wrap:wrap">
+                    <button onclick="(function(){var t=document.getElementById('shLbReportTxt');t.select();navigator.clipboard.writeText(t.value).then(function(){var b=document.getElementById('shLbCopyBtn');b.textContent='✅ Copied!';b.style.background='#2e7d32';setTimeout(function(){b.textContent='📋 Copy';b.style.background='#6a1b9a';},2000);})})()" id="shLbCopyBtn" style="background:#6a1b9a;color:white;border:none;padding:6px 16px;border-radius:8px;cursor:pointer;font-weight:700;font-size:0.85em">📋 Copy</button>
+                    <button onclick="(function(){var t=document.getElementById('shLbReportTxt');var b=document.createElement('a');b.href='data:text/plain;charset=utf-8,'+encodeURIComponent(t.value);b.download='scavenger_hunt_report.txt';b.click();})()" style="background:#1565c0;color:white;border:none;padding:6px 16px;border-radius:8px;cursor:pointer;font-weight:700;font-size:0.85em">⬇️ Download</button>
+                </div>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:14px">
+                <div style="background:white;border-radius:10px;padding:12px;text-align:center;box-shadow:0 2px 8px rgba(106,27,154,0.08)">
+                    <div style="font-size:1.6em;font-weight:800;color:#6a1b9a">${totalParticipants}</div>
+                    <div style="font-size:0.75em;color:#888;font-weight:600">👥 Participants</div>
+                </div>
+                <div style="background:white;border-radius:10px;padding:12px;text-align:center;box-shadow:0 2px 8px rgba(46,125,50,0.08)">
+                    <div style="font-size:1.6em;font-weight:800;color:#2e7d32">${fullCompleters}</div>
+                    <div style="font-size:0.75em;color:#888;font-weight:600">✅ Fully Done</div>
+                </div>
+                <div style="background:white;border-radius:10px;padding:12px;text-align:center;box-shadow:0 2px 8px rgba(230,81,0,0.08)">
+                    <div style="font-size:1.6em;font-weight:800;color:#e65100">${partialCompleters}</div>
+                    <div style="font-size:0.75em;color:#888;font-weight:600">⏳ Partial</div>
+                </div>
+                <div style="background:white;border-radius:10px;padding:12px;text-align:center;box-shadow:0 2px 8px rgba(198,40,40,0.08)">
+                    <div style="font-size:1.6em;font-weight:800;color:#c62828">${noApproval}</div>
+                    <div style="font-size:0.75em;color:#888;font-weight:600">❌ No Approval</div>
+                </div>
+            </div>
+            <textarea id="shLbReportTxt" readonly rows="10" style="width:100%;font-family:monospace;font-size:12.5px;padding:12px;border:1.5px solid #ce93d8;border-radius:8px;background:#fdf6ff;color:#333;resize:vertical;box-sizing:border-box;outline:none;line-height:1.7">${reportText.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</textarea>
+        </div>`;
+
         el.innerHTML = html;
+        // Set textarea value properly (avoid HTML encoding issues)
+        const ta = document.getElementById('shLbReportTxt');
+        if (ta) ta.value = reportText;
     }
 
     // ── Admin: Class-wise Participation ───────────────────────────────
@@ -18507,7 +18578,7 @@ Proceed?`)) return;
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;">
-                <strong>Version:</strong> 3.7 Speed Slide Challenge updated   | <strong>Last Updated:</strong> February 21, 2026 01.19pm
+                <strong>Version:</strong> 4.1 Speed Slide Challenge updated   | <strong>Last Updated:</strong> February 21, 2026 01.38pm
             </p>
             <!-- ============================================ -->
             
