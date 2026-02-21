@@ -1300,6 +1300,15 @@
                     <button class="btn btn-small btn-info" onclick="loadCRScavengerStats()">🔄 Refresh</button>
                 </div>
 
+                <!-- Task Filter -->
+                <div style="background:#f3e5f5;border-radius:10px;padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+                    <label style="font-weight:700;color:#6a1b9a;font-size:0.9em;white-space:nowrap">🔍 Filter by Task:</label>
+                    <select id="crShTaskFilter" onchange="crShApplyTaskFilter()" style="flex:1;min-width:180px;padding:7px 12px;border:2px solid #9c27b0;border-radius:8px;color:#3d0060;font-weight:600;background:white;outline:none;font-size:0.9em">
+                        <option value="">— All Tasks —</option>
+                    </select>
+                    <span id="crShTaskFilterBadge" style="background:#9c27b0;color:white;padding:3px 12px;border-radius:12px;font-size:0.8em;font-weight:700;display:none"></span>
+                </div>
+
                 <!-- Info summary box -->
                 <div id="crShInfoBox" style="background:#fffde7;border-radius:10px;padding:16px 18px;margin-bottom:16px;border-left:4px solid #ffc107">
                     <h4 style="color:#856404;margin:0 0 5px;font-size:0.9em">📋 Scavenger Hunt Participation Summary — <span id="crShInfoDate">Loading…</span></h4>
@@ -1328,12 +1337,12 @@
 
                 <!-- Student list -->
                 <div style="background:white;border-radius:10px;border:2px solid #e0c8f5;overflow:hidden">
-                    <div style="background:linear-gradient(135deg,#6a1b9a,#c44569);padding:12px 16px">
-                        <h4 style="color:white;margin:0;font-size:0.95em">Your Class Students — Scavenger Hunt Submissions</h4>
+                    <div style="background:linear-gradient(135deg,#6a1b9a,#c44569);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+                        <h4 style="color:white;margin:0;font-size:0.95em" id="crShTableTitle">Your Class Students — Scavenger Hunt Submissions</h4>
                     </div>
                     <div class="table-wrapper" style="margin:0">
-                        <table>
-                            <thead>
+                        <table id="crShTableEl">
+                            <thead id="crShTableHead">
                                 <tr>
                                     <th>#</th>
                                     <th>Student Name</th>
@@ -10226,25 +10235,50 @@ Davan Institute Team`;
                 const allTasks = taskSnap.val() || {};
                 const totalTasks = Object.keys(allTasks).length;
 
-                // Filter to CR's class
+                // Populate task filter dropdown
+                const taskFilter = document.getElementById('crShTaskFilter');
+                if (taskFilter) {
+                    const prevVal = taskFilter.value;
+                    taskFilter.innerHTML = '<option value="">— All Tasks —</option>';
+                    Object.entries(allTasks).forEach(([tid, t]) => {
+                        const label = t.title || t.name || tid;
+                        const opt = document.createElement('option');
+                        opt.value = tid;
+                        opt.textContent = label;
+                        taskFilter.appendChild(opt);
+                    });
+                    if (prevVal) taskFilter.value = prevVal;
+                }
+
+                // Filter to CR's class — build per-student, per-task data
                 const classStudents = [];
-                let grandApproved=0, grandPending=0, grandRejected=0, grandSubmitted=0;
+                let grandApproved=0, grandPending=0, grandRejected=0;
                 Object.entries(allSubs).forEach(([sk, ss]) => {
                     const first = Object.values(ss)[0] || {};
                     const cls = first.studentClass || '';
                     if (crClass && cls !== crClass) return;
                     const name = first.studentName || sk;
                     let approved=0, pending=0, rejected=0;
-                    Object.values(ss).forEach(sub => {
+                    // taskMap: taskId -> submission object
+                    const taskMap = {};
+                    Object.entries(ss).forEach(([subKey, sub]) => {
+                        const tid = sub.taskId || subKey;
+                        taskMap[tid] = sub;
                         if (sub.status==='approved')  { approved++;  grandApproved++; }
                         else if (sub.status==='pending')  { pending++;   grandPending++; }
                         else if (sub.status==='rejected') { rejected++;  grandRejected++; }
-                        grandSubmitted++;
                     });
-                    classStudents.push({name, approved, pending, rejected, total: approved+pending+rejected});
+                    classStudents.push({name, approved, pending, rejected, total: approved+pending+rejected, taskMap});
                 });
                 classStudents.sort((a,b)=>b.approved-a.approved||b.total-a.total);
                 const participantCount = classStudents.length;
+
+                // Store for filtering
+                window._crShClassStudents = classStudents;
+                window._crShAllTasks = allTasks;
+                window._crShTotalTasks = totalTasks;
+                window._crShCrClass = crClass;
+                window._crShCrStrengthTag = crStrengthTagSH;
 
                 if (totalEl)  totalEl.textContent  = participantCount;
                 if (appEl)    appEl.textContent    = grandApproved;
@@ -10264,25 +10298,93 @@ Davan Institute Team`;
                     }
                 }
 
-                if (tbody) {
-                    if (classStudents.length === 0) {
-                        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:#999">No scavenger hunt submissions from ${crClass} yet.</td></tr>`;
-                    } else {
-                        tbody.innerHTML = '';
-                        classStudents.forEach((s,i) => {
-                            const row = tbody.insertRow();
-                            row.innerHTML = `<td>${i+1}</td>
-                                <td><strong>${s.name}</strong></td>
-                                <td style="text-align:center;font-weight:700">${s.total}${totalTasks?' / '+totalTasks:''}</td>
-                                <td style="text-align:center"><span style="background:#d4edda;color:#155724;padding:3px 10px;border-radius:10px;font-weight:700">${s.approved}</span></td>
-                                <td style="text-align:center"><span style="background:#fff3cd;color:#856404;padding:3px 10px;border-radius:10px;font-weight:700">${s.pending}</span></td>
-                                <td style="text-align:center"><span style="background:#f8d7da;color:#721c24;padding:3px 10px;border-radius:10px;font-weight:700">${s.rejected}</span></td>`;
-                        });
-                    }
-                }
+                crShApplyTaskFilter();
             } catch(e) {
                 if (infoText) infoText.textContent = 'Error loading data: ' + e.message;
                 if (tbody) tbody.innerHTML = `<tr><td colspan="6" style="color:red;text-align:center">Error: ${e.message}</td></tr>`;
+            }
+        }
+
+        function crShApplyTaskFilter() {
+            const taskFilter = document.getElementById('crShTaskFilter');
+            const selectedTaskId = taskFilter ? taskFilter.value : '';
+            const tbody = document.getElementById('crShTable');
+            const tableTitle = document.getElementById('crShTableTitle');
+            const theadEl = document.getElementById('crShTableHead');
+            const badge = document.getElementById('crShTaskFilterBadge');
+            const classStudents = window._crShClassStudents || [];
+            const allTasks = window._crShAllTasks || {};
+            const totalTasks = window._crShTotalTasks || 0;
+            const crClass = window._crShCrClass || '';
+
+            if (!tbody) return;
+
+            if (!selectedTaskId) {
+                // Show all tasks — normal summary view
+                if (badge) badge.style.display = 'none';
+                if (tableTitle) tableTitle.textContent = 'Your Class Students — Scavenger Hunt Submissions';
+                if (theadEl) theadEl.innerHTML = `<tr><th>#</th><th>Student Name</th><th>Tasks Submitted</th><th>Approved</th><th>Pending</th><th>Rejected</th></tr>`;
+                if (classStudents.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:#999">No scavenger hunt submissions from ${crClass} yet.</td></tr>`;
+                } else {
+                    tbody.innerHTML = '';
+                    classStudents.forEach((s,i) => {
+                        const row = tbody.insertRow();
+                        row.innerHTML = `<td>${i+1}</td>
+                            <td><strong>${s.name}</strong></td>
+                            <td style="text-align:center;font-weight:700">${s.total}${totalTasks?' / '+totalTasks:''}</td>
+                            <td style="text-align:center"><span style="background:#d4edda;color:#155724;padding:3px 10px;border-radius:10px;font-weight:700">${s.approved}</span></td>
+                            <td style="text-align:center"><span style="background:#fff3cd;color:#856404;padding:3px 10px;border-radius:10px;font-weight:700">${s.pending}</span></td>
+                            <td style="text-align:center"><span style="background:#f8d7da;color:#721c24;padding:3px 10px;border-radius:10px;font-weight:700">${s.rejected}</span></td>`;
+                    });
+                }
+            } else {
+                // Task-wise filter view
+                const taskInfo = allTasks[selectedTaskId] || {};
+                const taskLabel = taskInfo.title || taskInfo.name || selectedTaskId;
+                if (badge) { badge.style.display = 'inline-block'; badge.textContent = taskLabel; }
+                if (tableTitle) tableTitle.textContent = `Task: ${taskLabel} — Submission Status`;
+                if (theadEl) theadEl.innerHTML = `<tr><th>#</th><th>Student Name</th><th>Status</th><th>Submitted At</th></tr>`;
+
+                // Build rows — submitted students first, then not-submitted
+                const submitted = [];
+                const notSubmitted = [];
+                classStudents.forEach(s => {
+                    // Find submission for this task
+                    const sub = s.taskMap ? (s.taskMap[selectedTaskId] || null) : null;
+                    if (sub) submitted.push({name: s.name, sub});
+                    else notSubmitted.push({name: s.name});
+                });
+
+                if (submitted.length === 0 && notSubmitted.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;color:#999">No data available for this task.</td></tr>`;
+                    return;
+                }
+
+                tbody.innerHTML = '';
+                let idx = 1;
+                submitted.forEach(({name, sub}) => {
+                    const statusColors = {
+                        approved:  {bg:'#d4edda',color:'#155724',icon:'✅'},
+                        pending:   {bg:'#fff3cd',color:'#856404',icon:'⏳'},
+                        rejected:  {bg:'#f8d7da',color:'#721c24',icon:'❌'}
+                    };
+                    const sc = statusColors[sub.status] || {bg:'#e2e3e5',color:'#383d41',icon:'❓'};
+                    const submittedAt = sub.submittedAt ? new Date(sub.submittedAt).toLocaleString('en-IN',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit',hour12:true}) : '—';
+                    const row = tbody.insertRow();
+                    row.innerHTML = `<td>${idx++}</td>
+                        <td><strong>${name}</strong></td>
+                        <td style="text-align:center"><span style="background:${sc.bg};color:${sc.color};padding:3px 12px;border-radius:10px;font-weight:700">${sc.icon} ${sub.status||'unknown'}</span></td>
+                        <td style="text-align:center;font-size:0.85em;color:#555">${submittedAt}</td>`;
+                });
+                notSubmitted.forEach(({name}) => {
+                    const row = tbody.insertRow();
+                    row.style.opacity = '0.5';
+                    row.innerHTML = `<td>${idx++}</td>
+                        <td style="color:#888">${name}</td>
+                        <td style="text-align:center"><span style="background:#e2e3e5;color:#6c757d;padding:3px 12px;border-radius:10px;font-weight:600">— Not Submitted</span></td>
+                        <td style="text-align:center;color:#aaa">—</td>`;
+                });
             }
         }
         
@@ -17091,9 +17193,9 @@ Proceed?`)) return;
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;">
-                <strong>Version:</strong> 3.8 quiz lock applied | <strong>Last Updated:</strong> February 20, 2026 10.56pm
+                <strong>Version:</strong> 3.8 quiz lock applied | <strong>Last Updated:</strong> February 21, 2026 09.06am
             </p>
-            <!-- ============================================ -->
+            <!-- ============================================ -->1
             
             <p style="color: #c44569; font-size: 0.85em; font-weight: 600; margin-bottom: 8px;">
                 Built by Harsha Gujjar, Director - Davan College
