@@ -2916,7 +2916,7 @@
                         </div>
                         <div style="background:white;border-radius:8px;padding:12px;border-left:4px solid #9c27b0;">
                             <div style="font-size:1.3em;margin-bottom:4px">4️⃣</div>
-                            <p style="margin:0;font-size:.85em;color:#333"><strong>Entire class status</strong> updates to <span style="background:#e8f5e9;color:#1b5e20;padding:1px 8px;border-radius:8px;font-size:.85em;font-weight:700">✅ Approved</span> — all students in that class can participate</p>
+                            <p style="margin:0;font-size:.85em;color:#333"><strong>Class status updates to ✅ Approved in Firebase.</strong> This is a <em>record-keeping step only</em> — it marks the class as having paid, so coordinators can track which classes have paid and which haven't. It does <strong>not</strong> automatically block or allow student registrations (students have already registered via the enrollment form). Use this panel as your <strong>payment receipt log</strong>.</p>
                         </div>
                     </div>
                     <p style="margin:10px 0 0;font-size:.82em;color:#388e3c">💡 <strong>Tip:</strong> Use the search box to quickly find a class name. Use <strong>"❌ Reject"</strong> if payment was not received.</p>
@@ -2993,9 +2993,24 @@
                     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
                         <div>
                             <label style="font-size:.85em;font-weight:600;color:#0d47a1;display:block;margin-bottom:4px">Event Name *</label>
-                            <select id="esName" style="width:100%;padding:9px 12px;border-radius:8px;border:2px solid #90caf9">
-                                <option value="">-- Select Event --</option>
-                            </select>
+                            <input type="text" id="esName" list="esNameOptions" placeholder="Type or select event name…" style="width:100%;padding:9px 12px;border-radius:8px;border:2px solid #90caf9">
+                            <datalist id="esNameOptions">
+                                <option value="Mime">
+                                <option value="Social Awareness Skit">
+                                <option value="Group Dance">
+                                <option value="Mad Ads">
+                                <option value="Ramp Walk">
+                                <option value="Pod Casting">
+                                <option value="Nukkad Natak">
+                                <option value="Talent Hunt">
+                                <option value="YouTube Advertisement">
+                                <option value="Case Analysis">
+                                <option value="Interdisciplinary">
+                                <option value="Quiz">
+                                <option value="Vlog">
+                                <option value="Hand Writing">
+                                <option value="Best Out of Waste">
+                            </datalist>
                         </div>
                         <div>
                             <label style="font-size:.85em;font-weight:600;color:#0d47a1;display:block;margin-bottom:4px">On Stage / Off Stage *</label>
@@ -4586,7 +4601,7 @@
         }
 
         function populateEventSelects() {
-            const selects = ['filterEvent','crFilterEvent','setupEventSelect','resultsEventSelect','juryEvent','liveMonitorEvent','esName'];
+            const selects = ['filterEvent','crFilterEvent','setupEventSelect','resultsEventSelect','juryEvent','liveMonitorEvent'];
             selects.forEach(id => {
                 const sel = document.getElementById(id);
                 if (sel) {
@@ -13044,12 +13059,21 @@ Davan Institute Team`;
                             </div>
                         </div>
 
-                        <div style="background:#e0f7fa;border-radius:10px;padding:15px;border-top:4px solid #17a2b8" data-hwp-card="4">
-                            <div style="display:flex;align-items:center;gap:8px;margin-bottom:7px"><span style="font-size:1.3em">✨</span><strong id="hwpCard4Title" style="color:#0c5460;font-size:0.9em">Special / Custom Criteria</strong></div>
-                            <p id="hwpCard4Body" style="margin:0;color:#555;font-size:12.5px;line-height:1.6">The Super Admin may add bonus points for criteria like discipline, attendance, best decorated class, or other special achievements.</p>
+                        <div style="background:#e8eaf6;border-radius:10px;padding:15px;border-top:4px solid #3949ab" data-hwp-card="4">
+                            <div style="display:flex;align-items:center;gap:8px;margin-bottom:7px"><span style="font-size:1.3em">🧩</span><strong id="hwpCard4Title" style="color:#1a237e;font-size:0.9em">Speed Slide Challenge</strong></div>
+                            <p id="hwpCard4Body" style="margin:0;color:#555;font-size:12.5px;line-height:1.6">Students solve a sliding puzzle and earn points based on <strong>speed &amp; difficulty</strong>. Every <strong>approved submission</strong> adds to the class total — so the more students from a class who play and get approved, the higher their class climbs.</p>
                             <div class="hwpCardEditArea" style="display:none;margin-top:8px">
-                                <input type="text" class="hwpCardTitleInput" data-idx="4" placeholder="Card title" style="width:100%;padding:5px 8px;border:1px solid #17a2b8;border-radius:4px;font-size:12px;margin-bottom:5px">
-                                <textarea class="hwpCardBodyInput" data-idx="4" rows="3" placeholder="Card body text" style="width:100%;padding:5px 8px;border:1px solid #17a2b8;border-radius:4px;font-size:12px;resize:vertical"></textarea>
+                                <input type="text" class="hwpCardTitleInput" data-idx="4" placeholder="Card title" style="width:100%;padding:5px 8px;border:1px solid #3949ab;border-radius:4px;font-size:12px;margin-bottom:5px">
+                                <textarea class="hwpCardBodyInput" data-idx="4" rows="3" placeholder="Card body text" style="width:100%;padding:5px 8px;border:1px solid #3949ab;border-radius:4px;font-size:12px;resize:vertical"></textarea>
+                            </div>
+                        </div>
+
+                        <div style="background:#e0f7fa;border-radius:10px;padding:15px;border-top:4px solid #17a2b8" data-hwp-card="5">
+                            <div style="display:flex;align-items:center;gap:8px;margin-bottom:7px"><span style="font-size:1.3em">✨</span><strong id="hwpCard5Title" style="color:#0c5460;font-size:0.9em">Special / Custom Criteria</strong></div>
+                            <p id="hwpCard5Body" style="margin:0;color:#555;font-size:12.5px;line-height:1.6">The Super Admin may add bonus points for criteria like discipline, attendance, best decorated class, or other special achievements.</p>
+                            <div class="hwpCardEditArea" style="display:none;margin-top:8px">
+                                <input type="text" class="hwpCardTitleInput" data-idx="5" placeholder="Card title" style="width:100%;padding:5px 8px;border:1px solid #17a2b8;border-radius:4px;font-size:12px;margin-bottom:5px">
+                                <textarea class="hwpCardBodyInput" data-idx="5" rows="3" placeholder="Card body text" style="width:100%;padding:5px 8px;border:1px solid #17a2b8;border-radius:4px;font-size:12px;resize:vertical"></textarea>
                             </div>
                         </div>
 
@@ -14290,6 +14314,7 @@ Davan Institute Team`;
             { title: 'Quiz Competition',        body: 'Per published quiz day: <strong>flat bonus</strong> to the winner &amp; runner-up class, plus a <strong>participation rate bonus</strong> — fair across all class sizes.' },
             { title: 'Event Results',           body: 'When jury results are published, the <strong>1st place class</strong> gets winner pts and <strong>2nd place</strong> gets runner-up pts. For individual &amp; multi-team events, each class is represented by their <strong>best performer or best team</strong>.' },
             { title: 'Scavenger Hunt',          body: 'Points are awarded for <strong>approved task submissions</strong> in the Scavenger Hunt. The more tasks a student completes and gets approved, the more points their class earns.' },
+            { title: 'Speed Slide Challenge',   body: 'Students solve a sliding puzzle and earn points based on <strong>speed &amp; difficulty</strong>. Every <strong>approved submission</strong> adds to the class total — so the more students from a class who play and get approved, the higher their class climbs.' },
             { title: 'Special / Custom Criteria', body: 'The Super Admin may add bonus points for criteria like discipline, attendance, best decorated class, or other special achievements.' }
         ],
         steps: [
@@ -19764,7 +19789,7 @@ Proceed?`)) return;
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;">
-                <strong>Version:</strong> 3.17 Class + Event dropdowns added   | <strong>Last Updated:</strong> February 21, 2026 08.00PM
+                <strong>Version:</strong> 3.19 Speed Slide card added to leaderboard How Points section   | <strong>Last Updated:</strong> February 21, 2026 9.10pm
             </p>
             <!-- ============================================ -->
             
