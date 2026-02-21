@@ -1739,7 +1739,10 @@
                 <button class="tab super-admin-only" onclick="showTab('cloudinaryInspector')" id="cloudinaryInspectorTab">☁️ Cloudinary</button>
                 <button class="tab super-admin-only" onclick="showTab('firebaseDownloadMonitor')" id="firebaseDownloadMonitorTab">🔥 Download Monitor</button>
                 <button class="tab super-admin-only" onclick="showTab('managerPermissionsPanel')" id="managerPermissionsPanelTab">👔 Manager Permissions</button>
-            </div>
+                <button class="tab super-admin-only" onclick="showTab('pdfHandoutsAdmin')" id="pdfHandoutsAdminTab">📄 PDF Handouts</button>
+                <button class="tab super-admin-only" onclick="showTab('paymentApprovalAdmin');paLoadPending()" id="paymentApprovalAdminTab">💳 Payment Approval</button>
+                <button class="tab super-admin-only" onclick="showTab('eventScheduleAdmin');esLoadEvents()" id="eventScheduleAdminTab">📅 Event Schedule</button>
+            </div><!-- end .tabs -->
 
             <div class="content" id="adminContentBox">
                 <!-- Master List Tab -->
@@ -2832,6 +2835,222 @@
             <!-- ================================================ -->
 
             <!-- ================================================ -->
+            <!-- 📄 PDF HANDOUTS ADMIN PANEL (Super Admin Only)   -->
+            <!-- ================================================ -->
+            <div id="pdfHandoutsAdmin" class="form-section super-admin-only" style="margin-top:20px">
+                <h2 style="color:#c44569;margin-bottom:6px">📄 PDF Handouts — Admin Panel</h2>
+                <p style="color:#888;margin-bottom:20px;font-size:.9em">Upload event-related PDF handouts. Each PDF will appear as a download button on the public page for students.</p>
+
+                <!-- Upload form -->
+                <div style="background:#f3e5f5;border-radius:12px;padding:22px;border:2px solid #ce93d8;margin-bottom:24px;">
+                    <h3 style="color:#6a1b9a;margin-bottom:14px;font-size:1em;">➕ Upload New Handout</h3>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;">
+                        <div>
+                            <label style="font-size:.88em;font-weight:600;color:#4a148c;display:block;margin-bottom:5px">Event Name / Label *</label>
+                            <input type="text" id="pdfLabel" placeholder="e.g. Mime — Event Handout" style="width:100%;padding:9px 12px;border-radius:8px;border:2px solid #ce93d8;font-size:.92em">
+                        </div>
+                        <div>
+                            <label style="font-size:.88em;font-weight:600;color:#4a148c;display:block;margin-bottom:5px">Uploaded By (Faculty Name) *</label>
+                            <input type="text" id="pdfUploader" placeholder="e.g. Priyanka V" style="width:100%;padding:9px 12px;border-radius:8px;border:2px solid #ce93d8;font-size:.92em">
+                        </div>
+                    </div>
+                    <div style="margin-bottom:14px;">
+                        <label style="font-size:.88em;font-weight:600;color:#4a148c;display:block;margin-bottom:5px">Select PDF File *</label>
+                        <div id="pdfDropZone" onclick="document.getElementById('pdfFileInput').click()"
+                             style="border:2.5px dashed #9c27b0;border-radius:10px;padding:28px;text-align:center;cursor:pointer;background:white;transition:all .2s">
+                            <div style="font-size:2em;margin-bottom:6px">📄</div>
+                            <p style="color:#6a1b9a;font-weight:600;margin:0 0 4px">Click to choose a PDF</p>
+                            <p style="color:#aaa;font-size:.82em;margin:0" id="pdfFileName">No file selected</p>
+                        </div>
+                        <input type="file" id="pdfFileInput" accept=".pdf" style="display:none" onchange="pdfOnFileChange(this)">
+                    </div>
+                    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+                        <button class="btn btn-success" onclick="pdfUploadHandout()" id="pdfUploadBtn">☁️ Upload to Cloud &amp; Publish</button>
+                        <span id="pdfUploadMsg" style="font-size:.9em;display:none"></span>
+                    </div>
+                    <div id="pdfUploadProgress" style="display:none;margin-top:12px">
+                        <div style="background:#e0e0e0;border-radius:10px;height:8px;overflow:hidden">
+                            <div id="pdfUploadBar" style="background:linear-gradient(90deg,#6a1b9a,#c44569);height:100%;width:0%;transition:width .3s ease;border-radius:10px"></div>
+                        </div>
+                        <p id="pdfUploadProgressLabel" style="font-size:.8em;color:#888;margin-top:4px;text-align:center">Uploading…</p>
+                    </div>
+                </div>
+
+                <!-- Existing handouts list -->
+                <div>
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+                        <h3 style="color:#6a1b9a;font-size:1em;margin:0">📋 Published Handouts</h3>
+                        <button class="btn btn-small" onclick="pdfLoadHandouts()">🔄 Refresh</button>
+                    </div>
+                    <div id="pdfHandoutsList">
+                        <p style="color:#aaa;text-align:center;padding:24px">Click Refresh to load published handouts.</p>
+                    </div>
+                </div>
+            </div>
+            <!-- ================================================ -->
+            <!-- END PDF HANDOUTS ADMIN PANEL                     -->
+            <!-- ================================================ -->
+
+            <!-- ================================================ -->
+            <!-- 💳 PAYMENT APPROVAL ADMIN PANEL (Super Admin)   -->
+            <!-- ================================================ -->
+            <div id="paymentApprovalAdmin" class="form-section super-admin-only" style="margin-top:20px">
+                <h2 style="color:#c44569;margin-bottom:6px">💳 Payment Approval — Admin Panel</h2>
+                <p style="color:#888;margin-bottom:14px;font-size:.9em">Students register online and their entry appears here as <strong>Pending</strong>. Coordinators verify cash payment in person, then click <strong>Approve</strong>.</p>
+
+                <!-- How it works -->
+                <div style="background:#e8f5e9;border:2px solid #4caf50;border-radius:12px;padding:18px;margin-bottom:20px;">
+                    <p style="margin:0 0 10px;font-weight:700;color:#1b5e20;font-size:.95em">✅ How Payment Approval Works</p>
+                    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;">
+                        <div style="background:white;border-radius:8px;padding:12px;border-left:4px solid #ffa000;">
+                            <div style="font-size:1.3em;margin-bottom:4px">1️⃣</div>
+                            <p style="margin:0;font-size:.85em;color:#333"><strong>Student registers</strong> online — their name appears here as <span style="background:#fff8e1;color:#f57f17;padding:1px 8px;border-radius:8px;font-size:.85em">⏳ Pending</span></p>
+                        </div>
+                        <div style="background:white;border-radius:8px;padding:12px;border-left:4px solid #2196f3;">
+                            <div style="font-size:1.3em;margin-bottom:4px">2️⃣</div>
+                            <p style="margin:0;font-size:.85em;color:#333"><strong>Student pays ₹1,500 cash</strong> in person to <strong>Lalitha S K</strong> or <strong>Priyanka V</strong></p>
+                        </div>
+                        <div style="background:white;border-radius:8px;padding:12px;border-left:4px solid #4caf50;">
+                            <div style="font-size:1.3em;margin-bottom:4px">3️⃣</div>
+                            <p style="margin:0;font-size:.85em;color:#333"><strong>Coordinator opens this panel</strong>, finds the student's name, clicks <span style="background:#e8f5e9;color:#1b5e20;padding:1px 8px;border-radius:8px;font-size:.85em;font-weight:700">✅ Approve</span></p>
+                        </div>
+                        <div style="background:white;border-radius:8px;padding:12px;border-left:4px solid #9c27b0;">
+                            <div style="font-size:1.3em;margin-bottom:4px">4️⃣</div>
+                            <p style="margin:0;font-size:.85em;color:#333"><strong>Student's status</strong> updates to <span style="background:#e8f5e9;color:#1b5e20;padding:1px 8px;border-radius:8px;font-size:.85em;font-weight:700">✅ Approved</span> — they can now participate</p>
+                        </div>
+                    </div>
+                    <p style="margin:10px 0 0;font-size:.82em;color:#388e3c">💡 <strong>Tip:</strong> Use the search box below to quickly find a student by name. Use <strong>"❌ Reject"</strong> if payment was not received or is invalid.</p>
+                </div>
+                <!-- Stats bar -->
+                <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px;">
+                    <div style="background:linear-gradient(135deg,#fff8e1,#ffe082);border-radius:10px;padding:14px;text-align:center;border:2px solid #ffc107">
+                        <div style="font-size:1.8em;font-weight:800;color:#f57f17" id="paStatPending">—</div>
+                        <div style="font-size:.8em;color:#795548;font-weight:600">⏳ Pending</div>
+                    </div>
+                    <div style="background:linear-gradient(135deg,#e8f5e9,#a5d6a7);border-radius:10px;padding:14px;text-align:center;border:2px solid #4caf50">
+                        <div style="font-size:1.8em;font-weight:800;color:#1b5e20" id="paStatApproved">—</div>
+                        <div style="font-size:.8em;color:#388e3c;font-weight:600">✅ Approved</div>
+                    </div>
+                    <div style="background:linear-gradient(135deg,#fce4ec,#f48fb1);border-radius:10px;padding:14px;text-align:center;border:2px solid #e91e63">
+                        <div style="font-size:1.8em;font-weight:800;color:#880e4f" id="paStatRejected">—</div>
+                        <div style="font-size:.8em;color:#c2185b;font-weight:600">❌ Rejected</div>
+                    </div>
+                </div>
+
+                <!-- Filters + Register new button -->
+                <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;align-items:center">
+                    <select id="paFilterStatus" onchange="paLoadPending()" style="padding:9px 12px;border-radius:8px;border:2px solid #ddd;flex:1;min-width:140px">
+                        <option value="">All Status</option>
+                        <option value="pending" selected>⏳ Pending</option>
+                        <option value="approved">✅ Approved</option>
+                        <option value="rejected">❌ Rejected</option>
+                    </select>
+                    <input type="text" id="paSearch" placeholder="🔍 Search by name / class..." onkeyup="paLoadPending()" style="padding:9px 12px;border-radius:8px;border:2px solid #ddd;flex:2;min-width:180px">
+                    <button class="btn btn-small" onclick="paLoadPending()">🔄 Refresh</button>
+                    <button class="btn btn-small btn-success" onclick="paDownloadCSV()">📥 CSV</button>
+                </div>
+
+                <div id="paRegistrationList">
+                    <p style="color:#aaa;text-align:center;padding:24px">Loading registrations…</p>
+                </div>
+
+                <!-- Manual Registration Entry form (admin adds on behalf of student) -->
+                <div style="background:#e8f5e9;border-radius:12px;padding:20px;border:2px solid #4caf50;margin-top:24px">
+                    <h3 style="color:#1b5e20;margin-bottom:12px;font-size:1em">➕ Manually Add Registration (Admin Entry)</h3>
+                    <p style="font-size:.83em;color:#388e3c;margin-bottom:12px">Use this if a student paid in person and you want to add &amp; approve them directly.</p>
+                    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px;flex-wrap:wrap">
+                        <input type="text" id="paManualName" placeholder="Student Full Name *" style="padding:9px 12px;border-radius:8px;border:2px solid #a5d6a7">
+                        <input type="text" id="paManualPhone" placeholder="Phone Number *" style="padding:9px 12px;border-radius:8px;border:2px solid #a5d6a7">
+                        <input type="text" id="paManualClass" placeholder="Class (e.g. II BCA 'B') *" style="padding:9px 12px;border-radius:8px;border:2px solid #a5d6a7">
+                    </div>
+                    <div style="display:flex;gap:10px;flex-wrap:wrap">
+                        <select id="paManualStatus" style="padding:9px 12px;border-radius:8px;border:2px solid #a5d6a7">
+                            <option value="approved">✅ Approved (paid)</option>
+                            <option value="pending">⏳ Pending (not yet paid)</option>
+                        </select>
+                        <input type="text" id="paManualNote" placeholder="Note (optional)" style="padding:9px 12px;border-radius:8px;border:2px solid #a5d6a7;flex:1">
+                        <button class="btn btn-success" onclick="paManualAdd()">➕ Add</button>
+                    </div>
+                </div>
+            </div>
+            <!-- ================================================ -->
+            <!-- END PAYMENT APPROVAL ADMIN PANEL                 -->
+            <!-- ================================================ -->
+
+            <!-- ================================================ -->
+            <!-- 📅 EVENT SCHEDULE ADMIN PANEL (Super Admin)      -->
+            <!-- ================================================ -->
+            <div id="eventScheduleAdmin" class="form-section super-admin-only" style="margin-top:20px">
+                <h2 style="color:#c44569;margin-bottom:6px">📅 Event Schedule — Admin Panel</h2>
+                <p style="color:#888;margin-bottom:20px;font-size:.9em">Add, edit or delete events in the Spurthi Youth Festival schedule. Changes are saved to Firebase and appear instantly on the public page.</p>
+
+                <!-- Add / Edit form -->
+                <div style="background:#e3f2fd;border-radius:12px;padding:22px;border:2px solid #90caf9;margin-bottom:24px;">
+                    <h3 style="color:#0d47a1;margin-bottom:14px;font-size:1em" id="esFormTitle">➕ Add New Event</h3>
+                    <input type="hidden" id="esEditId" value="">
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+                        <div>
+                            <label style="font-size:.85em;font-weight:600;color:#0d47a1;display:block;margin-bottom:4px">Event Name *</label>
+                            <input type="text" id="esName" placeholder="e.g. Mime (On stage)" style="width:100%;padding:9px 12px;border-radius:8px;border:2px solid #90caf9">
+                        </div>
+                        <div>
+                            <label style="font-size:.85em;font-weight:600;color:#0d47a1;display:block;margin-bottom:4px">On Stage / Off Stage *</label>
+                            <select id="esStageType" style="width:100%;padding:9px 12px;border-radius:8px;border:2px solid #90caf9">
+                                <option value="On stage">🎭 On stage</option>
+                                <option value="Off stage">📋 Off stage</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label style="font-size:.85em;font-weight:600;color:#0d47a1;display:block;margin-bottom:4px">Class</label>
+                            <input type="text" id="esClass" placeholder="e.g. I BCA / II BCA 'B'" style="width:100%;padding:9px 12px;border-radius:8px;border:2px solid #90caf9">
+                        </div>
+                        <div>
+                            <label style="font-size:.85em;font-weight:600;color:#0d47a1;display:block;margin-bottom:4px">In-charge</label>
+                            <input type="text" id="esIncharge" placeholder="e.g. Priyanka V / Kotrappa K" style="width:100%;padding:9px 12px;border-radius:8px;border:2px solid #90caf9">
+                        </div>
+                        <div>
+                            <label style="font-size:.85em;font-weight:600;color:#0d47a1;display:block;margin-bottom:4px">I Meeting Timings</label>
+                            <input type="text" id="esMeeting1" placeholder="e.g. Feb 24th at 1:00–1:15 pm" style="width:100%;padding:9px 12px;border-radius:8px;border:2px solid #90caf9">
+                        </div>
+                        <div>
+                            <label style="font-size:.85em;font-weight:600;color:#0d47a1;display:block;margin-bottom:4px">II Meeting Timings</label>
+                            <input type="text" id="esMeeting2" placeholder="e.g. March 4th at 1:00–1:15 pm" style="width:100%;padding:9px 12px;border-radius:8px;border:2px solid #90caf9">
+                        </div>
+                        <div>
+                            <label style="font-size:.85em;font-weight:600;color:#0d47a1;display:block;margin-bottom:4px">Event Start Date</label>
+                            <input type="text" id="esStartDate" placeholder="e.g. 02-03-2026 (or leave blank)" style="width:100%;padding:9px 12px;border-radius:8px;border:2px solid #90caf9">
+                        </div>
+                        <div>
+                            <label style="font-size:.85em;font-weight:600;color:#0d47a1;display:block;margin-bottom:4px">Event End Date</label>
+                            <input type="text" id="esEndDate" placeholder="e.g. 07-03-2026 (or leave blank)" style="width:100%;padding:9px 12px;border-radius:8px;border:2px solid #90caf9">
+                        </div>
+                    </div>
+                    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+                        <button class="btn btn-success" onclick="esSaveEvent()">💾 Save Event</button>
+                        <button class="btn btn-small" onclick="esClearForm()" style="background:#eee;color:#555">✖ Clear</button>
+                        <span id="esFormMsg" style="font-size:.9em;display:none"></span>
+                    </div>
+                </div>
+
+                <!-- Events list table -->
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+                    <h3 style="color:#0d47a1;font-size:1em;margin:0">📋 Current Event Schedule</h3>
+                    <div style="display:flex;gap:8px;flex-wrap:wrap">
+                        <button class="btn btn-small" onclick="esLoadEvents()">🔄 Refresh</button>
+                        <button class="btn btn-small btn-success" onclick="esSeedDefaults()" title="Load the 15 default events from the timetable image">🌱 Load Default 15 Events</button>
+                    </div>
+                </div>
+                <div style="overflow-x:auto;border-radius:10px;box-shadow:0 2px 10px rgba(0,0,0,.08)">
+                    <div id="esAdminTableWrap">
+                        <p style="color:#aaa;text-align:center;padding:24px">Loading events…</p>
+                    </div>
+                </div>
+            </div>
+            <!-- ================================================ -->
+            <!-- END EVENT SCHEDULE ADMIN PANEL                   -->
+            <!-- ================================================ -->
+
+            <!-- ================================================ -->
             <!-- DB INSPECTOR PANEL (Super Admin Only)             -->
             <!-- ================================================ -->
             <div id="dbInspector" class="form-section super-admin-only" style="margin-top:20px">
@@ -3237,6 +3456,24 @@
                         <!-- ── ADD NEW PERMISSION ROWS BELOW THIS LINE ────────────────── -->
                         <!-- Copy any row above, change id="mperm_yourKey", label & description -->
                         <!-- Then add matching code in managerPermissions object & applyManagerPermissions() -->
+
+                        <div style="display:grid;grid-template-columns:1fr auto;align-items:center;padding:16px 0;border-bottom:1px solid #f0f0f0">
+                            <div><strong style="color:#333">📄 PDF Handouts Upload</strong>
+                            <p style="color:#777;font-size:12px;margin:3px 0 0">Upload event PDF handouts on behalf of faculty in-charges</p></div>
+                            <input type="checkbox" id="mperm_pdfHandouts" style="width:20px;height:20px;accent-color:#2196F3;cursor:pointer">
+                        </div>
+
+                        <div style="display:grid;grid-template-columns:1fr auto;align-items:center;padding:16px 0;border-bottom:1px solid #f0f0f0">
+                            <div><strong style="color:#333">💳 Payment Approval</strong>
+                            <p style="color:#777;font-size:12px;margin:3px 0 0">Approve or reject student ₹1,500 registrations</p></div>
+                            <input type="checkbox" id="mperm_paymentApproval" style="width:20px;height:20px;accent-color:#2196F3;cursor:pointer">
+                        </div>
+
+                        <div style="display:grid;grid-template-columns:1fr auto;align-items:center;padding:16px 0">
+                            <div><strong style="color:#333">📅 Event Schedule Editor</strong>
+                            <p style="color:#777;font-size:12px;margin:3px 0 0">Add, edit and delete events in the Spurthi Youth Fest timetable</p></div>
+                            <input type="checkbox" id="mperm_eventSchedule" style="width:20px;height:20px;accent-color:#2196F3;cursor:pointer">
+                        </div>
 
                     </div>
                     <div style="padding:20px;background:#f9f9f9;border-top:2px solid #e0e0e0;display:flex;align-items:center;gap:15px;flex-wrap:wrap">
@@ -4276,8 +4513,9 @@
             viewRegistrations: true,   // 📋 View Master List & Events tabs (read-only)
             viewResults:       true,   // 🏆 View Results tab
             whatsappMessages:  true,   // 📲 Copy WhatsApp broadcast messages
-            // ── Add new permissions below this line ──
-            // featureName:    false,  // description of what this unlocks
+            pdfHandouts:       true,   // 📄 PDF Handouts — upload event PDFs
+            paymentApproval:   true,   // 💳 Payment Approval — approve/reject registrations
+            eventSchedule:     true,   // 📅 Event Schedule — add/edit/delete events
         };
 
         // Load saved permissions from localStorage on page load
@@ -4807,8 +5045,20 @@
             });
 
             // ── ADD NEW PERMISSION CHECKS BELOW THIS LINE ─────────────────────────
-            // const el = document.getElementById('someTabId');
-            // if (el) el.style.display = managerPermissions.featureName ? 'inline-block' : 'none';
+            const pdfTab = document.getElementById('pdfHandoutsAdminTab');
+            if (pdfTab) pdfTab.style.display = managerPermissions.pdfHandouts ? 'inline-block' : 'none';
+            const pdfPanel = document.getElementById('pdfHandoutsAdmin');
+            if (pdfPanel && managerPermissions.pdfHandouts) pdfPanel.style.display = 'block';
+
+            const paTab = document.getElementById('paymentApprovalAdminTab');
+            if (paTab) paTab.style.display = managerPermissions.paymentApproval ? 'inline-block' : 'none';
+            const paPanel = document.getElementById('paymentApprovalAdmin');
+            if (paPanel && managerPermissions.paymentApproval) paPanel.style.display = 'block';
+
+            const esTab = document.getElementById('eventScheduleAdminTab');
+            if (esTab) esTab.style.display = managerPermissions.eventSchedule ? 'inline-block' : 'none';
+            const esPanel = document.getElementById('eventScheduleAdmin');
+            if (esPanel && managerPermissions.eventSchedule) esPanel.style.display = 'block';
         }
 
         // ─────────────────────────────────────────────────────────────────────────
@@ -4820,8 +5070,9 @@
             managerPermissions.viewRegistrations = document.getElementById('mperm_viewRegistrations').checked;
             managerPermissions.viewResults       = document.getElementById('mperm_viewResults').checked;
             managerPermissions.whatsappMessages  = document.getElementById('mperm_whatsappMessages').checked;
-            // ── Read new permission toggles below this line ───────────────────────
-            // managerPermissions.featureName = document.getElementById('mperm_featureName').checked;
+            managerPermissions.pdfHandouts       = document.getElementById('mperm_pdfHandouts').checked;
+            managerPermissions.paymentApproval   = document.getElementById('mperm_paymentApproval').checked;
+            managerPermissions.eventSchedule     = document.getElementById('mperm_eventSchedule').checked;
 
             localStorage.setItem('spurthi_manager_perms', JSON.stringify(managerPermissions));
             alert('✅ Manager permissions saved!\nThese apply the next time Manager logs in.');
@@ -6010,8 +6261,9 @@
                 document.getElementById('mperm_viewRegistrations').checked = managerPermissions.viewRegistrations;
                 document.getElementById('mperm_viewResults').checked       = managerPermissions.viewResults;
                 document.getElementById('mperm_whatsappMessages').checked  = managerPermissions.whatsappMessages;
-                // ── Sync new permission checkboxes below this line ──────────────────
-                // document.getElementById('mperm_featureName').checked = managerPermissions.featureName;
+                document.getElementById('mperm_pdfHandouts').checked      = managerPermissions.pdfHandouts;
+                document.getElementById('mperm_paymentApproval').checked  = managerPermissions.paymentApproval;
+                document.getElementById('mperm_eventSchedule').checked    = managerPermissions.eventSchedule;
             }
         }
 
@@ -13427,7 +13679,7 @@ Davan Institute Team`;
             }
         } catch(e) { console.warn('actBanner SH check:', e.message); }
 
-        // ── 3. SPEED SLIDE BANNER (always shown as coming soon / live) ──
+        // ── 3. SPEED SLIDE BANNER (ACTIVE NOW) ──
         html += `
         <div class="act-banner-wrap" id="actSsBanner"
              style="background:linear-gradient(135deg,#e65100 0%,#f57c00 45%,#ffa000 100%);
@@ -13435,17 +13687,18 @@ Davan Institute Team`;
             <div class="act-banner-icon" style="animation-delay:.6s">🧩</div>
             <div class="act-banner-body">
                 <div class="act-banner-title" style="color:white">
-                    🎯 Speed Slide Challenge — Coming Soon!
+                    <span class="live-dot" style="background:#ffe082;box-shadow:0 0 6px #ffe082"></span>
+                    🎯 Speed Slide Challenge — Active Now!
                 </div>
                 <div class="act-banner-sub" style="color:rgba(255,255,255,.92)">
                     Race against classmates to reassemble a scrambled photo the fastest.<br>
-                    <span style="color:#ffe082;font-weight:700">⚡ New event at Spurthi Youth Fest 2026 — stay tuned!</span>
+                    <span style="color:#ffe082;font-weight:700">⚡ Event is LIVE at Spurthi Youth Fest 2026 — Play now!</span>
                 </div>
             </div>
             <button class="act-banner-cta"
                     style="background:#ffe082;color:#bf360c;"
-                    onclick="document.getElementById('userType').value='speedslide';handleUserTypeChange();window.scrollTo({top:document.getElementById('loginSection')?.offsetTop||0,behavior:'smooth'})">
-                👀 Learn More
+                    onclick="document.getElementById('competitionType').value='speedslide';handleCompetitionChange();document.getElementById('userType').value='';handleUserTypeChange();setTimeout(()=>{const el=document.getElementById('speedSlideLogin');if(el){el.scrollIntoView({behavior:'smooth',block:'center'});}},100)">
+                🧩 Login Now
             </button>
         </div>`;
 
@@ -18654,6 +18907,533 @@ Proceed?`)) return;
         tryInit();
     })();
 
+    // ============================================================
+    //  📄 PDF HANDOUTS — Admin + Public logic
+    // ============================================================
+    const PDF_CLD_CLOUD  = 'dat0khbet';
+    const PDF_CLD_PRESET = 'scavenger_hunt';
+    const PDF_FB_PATH    = 'pdfHandouts';
+
+    let pdfSelectedFile = null;
+
+    function pdfOnFileChange(input) {
+        pdfSelectedFile = input.files[0] || null;
+        const nameEl = document.getElementById('pdfFileName');
+        const zone   = document.getElementById('pdfDropZone');
+        if (pdfSelectedFile) {
+            if (nameEl) nameEl.textContent = pdfSelectedFile.name;
+            if (zone)   zone.style.background = '#e8f5e9';
+        } else {
+            if (nameEl) nameEl.textContent = 'No file selected';
+            if (zone)   zone.style.background = 'white';
+        }
+    }
+
+    async function pdfUploadHandout() {
+        const label    = (document.getElementById('pdfLabel')?.value || '').trim();
+        const uploader = (document.getElementById('pdfUploader')?.value || '').trim();
+        const msg      = document.getElementById('pdfUploadMsg');
+        const btn      = document.getElementById('pdfUploadBtn');
+        const progress = document.getElementById('pdfUploadProgress');
+        const bar      = document.getElementById('pdfUploadBar');
+        const pLabel   = document.getElementById('pdfUploadProgressLabel');
+
+        if (!label)          { alert('Please enter the event name / label.'); return; }
+        if (!uploader)       { alert('Please enter your name (Uploaded By).'); return; }
+        if (!pdfSelectedFile){ alert('Please select a PDF file.'); return; }
+        if (!pdfSelectedFile.name.toLowerCase().endsWith('.pdf')) { alert('Only PDF files are accepted.'); return; }
+        if (pdfSelectedFile.size > 20 * 1024 * 1024) { alert('File too large. Max 20 MB per PDF.'); return; }
+
+        btn.disabled = true;
+        if (progress) progress.style.display = 'block';
+        if (bar) bar.style.width = '10%';
+        if (pLabel) pLabel.textContent = 'Uploading to cloud…';
+        if (msg) { msg.style.display = 'none'; }
+
+        try {
+            // Upload PDF to Cloudinary (raw resource type)
+            const fd = new FormData();
+            fd.append('file', pdfSelectedFile);
+            fd.append('upload_preset', PDF_CLD_PRESET);
+            fd.append('folder', 'pdfHandouts');
+            fd.append('resource_type', 'raw');
+
+            if (bar) bar.style.width = '40%';
+            const cldRes = await fetch(
+                `https://api.cloudinary.com/v1_1/${PDF_CLD_CLOUD}/raw/upload`,
+                { method: 'POST', body: fd }
+            );
+            const cldData = await cldRes.json();
+            if (!cldData.secure_url) throw new Error(cldData.error?.message || 'Upload failed');
+
+            if (bar) bar.style.width = '80%';
+            if (pLabel) pLabel.textContent = 'Saving to database…';
+
+            // Save record to Firebase
+            const record = {
+                label,
+                uploader,
+                url:       cldData.secure_url,
+                publicId:  cldData.public_id,
+                size:      pdfSelectedFile.size,
+                uploadedAt: new Date().toISOString(),
+            };
+            await getDb().ref(PDF_FB_PATH).push(record);
+
+            if (bar) bar.style.width = '100%';
+            if (pLabel) pLabel.textContent = '✅ Done!';
+            if (msg) { msg.textContent = '✅ Handout published successfully!'; msg.style.color = '#1b5e20'; msg.style.display = 'inline'; }
+
+            // Reset form
+            document.getElementById('pdfLabel').value    = '';
+            document.getElementById('pdfUploader').value = '';
+            document.getElementById('pdfFileInput').value = '';
+            pdfSelectedFile = null;
+            const nameEl = document.getElementById('pdfFileName');
+            const zone   = document.getElementById('pdfDropZone');
+            if (nameEl) nameEl.textContent = 'No file selected';
+            if (zone)   zone.style.background = 'white';
+
+            setTimeout(() => { if (progress) progress.style.display = 'none'; if (bar) bar.style.width = '0%'; }, 2000);
+            pdfLoadHandouts();
+            initPublicPdfHandouts(); // refresh public section
+        } catch(e) {
+            if (msg) { msg.textContent = '❌ Error: ' + e.message; msg.style.color = '#b71c1c'; msg.style.display = 'inline'; }
+            if (pLabel) pLabel.textContent = '❌ Upload failed.';
+            console.error('PDF upload error:', e);
+        } finally {
+            btn.disabled = false;
+        }
+    }
+
+    async function pdfLoadHandouts() {
+        const wrap = document.getElementById('pdfHandoutsList');
+        if (!wrap) return;
+        wrap.innerHTML = '<p style="color:#aaa;text-align:center;padding:20px">Loading…</p>';
+        try {
+            const snap = await getDb().ref(PDF_FB_PATH).once('value');
+            if (!snap.exists()) { wrap.innerHTML = '<p style="color:#aaa;text-align:center;padding:20px">No handouts uploaded yet.</p>'; return; }
+            const items = Object.entries(snap.val()).map(([k,v]) => ({id:k,...v}))
+                              .sort((a,b) => new Date(b.uploadedAt) - new Date(a.uploadedAt));
+            wrap.innerHTML = `
+            <div style="overflow-x:auto;border-radius:10px;border:1px solid #e0e0e0">
+                <table style="width:100%;border-collapse:collapse;font-size:.88em">
+                    <thead>
+                        <tr style="background:#6a1b9a;color:white">
+                            <th style="padding:10px 12px;text-align:left">Label / Event</th>
+                            <th style="padding:10px 12px;text-align:left">Uploaded By</th>
+                            <th style="padding:10px 12px;text-align:left">Date</th>
+                            <th style="padding:10px 12px;text-align:center">Size</th>
+                            <th style="padding:10px 12px;text-align:center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${items.map((it,i) => `
+                        <tr style="background:${i%2===0?'#fafafa':'white'};border-bottom:1px solid #eee">
+                            <td style="padding:9px 12px;font-weight:600;color:#4a148c">📄 ${it.label}</td>
+                            <td style="padding:9px 12px">${it.uploader}</td>
+                            <td style="padding:9px 12px;font-size:.82em;color:#777">${new Date(it.uploadedAt).toLocaleString('en-IN')}</td>
+                            <td style="padding:9px 12px;text-align:center;font-size:.82em">${it.size ? (it.size/1024).toFixed(0)+' KB' : '—'}</td>
+                            <td style="padding:9px 12px;text-align:center;white-space:nowrap">
+                                <a href="${it.url}" target="_blank" style="background:#e8f5e9;color:#1b5e20;border:none;border-radius:6px;padding:4px 12px;font-size:.82em;font-weight:600;text-decoration:none;margin-right:6px;display:inline-block">⬇️ View</a>
+                                <button onclick="pdfDeleteHandout('${it.id}','${it.publicId || ''}')" style="background:#fce4ec;color:#880e4f;border:none;border-radius:6px;padding:4px 12px;cursor:pointer;font-size:.82em;font-weight:600">🗑️ Delete</button>
+                            </td>
+                        </tr>`).join('')}
+                    </tbody>
+                </table>
+            </div>`;
+        } catch(e) {
+            wrap.innerHTML = `<p style="color:#b71c1c;text-align:center;padding:20px">Error loading: ${e.message}</p>`;
+        }
+    }
+
+    async function pdfDeleteHandout(id, publicId) {
+        if (!confirm('Delete this PDF handout? It will be removed from the public page too.')) return;
+        try {
+            await getDb().ref(`${PDF_FB_PATH}/${id}`).remove();
+            pdfLoadHandouts();
+            initPublicPdfHandouts();
+        } catch(e) { alert('Delete failed: ' + e.message); }
+    }
+
+    // Public-facing: inject PDF buttons into #publicPdfHandouts
+    async function initPublicPdfHandouts() {
+        const wrap = document.getElementById('publicPdfHandouts');
+        if (!wrap) return;
+
+        // Always keep the Rules PDF button
+        const rulesBtn = `<a href="rules.pdf" target="_blank" style="display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,#c44569 0%,#6a1b9a 100%);color:white;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;">📄 Complete Rules &amp; Regulations PDF (Coming Soon)</a>`;
+
+        try {
+            const snap = await getDb().ref(PDF_FB_PATH).once('value');
+            if (!snap.exists()) { wrap.innerHTML = rulesBtn; return; }
+            const items = Object.values(snap.val()).sort((a,b) => new Date(a.uploadedAt) - new Date(b.uploadedAt));
+            const colors = ['#0d47a1,#1976d2','#1b5e20,#388e3c','#880e4f,#c2185b','#e65100,#f57c00','#4a148c,#6a1b9a','#006064,#00838f'];
+            const dynamicBtns = items.map((it,i) => {
+                const c = colors[i % colors.length];
+                return `<a href="${it.url}" target="_blank" style="display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,${c} 100%);color:white;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;">📄 ${it.label}</a>`;
+            }).join('');
+            wrap.innerHTML = rulesBtn + dynamicBtns;
+        } catch(e) {
+            wrap.innerHTML = rulesBtn;
+        }
+    }
+
+    // ============================================================
+    //  💳 PAYMENT APPROVAL — Admin logic
+    // ============================================================
+    const PA_FB_PATH = 'paymentRegistrations';
+
+    async function paLoadPending() {
+        const wrap       = document.getElementById('paRegistrationList');
+        const filterSel  = document.getElementById('paFilterStatus');
+        const searchEl   = document.getElementById('paSearch');
+        if (!wrap) return;
+        wrap.innerHTML = '<p style="color:#aaa;text-align:center;padding:24px">Loading…</p>';
+
+        const filterStatus = filterSel?.value || '';
+        const searchTerm   = (searchEl?.value || '').toLowerCase();
+
+        try {
+            const snap = await getDb().ref(PA_FB_PATH).once('value');
+            let items = [];
+            if (snap.exists()) {
+                items = Object.entries(snap.val()).map(([k,v]) => ({id:k,...v}))
+                    .sort((a,b) => new Date(b.registeredAt||0) - new Date(a.registeredAt||0));
+            }
+
+            // Update stat counters
+            document.getElementById('paStatPending').textContent  = items.filter(i=>i.status==='pending').length;
+            document.getElementById('paStatApproved').textContent = items.filter(i=>i.status==='approved').length;
+            document.getElementById('paStatRejected').textContent = items.filter(i=>i.status==='rejected').length;
+
+            // Filter
+            let filtered = items;
+            if (filterStatus) filtered = filtered.filter(i => i.status === filterStatus);
+            if (searchTerm)   filtered = filtered.filter(i =>
+                (i.name||'').toLowerCase().includes(searchTerm) ||
+                (i.classYear||'').toLowerCase().includes(searchTerm) ||
+                (i.phone||'').toLowerCase().includes(searchTerm)
+            );
+
+            if (!filtered.length) {
+                wrap.innerHTML = '<p style="color:#aaa;text-align:center;padding:24px">No records found.</p>';
+                return;
+            }
+
+            const statusBadge = s => ({
+                pending:  '<span style="background:#fff8e1;color:#f57f17;border:1px solid #ffc107;padding:3px 10px;border-radius:12px;font-size:.78em;font-weight:700">⏳ Pending</span>',
+                approved: '<span style="background:#e8f5e9;color:#1b5e20;border:1px solid #4caf50;padding:3px 10px;border-radius:12px;font-size:.78em;font-weight:700">✅ Approved</span>',
+                rejected: '<span style="background:#fce4ec;color:#880e4f;border:1px solid #e91e63;padding:3px 10px;border-radius:12px;font-size:.78em;font-weight:700">❌ Rejected</span>',
+            }[s] || s);
+
+            wrap.innerHTML = `
+            <div style="overflow-x:auto;border-radius:10px;border:1px solid #e0e0e0">
+                <table style="width:100%;border-collapse:collapse;font-size:.88em">
+                    <thead>
+                        <tr style="background:linear-gradient(135deg,#c44569,#6a1b9a);color:white">
+                            <th style="padding:10px 12px;text-align:left">Name</th>
+                            <th style="padding:10px 12px;text-align:left">Phone</th>
+                            <th style="padding:10px 12px;text-align:left">Class</th>
+                            <th style="padding:10px 12px;text-align:left">Registered</th>
+                            <th style="padding:10px 12px;text-align:center">Status</th>
+                            <th style="padding:10px 12px;text-align:left">Note</th>
+                            <th style="padding:10px 12px;text-align:center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${filtered.map((it,i) => `
+                        <tr style="background:${i%2===0?'#fafafa':'white'};border-bottom:1px solid #eee" id="pa-row-${it.id}">
+                            <td style="padding:9px 12px;font-weight:600">${it.name||'—'}</td>
+                            <td style="padding:9px 12px">${it.phone||'—'}</td>
+                            <td style="padding:9px 12px">${it.classYear||it.class||'—'}</td>
+                            <td style="padding:9px 12px;font-size:.8em;color:#777">${it.registeredAt ? new Date(it.registeredAt).toLocaleString('en-IN') : '—'}</td>
+                            <td style="padding:9px 12px;text-align:center" id="pa-status-${it.id}">${statusBadge(it.status)}</td>
+                            <td style="padding:9px 12px;font-size:.82em;color:#555">${it.note||''}</td>
+                            <td style="padding:9px 12px;text-align:center;white-space:nowrap">
+                                ${it.status !== 'approved' ? `<button onclick="paSetStatus('${it.id}','approved')" style="background:#e8f5e9;color:#1b5e20;border:none;border-radius:6px;padding:4px 10px;cursor:pointer;font-size:.8em;font-weight:700;margin:2px">✅ Approve</button>` : ''}
+                                ${it.status !== 'rejected' ? `<button onclick="paSetStatus('${it.id}','rejected')" style="background:#fce4ec;color:#880e4f;border:none;border-radius:6px;padding:4px 10px;cursor:pointer;font-size:.8em;font-weight:700;margin:2px">❌ Reject</button>` : ''}
+                                <button onclick="paDelete('${it.id}')" style="background:#f5f5f5;color:#555;border:none;border-radius:6px;padding:4px 10px;cursor:pointer;font-size:.8em;margin:2px">🗑️</button>
+                            </td>
+                        </tr>`).join('')}
+                    </tbody>
+                </table>
+            </div>`;
+        } catch(e) {
+            wrap.innerHTML = `<p style="color:#b71c1c;text-align:center;padding:20px">Error: ${e.message}</p>`;
+        }
+    }
+
+    async function paSetStatus(id, status) {
+        try {
+            await getDb().ref(`${PA_FB_PATH}/${id}/status`).set(status);
+            await getDb().ref(`${PA_FB_PATH}/${id}/reviewedAt`).set(new Date().toISOString());
+            await getDb().ref(`${PA_FB_PATH}/${id}/reviewedBy`).set(currentUser || 'Admin');
+            paLoadPending();
+        } catch(e) { alert('Error: ' + e.message); }
+    }
+
+    async function paDelete(id) {
+        if (!confirm('Delete this registration entry?')) return;
+        try {
+            await getDb().ref(`${PA_FB_PATH}/${id}`).remove();
+            paLoadPending();
+        } catch(e) { alert('Error: ' + e.message); }
+    }
+
+    async function paManualAdd() {
+        const name   = (document.getElementById('paManualName')?.value || '').trim();
+        const phone  = (document.getElementById('paManualPhone')?.value || '').trim();
+        const cls    = (document.getElementById('paManualClass')?.value || '').trim();
+        const status = document.getElementById('paManualStatus')?.value || 'pending';
+        const note   = (document.getElementById('paManualNote')?.value || '').trim();
+
+        if (!name || !phone || !cls) { alert('Please fill in Name, Phone and Class.'); return; }
+
+        try {
+            await getDb().ref(PA_FB_PATH).push({
+                name, phone, classYear: cls, status, note,
+                registeredAt: new Date().toISOString(),
+                addedBy: currentUser || 'Admin',
+            });
+            document.getElementById('paManualName').value  = '';
+            document.getElementById('paManualPhone').value = '';
+            document.getElementById('paManualClass').value = '';
+            document.getElementById('paManualNote').value  = '';
+            paLoadPending();
+        } catch(e) { alert('Error: ' + e.message); }
+    }
+
+    async function paDownloadCSV() {
+        try {
+            const snap = await getDb().ref(PA_FB_PATH).once('value');
+            if (!snap.exists()) { alert('No data to download.'); return; }
+            const items = Object.values(snap.val());
+            const header = 'Name,Phone,Class,Status,Registered At,Reviewed By,Note';
+            const rows = items.map(i =>
+                [i.name,i.phone,i.classYear||i.class,i.status,i.registeredAt,i.reviewedBy||'',i.note||'']
+                .map(v => `"${(v||'').replace(/"/g,'""')}"`)
+                .join(',')
+            );
+            const blob = new Blob([header+'\n'+rows.join('\n')], {type:'text/csv'});
+            const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+            a.download = 'payment_registrations.csv'; a.click();
+        } catch(e) { alert('Error: ' + e.message); }
+    }
+
+    // ============================================================
+    //  📅 EVENT SCHEDULE — Admin + Public logic
+    // ============================================================
+    const ES_FB_PATH = 'eventSchedule';
+
+    const ES_DEFAULT_EVENTS = [
+        {sl:1, name:'Mime', stageType:'On stage', classInfo:"I BCA / II BCA 'B'",      incharge:'Priyanka V / Kotrappa K',      meeting1:'Feb 24th at 1:00–1:15 pm',   meeting2:'March 4th at 1:00–1:15 pm',   startDate:'',           endDate:''},
+        {sl:2, name:'Social Awareness Skit', stageType:'On stage', classInfo:'III BBA / II BCA "A"',  incharge:'Shankar B C / Smitha M',       meeting1:'Feb 27th at 1:00–1:15 pm',   meeting2:'March 7th at 1:00–1:15 pm',   startDate:'',           endDate:''},
+        {sl:3, name:'Group Dance', stageType:'On stage', classInfo:"III BCA 'C' / III BCA 'B'", incharge:'Anitha N / Pooja C',           meeting1:'Feb 26th at 1:00–1:15 pm',   meeting2:'March 6th at 1:00–1:15 pm',   startDate:'',           endDate:''},
+        {sl:4, name:'Mad Ads', stageType:'On stage', classInfo:'I BCOM / I BCA',          incharge:'Shilpa R Y / Roopa M C',       meeting1:'Feb 27th at 3:15–3:30 pm',   meeting2:'March 9th at 3:15–3:30 pm',   startDate:'',           endDate:''},
+        {sl:5, name:'Ramp Walk', stageType:'On stage', classInfo:'II BBA / III B.Com',       incharge:'Hemavathi D / Chandan G B',    meeting1:'Feb 24th at 3:15–3:30 pm',   meeting2:'Feb 28th at 3:15–3:30 pm',    startDate:'',           endDate:''},
+        {sl:6, name:'Pod Casting', stageType:'Off stage', classInfo:'III BCOM / II BBA',      incharge:'Chandan G B / Hemavathi D',    meeting1:'Feb 23rd at 12:45–1:00 pm',  meeting2:'March 2nd at 12:45–1:00 pm',  startDate:'02-03-2026', endDate:'07-03-2026'},
+        {sl:7, name:'Nukkad Natak', stageType:'Off stage', classInfo:'II BCA "B" / III BBA',   incharge:'Kotrappa K / Shankar B C',     meeting1:'Feb 28th at 1:00–1:15 pm',   meeting2:'March 7th at 10:30–10:45 am', startDate:'09-03-2026', endDate:'14-03-2026'},
+        {sl:8, name:'Talent Hunt', stageType:'Off stage', classInfo:'III BCA "B" / III BCA A', incharge:'Anitha N / Pooja C',           meeting1:'Feb 28th at 3:15–3:30 pm',   meeting2:'March 9th at 1:00–1:15 pm',   startDate:'',           endDate:'14-03-2026'},
+        {sl:9, name:'YouTube Advertisement', stageType:'Off stage', classInfo:"I BCA 'A' / II BCA 'A'",incharge:'Roopa M C / Smitha M',        meeting1:'Feb 25th at 12:45–1:00 pm',  meeting2:'March 5th at 12:45–1:00 pm',  startDate:'02-03-2026', endDate:'07-03-2026'},
+        {sl:10,name:'Case Analysis', stageType:'Off stage', classInfo:"I BCOM / I BCA 'A'",   incharge:'Shilpa R Y / Roopa M C',       meeting1:'Feb 25th at 1:00–1:15 pm',   meeting2:'March 5th at 1:00–1:15 pm',   startDate:'09-03-2026', endDate:'10-03-2026'},
+        {sl:11,name:'Interdisciplinary', stageType:'Off stage', classInfo:'II BBA / II BCOM',    incharge:'Hemavathi D / Lalitha S K',    meeting1:'Feb 23rd at 1:00–1:15 pm',   meeting2:'March 2nd at 1:00–1:15 pm',   startDate:'02-03-2026', endDate:'07-03-2026'},
+        {sl:12,name:'Quiz', stageType:'Off stage', classInfo:'III BCA "B" / II BCA "A"', incharge:'Smitha M / Pooja C',           meeting1:'Feb 24th at 12:45–1:00 pm',  meeting2:'March 4th at 12:45–1:00 pm',  startDate:'02-03-2026', endDate:'12-03-2026'},
+        {sl:13,name:'Vlog', stageType:'Off stage', classInfo:'III BCOM',               incharge:'Chandan G B / Priyanka V',     meeting1:'Feb 26th at 12:45–1:00 pm',  meeting2:'March 6th at 12:45–1:00 pm',  startDate:'02-03-2026', endDate:'07-03-2026'},
+        {sl:14,name:'Hand Writing', stageType:'Off stage', classInfo:'III BCA "A" / III BCA "C"',incharge:'Kotrappa K / Anitha N',        meeting1:'Feb 27th at 12:45–1:00 pm',  meeting2:'March 7th at 12:45–1:00 pm',  startDate:'',           endDate:'11-03-2026'},
+        {sl:15,name:'Best Out of Waste', stageType:'Off stage', classInfo:'II BCOM / III BBA',   incharge:'Lalitha S K / Shankar B C',    meeting1:'Feb 28th at 12:45–1:00 pm',  meeting2:'March 7th at 3:15–3:30 pm',   startDate:'',           endDate:'13-03-2026'},
+    ];
+
+    async function esSeedDefaults() {
+        if (!confirm('This will ADD the 15 default events to Firebase (existing events are kept). Continue?')) return;
+        try {
+            for (const ev of ES_DEFAULT_EVENTS) {
+                await getDb().ref(ES_FB_PATH).push({...ev, createdAt: new Date().toISOString()});
+            }
+            alert('✅ 15 default events added!');
+            esLoadEvents();
+            esRenderPublicTable();
+        } catch(e) { alert('Error: ' + e.message); }
+    }
+
+    async function esLoadEvents() {
+        const wrap = document.getElementById('esAdminTableWrap');
+        if (!wrap) return;
+        wrap.innerHTML = '<p style="color:#aaa;text-align:center;padding:24px">Loading…</p>';
+        try {
+            const snap = await getDb().ref(ES_FB_PATH).once('value');
+            if (!snap.exists()) {
+                wrap.innerHTML = '<p style="color:#aaa;text-align:center;padding:20px">No events yet. Click "Load Default 15 Events" or add manually above.</p>';
+                return;
+            }
+            const items = Object.entries(snap.val()).map(([k,v])=>({id:k,...v}))
+                              .sort((a,b)=>(a.sl||999)-(b.sl||999));
+            wrap.innerHTML = `
+            <table style="width:100%;border-collapse:collapse;font-size:.82em;background:white">
+                <thead>
+                    <tr style="background:#0d47a1;color:white">
+                        <th style="padding:8px 10px">Sl</th>
+                        <th style="padding:8px 10px;text-align:left">Event</th>
+                        <th style="padding:8px 10px;text-align:left">Stage</th>
+                        <th style="padding:8px 10px;text-align:left">Class</th>
+                        <th style="padding:8px 10px;text-align:left">In-charge</th>
+                        <th style="padding:8px 10px;text-align:left">I Meeting</th>
+                        <th style="padding:8px 10px;text-align:left">II Meeting</th>
+                        <th style="padding:8px 10px;text-align:center">Start</th>
+                        <th style="padding:8px 10px;text-align:center">End</th>
+                        <th style="padding:8px 10px;text-align:center">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${items.map((it,i)=>`
+                    <tr style="background:${i%2===0?'#f5f5f5':'white'};border-bottom:1px solid #e0e0e0">
+                        <td style="padding:7px 10px;text-align:center;font-weight:700;color:#0d47a1">${it.sl||'—'}</td>
+                        <td style="padding:7px 10px;font-weight:600">${it.name||'—'}</td>
+                        <td style="padding:7px 10px;font-size:.82em">${it.stageType||'—'}</td>
+                        <td style="padding:7px 10px;font-size:.82em">${it.classInfo||'—'}</td>
+                        <td style="padding:7px 10px;font-size:.82em">${it.incharge||'—'}</td>
+                        <td style="padding:7px 10px;font-size:.79em;color:#555">${it.meeting1||'—'}</td>
+                        <td style="padding:7px 10px;font-size:.79em;color:#555">${it.meeting2||'—'}</td>
+                        <td style="padding:7px 10px;text-align:center;font-size:.82em;color:#1b5e20;font-weight:600">${it.startDate||'—'}</td>
+                        <td style="padding:7px 10px;text-align:center;font-size:.82em;color:#b71c1c;font-weight:600">${it.endDate||'—'}</td>
+                        <td style="padding:7px 10px;text-align:center;white-space:nowrap">
+                            <button onclick="esEditLoad('${it.id}')" style="background:#e3f2fd;color:#0d47a1;border:none;border-radius:6px;padding:3px 10px;cursor:pointer;font-size:.8em;font-weight:700;margin:2px">✏️ Edit</button>
+                            <button onclick="esDeleteEvent('${it.id}')" style="background:#fce4ec;color:#880e4f;border:none;border-radius:6px;padding:3px 10px;cursor:pointer;font-size:.8em;font-weight:700;margin:2px">🗑️</button>
+                        </td>
+                    </tr>`).join('')}
+                </tbody>
+            </table>`;
+        } catch(e) {
+            wrap.innerHTML = `<p style="color:#b71c1c;text-align:center;padding:20px">Error: ${e.message}</p>`;
+        }
+    }
+
+    async function esSaveEvent() {
+        const id       = document.getElementById('esEditId')?.value || '';
+        const name     = (document.getElementById('esName')?.value || '').trim();
+        const stageType= document.getElementById('esStageType')?.value || 'On stage';
+        const classInfo= (document.getElementById('esClass')?.value || '').trim();
+        const incharge = (document.getElementById('esIncharge')?.value || '').trim();
+        const meeting1 = (document.getElementById('esMeeting1')?.value || '').trim();
+        const meeting2 = (document.getElementById('esMeeting2')?.value || '').trim();
+        const startDate= (document.getElementById('esStartDate')?.value || '').trim();
+        const endDate  = (document.getElementById('esEndDate')?.value || '').trim();
+        const msg      = document.getElementById('esFormMsg');
+
+        if (!name) { alert('Event name is required.'); return; }
+
+        // Auto-assign sl number if new event
+        let sl = 0;
+        if (!id) {
+            try {
+                const snap = await getDb().ref(ES_FB_PATH).once('value');
+                sl = snap.exists() ? Object.keys(snap.val()).length + 1 : 1;
+            } catch(e) { sl = 0; }
+        } else {
+            const snap = await getDb().ref(`${ES_FB_PATH}/${id}/sl`).once('value');
+            sl = snap.val() || 0;
+        }
+
+        const record = { sl, name, stageType, classInfo, incharge, meeting1, meeting2, startDate, endDate, updatedAt: new Date().toISOString() };
+
+        try {
+            if (id) {
+                await getDb().ref(`${ES_FB_PATH}/${id}`).update(record);
+            } else {
+                record.createdAt = new Date().toISOString();
+                await getDb().ref(ES_FB_PATH).push(record);
+            }
+            if (msg) { msg.textContent = '✅ Saved!'; msg.style.color = '#1b5e20'; msg.style.display = 'inline'; setTimeout(()=>{ msg.style.display='none'; },3000); }
+            esClearForm();
+            esLoadEvents();
+            esRenderPublicTable();
+        } catch(e) {
+            if (msg) { msg.textContent = '❌ Error: ' + e.message; msg.style.color = '#b71c1c'; msg.style.display = 'inline'; }
+        }
+    }
+
+    async function esEditLoad(id) {
+        try {
+            const snap = await getDb().ref(`${ES_FB_PATH}/${id}`).once('value');
+            if (!snap.exists()) return;
+            const it = snap.val();
+            document.getElementById('esEditId').value    = id;
+            document.getElementById('esName').value      = it.name || '';
+            document.getElementById('esStageType').value = it.stageType || 'On stage';
+            document.getElementById('esClass').value     = it.classInfo || '';
+            document.getElementById('esIncharge').value  = it.incharge || '';
+            document.getElementById('esMeeting1').value  = it.meeting1 || '';
+            document.getElementById('esMeeting2').value  = it.meeting2 || '';
+            document.getElementById('esStartDate').value = it.startDate || '';
+            document.getElementById('esEndDate').value   = it.endDate || '';
+            const title = document.getElementById('esFormTitle');
+            if (title) title.textContent = '✏️ Editing: ' + it.name;
+            document.getElementById('eventScheduleAdmin').scrollIntoView({behavior:'smooth',block:'start'});
+        } catch(e) { alert('Load error: ' + e.message); }
+    }
+
+    async function esDeleteEvent(id) {
+        if (!confirm('Delete this event from the schedule?')) return;
+        try {
+            await getDb().ref(`${ES_FB_PATH}/${id}`).remove();
+            esLoadEvents();
+            esRenderPublicTable();
+        } catch(e) { alert('Error: ' + e.message); }
+    }
+
+    function esClearForm() {
+        document.getElementById('esEditId').value    = '';
+        document.getElementById('esName').value      = '';
+        document.getElementById('esStageType').value = 'On stage';
+        document.getElementById('esClass').value     = '';
+        document.getElementById('esIncharge').value  = '';
+        document.getElementById('esMeeting1').value  = '';
+        document.getElementById('esMeeting2').value  = '';
+        document.getElementById('esStartDate').value = '';
+        document.getElementById('esEndDate').value   = '';
+        const title = document.getElementById('esFormTitle');
+        if (title) title.textContent = '➕ Add New Event';
+    }
+
+    // Render the public-facing event schedule table
+    async function esRenderPublicTable() {
+        const tbody = document.getElementById('eventScheduleBody');
+        if (!tbody) return;
+        try {
+            const snap = await getDb().ref(ES_FB_PATH).once('value');
+            if (!snap.exists()) return; // keep hardcoded rows if nothing in Firebase yet
+            const items = Object.values(snap.val()).sort((a,b)=>(a.sl||999)-(b.sl||999));
+            if (!items.length) return;
+            tbody.innerHTML = items.map((it,i) => `
+            <tr style="background:${i%2===0?'#fafafa':'white'};border-bottom:1px solid #eee;">
+                <td style="padding:9px 10px;text-align:center;font-weight:700;color:#6a1b9a">${it.sl||i+1}</td>
+                <td style="padding:9px 10px;font-weight:600">${it.name||'—'} <span style="font-size:.78em;color:#888;font-weight:400">(${it.stageType||''})</span></td>
+                <td style="padding:9px 10px">${it.classInfo||'—'}</td>
+                <td style="padding:9px 10px">${it.incharge||'—'}</td>
+                <td style="padding:9px 10px;font-size:.82em">${it.meeting1||'—'}</td>
+                <td style="padding:9px 10px;font-size:.82em">${it.meeting2||'—'}</td>
+                <td style="padding:9px 10px;text-align:center;font-weight:600;color:${it.startDate?'#1b5e20':'#aaa'}">${it.startDate||'—'}</td>
+                <td style="padding:9px 10px;text-align:center;font-weight:600;color:${it.endDate?'#b71c1c':'#aaa'}">${it.endDate||'—'}</td>
+            </tr>`).join('');
+        } catch(e) {
+            // Silently keep the hardcoded static table if Firebase rules not yet set
+            console.info('esRenderPublicTable: using static fallback —', e.message);
+        }
+    }
+
+    // Auto-init public sections when Firebase is ready
+    (function initPublicSections() {
+        function tryInit() {
+            if (typeof db !== 'undefined' && db) {
+                initPublicPdfHandouts();
+                esRenderPublicTable();
+            } else {
+                setTimeout(tryInit, 700);
+            }
+        }
+        tryInit();
+    })();
+
     </script>
 
     <!-- ============================================ -->
@@ -18667,58 +19447,280 @@ Proceed?`)) return;
             <h2 style="color:#c44569;margin-bottom:20px;">📋 General Rules and Regulations</h2>
             
             <!-- ============================================ -->
-            <!-- TO ADD/REMOVE PDF LINK:                      -->
-            <!-- Delete the entire line below to remove link  -->
-            <!-- Or change "rules.pdf" to your PDF filename   -->
+            <!-- PDF HANDOUTS SECTION                         -->
+            <!-- TO ADD A NEW PDF: Copy one <a> block below   -->
+            <!-- and update the href and label text.          -->
+            <!-- Upload the PDF file to the same folder.      -->
             <!-- ============================================ -->
-            <a href="rules.pdf" target="_blank" style="display:inline-block;background:linear-gradient(135deg, #c44569 0%, #6a1b9a 100%);color:white;padding:12px 30px;border-radius:8px;text-decoration:none;font-weight:600;margin-bottom:20px;">
-                📄 Download Complete Rules & Regulations PDF (Coming Soon)
-            </a>
+            <!-- Dynamic PDF handouts loaded from Firebase by initPublicPdfHandouts() -->
+            <div id="publicPdfHandouts" style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-bottom:20px;">
+                <a href="rules.pdf" target="_blank" style="display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,#c44569 0%,#6a1b9a 100%);color:white;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;">
+                    📄 Complete Rules &amp; Regulations PDF (Coming Soon)
+                </a>
+                <!-- Faculty-uploaded handouts appear here automatically after admin uploads them -->
+            </div>
+            <p style="font-size:.82em;color:#888;margin-top:-10px;margin-bottom:10px;">
+                📌 <em>PDFs are uploaded by respective event in-charges. Contact your faculty for the latest handout.</em>
+            </p>
         </div>
 
         <!-- ============================================ -->
-        <!-- TO EDIT COORDINATOR NAMES:                   -->
-        <!-- Change the names below                       -->
+        <!-- EVENT COORDINATORS                           -->
         <!-- ============================================ -->
         <div style="background:#fff3cd;padding:20px;border-radius:8px;border-left:5px solid #ffc107;margin-bottom:20px;">
-            <p style="margin:0;color:#856404;font-weight:600;">Event Coordinators: Lalitha S K & Priyanka V</p>
+            <p style="margin:0;color:#856404;font-weight:600;">📌 Event Coordinators: <strong>Lalitha S K &amp; Priyanka V</strong></p>
         </div>
 
         <!-- ============================================ -->
-        <!-- TO EDIT RULES: Change the text below         -->
-        <!-- Keep the HTML tags as they are               -->
+        <!-- REGISTRATION + PAYMENT APPROVAL SECTION     -->
         <!-- ============================================ -->
-        <div style="background:white;padding:25px;border-radius:8px;border:2px solid #e0e0e0;">
+        <div style="background:linear-gradient(135deg,#fce4ec 0%,#f8bbd0 100%);padding:25px;border-radius:12px;border:2px solid #e91e63;margin-bottom:24px;">
+            <h3 style="color:#880e4f;margin-bottom:14px;font-size:1.15em;">💳 Registration &amp; Payment Approval</h3>
+            <p style="color:#4a0020;margin-bottom:12px;line-height:1.7;">
+                <strong>Last date for registration</strong> with one-time Refundable amount 
+                <span style="color:#c44569;font-weight:bold;font-size:1.1em;">₹1,500/-</span> 
+                on or before 
+                <span style="color:#c44569;font-weight:bold;">23rd February, Monday within 3:30 PM</span>.
+            </p>
+            <div style="background:white;border-radius:8px;padding:16px;border-left:5px solid #e91e63;">
+                <p style="margin:0 0 10px 0;color:#333;font-weight:600;">📋 Approval Process:</p>
+                <ol style="margin:0;padding-left:20px;color:#555;line-height:1.9;">
+                    <li>Student pays ₹1,500/- to the event in-charge (<strong>Lalitha S K</strong> or <strong>Priyanka V</strong>).</li>
+                    <li>In-charge verifies receipt of payment and gives <span style="color:#1b5e20;font-weight:700">✅ Approval</span>.</li>
+                    <li>Only approved students may proceed to participate in events.</li>
+                    <li>Amount is fully refundable upon meeting all event obligations.</li>
+                </ol>
+            </div>
+            <div style="margin-top:14px;background:#fff8e1;border-radius:8px;padding:12px 16px;border-left:4px solid #ffa000;">
+                <p style="margin:0;color:#5d4037;font-size:.9em;">
+                    ⚠️ <strong>Note:</strong> Registration without payment confirmation from the in-charge will <strong>not be accepted</strong>. 
+                    Please ensure you collect a payment acknowledgement from <strong>Lalitha S K</strong> or <strong>Priyanka V</strong>.
+                </p>
+            </div>
+        </div>
+
+        <!-- ============================================ -->
+        <!-- GENERAL RULES                                -->
+        <!-- ============================================ -->
+        <div style="background:white;padding:25px;border-radius:8px;border:2px solid #e0e0e0;margin-bottom:24px;">
+            <h3 style="color:#c44569;margin-bottom:14px;font-size:1.1em;">📜 General Rules</h3>
             <ol style="line-height:1.8;color:#333;">
-                <!-- Rule 1 -->
                 <li style="margin-bottom:15px;">
                     <strong>Last date for registration</strong> with one time Refundable amount 
                     <span style="color:#c44569;font-weight:bold;">₹1,500/-</span> 
                     on or before 
                     <span style="color:#c44569;font-weight:bold;">23rd February, Monday within 3:30 PM</span>.
                 </li>
-                
-                <!-- Rule 2 -->
                 <li style="margin-bottom:15px;">
                     <strong>Last date for submission of Music and Work Organising batch</strong> 
                     on or before 
                     <span style="color:#c44569;font-weight:bold;">7th March, Saturday</span>.
                 </li>
-                
-                <!-- Rule 3 -->
                 <li style="margin-bottom:15px;">
                     Students arriving late (Event and for the Class registration on the date of event) 
                     or absent for the event will be fined 
                     <span style="color:#c44569;font-weight:bold;">₹500/- per day</span>.
                 </li>
-                
-                <!-- Rule 4 -->
                 <li style="margin-bottom:15px;">
                     Teams not submitting Music, or any other assignments with respect to the event, 
                     on date and time, will lead into 
                     <span style="color:#c44569;font-weight:bold;">non-refund of deposit ₹1,500/-</span>.
                 </li>
             </ol>
+        </div>
+
+        <!-- ============================================ -->
+        <!-- SPURTHI YOUTH FEST — EVENT SCHEDULE TABLE    -->
+        <!-- Festival Date: 18.03.2026                    -->
+        <!-- TO ADD A NEW EVENT: Copy a <tr> block and    -->
+        <!-- update the cells. Leave blank if unknown.    -->
+        <!-- ============================================ -->
+        <div style="margin-bottom:10px;">
+            <h3 style="color:#6a1b9a;margin-bottom:16px;font-size:1.1em;">📅 Spurthi Youth Festival — Event Schedule (18.03.2026)</h3>
+            <div style="overflow-x:auto;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.1);">
+                <table style="width:100%;border-collapse:collapse;background:white;font-size:.88em;">
+                    <thead>
+                        <tr style="background:linear-gradient(135deg,#6a1b9a 0%,#c44569 100%);color:white;">
+                            <th style="padding:11px 10px;text-align:center;white-space:nowrap">Sl.<br>No.</th>
+                            <th style="padding:11px 10px;text-align:left;white-space:nowrap">On Stage / Off Stage</th>
+                            <th style="padding:11px 10px;text-align:left;white-space:nowrap">Class</th>
+                            <th style="padding:11px 10px;text-align:left;white-space:nowrap">In-charge</th>
+                            <th style="padding:11px 10px;text-align:left;white-space:nowrap">I Meeting Timings</th>
+                            <th style="padding:11px 10px;text-align:left;white-space:nowrap">II Meeting Timings</th>
+                            <th style="padding:11px 10px;text-align:center;white-space:nowrap">Event Start Date</th>
+                            <th style="padding:11px 10px;text-align:center;white-space:nowrap">Event End Date</th>
+                        </tr>
+                    </thead>
+                    <tbody id="eventScheduleBody">
+                        <!-- ── ROW TEMPLATE (copy & paste to add events) ────────────
+                        <tr style="background:#fafafa;border-bottom:1px solid #eee;">
+                            <td style="padding:9px 10px;text-align:center;font-weight:700;color:#6a1b9a">N</td>
+                            <td style="padding:9px 10px;font-weight:600">Event Name (On/Off stage)</td>
+                            <td style="padding:9px 10px">Class</td>
+                            <td style="padding:9px 10px">In-charge Name</td>
+                            <td style="padding:9px 10px;font-size:.82em">Date at HH:MM to HH:MM</td>
+                            <td style="padding:9px 10px;font-size:.82em">Date at HH:MM to HH:MM</td>
+                            <td style="padding:9px 10px;text-align:center">DD-MM-YYYY</td>
+                            <td style="padding:9px 10px;text-align:center">DD-MM-YYYY</td>
+                        </tr>
+                        ──────────────────────────────────────────────────────── -->
+                        <tr style="background:#fafafa;border-bottom:1px solid #eee;">
+                            <td style="padding:9px 10px;text-align:center;font-weight:700;color:#6a1b9a">1</td>
+                            <td style="padding:9px 10px;font-weight:600">Mime (On stage)</td>
+                            <td style="padding:9px 10px">I BCA / II BCA 'B'</td>
+                            <td style="padding:9px 10px">Priyanka V / Kotrappa K</td>
+                            <td style="padding:9px 10px;font-size:.82em">Feb 24th at 1:00–1:15 pm</td>
+                            <td style="padding:9px 10px;font-size:.82em">March 4th at 1:00–1:15 pm</td>
+                            <td style="padding:9px 10px;text-align:center;color:#888">—</td>
+                            <td style="padding:9px 10px;text-align:center;color:#888">—</td>
+                        </tr>
+                        <tr style="background:white;border-bottom:1px solid #eee;">
+                            <td style="padding:9px 10px;text-align:center;font-weight:700;color:#6a1b9a">2</td>
+                            <td style="padding:9px 10px;font-weight:600">Social Awareness Skit (On stage)</td>
+                            <td style="padding:9px 10px">III BBA / II BCA "A"</td>
+                            <td style="padding:9px 10px">Shankar B C / Smitha M</td>
+                            <td style="padding:9px 10px;font-size:.82em">Feb 27th at 1:00–1:15 pm</td>
+                            <td style="padding:9px 10px;font-size:.82em">March 7th at 1:00–1:15 pm</td>
+                            <td style="padding:9px 10px;text-align:center;color:#888">—</td>
+                            <td style="padding:9px 10px;text-align:center;color:#888">—</td>
+                        </tr>
+                        <tr style="background:#fafafa;border-bottom:1px solid #eee;">
+                            <td style="padding:9px 10px;text-align:center;font-weight:700;color:#6a1b9a">3</td>
+                            <td style="padding:9px 10px;font-weight:600">Group Dance (On stage)</td>
+                            <td style="padding:9px 10px">III BCA 'C' / III BCA 'B'</td>
+                            <td style="padding:9px 10px">Anitha N / Pooja C</td>
+                            <td style="padding:9px 10px;font-size:.82em">Feb 26th at 1:00–1:15 pm</td>
+                            <td style="padding:9px 10px;font-size:.82em">March 6th at 1:00–1:15 pm</td>
+                            <td style="padding:9px 10px;text-align:center;color:#888">—</td>
+                            <td style="padding:9px 10px;text-align:center;color:#888">—</td>
+                        </tr>
+                        <tr style="background:white;border-bottom:1px solid #eee;">
+                            <td style="padding:9px 10px;text-align:center;font-weight:700;color:#6a1b9a">4</td>
+                            <td style="padding:9px 10px;font-weight:600">Mad Ads (On stage)</td>
+                            <td style="padding:9px 10px">I BCOM / I BCA</td>
+                            <td style="padding:9px 10px">Shilpa R Y / Roopa M C</td>
+                            <td style="padding:9px 10px;font-size:.82em">Feb 27th at 3:15–3:30 pm</td>
+                            <td style="padding:9px 10px;font-size:.82em">March 9th at 3:15–3:30 pm</td>
+                            <td style="padding:9px 10px;text-align:center;color:#888">—</td>
+                            <td style="padding:9px 10px;text-align:center;color:#888">—</td>
+                        </tr>
+                        <tr style="background:#fafafa;border-bottom:1px solid #eee;">
+                            <td style="padding:9px 10px;text-align:center;font-weight:700;color:#6a1b9a">5</td>
+                            <td style="padding:9px 10px;font-weight:600">Ramp Walk (On stage)</td>
+                            <td style="padding:9px 10px">II BBA / III B.Com</td>
+                            <td style="padding:9px 10px">Hemavathi D / Chandan G B</td>
+                            <td style="padding:9px 10px;font-size:.82em">Feb 24th at 3:15–3:30 pm</td>
+                            <td style="padding:9px 10px;font-size:.82em">Feb 28th at 3:15–3:30 pm</td>
+                            <td style="padding:9px 10px;text-align:center;color:#888">—</td>
+                            <td style="padding:9px 10px;text-align:center;color:#888">—</td>
+                        </tr>
+                        <tr style="background:white;border-bottom:1px solid #eee;">
+                            <td style="padding:9px 10px;text-align:center;font-weight:700;color:#6a1b9a">6</td>
+                            <td style="padding:9px 10px;font-weight:600">Pod Casting</td>
+                            <td style="padding:9px 10px">III BCOM / II BBA</td>
+                            <td style="padding:9px 10px">Chandan G B / Hemavathi D</td>
+                            <td style="padding:9px 10px;font-size:.82em">Feb 23rd at 12:45–1:00 pm</td>
+                            <td style="padding:9px 10px;font-size:.82em">March 2nd at 12:45–1:00 pm</td>
+                            <td style="padding:9px 10px;text-align:center;font-weight:600;color:#1b5e20">02-03-2026</td>
+                            <td style="padding:9px 10px;text-align:center;font-weight:600;color:#b71c1c">07-03-2026</td>
+                        </tr>
+                        <tr style="background:#fafafa;border-bottom:1px solid #eee;">
+                            <td style="padding:9px 10px;text-align:center;font-weight:700;color:#6a1b9a">7</td>
+                            <td style="padding:9px 10px;font-weight:600">Nukkad Natak</td>
+                            <td style="padding:9px 10px">II BCA "B" / III BBA</td>
+                            <td style="padding:9px 10px">Kotrappa K / Shankar B C</td>
+                            <td style="padding:9px 10px;font-size:.82em">Feb 28th at 1:00–1:15 pm</td>
+                            <td style="padding:9px 10px;font-size:.82em">March 7th at 10:30–10:45 am</td>
+                            <td style="padding:9px 10px;text-align:center;font-weight:600;color:#1b5e20">09-03-2026</td>
+                            <td style="padding:9px 10px;text-align:center;font-weight:600;color:#b71c1c">14-03-2026</td>
+                        </tr>
+                        <tr style="background:white;border-bottom:1px solid #eee;">
+                            <td style="padding:9px 10px;text-align:center;font-weight:700;color:#6a1b9a">8</td>
+                            <td style="padding:9px 10px;font-weight:600">Talent Hunt</td>
+                            <td style="padding:9px 10px">III BCA "B" / III BCA A</td>
+                            <td style="padding:9px 10px">Anitha N / Pooja C</td>
+                            <td style="padding:9px 10px;font-size:.82em">Feb 28th at 3:15–3:30 pm</td>
+                            <td style="padding:9px 10px;font-size:.82em">March 9th at 1:00–1:15 pm</td>
+                            <td style="padding:9px 10px;text-align:center;color:#888">—</td>
+                            <td style="padding:9px 10px;text-align:center;font-weight:600;color:#b71c1c">14-03-2026</td>
+                        </tr>
+                        <tr style="background:#fafafa;border-bottom:1px solid #eee;">
+                            <td style="padding:9px 10px;text-align:center;font-weight:700;color:#6a1b9a">9</td>
+                            <td style="padding:9px 10px;font-weight:600">YouTube Advertisement</td>
+                            <td style="padding:9px 10px">I BCA "A" / II BCA 'A'</td>
+                            <td style="padding:9px 10px">Roopa M C / Smitha M</td>
+                            <td style="padding:9px 10px;font-size:.82em">Feb 25th at 12:45–1:00 pm</td>
+                            <td style="padding:9px 10px;font-size:.82em">March 5th at 12:45–1:00 pm</td>
+                            <td style="padding:9px 10px;text-align:center;font-weight:600;color:#1b5e20">02-03-2026</td>
+                            <td style="padding:9px 10px;text-align:center;font-weight:600;color:#b71c1c">07-03-2026</td>
+                        </tr>
+                        <tr style="background:white;border-bottom:1px solid #eee;">
+                            <td style="padding:9px 10px;text-align:center;font-weight:700;color:#6a1b9a">10</td>
+                            <td style="padding:9px 10px;font-weight:600">Case Analysis</td>
+                            <td style="padding:9px 10px">I BCOM / I BCA 'A'</td>
+                            <td style="padding:9px 10px">Shilpa R Y / Roopa M C</td>
+                            <td style="padding:9px 10px;font-size:.82em">Feb 25th at 1:00–1:15 pm</td>
+                            <td style="padding:9px 10px;font-size:.82em">March 5th at 1:00–1:15 pm</td>
+                            <td style="padding:9px 10px;text-align:center;font-weight:600;color:#1b5e20">09-03-2026</td>
+                            <td style="padding:9px 10px;text-align:center;font-weight:600;color:#b71c1c">10-03-2026</td>
+                        </tr>
+                        <tr style="background:#fafafa;border-bottom:1px solid #eee;">
+                            <td style="padding:9px 10px;text-align:center;font-weight:700;color:#6a1b9a">11</td>
+                            <td style="padding:9px 10px;font-weight:600">Interdisciplinary</td>
+                            <td style="padding:9px 10px">II BBA / II BCOM</td>
+                            <td style="padding:9px 10px">Hemavathi D / Lalitha S K</td>
+                            <td style="padding:9px 10px;font-size:.82em">Feb 23rd at 1:00–1:15 pm</td>
+                            <td style="padding:9px 10px;font-size:.82em">March 2nd at 1:00–1:15 pm</td>
+                            <td style="padding:9px 10px;text-align:center;font-weight:600;color:#1b5e20">02-03-2026</td>
+                            <td style="padding:9px 10px;text-align:center;font-weight:600;color:#b71c1c">07-03-2026</td>
+                        </tr>
+                        <tr style="background:white;border-bottom:1px solid #eee;">
+                            <td style="padding:9px 10px;text-align:center;font-weight:700;color:#6a1b9a">12</td>
+                            <td style="padding:9px 10px;font-weight:600">Quiz</td>
+                            <td style="padding:9px 10px">III BCA "B" / II BCA "A"</td>
+                            <td style="padding:9px 10px">Smitha M / Pooja C</td>
+                            <td style="padding:9px 10px;font-size:.82em">Feb 24th at 12:45–1:00 pm</td>
+                            <td style="padding:9px 10px;font-size:.82em">March 4th at 12:45–1:00 pm</td>
+                            <td style="padding:9px 10px;text-align:center;font-weight:600;color:#1b5e20">02-03-2026</td>
+                            <td style="padding:9px 10px;text-align:center;font-weight:600;color:#b71c1c">12-03-2026</td>
+                        </tr>
+                        <tr style="background:#fafafa;border-bottom:1px solid #eee;">
+                            <td style="padding:9px 10px;text-align:center;font-weight:700;color:#6a1b9a">13</td>
+                            <td style="padding:9px 10px;font-weight:600">Vlog</td>
+                            <td style="padding:9px 10px">III BCOM</td>
+                            <td style="padding:9px 10px">Chandan G B / Priyanka V</td>
+                            <td style="padding:9px 10px;font-size:.82em">Feb 26th at 12:45–1:00 pm</td>
+                            <td style="padding:9px 10px;font-size:.82em">March 6th at 12:45–1:00 pm</td>
+                            <td style="padding:9px 10px;text-align:center;font-weight:600;color:#1b5e20">02-03-2026</td>
+                            <td style="padding:9px 10px;text-align:center;font-weight:600;color:#b71c1c">07-03-2026</td>
+                        </tr>
+                        <tr style="background:white;border-bottom:1px solid #eee;">
+                            <td style="padding:9px 10px;text-align:center;font-weight:700;color:#6a1b9a">14</td>
+                            <td style="padding:9px 10px;font-weight:600">Hand Writing</td>
+                            <td style="padding:9px 10px">III BCA "A" / III BCA "C"</td>
+                            <td style="padding:9px 10px">Kotrappa K / Anitha N</td>
+                            <td style="padding:9px 10px;font-size:.82em">Feb 27th at 12:45–1:00 pm</td>
+                            <td style="padding:9px 10px;font-size:.82em">March 7th at 12:45–1:00 pm</td>
+                            <td style="padding:9px 10px;text-align:center;color:#888">—</td>
+                            <td style="padding:9px 10px;text-align:center;font-weight:600;color:#b71c1c">11-03-2026</td>
+                        </tr>
+                        <tr style="background:#fafafa;border-bottom:1px solid #eee;">
+                            <td style="padding:9px 10px;text-align:center;font-weight:700;color:#6a1b9a">15</td>
+                            <td style="padding:9px 10px;font-weight:600">Best Out of Waste</td>
+                            <td style="padding:9px 10px">II BCOM / III BBA</td>
+                            <td style="padding:9px 10px">Lalitha S K / Shankar B C</td>
+                            <td style="padding:9px 10px;font-size:.82em">Feb 28th at 12:45–1:00 pm</td>
+                            <td style="padding:9px 10px;font-size:.82em">March 7th at 3:15–3:30 pm</td>
+                            <td style="padding:9px 10px;text-align:center;color:#888">—</td>
+                            <td style="padding:9px 10px;text-align:center;font-weight:600;color:#b71c1c">13-03-2026</td>
+                        </tr>
+                        <!-- ── ADD MORE EVENT ROWS ABOVE THIS LINE ──────────── -->
+                    </tbody>
+                </table>
+            </div>
+            <p style="font-size:.8em;color:#888;margin-top:8px;">
+                📌 <em>To add more events, copy a &lt;tr&gt; row block inside the table and fill in the details.</em>
+            </p>
         </div>
     </div>
     <!-- ============================================ -->
@@ -18745,7 +19747,7 @@ Proceed?`)) return;
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;">
-                <strong>Version:</strong> 3.7 Speed Slide Challenge updated   | <strong>Last Updated:</strong> February 21, 2026 02.15pm
+                <strong>Version:</strong> 3.11 Tab layout fix + Payment Approval workflow + Firebase warnings removed   | <strong>Last Updated:</strong> February 21, 2026 .3.30pm
             </p>
             <!-- ============================================ -->
             
