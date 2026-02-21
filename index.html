@@ -1739,9 +1739,9 @@
                 <button class="tab super-admin-only" onclick="showTab('cloudinaryInspector')" id="cloudinaryInspectorTab">☁️ Cloudinary</button>
                 <button class="tab super-admin-only" onclick="showTab('firebaseDownloadMonitor')" id="firebaseDownloadMonitorTab">🔥 Download Monitor</button>
                 <button class="tab super-admin-only" onclick="showTab('managerPermissionsPanel')" id="managerPermissionsPanelTab">👔 Manager Permissions</button>
-                <button class="tab super-admin-only" onclick="showTab('pdfHandoutsAdmin')" id="pdfHandoutsAdminTab">📄 PDF Handouts</button>
-                <button class="tab super-admin-only" onclick="showTab('paymentApprovalAdmin');paLoadPending()" id="paymentApprovalAdminTab">💳 Payment Approval</button>
-                <button class="tab super-admin-only" onclick="showTab('eventScheduleAdmin');esLoadEvents()" id="eventScheduleAdminTab">📅 Event Schedule</button>
+                <button class="tab" onclick="showTab('pdfHandoutsAdmin')" id="pdfHandoutsAdminTab" style="display:none">📄 PDF Handouts</button>
+                <button class="tab" onclick="showTab('paymentApprovalAdmin');paLoadPending()" id="paymentApprovalAdminTab" style="display:none">💳 Payment Approval</button>
+                <button class="tab" onclick="showTab('eventScheduleAdmin');esLoadEvents()" id="eventScheduleAdminTab" style="display:none">📅 Event Schedule</button>
             </div><!-- end .tabs -->
 
             <div class="content" id="adminContentBox">
@@ -2896,30 +2896,30 @@
             <!-- ================================================ -->
             <div id="paymentApprovalAdmin" class="form-section super-admin-only" style="margin-top:20px">
                 <h2 style="color:#c44569;margin-bottom:6px">💳 Payment Approval — Admin Panel</h2>
-                <p style="color:#888;margin-bottom:14px;font-size:.9em">Students register online and their entry appears here as <strong>Pending</strong>. Coordinators verify cash payment in person, then click <strong>Approve</strong>.</p>
+                <p style="color:#888;margin-bottom:14px;font-size:.9em">Each <strong>class</strong> registers as a group and pays ₹1,500. Coordinators verify the payment in person, then approve the entire class here.</p>
 
                 <!-- How it works -->
                 <div style="background:#e8f5e9;border:2px solid #4caf50;border-radius:12px;padding:18px;margin-bottom:20px;">
-                    <p style="margin:0 0 10px;font-weight:700;color:#1b5e20;font-size:.95em">✅ How Payment Approval Works</p>
-                    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;">
+                    <p style="margin:0 0 10px;font-weight:700;color:#1b5e20;font-size:.95em">✅ How Payment Approval Works (Per Class)</p>
+                    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px;">
                         <div style="background:white;border-radius:8px;padding:12px;border-left:4px solid #ffa000;">
                             <div style="font-size:1.3em;margin-bottom:4px">1️⃣</div>
-                            <p style="margin:0;font-size:.85em;color:#333"><strong>Student registers</strong> online — their name appears here as <span style="background:#fff8e1;color:#f57f17;padding:1px 8px;border-radius:8px;font-size:.85em">⏳ Pending</span></p>
+                            <p style="margin:0;font-size:.85em;color:#333"><strong>All students of a class register</strong> — their class appears here as <span style="background:#fff8e1;color:#f57f17;padding:1px 8px;border-radius:8px;font-size:.85em">⏳ Pending</span></p>
                         </div>
                         <div style="background:white;border-radius:8px;padding:12px;border-left:4px solid #2196f3;">
                             <div style="font-size:1.3em;margin-bottom:4px">2️⃣</div>
-                            <p style="margin:0;font-size:.85em;color:#333"><strong>Student pays ₹1,500 cash</strong> in person to <strong>Lalitha S K</strong> or <strong>Priyanka V</strong></p>
+                            <p style="margin:0;font-size:.85em;color:#333"><strong>Class representative pays ₹1,500 cash</strong> to <strong>Lalitha S K</strong> or <strong>Priyanka V</strong> on behalf of the class</p>
                         </div>
                         <div style="background:white;border-radius:8px;padding:12px;border-left:4px solid #4caf50;">
                             <div style="font-size:1.3em;margin-bottom:4px">3️⃣</div>
-                            <p style="margin:0;font-size:.85em;color:#333"><strong>Coordinator opens this panel</strong>, finds the student's name, clicks <span style="background:#e8f5e9;color:#1b5e20;padding:1px 8px;border-radius:8px;font-size:.85em;font-weight:700">✅ Approve</span></p>
+                            <p style="margin:0;font-size:.85em;color:#333"><strong>Coordinator (Lalitha S K / Priyanka V) opens this website</strong> → selects <strong>Manager</strong> login → enters manager password → goes to <strong>"💳 Payment Approval"</strong> tab → finds the class → clicks <span style="background:#e8f5e9;color:#1b5e20;padding:1px 8px;border-radius:8px;font-size:.85em;font-weight:700">✅ Approve</span></p>
                         </div>
                         <div style="background:white;border-radius:8px;padding:12px;border-left:4px solid #9c27b0;">
                             <div style="font-size:1.3em;margin-bottom:4px">4️⃣</div>
-                            <p style="margin:0;font-size:.85em;color:#333"><strong>Student's status</strong> updates to <span style="background:#e8f5e9;color:#1b5e20;padding:1px 8px;border-radius:8px;font-size:.85em;font-weight:700">✅ Approved</span> — they can now participate</p>
+                            <p style="margin:0;font-size:.85em;color:#333"><strong>Entire class status</strong> updates to <span style="background:#e8f5e9;color:#1b5e20;padding:1px 8px;border-radius:8px;font-size:.85em;font-weight:700">✅ Approved</span> — all students in that class can participate</p>
                         </div>
                     </div>
-                    <p style="margin:10px 0 0;font-size:.82em;color:#388e3c">💡 <strong>Tip:</strong> Use the search box below to quickly find a student by name. Use <strong>"❌ Reject"</strong> if payment was not received or is invalid.</p>
+                    <p style="margin:10px 0 0;font-size:.82em;color:#388e3c">💡 <strong>Tip:</strong> Use the search box to quickly find a class name. Use <strong>"❌ Reject"</strong> if payment was not received.</p>
                 </div>
                 <!-- Stats bar -->
                 <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px;">
@@ -2954,22 +2954,24 @@
                     <p style="color:#aaa;text-align:center;padding:24px">Loading registrations…</p>
                 </div>
 
-                <!-- Manual Registration Entry form (admin adds on behalf of student) -->
+                <!-- Manual Class Entry form -->
                 <div style="background:#e8f5e9;border-radius:12px;padding:20px;border:2px solid #4caf50;margin-top:24px">
-                    <h3 style="color:#1b5e20;margin-bottom:12px;font-size:1em">➕ Manually Add Registration (Admin Entry)</h3>
-                    <p style="font-size:.83em;color:#388e3c;margin-bottom:12px">Use this if a student paid in person and you want to add &amp; approve them directly.</p>
+                    <h3 style="color:#1b5e20;margin-bottom:12px;font-size:1em">➕ Manually Add Class Registration (Admin Entry)</h3>
+                    <p style="font-size:.83em;color:#388e3c;margin-bottom:12px">Use this if a class paid in person and you want to record &amp; approve them directly.</p>
                     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px;flex-wrap:wrap">
-                        <input type="text" id="paManualName" placeholder="Student Full Name *" style="padding:9px 12px;border-radius:8px;border:2px solid #a5d6a7">
-                        <input type="text" id="paManualPhone" placeholder="Phone Number *" style="padding:9px 12px;border-radius:8px;border:2px solid #a5d6a7">
-                        <input type="text" id="paManualClass" placeholder="Class (e.g. II BCA 'B') *" style="padding:9px 12px;border-radius:8px;border:2px solid #a5d6a7">
+                        <select id="paManualName" style="padding:9px 12px;border-radius:8px;border:2px solid #a5d6a7">
+                            <option value="">Select Class *</option>
+                        </select>
+                        <input type="text" id="paManualPhone" placeholder="Captain / Rep Phone *" style="padding:9px 12px;border-radius:8px;border:2px solid #a5d6a7">
+                        <input type="text" id="paManualClass" placeholder="No. of students in class *" style="padding:9px 12px;border-radius:8px;border:2px solid #a5d6a7">
                     </div>
                     <div style="display:flex;gap:10px;flex-wrap:wrap">
                         <select id="paManualStatus" style="padding:9px 12px;border-radius:8px;border:2px solid #a5d6a7">
-                            <option value="approved">✅ Approved (paid)</option>
+                            <option value="approved">✅ Approved (₹1,500 received)</option>
                             <option value="pending">⏳ Pending (not yet paid)</option>
                         </select>
                         <input type="text" id="paManualNote" placeholder="Note (optional)" style="padding:9px 12px;border-radius:8px;border:2px solid #a5d6a7;flex:1">
-                        <button class="btn btn-success" onclick="paManualAdd()">➕ Add</button>
+                        <button class="btn btn-success" onclick="paManualAdd()">➕ Add Class</button>
                     </div>
                 </div>
             </div>
@@ -2991,7 +2993,9 @@
                     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
                         <div>
                             <label style="font-size:.85em;font-weight:600;color:#0d47a1;display:block;margin-bottom:4px">Event Name *</label>
-                            <input type="text" id="esName" placeholder="e.g. Mime (On stage)" style="width:100%;padding:9px 12px;border-radius:8px;border:2px solid #90caf9">
+                            <select id="esName" style="width:100%;padding:9px 12px;border-radius:8px;border:2px solid #90caf9">
+                                <option value="">-- Select Event --</option>
+                            </select>
                         </div>
                         <div>
                             <label style="font-size:.85em;font-weight:600;color:#0d47a1;display:block;margin-bottom:4px">On Stage / Off Stage *</label>
@@ -3037,7 +3041,7 @@
                     <h3 style="color:#0d47a1;font-size:1em;margin:0">📋 Current Event Schedule</h3>
                     <div style="display:flex;gap:8px;flex-wrap:wrap">
                         <button class="btn btn-small" onclick="esLoadEvents()">🔄 Refresh</button>
-                        <button class="btn btn-small btn-success" onclick="esSeedDefaults()" title="Load the 15 default events from the timetable image">🌱 Load Default 15 Events</button>
+                        <button class="btn btn-small btn-success" onclick="esSeedDefaults()" title="Clears all events and reloads the 15 default events">🌱 Reset to Default 15 Events</button>
                     </div>
                 </div>
                 <div style="overflow-x:auto;border-radius:10px;box-shadow:0 2px 10px rgba(0,0,0,.08)">
@@ -4564,15 +4568,13 @@
         };
 
         function populateClassSelects() {
-            const selects = ['studentClass','crClass','filterClass'];
+            const selects = ['studentClass','crClass','filterClass','paManualName'];
             selects.forEach(id => {
                 const sel = document.getElementById(id);
                 if (sel) {
-                    // For student and CR dropdowns, exclude Faculty and Others
                     const classesToShow = (id === 'studentClass' || id === 'crClass') 
                         ? classes.filter(c => c !== 'Faculty/Principal/Vice-Principal/Staff' && c !== 'Others')
-                        : classes;
-                    
+                        : classes.filter(c => c !== 'Faculty/Principal/Vice-Principal/Staff' && c !== 'Others');
                     classesToShow.forEach(c => {
                         const opt = document.createElement('option');
                         opt.value = c;
@@ -4584,7 +4586,7 @@
         }
 
         function populateEventSelects() {
-            const selects = ['filterEvent','crFilterEvent','setupEventSelect','resultsEventSelect','juryEvent','liveMonitorEvent'];
+            const selects = ['filterEvent','crFilterEvent','setupEventSelect','resultsEventSelect','juryEvent','liveMonitorEvent','esName'];
             selects.forEach(id => {
                 const sel = document.getElementById(id);
                 if (sel) {
@@ -4955,6 +4957,13 @@
             
             // Show all tabs including super admin tabs
             document.querySelectorAll('.super-admin-only:not(.form-section)').forEach(el => el.style.display = 'block');
+            // Remove inline display:none from super-admin-only PANELS so showTab() can activate them
+            document.querySelectorAll('.super-admin-only.form-section').forEach(el => el.style.removeProperty('display'));
+            // Show the 3 new tab buttons (not super-admin-only, hidden by default via inline style)
+            ['pdfHandoutsAdminTab','paymentApprovalAdminTab','eventScheduleAdminTab'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.style.display = 'inline-block';
+            });
             
             // Show HWP edit controls for Super Admin
             if (typeof hwpShowAdminControls === 'function') hwpShowAdminControls();
@@ -5031,6 +5040,12 @@
         function applyManagerPermissions() {
             if (!isManager) return;
 
+            // Remove inline display style from ALL super-admin-only panels
+            // so the CSS class controls visibility and showTab() can activate them cleanly
+            document.querySelectorAll('.super-admin-only.form-section').forEach(el => {
+                el.style.removeProperty('display');
+            });
+
             const qmTab  = document.getElementById('quizManagementTab');
             if (qmTab)  qmTab.style.display  = managerPermissions.quizManagement  ? 'inline-block' : 'none';
 
@@ -5044,21 +5059,15 @@
                 el.style.display = managerPermissions.whatsappMessages ? 'inline-block' : 'none';
             });
 
-            // ── ADD NEW PERMISSION CHECKS BELOW THIS LINE ─────────────────────────
+            // Show/hide the 3 new tab BUTTONS based on permissions
             const pdfTab = document.getElementById('pdfHandoutsAdminTab');
             if (pdfTab) pdfTab.style.display = managerPermissions.pdfHandouts ? 'inline-block' : 'none';
-            const pdfPanel = document.getElementById('pdfHandoutsAdmin');
-            if (pdfPanel && managerPermissions.pdfHandouts) pdfPanel.style.display = 'block';
 
             const paTab = document.getElementById('paymentApprovalAdminTab');
             if (paTab) paTab.style.display = managerPermissions.paymentApproval ? 'inline-block' : 'none';
-            const paPanel = document.getElementById('paymentApprovalAdmin');
-            if (paPanel && managerPermissions.paymentApproval) paPanel.style.display = 'block';
 
             const esTab = document.getElementById('eventScheduleAdminTab');
             if (esTab) esTab.style.display = managerPermissions.eventSchedule ? 'inline-block' : 'none';
-            const esPanel = document.getElementById('eventScheduleAdmin');
-            if (esPanel && managerPermissions.eventSchedule) esPanel.style.display = 'block';
         }
 
         // ─────────────────────────────────────────────────────────────────────────
@@ -6211,6 +6220,11 @@
             document.querySelectorAll('#adminSection > div.tabs > .tab').forEach(t => t.classList.remove('active'));
             // Clear only direct-child form-sections of adminContentBox (NOT scavenger inner panels)
             document.querySelectorAll('#adminContentBox > .form-section').forEach(s => s.classList.remove('active'));
+            // Also hide the 3 extra panels that live outside adminContentBox
+            ['pdfHandoutsAdmin','paymentApprovalAdmin','eventScheduleAdmin'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.classList.remove('active');
+            });
             event.target.classList.add('active');
             document.getElementById(tab).classList.add('active');
 
@@ -19132,9 +19146,9 @@ Proceed?`)) return;
                 <table style="width:100%;border-collapse:collapse;font-size:.88em">
                     <thead>
                         <tr style="background:linear-gradient(135deg,#c44569,#6a1b9a);color:white">
-                            <th style="padding:10px 12px;text-align:left">Name</th>
-                            <th style="padding:10px 12px;text-align:left">Phone</th>
-                            <th style="padding:10px 12px;text-align:left">Class</th>
+                            <th style="padding:10px 12px;text-align:left">Class Name</th>
+                            <th style="padding:10px 12px;text-align:left">Captain Phone</th>
+                            <th style="padding:10px 12px;text-align:left">Students</th>
                             <th style="padding:10px 12px;text-align:left">Registered</th>
                             <th style="padding:10px 12px;text-align:center">Status</th>
                             <th style="padding:10px 12px;text-align:left">Note</th>
@@ -19144,9 +19158,9 @@ Proceed?`)) return;
                     <tbody>
                         ${filtered.map((it,i) => `
                         <tr style="background:${i%2===0?'#fafafa':'white'};border-bottom:1px solid #eee" id="pa-row-${it.id}">
-                            <td style="padding:9px 12px;font-weight:600">${it.name||'—'}</td>
+                            <td style="padding:9px 12px;font-weight:600">🏫 ${it.name||it.classYear||'—'}</td>
                             <td style="padding:9px 12px">${it.phone||'—'}</td>
-                            <td style="padding:9px 12px">${it.classYear||it.class||'—'}</td>
+                            <td style="padding:9px 12px;text-align:center">${it.studentCount||'—'}</td>
                             <td style="padding:9px 12px;font-size:.8em;color:#777">${it.registeredAt ? new Date(it.registeredAt).toLocaleString('en-IN') : '—'}</td>
                             <td style="padding:9px 12px;text-align:center" id="pa-status-${it.id}">${statusBadge(it.status)}</td>
                             <td style="padding:9px 12px;font-size:.82em;color:#555">${it.note||''}</td>
@@ -19182,17 +19196,18 @@ Proceed?`)) return;
     }
 
     async function paManualAdd() {
-        const name   = (document.getElementById('paManualName')?.value || '').trim();
-        const phone  = (document.getElementById('paManualPhone')?.value || '').trim();
-        const cls    = (document.getElementById('paManualClass')?.value || '').trim();
-        const status = document.getElementById('paManualStatus')?.value || 'pending';
-        const note   = (document.getElementById('paManualNote')?.value || '').trim();
+        const className = (document.getElementById('paManualName')?.value || '').trim();
+        const phone     = (document.getElementById('paManualPhone')?.value || '').trim();
+        const students  = (document.getElementById('paManualClass')?.value || '').trim();
+        const status    = document.getElementById('paManualStatus')?.value || 'pending';
+        const note      = (document.getElementById('paManualNote')?.value || '').trim();
 
-        if (!name || !phone || !cls) { alert('Please fill in Name, Phone and Class.'); return; }
+        if (!className || !phone) { alert('Please fill in Class Name and Captain Phone.'); return; }
 
         try {
             await getDb().ref(PA_FB_PATH).push({
-                name, phone, classYear: cls, status, note,
+                name: className, phone, classYear: className,
+                studentCount: students, status, note,
                 registeredAt: new Date().toISOString(),
                 addedBy: currentUser || 'Admin',
             });
@@ -19245,12 +19260,15 @@ Proceed?`)) return;
     ];
 
     async function esSeedDefaults() {
-        if (!confirm('This will ADD the 15 default events to Firebase (existing events are kept). Continue?')) return;
+        if (!confirm('⚠️ This will DELETE all existing events and reload the 15 default events fresh. Continue?')) return;
         try {
+            // First delete all existing events to prevent duplicates
+            await getDb().ref(ES_FB_PATH).remove();
+            // Then add the 15 defaults
             for (const ev of ES_DEFAULT_EVENTS) {
                 await getDb().ref(ES_FB_PATH).push({...ev, createdAt: new Date().toISOString()});
             }
-            alert('✅ 15 default events added!');
+            alert('✅ 15 default events loaded! All previous events were replaced.');
             esLoadEvents();
             esRenderPublicTable();
         } catch(e) { alert('Error: ' + e.message); }
@@ -19394,7 +19412,6 @@ Proceed?`)) return;
         const title = document.getElementById('esFormTitle');
         if (title) title.textContent = '➕ Add New Event';
     }
-
     // Render the public-facing event schedule table
     async function esRenderPublicTable() {
         const tbody = document.getElementById('eventScheduleBody');
@@ -19747,7 +19764,7 @@ Proceed?`)) return;
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;">
-                <strong>Version:</strong> 3.11 Tab layout fix + Payment Approval workflow + Firebase warnings removed   | <strong>Last Updated:</strong> February 21, 2026 .3.30pm
+                <strong>Version:</strong> 3.17 Class + Event dropdowns added   | <strong>Last Updated:</strong> February 21, 2026 08.00PM
             </p>
             <!-- ============================================ -->
             
