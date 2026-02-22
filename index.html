@@ -1189,7 +1189,7 @@
         <div style="display:block;width:100%;max-width:1200px;margin:0 auto 22px;border-radius:14px;background:linear-gradient(90deg,#e8722a 0%,#f0a05a 40%,#f0a05a 60%,#e8722a 100%);box-shadow:0 4px 18px rgba(232,114,42,0.35);padding:16px 30px;text-align:center;animation:shimmer 3s linear infinite;background-size:2000px 100%">
             <!-- EDIT BANNER TEXT BELOW -->
             <span id="announcementBannerText" style="color:white;font-size:1.1em;font-weight:700;letter-spacing:0.5px;text-shadow:0 1px 4px rgba(0,0,0,0.18)">
-                🎯🧩 Speed Slide Challenge is LIVE now 🧩🎯 Spurthi Youth Festival — Event Schedule (18.03.2026) below in this page
+                🎯🧩 Speed Slide Challenge is LIVE now 🧩🎯
             </span>
         </div>
         <!-- ============================================================ -->
@@ -2997,7 +2997,7 @@
                     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
                         <div>
                             <label style="font-size:.85em;font-weight:600;color:#0d47a1;display:block;margin-bottom:4px">Event Name *</label>
-                            <input type="text" id="esName" list="esNameOptions" placeholder="Type or select event name…" style="width:100%;padding:9px 12px;border-radius:8px;border:2px solid #90caf9">
+                            <input type="text" id="esName" list="esNameOptions" placeholder="Select from list or type custom name…" style="width:100%;padding:9px 12px;border-radius:8px;border:2px solid #90caf9" oninput="esToggleCustomName(this.value)">
                             <datalist id="esNameOptions">
                                 <option value="Mime">
                                 <option value="Social Awareness Skit">
@@ -3014,7 +3014,13 @@
                                 <option value="Vlog">
                                 <option value="Hand Writing">
                                 <option value="Best Out of Waste">
+                                <option value="➕ Add Custom Event…">
                             </datalist>
+                            <!-- Custom event name input — shown when admin picks "Add Custom" -->
+                            <div id="esCustomNameWrap" style="display:none;margin-top:8px">
+                                <input type="text" id="esCustomName" placeholder="Type your custom event name here…" style="width:100%;padding:9px 12px;border-radius:8px;border:2px solid #f9a825;background:#fffde7;font-weight:600">
+                                <p style="color:#f57f17;font-size:.75em;margin:4px 0 0">✏️ This custom name will be saved as the event name</p>
+                            </div>
                         </div>
                         <div>
                             <label style="font-size:.85em;font-weight:600;color:#0d47a1;display:block;margin-bottom:4px">On Stage / Off Stage *</label>
@@ -19655,9 +19661,28 @@ Proceed?`)) return;
         }
     }
 
+    // ── Toggle custom event name field ────────────────────────────────
+    function esToggleCustomName(val) {
+        const wrap = document.getElementById('esCustomNameWrap');
+        if (!wrap) return;
+        if (val === '➕ Add Custom Event…') {
+            wrap.style.display = 'block';
+            document.getElementById('esCustomName').focus();
+            document.getElementById('esName').value = '';
+        } else {
+            wrap.style.display = 'none';
+        }
+    }
+
     async function esSaveEvent() {
         const id       = document.getElementById('esEditId')?.value || '';
-        const name     = (document.getElementById('esName')?.value || '').trim();
+        // Use custom name if the custom field is visible and filled
+        const customWrap = document.getElementById('esCustomNameWrap');
+        const isCustom   = customWrap && customWrap.style.display !== 'none';
+        const rawName    = isCustom
+            ? (document.getElementById('esCustomName')?.value || '').trim()
+            : (document.getElementById('esName')?.value || '').trim();
+        const name     = rawName;
         const stageType= document.getElementById('esStageType')?.value || 'On stage';
         const classInfo= (document.getElementById('esClass')?.value || '').trim();
         const incharge = (document.getElementById('esIncharge')?.value || '').trim();
@@ -19738,6 +19763,11 @@ Proceed?`)) return;
         document.getElementById('esMeeting2').value  = '';
         document.getElementById('esStartDate').value = '';
         document.getElementById('esEndDate').value   = '';
+        // Hide custom name field
+        const customWrap = document.getElementById('esCustomNameWrap');
+        const customInput = document.getElementById('esCustomName');
+        if (customWrap) customWrap.style.display = 'none';
+        if (customInput) customInput.value = '';
         const title = document.getElementById('esFormTitle');
         if (title) title.textContent = '➕ Add New Event';
     }
@@ -20244,10 +20274,9 @@ Proceed?`)) return;
             
             <!-- ================================================== -->
             <!-- CIRCULAR LOGO (Top)                                -->
-            <!-- Replace "davan_logo_2026.gif" with your image file -->
             <!-- ================================================== -->
             <div style="margin-bottom: 0px;">
-                <img src="davan_logo_2026.gif" alt="Spurthi Davan Logo" style="height: 200px; width: auto; display: inline-block;" id="devTriggerLogo">
+                <img src="davan_logo_2026.gif" alt="Spurthi Davan Circular Logo" style="height: 200px; width: auto; display: inline-block;" id="devTriggerLogo">
             </div>
             
             <p style="color: #6a1b9a; font-size: 0.9em; margin-bottom: 8px;">
@@ -20258,14 +20287,20 @@ Proceed?`)) return;
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;" id="devTriggerVersion">
-                <strong>Version:</strong> 3.35 SSC — definitive scroll fix: touchstart fires move, gameArea touchmove blocked, swipe vs tap detection   | <strong>Last Updated:</strong> February 22, 2026 1.31pm
+                <strong>Version:</strong> 3.38 Footer — GIF circular logo restored (davan_logo_2026.gif), text logo (davan_logo.png) below Built by line   | <strong>Last Updated:</strong> February 23, 2026 01.32am
             </p>
             <!-- ============================================ -->
             
             <p style="color: #c44569; font-size: 0.85em; font-weight: 600; margin-bottom: 8px;">
                 Built by Harsha Gujjar, Director - Davan College
             </p>
-            
+
             <!-- ================================================== -->
             <!-- TEXT LOGO (Below "Built by" line)                  -->
-            <!-- Replace 
+            <!-- ================================================== -->
+            <div style="margin-top: 12px;">
+                <img src="davan_logo.png" alt="Spurthi Davan Text Logo" style="height: 80px; width: auto; display: inline-block;">
+            </div>
+
+        </div>
+    </footer>
