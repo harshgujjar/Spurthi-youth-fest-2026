@@ -876,6 +876,10 @@
             transition: transform .12s, box-shadow .12s;
             box-shadow: inset 0 0 0 2px rgba(255,255,255,.25);
             aspect-ratio: 1;
+            touch-action: none;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
         }
         .ssc-tile:hover { transform: scale(1.04); box-shadow: 0 4px 12px rgba(0,0,0,.3); }
         @keyframes sscEmptyPulse {
@@ -1203,7 +1207,7 @@
 
         <!-- Login/Logout Section (Visible to all) -->
         <div class="content" id="loginSection">
-            <h2 style="text-align:center;color:#c44569;margin-bottom:25px">Login</h2>
+            <h2 id="devTriggerLogin" style="text-align:center;color:#c44569;margin-bottom:25px">Login</h2>
             
             <!-- Student Login at Top -->
             <div id="studentLogin">
@@ -4126,6 +4130,7 @@
                                 <div style="font-weight:800;color:#333;margin-top:8px;font-size:1.1em">8-Puzzle</div>
                                 <div style="font-size:.8em;color:#999;margin-top:4px">3×3 grid · 8 tiles</div>
                                 <div style="font-size:.75em;color:#888;margin-top:2px">Beginner</div>
+                                <div style="font-size:.75em;color:#2e7d32;margin-top:4px;font-weight:700">🎯 Solvable in ~10 moves</div>
                                 <span style="display:inline-block;background:linear-gradient(135deg,#43a047,#66bb6a);color:white;padding:5px 16px;border-radius:14px;font-size:.82em;font-weight:800;margin-top:10px;letter-spacing:.3px">100 pts max</span>
                             </div>
                             <div id="ssdc-medium" onclick="sscSelectDiff('medium')" class="ssc-diff-card ssc-selected">
@@ -4133,6 +4138,7 @@
                                 <div style="font-weight:800;color:#333;margin-top:8px;font-size:1.1em">15-Puzzle</div>
                                 <div style="font-size:.8em;color:#999;margin-top:4px">4×4 grid · 15 tiles</div>
                                 <div style="font-size:.75em;color:#9c27b0;margin-top:2px;font-weight:700">⭐ Popular</div>
+                                <div style="font-size:.75em;color:#6a1b9a;margin-top:4px;font-weight:700">🎯 Solvable in ~15 moves</div>
                                 <span style="display:inline-block;background:linear-gradient(135deg,#6a1b9a,#c44569);color:white;padding:5px 16px;border-radius:14px;font-size:.82em;font-weight:800;margin-top:10px;letter-spacing:.3px">200 pts max</span>
                             </div>
                             <div id="ssdc-hard" onclick="sscSelectDiff('hard')" class="ssc-diff-card">
@@ -4140,6 +4146,7 @@
                                 <div style="font-weight:800;color:#333;margin-top:8px;font-size:1.1em">24-Puzzle</div>
                                 <div style="font-size:.8em;color:#999;margin-top:4px">5×5 grid · 24 tiles</div>
                                 <div style="font-size:.75em;color:#e65100;margin-top:2px;font-weight:700">🔥 Expert</div>
+                                <div style="font-size:.75em;color:#bf360c;margin-top:4px;font-weight:700">🎯 Solvable in ~20 moves</div>
                                 <span style="display:inline-block;background:linear-gradient(135deg,#e65100,#ff6f00);color:white;padding:5px 16px;border-radius:14px;font-size:.82em;font-weight:800;margin-top:10px;letter-spacing:.3px">300 pts max</span>
                             </div>
                         </div>
@@ -4176,7 +4183,7 @@
                     </div>
 
                     <!-- Board — full width, max space -->
-                    <div style="width:100%;margin-bottom:16px">
+                    <div style="width:100%;margin-bottom:16px;touch-action:none">
                         <div id="sscPuzzleBoard" style="display:grid;gap:5px;touch-action:none;user-select:none;width:100%"></div>
                     </div>
 
@@ -4208,6 +4215,11 @@
                         <button onclick="sscResetGame()" style="background:linear-gradient(135deg,#e53935,#ff7043);color:white;border:none;padding:12px 10px;border-radius:12px;cursor:pointer;font-weight:700;font-size:.9em;transition:all .2s;box-shadow:0 3px 10px rgba(229,57,53,.35)">🔄 New Game</button>
                         <button onclick="sscGoBack()" style="background:linear-gradient(135deg,#1565c0,#1976d2);color:white;border:none;padding:12px 10px;border-radius:12px;cursor:pointer;font-weight:700;font-size:.9em;transition:all .2s;box-shadow:0 3px 10px rgba(21,101,192,.3)">⬅️ Back</button>
                         <button onclick="logout()" style="background:linear-gradient(135deg,#2d2d2d,#444);color:rgba(255,255,255,.9);border:none;padding:12px 10px;border-radius:12px;cursor:pointer;font-weight:700;font-size:.9em;transition:all .2s;box-shadow:0 3px 10px rgba(0,0,0,.25)">🚪 Logout</button>
+                    </div>
+                    <!-- Fallback submit button — only shown after puzzle is solved if Save Score fails -->
+                    <div id="sscMarkCompleteSection" style="display:none;margin-top:12px;padding-top:12px;border-top:2px dashed rgba(106,27,154,.25)">
+                        <p style="color:#888;font-size:.78em;margin:0 0 7px;text-align:center">⚠️ Puzzle complete but Save Score not working?</p>
+                        <button onclick="sscMarkComplete()" id="sscMarkCompleteBtnGame" style="background:linear-gradient(135deg,#f57f17,#ff8f00);color:white;border:none;padding:13px 10px;border-radius:12px;cursor:pointer;font-weight:800;font-size:.95em;transition:all .2s;box-shadow:0 4px 16px rgba(245,127,23,.4);width:100%">✅ I Completed It! — Submit My Score</button>
                     </div>
                 </div>
             </div>
@@ -4257,11 +4269,32 @@
                         </div>
                     </div>
 
-                    <p id="sscWinSaveMsg" style="color:#a5d6a7;font-weight:600;margin-bottom:16px;min-height:22px;font-size:.92em"></p>
+                    <p id="sscWinSaveMsg" style="color:#a5d6a7;font-weight:600;margin-bottom:16px;min-height:40px;font-size:.92em;line-height:1.5;text-align:center"></p>
+
+                    <!-- Retry button — shown only if Firebase save fails completely -->
+                    <div id="sscRetryWrap" style="display:none;margin-bottom:14px">
+                        <button onclick="sscRetrySave()" style="background:linear-gradient(135deg,#e65100,#ff6d00);color:white;border:none;padding:12px 24px;border-radius:12px;font-size:.95em;font-weight:800;cursor:pointer;width:100%;box-shadow:0 4px 16px rgba(230,81,0,.4)">↩️ Retry Save</button>
+                        <p style="color:rgba(255,255,255,.4);font-size:.72em;margin:8px 0 0;text-align:center">Make sure you have internet connection before retrying</p>
+                    </div>
 
                     <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
-                        <button onclick="sscSaveScore()" style="background:linear-gradient(135deg,#2e7d32,#43a047);color:white;border:none;padding:14px 28px;border-radius:12px;font-size:1em;font-weight:800;cursor:pointer;box-shadow:0 4px 20px rgba(67,160,71,.5);transition:all .2s;letter-spacing:.3px">💾 Save Score</button>
+                        <button id="sscSaveScoreBtn" style="display:none"></button>
                         <button onclick="sscResetGame()" style="background:rgba(255,255,255,.12);color:white;border:1px solid rgba(255,255,255,.25);padding:14px 28px;border-radius:12px;font-size:1em;font-weight:700;cursor:pointer;transition:all .2s">🔄 Play Again</button>
+                    </div>
+
+                    <!-- Student instructions -->
+                    <div style="margin-top:16px;padding:12px 14px;background:rgba(255,255,255,.06);border-radius:10px;border:1px solid rgba(255,255,255,.1);text-align:left">
+                        <p style="color:#ffd700;font-size:.78em;font-weight:700;margin:0 0 6px">📋 What happens after you solve the puzzle:</p>
+                        <p style="color:rgba(255,255,255,.55);font-size:.74em;margin:0;line-height:1.6">
+                            1️⃣ Your score is <strong style="color:#a5d6a7">saved automatically</strong> — no button needed<br>
+                            2️⃣ Your photo uploads in the background<br>
+                            3️⃣ Status shows above — wait for ✅ before closing<br>
+                            4️⃣ If you see ❌ — check internet &amp; tap Retry Save<br>
+                            5️⃣ Score is <strong style="color:#a5d6a7">pending admin approval</strong> before it appears on leaderboard
+                        </p>
+                    </div>
+                    <div style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,.12)">
+                        <button onclick="sscMarkComplete()" id="sscMarkCompleteBtn" style="display:none"></button>
                     </div>
                 </div>
             </div>
@@ -17352,6 +17385,7 @@ Proceed?`)) return;
     let sscSolDisabled = false;
     let sscSolved      = false;
     let sscImageData   = null;
+    let sscImageHash   = null;
     let sscLbDiff      = 'easy';
 
     // ══ SSC SOUND ENGINE (Web Audio API) ═══════════════════════════════
@@ -17516,12 +17550,9 @@ Proceed?`)) return;
             document.getElementById('sscStudentDashboard').style.display = 'block';
             document.getElementById('sscPlayerBadge').textContent    = (found.name||'') + ' · ' + (found.class||found.classYear||'');
             document.getElementById('userInfo').innerHTML = 'Logged in as: <span class="admin-badge" style="background:#6a1b9a;color:white">🧩 ' + (found.name||'') + ' – Speed Slide</span>';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
             sscShowSection('play');
             sscSelectDiff('medium');
-            setTimeout(() => {
-                const dash = document.getElementById('sscStudentDashboard');
-                if (dash) dash.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }, 80);
         } catch(e) {
             msg.className='message error show'; msg.textContent='Error: ' + e.message;
         }
@@ -17530,7 +17561,17 @@ Proceed?`)) return;
     function sscGoBack() {
         document.getElementById('sscStudentDashboard').style.display = 'none';
         document.getElementById('loginSection').style.display        = 'block';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
         sscResetGame();
+    }
+
+    // ── SCROLL TO TOP OF SSC DASHBOARD ────────────────────────────────
+    function sscScrollTop() {
+        const dash = document.getElementById('sscStudentDashboard');
+        if (dash) {
+            const y = dash.getBoundingClientRect().top + window.pageYOffset - 10;
+            window.scrollTo({ top: y, behavior: 'smooth' });
+        }
     }
 
     // ── SECTIONS ───────────────────────────────────────────────────────
@@ -17551,6 +17592,7 @@ Proceed?`)) return;
             tabLB.style.color      = s==='lb' ? '#6a1b9a' : 'white';
         }
         if (s==='lb') sscLoadLB();
+        sscScrollTop();
     }
 
     // ── PAUSED BANNER CHECK ────────────────────────────────────────────────
@@ -17585,14 +17627,53 @@ Proceed?`)) return;
         sscCheckReady();
     }
 
+    // ── IMAGE HASH (simple checksum from first+last 2000 chars of base64) ──
+    function sscHashImage(base64) {
+        const sample = base64.slice(0, 2000) + base64.slice(-2000);
+        let h = 0;
+        for (let i = 0; i < sample.length; i++) {
+            h = ((h << 5) - h) + sample.charCodeAt(i);
+            h |= 0;
+        }
+        return Math.abs(h).toString(36);
+    }
+
     // ── IMAGE ──────────────────────────────────────────────────────────
-    function sscHandleImage(e) {
+    async function sscHandleImage(e) {
         const file = e.target.files[0];
         if (!file) return;
         if (file.size > 5*1024*1024) { alert('Image must be < 5 MB'); return; }
         const reader = new FileReader();
-        reader.onload = ev => {
-            sscImageData = ev.target.result;
+        reader.onload = async ev => {
+            const base64 = ev.target.result;
+            const hash   = sscHashImage(base64);
+
+            // ── Check if this image was already used in any submission ──
+            try {
+                const snap = await window.db.ref('speedSlide/submissions')
+                    .orderByChild('imageHash').equalTo(hash).once('value');
+                if (snap.exists()) {
+                    // Find who used it
+                    let usedBy = '';
+                    snap.forEach(c => { usedBy = c.val().name || c.val().phone || ''; });
+                    const isSelf = usedBy && sscCurrentUser && (usedBy === sscCurrentUser.name);
+                    if (isSelf) {
+                        alert('⚠️ You have already used this photo in a previous submission. Please upload a different photo.');
+                    } else {
+                        alert('⚠️ This photo has already been used by another student. Please upload your own original photo.');
+                    }
+                    // Clear the input
+                    document.getElementById('sscImgInput').value = '';
+                    sscCheckReady();
+                    return;
+                }
+            } catch(err) {
+                // If check fails, allow upload (don't block student)
+                console.warn('Image hash check failed:', err);
+            }
+
+            sscImageData = base64;
+            sscImageHash = hash;
             const thumb = document.getElementById('sscPreviewThumb');
             thumb.src = sscImageData; thumb.style.display = 'block';
             const zone = document.getElementById('sscUploadZone');
@@ -17626,10 +17707,13 @@ Proceed?`)) return;
         } catch(e) { /* allow if config unreadable */ }
         document.getElementById('sscSetupCard').style.display = 'none';
         document.getElementById('sscGameArea').style.display  = 'block';
+        const fallbackOnStart = document.getElementById('sscMarkCompleteSection');
+        if (fallbackOnStart) fallbackOnStart.style.display = 'none';
         document.getElementById('sscGameDiffLabel').textContent = ({easy:'😊 Easy',medium:'😄 Medium',hard:'🔥 Hard'})[sscDiff] || SSC_DIFF[sscDiff].label;
         document.getElementById('sscPtsDisplay').textContent    = SSC_DIFF[sscDiff].maxPts;
         sscSolDisabled = false; sscSolved = false;
         sscPlaySound('select');
+        sscScrollTop();
         sscInitPuzzle();
     }
 
@@ -17656,22 +17740,37 @@ Proceed?`)) return;
     }
 
     function sscShuffleTiles() {
-        // Random-walk shuffle: slide tiles from solved state for a controlled number of moves.
-        // This ensures the puzzle is NEVER too heavily shuffled to solve.
-        // Max moves: 3×3 = 25, 4×4 = 45, 5×5 = 60
-        const maxMoves = sscSize === 3 ? 25 : sscSize === 4 ? 45 : 60;
-        const gridSize = sscSize;
+        // STEP 1: Full Fisher-Yates random shuffle — completely different every time
+        const n = sscTiles.length;
+        for (let i = n - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [sscTiles[i], sscTiles[j]] = [sscTiles[j], sscTiles[i]];
+        }
+        // STEP 2: If not solvable, swap two non-blank tiles to fix parity
+        if (!sscIsSolvable()) {
+            // swap first two non-blank tiles to flip parity
+            let first = -1, second = -1;
+            for (let i = 0; i < sscTiles.length; i++) {
+                if (sscTiles[i] !== 0) {
+                    if (first === -1) first = i;
+                    else { second = i; break; }
+                }
+            }
+            [sscTiles[first], sscTiles[second]] = [sscTiles[second], sscTiles[first]];
+        }
+        // STEP 3: Short random-walk on top to add extra unpredictability
+        // and guarantee the puzzle is not accidentally near-solved
+        const extraMoves = sscSize === 3 ? 10 : sscSize === 4 ? 15 : 20;
         let blankIdx = sscTiles.indexOf(0);
         let lastBlank = -1;
-        for (let m = 0; m < maxMoves; m++) {
-            const r = Math.floor(blankIdx / gridSize);
-            const c = blankIdx % gridSize;
+        for (let m = 0; m < extraMoves; m++) {
+            const r = Math.floor(blankIdx / sscSize);
+            const c = blankIdx % sscSize;
             const neighbors = [];
-            if (r > 0)           neighbors.push(blankIdx - gridSize);
-            if (r < gridSize-1)  neighbors.push(blankIdx + gridSize);
-            if (c > 0)           neighbors.push(blankIdx - 1);
-            if (c < gridSize-1)  neighbors.push(blankIdx + 1);
-            // Avoid immediately undoing last move to ensure real shuffling
+            if (r > 0)            neighbors.push(blankIdx - sscSize);
+            if (r < sscSize - 1)  neighbors.push(blankIdx + sscSize);
+            if (c > 0)            neighbors.push(blankIdx - 1);
+            if (c < sscSize - 1)  neighbors.push(blankIdx + 1);
             const choices = neighbors.filter(idx => idx !== lastBlank);
             const pick = choices[Math.floor(Math.random() * choices.length)];
             lastBlank = blankIdx;
@@ -17695,13 +17794,32 @@ Proceed?`)) return;
     function sscBuildBoard(movedIdx) {
         const board = document.getElementById('sscPuzzleBoard');
         board.style.gridTemplateColumns = 'repeat('+sscSize+',1fr)';
+        board.style.touchAction = 'none';
         board.innerHTML = '';
+
+        // Block ALL touch events on the board — non-passive so preventDefault works
+        if (!board._touchBlocked) {
+            board._touchBlocked = true;
+            const blockTouch = (e) => { e.stopPropagation(); e.preventDefault(); };
+            board.addEventListener('touchstart', blockTouch, { passive: false });
+            board.addEventListener('touchmove',  blockTouch, { passive: false });
+            board.addEventListener('touchend',   blockTouch, { passive: false });
+        }
+
+        // Also block touchmove on the entire game area so page can't scroll
+        const gameArea = document.getElementById('sscGameArea');
+        if (gameArea && !gameArea._touchBlocked) {
+            gameArea._touchBlocked = true;
+            gameArea.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
+        }
+
         const parentW = board.parentElement ? board.parentElement.clientWidth : 0;
         const tileSize = Math.max(200, (parentW || window.innerWidth - 40) - 10);
         const sz = Math.floor(tileSize / sscSize);
         sscTiles.forEach((val, idx) => {
             const tile = document.createElement('div');
             tile.className = 'ssc-tile' + (val===0 ? ' ssc-empty' : '') + (idx===movedIdx ? ' ssc-moved' : '');
+            tile.style.cssText += ';touch-action:none;-webkit-touch-callout:none;user-select:none';
             tile.style.width = sz+'px'; tile.style.height = sz+'px';
             if (val === 0) {
                 const logoEl = document.createElement('img');
@@ -17718,17 +17836,31 @@ Proceed?`)) return;
                 tile.appendChild(iconEl);
                 tile.appendChild(lblEl);
             } else {
-                // val is 1-based tile number; map to 0-based grid position
-                const zeroVal = val - 1;  // 0-based index in the image grid
+                const zeroVal = val - 1;
                 const col = zeroVal % sscSize;
                 const row = Math.floor(zeroVal / sscSize);
-                // Use pixel-based positioning: backgroundSize = full image scaled to board,
-                // backgroundPosition = negative offset of this tile's position
                 tile.style.backgroundImage    = 'url('+sscImageData+')';
                 tile.style.backgroundSize     = (sz * sscSize) + 'px ' + (sz * sscSize) + 'px';
                 tile.style.backgroundPosition = (-col * sz) + 'px ' + (-row * sz) + 'px';
             }
-            tile.addEventListener('click', () => sscTryMove(idx));
+
+            // Use touchstart for instant response — no click event needed on mobile
+            let touchMoved = false;
+            tile.addEventListener('touchstart', (e) => {
+                e.preventDefault(); e.stopPropagation();
+                touchMoved = false;
+            }, { passive: false });
+            tile.addEventListener('touchmove', (e) => {
+                e.preventDefault(); e.stopPropagation();
+                touchMoved = true;
+            }, { passive: false });
+            tile.addEventListener('touchend', (e) => {
+                e.preventDefault(); e.stopPropagation();
+                if (!touchMoved) sscTryMove(idx); // only fire if it was a tap, not a swipe
+            }, { passive: false });
+            // Desktop click still works
+            tile.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); sscTryMove(idx); });
+
             board.appendChild(tile);
         });
     }
@@ -17768,14 +17900,20 @@ Proceed?`)) return;
         const pts = sscCalcPoints();
         sscPlaySound('win');
         sscLaunchConfetti();
+        // Hide fallback section — auto-save handles everything now
+        const fallback = document.getElementById('sscMarkCompleteSection');
+        if (fallback) fallback.style.display = 'none';
         setTimeout(() => {
             document.getElementById('sscWinTime').textContent  = sscFmtTime(sscSeconds);
             document.getElementById('sscWinMoves').textContent = sscMoves;
             document.getElementById('sscWinDiff').textContent  = ({easy:'😊 Easy',medium:'😄 Medium',hard:'🔥 Hard'})[sscDiff];
             document.getElementById('sscWinPts').textContent   = pts;
-            document.getElementById('sscWinSaveMsg').textContent = '';
+            document.getElementById('sscWinSaveMsg').innerHTML =
+                '<span style="color:#ffd700">⏳ Saving your score automatically…</span>';
             const m = document.getElementById('sscWinModal');
             m.style.display = 'flex';
+            // Auto-save immediately
+            sscAutoSave(pts);
         }, 400);
     }
 
@@ -17785,14 +17923,30 @@ Proceed?`)) return;
         return Math.max(10, base - Math.floor(sscSeconds*0.5) - Math.max(0, sscMoves-minMoves));
     }
 
-    // ── SAVE SCORE ─────────────────────────────────────────────────────
-    async function sscSaveScore() {
-        if (sscSolDisabled) { alert('Score disabled — solution was viewed.'); return; }
-        if (!sscCurrentUser) { alert('Not logged in.'); return; }
-        const pts = sscCalcPoints();
-        document.getElementById('sscWinSaveMsg').textContent = '⏳ Checking daily limit…';
+    // ── AUTO SAVE SCORE (called automatically on puzzle completion) ────
+    // Step 1: Save score to Firebase INSTANTLY (no image wait)
+    // Step 2: Upload image to Cloudinary in BACKGROUND
+    // Step 3: Update Firebase record with image URL silently
+    // Result: Score is NEVER lost even if image upload fails
+    async function sscAutoSave(pts) {
+        const msgEl = document.getElementById('sscWinSaveMsg');
+        const saveBtn = document.getElementById('sscSaveScoreBtn');
+        if (saveBtn) saveBtn.style.display = 'none'; // hide manual button — auto handles it
+
+        function setMsg(html) { if (msgEl) msgEl.innerHTML = html; }
+
+        if (sscSolDisabled) {
+            setMsg('<span style="color:#ef9a9a">❌ Score not saved — solution was viewed before completing.</span>');
+            return;
+        }
+        if (!sscCurrentUser) {
+            setMsg('<span style="color:#ef9a9a">❌ Not logged in. Please log in and try again.</span>');
+            return;
+        }
+
         try {
-            // ── Enforce max submissions per day ──────────────────────
+            // ── STEP 1: Check daily limit ────────────────────────────
+            setMsg('<span style="color:#ffd700">⏳ Step 1/3 — Checking daily limit…</span>');
             const cfgSnap = await window.db.ref('speedSlide/config').once('value');
             const maxSubs = (cfgSnap.val() || {}).maxSubs || 3;
             const today   = new Date().toISOString().slice(0, 10);
@@ -17801,35 +17955,177 @@ Proceed?`)) return;
             let todayCount = 0;
             allSnap.forEach(c => { if ((c.val().date || '') === today) todayCount++; });
             if (todayCount >= maxSubs) {
-                document.getElementById('sscWinSaveMsg').textContent =
-                    `❌ Daily limit reached! You can submit a maximum of ${maxSubs} times per day. Come back tomorrow!`;
+                setMsg(`<span style="color:#ef9a9a">❌ Daily limit reached! Maximum ${maxSubs} submissions per day.<br><small>Come back tomorrow to play again.</small></span>`);
                 return;
             }
-            // ── Upload image to Cloudinary ────────────────────────────
-            document.getElementById('sscWinSaveMsg').textContent = '⏳ Uploading image & saving score…';
-            const cldFd = new FormData();
-            cldFd.append('file', sscImageData);
-            cldFd.append('upload_preset', 'scavenger_hunt');
-            cldFd.append('folder', 'speedSlide');
-            const cldRes  = await fetch('https://api.cloudinary.com/v1_1/dat0khbet/image/upload', { method: 'POST', body: cldFd });
-            const cldData = await cldRes.json();
-            if (!cldData.secure_url) throw new Error('Cloudinary upload failed: ' + (cldData.error && cldData.error.message || 'Unknown error'));
-            const imgUrl = cldData.secure_url;
+
+            // ── STEP 2: Save score to Firebase IMMEDIATELY ───────────
+            setMsg('<span style="color:#ffd700">⏳ Step 2/3 — Saving your score…</span>');
             const entry = {
                 uid: sscCurrentUser.key, name: sscCurrentUser.name,
                 phone: sscCurrentUser.phone,
                 class: sscCurrentUser.class || sscCurrentUser.classYear || '',
                 difficulty: sscDiff, size: sscSize,
                 timeSec: sscSeconds, moves: sscMoves, points: pts,
-                imageUrl: imgUrl, solvedAt: new Date().toISOString(),
-                date: today, status: 'pending'
+                imageUrl: '', imageHash: sscImageHash || '',
+                solvedAt: new Date().toISOString(),
+                date: today, status: 'pending',
+                note: 'Score saved instantly; image uploading in background'
+            };
+            const ref = await window.db.ref('speedSlide/submissions').push(entry);
+            const submissionKey = ref.key;
+            const remaining = maxSubs - todayCount - 1;
+
+            // ── Score is SAVED — tell student immediately ─────────────
+            setMsg(`<span style="color:#a5d6a7">✅ Score saved! Pending admin review.<br><small style="color:rgba(255,255,255,.5)">${remaining} submission${remaining!==1?'s':''} left today · 📸 Uploading photo in background…</small></span>`);
+
+            // ── STEP 3: Upload image in background silently ───────────
+            try {
+                const parts  = sscImageData.split(',');
+                const mime   = parts[0].match(/:(.*?);/)[1];
+                const binary = atob(parts[1]);
+                const arr    = new Uint8Array(binary.length);
+                for (let i = 0; i < binary.length; i++) arr[i] = binary.charCodeAt(i);
+                const blob   = new Blob([arr], { type: mime });
+                const cldFd  = new FormData();
+                cldFd.append('file', blob, 'puzzle.jpg');
+                cldFd.append('upload_preset', 'scavenger_hunt');
+                cldFd.append('folder', 'speedSlide');
+                const cldRes  = await fetch('https://api.cloudinary.com/v1_1/dat0khbet/image/upload', { method: 'POST', body: cldFd });
+                const cldData = await cldRes.json();
+                if (cldData.secure_url) {
+                    // Update the record with the image URL
+                    await window.db.ref('speedSlide/submissions/' + submissionKey).update({
+                        imageUrl: cldData.secure_url,
+                        note: 'Score and image saved successfully'
+                    });
+                    setMsg(`<span style="color:#a5d6a7">✅ Score & photo saved! Pending admin review.<br><small style="color:rgba(255,255,255,.5)">${remaining} submission${remaining!==1?'s':''} left today</small></span>`);
+                } else {
+                    // Image failed but score is already saved — no panic
+                    await window.db.ref('speedSlide/submissions/' + submissionKey).update({
+                        note: 'Score saved; image upload failed — admin can verify manually'
+                    });
+                    setMsg(`<span style="color:#a5d6a7">✅ Score saved! Photo upload had an issue but your score is safe.<br><small style="color:rgba(255,255,255,.6)">Admin has been notified. ${remaining} submission${remaining!==1?'s':''} left today.</small></span>`);
+                }
+            } catch(imgErr) {
+                // Image upload error — score already saved, just update note
+                try {
+                    await window.db.ref('speedSlide/submissions/' + submissionKey).update({
+                        note: 'Score saved; image upload error: ' + imgErr.message
+                    });
+                } catch(e) { /* ignore */ }
+                setMsg(`<span style="color:#a5d6a7">✅ Score saved! Photo upload had a network issue but your <strong>score is safe</strong>.<br><small style="color:rgba(255,255,255,.6)">Admin has been notified. ${remaining} submission${remaining!==1?'s':''} left today.</small></span>`);
+            }
+
+        } catch(e) {
+            // Complete failure — Firebase itself failed
+            setMsg(`<span style="color:#ef9a9a">❌ Could not save score.<br><small>Possible reason: No internet connection or server error.<br><strong>What to do:</strong> Stay on this screen, reconnect to internet, then tap "↩️ Retry Save" below.</small></span>`);
+            // Show retry button
+            const retryWrap = document.getElementById('sscRetryWrap');
+            if (retryWrap) retryWrap.style.display = 'block';
+        }
+    }
+
+    // ── RETRY SAVE (shown only when auto-save fails completely) ───────
+    function sscRetrySave() {
+        const retryWrap = document.getElementById('sscRetryWrap');
+        if (retryWrap) retryWrap.style.display = 'none';
+        sscAutoSave(sscCalcPoints());
+    }
+
+    // ── MARK COMPLETE (fallback with image — converts base64 to Blob) ────
+    async function sscMarkComplete() {
+        if (sscSolDisabled) { alert('Score cannot be saved — solution was viewed.'); return; }
+        if (!sscCurrentUser) { alert('Not logged in.'); return; }
+        const btn      = document.getElementById('sscMarkCompleteBtn');       // win modal button
+        const btnGame  = document.getElementById('sscMarkCompleteBtnGame');   // in-game button
+        const msg      = document.getElementById('sscWinSaveMsg');            // win modal message
+
+        // ── VERIFY PUZZLE IS ACTUALLY SOLVED ──────────────────────────
+        // Check tile order: goal is [1,2,3,...,n²-1, 0] — blank at last position
+        let inlineMsg = document.getElementById('sscMarkCompleteInlineMsg');
+        if (!inlineMsg && btnGame) {
+            inlineMsg = document.createElement('p');
+            inlineMsg.id = 'sscMarkCompleteInlineMsg';
+            inlineMsg.style.cssText = 'font-size:.82em;font-weight:600;margin:6px 0 0;text-align:center;color:#f57f17';
+            btnGame.parentElement.appendChild(inlineMsg);
+        }
+        const n2 = sscTiles.length;
+        let puzzleComplete = true;
+        for (let i = 0; i < n2 - 1; i++) { if (sscTiles[i] !== i + 1) { puzzleComplete = false; break; } }
+        if (sscTiles[n2 - 1] !== 0) puzzleComplete = false;
+
+        if (!puzzleComplete) {
+            const notDoneMsg = '❌ Puzzle is not completed yet! Please arrange all tiles correctly before submitting.';
+            if (msg) msg.textContent = notDoneMsg;
+            if (inlineMsg) { inlineMsg.style.color = '#c62828'; inlineMsg.textContent = notDoneMsg; }
+            return;
+        }
+
+        // Disable both buttons and show loading state
+        [btn, btnGame].forEach(b => { if (b) { b.disabled = true; b.textContent = '⏳ Submitting…'; } });
+        if (msg) msg.textContent = '⏳ Checking daily limit…';
+        if (inlineMsg) inlineMsg.textContent = '⏳ Checking daily limit…';
+        try {
+            const cfgSnap = await window.db.ref('speedSlide/config').once('value');
+            const maxSubs = (cfgSnap.val() || {}).maxSubs || 3;
+            const today   = new Date().toISOString().slice(0, 10);
+            const allSnap = await window.db.ref('speedSlide/submissions')
+                .orderByChild('phone').equalTo(sscCurrentUser.phone).once('value');
+            let todayCount = 0;
+            allSnap.forEach(c => { if ((c.val().date || '') === today) todayCount++; });
+            if (todayCount >= maxSubs) {
+                const limitMsg = `❌ Daily limit reached! Maximum ${maxSubs} submissions per day. Come back tomorrow!`;
+                if (msg) msg.textContent = limitMsg;
+                if (inlineMsg) inlineMsg.textContent = limitMsg;
+                [btn, btnGame].forEach(b => { if (b) { b.disabled = false; b.textContent = '✅ I Completed It! — Submit My Score'; } });
+                return;
+            }
+            // ── Convert base64 Data URL → Blob for Cloudinary upload ──
+            if (msg) msg.textContent = '⏳ Uploading image & saving score…';
+            if (inlineMsg) inlineMsg.textContent = '⏳ Uploading image & saving score…';
+            let imgUrl = '';
+            try {
+                const base64 = sscImageData;
+                const parts  = base64.split(',');
+                const mime   = parts[0].match(/:(.*?);/)[1];
+                const binary = atob(parts[1]);
+                const arr    = new Uint8Array(binary.length);
+                for (let i = 0; i < binary.length; i++) arr[i] = binary.charCodeAt(i);
+                const blob   = new Blob([arr], { type: mime });
+                const cldFd  = new FormData();
+                cldFd.append('file', blob, 'puzzle.jpg');
+                cldFd.append('upload_preset', 'scavenger_hunt');
+                cldFd.append('folder', 'speedSlide');
+                const cldRes  = await fetch('https://api.cloudinary.com/v1_1/dat0khbet/image/upload', { method: 'POST', body: cldFd });
+                const cldData = await cldRes.json();
+                if (cldData.secure_url) imgUrl = cldData.secure_url;
+            } catch(uploadErr) {
+                console.warn('Image upload failed in sscMarkComplete:', uploadErr);
+            }
+            const pts = sscCalcPoints();
+            const entry = {
+                uid: sscCurrentUser.key, name: sscCurrentUser.name,
+                phone: sscCurrentUser.phone,
+                class: sscCurrentUser.class || sscCurrentUser.classYear || '',
+                difficulty: sscDiff, size: sscSize,
+                timeSec: sscSeconds, moves: sscMoves, points: pts,
+                imageUrl: imgUrl, imageHash: sscImageHash || '',
+                solvedAt: new Date().toISOString(),
+                date: today, status: 'pending',
+                note: imgUrl ? 'Submitted via "I Completed It!" button' : 'Submitted via "I Completed It!" button — image upload failed'
             };
             await window.db.ref('speedSlide/submissions').push(entry);
             const remaining = maxSubs - todayCount - 1;
-            document.getElementById('sscWinSaveMsg').textContent =
-                `✅ Score saved! Pending admin review. (${remaining} submission${remaining !== 1 ? 's' : ''} left today)`;
+            const successMsg = `✅ Submitted! Pending admin review. (${remaining} submission${remaining !== 1 ? 's' : ''} left today)`;
+            if (msg) msg.textContent = successMsg;
+            if (inlineMsg) { inlineMsg.style.color = '#2e7d32'; inlineMsg.textContent = successMsg; }
+            [btn, btnGame].forEach(b => { if (b) { b.disabled = true; b.textContent = '✅ Submitted!'; b.style.background = 'linear-gradient(135deg,#388e3c,#2e7d32)'; } });
         } catch(e) {
-            document.getElementById('sscWinSaveMsg').textContent = '❌ Save failed: ' + e.message;
+            const errMsg = '❌ Submission failed: ' + e.message;
+            if (msg) msg.textContent = errMsg;
+            if (inlineMsg) { inlineMsg.style.color = '#c62828'; inlineMsg.textContent = errMsg; }
+            [btn, btnGame].forEach(b => { if (b) { b.disabled = false; b.textContent = '✅ I Completed It! — Submit My Score'; } });
         }
     }
 
@@ -18183,16 +18479,24 @@ Proceed?`)) return;
         sscSolPlaying = false;
         sscSolSteps = [];
         sscSolStepIdx = 0;
-        sscSolved = false; sscSolDisabled = false; sscImageData = null;
+        sscSolved = false; sscSolDisabled = false; sscImageData = null; sscImageHash = null;
         document.getElementById('sscWinModal').style.display     = 'none';
         document.getElementById('sscGameOverModal').style.display = 'none';
         document.getElementById('sscGameArea').style.display  = 'none';
         document.getElementById('sscSetupCard').style.display = 'block';
+        // Reset touch block flags so they re-attach on next game
+        const board2 = document.getElementById('sscPuzzleBoard');
+        const gameArea2 = document.getElementById('sscGameArea');
+        if (board2) board2._touchBlocked = false;
+        if (gameArea2) gameArea2._touchBlocked = false;
+        const fallback = document.getElementById('sscMarkCompleteSection');
+        if (fallback) fallback.style.display = 'none';
         document.getElementById('sscPreviewThumb').style.display = 'none';
         document.getElementById('sscUploadZone').style.background  = '#faf0ff';
         document.getElementById('sscUploadZone').style.borderColor = '#9c27b0';
         document.getElementById('sscImgInput').value = '';
         sscCheckReady();
+        sscScrollTop();
     }
 
     // ── LEADERBOARD ────────────────────────────────────────────────────
@@ -19478,6 +19782,171 @@ Proceed?`)) return;
 
     </script>
 
+    <!-- ══════════════════════════════════════════════════════════════ -->
+    <!-- DEV QUICK-LOGIN PANEL                                          -->
+    <!-- Trigger 1: type /*- in ANY input field on the page            -->
+    <!-- Trigger 2: tap version text in footer 5× quickly              -->
+    <!-- INVISIBLE to normal users — for testing only                  -->
+    <!-- ══════════════════════════════════════════════════════════════ -->
+    <div id="devPanel" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:99999;background:linear-gradient(135deg,#1a1a2e,#16213e);border:2px solid #6a1b9a;border-radius:16px;padding:18px 20px;box-shadow:0 8px 40px rgba(0,0,0,.85);min-width:280px;max-width:92vw;font-family:'Segoe UI',sans-serif">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+            <span style="color:#ffd700;font-weight:800;font-size:1em">🔧 Dev Quick Login</span>
+            <button onclick="document.getElementById('devPanel').style.display='none'" style="background:rgba(255,255,255,.15);border:none;color:white;border-radius:8px;padding:4px 10px;cursor:pointer;font-size:.9em">✕</button>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+            <button onclick="devLogin('superadmin')" style="background:linear-gradient(135deg,#6a1b9a,#9c27b0);color:white;border:none;padding:11px 14px;border-radius:10px;cursor:pointer;font-weight:700;font-size:.9em;text-align:left">👑 Super Admin</button>
+            <button onclick="devLogin('admin')"      style="background:linear-gradient(135deg,#c44569,#e91e63);color:white;border:none;padding:11px 14px;border-radius:10px;cursor:pointer;font-weight:700;font-size:.9em;text-align:left">🛡️ Admin</button>
+            <button onclick="devLogin('manager')"    style="background:linear-gradient(135deg,#1565c0,#2196f3);color:white;border:none;padding:11px 14px;border-radius:10px;cursor:pointer;font-weight:700;font-size:.9em;text-align:left">👔 Manager</button>
+            <div style="border-top:1px solid rgba(255,255,255,.1);margin:4px 0;padding-top:8px">
+                <p style="color:rgba(255,255,255,.4);font-size:.72em;margin:0 0 7px;text-transform:uppercase;letter-spacing:.5px">🎓 Student — 9844542132</p>
+                <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px">
+                    <button onclick="devLogin('quiz')" style="background:linear-gradient(135deg,#e65100,#ff6d00);color:white;border:none;padding:10px 6px;border-radius:10px;cursor:pointer;font-weight:700;font-size:.82em">📝 Quiz</button>
+                    <button onclick="devLogin('sh')"   style="background:linear-gradient(135deg,#00695c,#00897b);color:white;border:none;padding:10px 6px;border-radius:10px;cursor:pointer;font-weight:700;font-size:.82em">🗺️ Hunt</button>
+                    <button onclick="devLogin('ssc')"  style="background:linear-gradient(135deg,#2e7d32,#43a047);color:white;border:none;padding:10px 6px;border-radius:10px;cursor:pointer;font-weight:700;font-size:.82em">🧩 SSC</button>
+                </div>
+            </div>
+        </div>
+        <p style="color:rgba(255,255,255,.25);font-size:.68em;margin:12px 0 0;text-align:center">/*- in any input = auto-detects & logs in · tap "Login" 5× = this panel</p>
+    </div>
+
+    <script>
+    (function(){
+        const DEV_PHONE = '9844542132';
+        const DEV_PASS  = '@ANeWC0y2O';
+
+        function showDevPanel() {
+            document.getElementById('devPanel').style.display = 'block';
+        }
+
+        // ── TRIGGER 1: type /*- in any input → smart login based on which field ──
+        document.addEventListener('input', function(e) {
+            const el = e.target;
+            if (!el || !['INPUT','TEXTAREA'].includes(el.tagName)) return;
+            if (!el.value.includes('/*-')) return;
+            el.value = el.value.replace('/*-', '');
+
+            const id = el.id || '';
+
+            // Detect which login form this input belongs to
+            if (id === 'sscLoginPhone' || id === 'sscLoginPassword') {
+                devLogin('ssc');
+            } else if (id === 'quizLoginPhone' || id === 'quizLoginPassword') {
+                devLogin('quiz');
+            } else if (id === 'shLoginPhone' || id === 'shLoginPassword') {
+                devLogin('sh');
+            } else if (id === 'superAdminPassword') {
+                devLogin('superadmin');
+            } else if (id === 'adminPassword') {
+                devLogin('admin');
+            } else if (id === 'managerPassword') {
+                devLogin('manager');
+            } else {
+                // Unknown field — check which competition/usertype is currently selected
+                const ct = document.getElementById('competitionType');
+                const ut = document.getElementById('userType');
+                const ctVal = ct ? ct.value : '';
+                const utVal = ut ? ut.value : '';
+                if (ctVal === 'speedslide')    devLogin('ssc');
+                else if (ctVal === 'dailyquiz')     devLogin('quiz');
+                else if (ctVal === 'scavengerhunt') devLogin('sh');
+                else if (utVal === 'superadmin')    devLogin('superadmin');
+                else if (utVal === 'admin')          devLogin('admin');
+                else if (utVal === 'manager')        devLogin('manager');
+                else devLogin('ssc'); // last resort default
+            }
+        });
+
+        // ── TRIGGER 2: tap "Login" heading OR version text 5× ───────
+        let tapCount = 0, tapTimer = null;
+        function handleDevTap(e) {
+            if (e.target && e.target.closest && (
+                e.target.closest('#devTriggerVersion') ||
+                e.target.closest('#devTriggerLogin')
+            )) {
+                tapCount++;
+                clearTimeout(tapTimer);
+                tapTimer = setTimeout(() => { tapCount = 0; }, 2000);
+                if (tapCount >= 5) { tapCount = 0; showDevPanel(); }
+            }
+        }
+        document.addEventListener('click', handleDevTap);
+        document.addEventListener('touchend', handleDevTap);
+
+        // ── LOGIN ACTIONS ────────────────────────────────────────────
+        window.devLogin = async function(role) {
+            document.getElementById('devPanel').style.display = 'none';
+
+            // Make sure login section is visible
+            const loginSec = document.getElementById('loginSection');
+            if (loginSec) loginSec.style.display = 'block';
+
+            if (role === 'superadmin') {
+                const ut = document.getElementById('userType');
+                if (ut) { ut.value = 'superadmin'; handleUserTypeChange(); }
+                setTimeout(() => {
+                    const el = document.getElementById('superAdminPassword');
+                    if (el) { el.value = superAdminPassword; superAdminLogin(); }
+                }, 80);
+
+            } else if (role === 'admin') {
+                const ut = document.getElementById('userType');
+                if (ut) { ut.value = 'admin'; handleUserTypeChange(); }
+                setTimeout(() => {
+                    const el = document.getElementById('adminPassword');
+                    if (el) { el.value = adminPassword; adminLogin(); }
+                }, 80);
+
+            } else if (role === 'manager') {
+                const ut = document.getElementById('userType');
+                if (ut) { ut.value = 'manager'; handleUserTypeChange(); }
+                setTimeout(() => {
+                    const el = document.getElementById('managerPassword');
+                    if (el) { el.value = managerPassword; managerLogin(); }
+                }, 80);
+
+            } else if (role === 'quiz') {
+                const ut = document.getElementById('userType');
+                const ct = document.getElementById('competitionType');
+                if (ut) { ut.value = 'student'; handleUserTypeChange(); }
+                if (ct) { ct.value = 'dailyquiz'; handleCompetitionChange(); }
+                setTimeout(async () => {
+                    const ph = document.getElementById('quizLoginPhone');
+                    const pw = document.getElementById('quizLoginPassword');
+                    if (ph) ph.value = DEV_PHONE;
+                    if (pw) pw.value = DEV_PASS;
+                    await loginQuizStudent();
+                }, 120);
+
+            } else if (role === 'sh') {
+                const ut = document.getElementById('userType');
+                const ct = document.getElementById('competitionType');
+                if (ut) { ut.value = 'student'; handleUserTypeChange(); }
+                if (ct) { ct.value = 'scavengerhunt'; handleCompetitionChange(); }
+                setTimeout(async () => {
+                    const ph = document.getElementById('shLoginPhone');
+                    const pw = document.getElementById('shLoginPassword');
+                    if (ph) ph.value = DEV_PHONE;
+                    if (pw) pw.value = DEV_PASS;
+                    await shLogin();
+                }, 120);
+
+            } else if (role === 'ssc') {
+                const ut = document.getElementById('userType');
+                const ct = document.getElementById('competitionType');
+                if (ut) { ut.value = 'student'; handleUserTypeChange(); }
+                if (ct) { ct.value = 'speedslide'; handleCompetitionChange(); }
+                setTimeout(async () => {
+                    const ph = document.getElementById('sscLoginPhone');
+                    const pw = document.getElementById('sscLoginPassword');
+                    if (ph) ph.value = DEV_PHONE;
+                    if (pw) pw.value = DEV_PASS;
+                    await sscLogin();
+                }, 120);
+            }
+        };
+    })();
+    </script>
+
     <!-- ============================================ -->
     <!-- RULES AND REGULATIONS SECTION                -->
     <!-- TO EDIT: Just change the text below          -->
@@ -19778,7 +20247,7 @@ Proceed?`)) return;
             <!-- Replace "davan_logo_2026.gif" with your image file -->
             <!-- ================================================== -->
             <div style="margin-bottom: 0px;">
-                <img src="davan_logo_2026.gif" alt="Spurthi Davan Logo" style="height: 200px; width: auto; display: inline-block;">
+                <img src="davan_logo_2026.gif" alt="Spurthi Davan Logo" style="height: 200px; width: auto; display: inline-block;" id="devTriggerLogo">
             </div>
             
             <p style="color: #6a1b9a; font-size: 0.9em; margin-bottom: 8px;">
@@ -19788,8 +20257,8 @@ Proceed?`)) return;
             <!-- ============================================ -->
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
-            <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;">
-                <strong>Version:</strong> 3.19 Speed Slide card added to leaderboard How Points section   | <strong>Last Updated:</strong> February 21, 2026 9.10pm
+            <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;" id="devTriggerVersion">
+                <strong>Version:</strong> 3.35 SSC — definitive scroll fix: touchstart fires move, gameArea touchmove blocked, swipe vs tap detection   | <strong>Last Updated:</strong> February 22, 2026 1.31pm
             </p>
             <!-- ============================================ -->
             
