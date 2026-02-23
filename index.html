@@ -939,6 +939,19 @@
             100% { transform: translateY(200px) rotate(-360deg) scale(0.2); opacity:0; }
         }
         .ssc-board-shake { animation: sscBoardShake 0.4s ease; }
+        @keyframes vlogGradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        @media (max-width: 600px) {
+            .vlog-form-grid { grid-template-columns: 1fr !important; }
+            .vlog-rules-grid { grid-template-columns: 1fr !important; }
+            .vlog-score-grid { grid-template-columns: 1fr !important; }
+            .vlog-track-grid { grid-template-columns: 1fr !important; }
+            .vlog-phase2-grid { grid-template-columns: 1fr !important; }
+            .vlog-admin-grid { grid-template-columns: 1fr !important; }
+        }
     </style>
 
     <style>
@@ -1540,6 +1553,7 @@
                 <button class="tab" onclick="showCRTab('crView')">View Enrollments</button>
                 <button class="tab" onclick="showCRTab('crQuizStats');loadCRQuizStats()">🧠 Quiz Stats</button>
                 <button class="tab" onclick="showCRTab('crScavengerStats');loadCRScavengerStats()">🗺️ Scavenger Hunt</button>
+                <button class="tab" onclick="showCRTab('crVlogChallenge');checkVlogEventActive();loadVlogSubmissions();initVlogDailyScreenshots()">📹 Vlog Challenge</button>
             </div>
 
             <div id="crEnroll" class="form-section active">
@@ -1700,6 +1714,271 @@
                     </div>
                 </div>
             </div>
+            <!-- ── VLOG CHALLENGE TAB ──────────────────────────────────────────── -->
+            <div id="crVlogChallenge" class="form-section">
+
+                <!-- Hero Banner -->
+                <div style="background:linear-gradient(135deg,#833ab4,#fd1d1d,#fcb045);background-size:300% 300%;animation:vlogGradient 6s ease infinite;border-radius:16px;padding:24px;margin-bottom:20px;text-align:center;position:relative;overflow:hidden">
+                    <div style="position:absolute;top:-20px;right:-20px;font-size:5em;opacity:0.12;transform:rotate(15deg)">📸</div>
+                    <div style="font-size:2.2em;margin-bottom:6px">📹🎬✨</div>
+                    <h2 style="color:white;margin:0 0 5px;font-size:1.5em;text-shadow:0 2px 8px rgba(0,0,0,0.35)">Vlog Social Media Challenge</h2>
+                    <p style="color:rgba(255,255,255,0.92);margin:0 0 10px;font-size:0.9em">Create a 2-member team vlog, post it on <strong>Instagram</strong> & win!</p>
+                    <div style="display:flex;justify-content:center;gap:8px;flex-wrap:wrap">
+                        <div style="background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.5);border-radius:20px;padding:4px 14px;color:white;font-size:0.78em;font-weight:700;backdrop-filter:blur(4px)">🚀 Phase 1 — Link Submission Active</div>
+                        <div style="background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.5);border-radius:20px;padding:4px 14px;color:white;font-size:0.78em;font-weight:700;backdrop-filter:blur(4px)">📸 Instagram Only</div>
+                        <div style="background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.5);border-radius:20px;padding:4px 14px;color:white;font-size:0.78em;font-weight:700;backdrop-filter:blur(4px)">👥 2 Members / Team</div>
+                    </div>
+                </div>
+
+                <!-- Rules + Topics in 2-col -->
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px" class="vlog-rules-grid">
+                    <!-- Rules -->
+                    <div style="background:#fff8e1;border-left:5px solid #ffc107;border-radius:10px;padding:16px 18px">
+                        <h4 style="color:#856404;margin:0 0 10px;font-size:0.93em">📋 Rules & Guidelines</h4>
+                        <ul style="margin:0;padding-left:16px;color:#555;font-size:0.85em;line-height:2.1">
+                            <li>Each team must have exactly <strong>2 members</strong></li>
+                            <li>Maximum <strong>2 teams</strong> per class — choose wisely!</li>
+                            <li>Post your vlog as an <strong>Instagram Reel</strong> only</li>
+                            <li>Your Instagram profile must be <strong>public</strong></li>
+                            <li>Must use the official challenge hashtag in caption</li>
+                            <li>Vlog must be <strong>original</strong> — no recycled content</li>
+                            <li>Minimum duration: <strong>30 seconds</strong></li>
+                            <li>Each team picks a <strong>different topic</strong> (no repeats in class)</li>
+                            <li>Submit your <strong>Instagram Reel link</strong> below by deadline</li>
+                        </ul>
+                    </div>
+                    <!-- Topics -->
+                    <div style="background:#f3e5f5;border-left:5px solid #9c27b0;border-radius:10px;padding:16px 18px">
+                        <h4 style="color:#6a1b9a;margin:0 0 10px;font-size:0.93em">🎬 Vlog Topics (Choose One)</h4>
+                        <div style="display:flex;flex-direction:column;gap:8px">
+                            <div style="background:white;border-radius:8px;padding:10px 14px;display:flex;align-items:center;gap:10px;border:1px solid #e1bee7">
+                                <span style="font-size:1.3em">✈️</span>
+                                <div><div style="font-weight:700;color:#4a148c;font-size:0.9em">Travel Vlog</div><div style="color:#777;font-size:0.78em">Explore a place — campus, market, landmark</div></div>
+                            </div>
+                            <div style="background:white;border-radius:8px;padding:10px 14px;display:flex;align-items:center;gap:10px;border:1px solid #e1bee7">
+                                <span style="font-size:1.3em">📚</span>
+                                <div><div style="font-weight:700;color:#4a148c;font-size:0.9em">Educational Vlog</div><div style="color:#777;font-size:0.78em">Teach something — tips, hacks, concepts</div></div>
+                            </div>
+                            <div style="background:white;border-radius:8px;padding:10px 14px;display:flex;align-items:center;gap:10px;border:1px solid #e1bee7">
+                                <span style="font-size:1.3em">🎪</span>
+                                <div><div style="font-weight:700;color:#4a148c;font-size:0.9em">Event Vlog</div><div style="color:#777;font-size:0.78em">Cover a college event, fest, or activity</div></div>
+                            </div>
+                            <div style="background:white;border-radius:8px;padding:10px 14px;display:flex;align-items:center;gap:10px;border:1px solid #e1bee7">
+                                <span style="font-size:1.3em">🛍️</span>
+                                <div><div style="font-weight:700;color:#4a148c;font-size:0.9em">Shops Vlog</div><div style="color:#777;font-size:0.78em">Explore local shops, food, street markets</div></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Scoring System -->
+                <div style="background:linear-gradient(135deg,#e8f5e9,#e3f2fd);border-radius:12px;padding:16px 18px;margin-bottom:20px;border:1px solid #b3e5fc">
+                    <h4 style="color:#0d47a1;margin:0 0 12px;font-size:0.93em">🏆 Scoring System — How Winners Are Decided</h4>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px" class="vlog-score-grid">
+                        <div style="background:white;border-radius:10px;padding:14px;border-left:4px solid #e91e63">
+                            <div style="font-size:1.6em;font-weight:900;color:#e91e63">50%</div>
+                            <div style="font-weight:700;color:#333;font-size:0.88em;margin:3px 0">📊 Social Media Score</div>
+                            <div style="color:#666;font-size:0.78em;line-height:1.6">Auto-tracked via hashtag<br><strong>Likes + Comments + Views</strong><br>Combined engagement score</div>
+                        </div>
+                        <div style="background:white;border-radius:10px;padding:14px;border-left:4px solid #3f51b5">
+                            <div style="font-size:1.6em;font-weight:900;color:#3f51b5">50%</div>
+                            <div style="font-weight:700;color:#333;font-size:0.88em;margin:3px 0">👨‍⚖️ Jury Score</div>
+                            <div style="color:#666;font-size:0.78em;line-height:1.6">Evaluated by 2 judges<br><strong>Content · Creativity · Presentation</strong><br>Average of both jury marks</div>
+                        </div>
+                    </div>
+                    <div style="background:rgba(13,71,161,0.07);border-radius:8px;padding:10px 14px;margin-top:12px;font-size:0.82em;color:#1565c0">
+                        🏅 <strong>Final Score = (Social Score × 50%) + (Jury Score × 50%)</strong> — Top team per class advances to final evaluation
+                    </div>
+                </div>
+
+                <!-- Hashtag Tracking Box -->
+                <div style="background:linear-gradient(135deg,#fce4ec,#f3e5f5);border-radius:12px;padding:16px 18px;margin-bottom:20px;border:1px solid #f48fb1">
+                    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:10px">
+                        <h4 style="color:#880e4f;margin:0;font-size:0.93em">🔖 Official Challenge Hashtag</h4>
+                        <span style="background:#e91e63;color:white;padding:3px 12px;border-radius:20px;font-size:0.75em;font-weight:700">Phase 2 — Auto-Tracking Ready</span>
+                    </div>
+                    <div style="background:white;border-radius:10px;padding:14px 16px;border:2px dashed #f48fb1;text-align:center;margin-bottom:12px">
+                        <div style="font-size:1.4em;font-weight:900;color:#e91e63;letter-spacing:1px" id="vlogHashtagDisplay">#SpurthiVlogChallenge2026</div>
+                        <div style="color:#aaa;font-size:0.78em;margin-top:4px">⚙️ Admin can update this hashtag before launch</div>
+                    </div>
+                    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;text-align:center" class="vlog-track-grid">
+                        <div style="background:white;border-radius:8px;padding:10px 8px;border:1px solid #f8bbd0">
+                            <div style="font-size:1.3em">👁️</div>
+                            <div style="font-size:0.78em;font-weight:700;color:#880e4f;margin-top:3px">Monitors Hashtag</div>
+                            <div style="font-size:0.72em;color:#999">Scans all posts using the tag</div>
+                        </div>
+                        <div style="background:white;border-radius:8px;padding:10px 8px;border:1px solid #f8bbd0">
+                            <div style="font-size:1.3em">🔍</div>
+                            <div style="font-size:0.78em;font-weight:700;color:#880e4f;margin-top:3px">Detects New Posts</div>
+                            <div style="font-size:0.72em;color:#999">Links matched to submitted entries</div>
+                        </div>
+                        <div style="background:white;border-radius:8px;padding:10px 8px;border:1px solid #f8bbd0">
+                            <div style="font-size:1.3em">📊</div>
+                            <div style="font-size:0.78em;font-weight:700;color:#880e4f;margin-top:3px">Live Leaderboard</div>
+                            <div style="font-size:0.72em;color:#999">Updates scores in real-time</div>
+                        </div>
+                    </div>
+                    <div style="background:rgba(136,14,79,0.06);border-radius:8px;padding:9px 14px;margin-top:10px;font-size:0.8em;color:#880e4f">
+                        ⚠️ <strong>Important:</strong> Participants <em>must</em> use the official hashtag in their Instagram Reel caption — otherwise the post won't be tracked automatically in Phase 2.
+                    </div>
+                </div>
+
+                <!-- Submission Form -->
+                <!-- Event Locked Message (shown when Super Admin hasn't activated) -->
+                <div id="vlogLockedMsg" style="display:none;background:linear-gradient(135deg,#fff3e0,#fce4ec);border-radius:12px;padding:24px;text-align:center;border:2px dashed #ffab40;margin-bottom:20px">
+                    <div style="font-size:2.5em;margin-bottom:8px">🔒</div>
+                    <h3 style="color:#e65100;margin:0 0 8px">Event Not Yet Started</h3>
+                    <p style="color:#666;font-size:0.9em;margin:0">The Vlog Challenge has not been activated by the Super Admin yet. Please check back soon!</p>
+                </div>
+
+                <div id="vlogSubmitFormWrapper">
+                <div style="background:white;border-radius:14px;border:2px solid #e0c8f5;padding:22px;margin-bottom:20px">
+                    <h3 style="color:#6a1b9a;margin:0 0 6px;font-size:1.05em">📤 Submit Instagram Reel Link — <span id="vlogCRClass" style="color:#c44569"></span></h3>
+                    <p style="color:#888;font-size:0.82em;margin:0 0 16px">Max 2 teams per class · 2 members per team · Instagram Reel only</p>
+
+                    <!-- Team slots indicator -->
+                    <div id="vlogTeamSlotsInfo" style="background:#e8f5e9;border-radius:8px;padding:10px 14px;margin-bottom:16px;font-size:0.85em;color:#1b5e20;border-left:4px solid #4caf50">
+                        ✅ Loading team slots for your class…
+                    </div>
+
+                    <!-- Enrolled teams pulled from enrollment (read-only display) -->
+                    <div style="margin-bottom:16px">
+                        <label style="font-size:0.88em;font-weight:700;color:#444;display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+                            <span>👥 Select Your Enrolled Team <span style="color:red">*</span></span>
+                            <button type="button" onclick="autoFillVlogMembers()" style="background:#9c27b0;color:white;border:none;border-radius:6px;padding:4px 12px;font-size:0.78em;cursor:pointer;font-weight:600">🔄 Refresh</button>
+                        </label>
+                        <div id="vlogEnrolledTeamsList" style="background:#f8f4ff;border-radius:10px;border:2px solid #e1bee7;padding:12px;margin-bottom:8px;font-size:0.85em;color:#555">
+                            Loading enrolled teams from registration…
+                        </div>
+                        <select id="vlogTeamSelect" onchange="vlogOnTeamSelect()" style="width:100%;padding:10px 12px;border:2px solid #9c27b0;border-radius:8px;font-size:0.9em;outline:none;background:white;font-weight:600;color:#3d0060">
+                            <option value="">— Select your team from enrollment —</option>
+                        </select>
+                        <p style="font-size:0.76em;color:#999;margin:5px 0 0">ℹ️ Names and topic come from enrollment. Only the Reel link, handle and caption need to be added by you.</p>
+                    </div>
+
+                    <!-- Hidden: populated by team select -->
+                    <input type="hidden" id="vlogMember1">
+                    <input type="hidden" id="vlogMember2">
+                    <input type="hidden" id="vlogTopic">
+
+                    <!-- Selected team confirmation -->
+                    <div id="vlogSelectedTeamDisplay" style="display:none;background:#e8f5e9;border-radius:8px;padding:10px 14px;margin-bottom:14px;border-left:4px solid #4caf50;font-size:0.88em">
+                        <strong style="color:#1b5e20">✅ Selected:</strong> <span id="vlogSelectedTeamInfo"></span>
+                    </div>
+
+                    <!-- Only fields the team needs to fill -->
+                    <div style="display:flex;flex-direction:column;gap:14px">
+                        <div>
+                            <label style="font-size:0.88em;font-weight:700;color:#444;display:block;margin-bottom:5px">Instagram Handle <span style="color:red">*</span></label>
+                            <input type="text" id="vlogHandle" placeholder="@yourusername" style="width:100%;padding:10px 12px;border:2px solid #ddd;border-radius:8px;font-size:0.9em;outline:none;transition:border 0.2s" onfocus="this.style.borderColor='#6a1b9a'" onblur="this.style.borderColor='#ddd'">
+                        </div>
+                        <div>
+                            <label style="font-size:0.88em;font-weight:700;color:#444;display:block;margin-bottom:5px">Instagram Reel Link <span style="color:red">*</span></label>
+                            <input type="url" id="vlogLink" placeholder="https://www.instagram.com/reel/..." style="width:100%;padding:10px 12px;border:2px solid #ddd;border-radius:8px;font-size:0.9em;outline:none;transition:border 0.2s" onfocus="this.style.borderColor='#6a1b9a'" onblur="this.style.borderColor='#ddd'">
+                            <p style="font-size:0.78em;color:#999;margin:5px 0 0">Make sure your profile is public &amp; the hashtag <strong id="vlogHashtagInForm">#SpurthiVlogChallenge2026</strong> is in the caption</p>
+                        </div>
+                        <div>
+                            <label style="font-size:0.88em;font-weight:700;color:#444;display:block;margin-bottom:5px">Reel Title / Caption Summary <span style="color:red">*</span></label>
+                            <input type="text" id="vlogTitle" placeholder="E.g. A Day Exploring Davangere 🏙️" style="width:100%;padding:10px 12px;border:2px solid #ddd;border-radius:8px;font-size:0.9em;outline:none;transition:border 0.2s" onfocus="this.style.borderColor='#6a1b9a'" onblur="this.style.borderColor='#ddd'">
+                        </div>
+                    </div>
+                    <div id="vlogSubmitMsg" style="display:none;margin-top:12px;padding:10px 14px;border-radius:8px;font-size:0.88em;font-weight:600"></div>
+                    <div style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap">
+                        <button class="btn" id="vlogSubmitBtn" onclick="submitVlogEntry()" style="background:linear-gradient(135deg,#833ab4,#fd1d1d,#fcb045);border:none;flex:1;min-width:160px">📤 Submit Instagram Reel Link</button>
+                        <button class="btn btn-secondary" onclick="clearVlogForm()" style="flex:0">🗑️ Clear</button>
+                    </div>
+                </div>
+                </div><!-- end vlogSubmitFormWrapper -->
+
+                <!-- ═══════════════════════════════════════════════════════════════ -->
+                <!-- SEPARATE: Instagram Reel Insights Screenshot Upload Section    -->
+                <!-- Shown only AFTER the Reel Link has been submitted              -->
+                <!-- ═══════════════════════════════════════════════════════════════ -->
+                <div id="vlogInsightScreenshotSection" style="display:block;margin-top:20px">
+                    <div style="background:linear-gradient(135deg,#f3e5f5,#e8f5e9);border-radius:14px;border:2px solid #ce93d8;padding:22px">
+                        <!-- Header -->
+                        <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+                            <span style="font-size:1.4em">📊</span>
+                            <div>
+                                <h3 style="color:#6a1b9a;margin:0;font-size:1.05em">Instagram Reel Insights Screenshot <span style="color:#888;font-weight:400;font-size:0.85em">(upload daily — one per day)</span></h3>
+                            </div>
+                        </div>
+                        <!-- Info banner -->
+                        <div style="background:rgba(106,27,154,0.08);border-radius:8px;padding:9px 14px;margin-bottom:16px;font-size:0.82em;color:#4a148c;border-left:4px solid #9c27b0;line-height:1.6">
+                            ℹ️ Each day during the event period, open your Reel → tap <strong>⋯</strong> → <strong>View Insights</strong> → screenshot showing <strong>Views, Likes, Comments</strong> → upload for that date.<br>
+                            This helps the admin enter your social score accurately every day.
+                        </div>
+                        <!-- Screenshot slots (rendered by initVlogDailyScreenshots) -->
+                        <div id="vlogDailyScreenshotsContainer" style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px">
+                            <!-- Daily date slots rendered by initVlogDailyScreenshots() -->
+                        </div>
+                        <!-- Separate submit message + button -->
+                        <div id="vlogScreenshotSubmitMsg" style="display:none;margin-bottom:12px;padding:10px 14px;border-radius:8px;font-size:0.88em;font-weight:600"></div>
+                        <button class="btn" id="vlogScreenshotSubmitBtn" onclick="submitVlogScreenshotsOnly()" style="background:linear-gradient(135deg,#6a1b9a,#9c27b0);border:none;width:100%;font-size:0.95em">📸 Submit Insight Screenshots</button>
+                    </div>
+                </div>
+                <!-- ═══════════════════════════════════════════════════════════════ -->
+
+                <!-- Submissions Table -->
+                <div style="background:white;border-radius:14px;border:2px solid #e0c8f5;overflow:hidden">
+                    <div style="background:linear-gradient(135deg,#833ab4,#fd1d1d);padding:14px 18px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+                        <h4 style="color:white;margin:0;font-size:0.95em">📋 Your Class Teams — <span id="vlogCountBadge" style="background:rgba(255,255,255,0.25);padding:2px 10px;border-radius:12px;font-size:0.85em">0 / 2 slots used</span></h4>
+                        <button class="btn btn-small" onclick="loadVlogSubmissions()" style="background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.5);color:white;font-size:0.8em">🔄 Refresh</button>
+                    </div>
+                    <div id="vlogTableWrap" style="padding:16px">
+                        <div id="vlogEmptyMsg" style="text-align:center;color:#aaa;padding:30px;font-size:0.9em">
+                            No teams submitted yet for your class. Register your team! 🎬
+                        </div>
+                        <div class="table-wrapper" style="margin:0;display:none" id="vlogTableContainer">
+                            <table id="vlogTable">
+                                <thead>
+                                    <tr>
+                                        <th>Team</th>
+                                        <th>Members</th>
+                                        <th>Topic</th>
+                                        <th>Reel Link</th>
+                                        <th>Handle</th>
+                                        <th>Social Score</th>
+                                        <th>Jury Score</th>
+                                        <th>Status</th>
+                                        <th>Submitted</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="vlogTableBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Phase 2 Coming Soon -->
+                <div style="background:linear-gradient(135deg,#e3f2fd,#fce4ec);border:1px dashed #90caf9;border-radius:12px;padding:16px 18px;margin-top:18px">
+                    <h4 style="color:#1565c0;margin:0 0 8px;font-size:0.92em">🔮 Phase 2 — Coming Soon: Auto-Hashtag Tracking via Instagram Graph API</h4>
+                    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px" class="vlog-phase2-grid">
+                        <div style="background:white;border-radius:8px;padding:8px 10px;font-size:0.78em;text-align:center;border:1px solid #bbdefb">
+                            <div>🔖</div><div style="font-weight:700;color:#1565c0;margin-top:3px">Monitors Hashtag</div><div style="color:#888">Scans all posts automatically</div>
+                        </div>
+                        <div style="background:white;border-radius:8px;padding:8px 10px;font-size:0.78em;text-align:center;border:1px solid #bbdefb">
+                            <div>⚡</div><div style="font-weight:700;color:#1565c0;margin-top:3px">Detects New Posts</div><div style="color:#888">Matches to registered teams</div>
+                        </div>
+                        <div style="background:white;border-radius:8px;padding:8px 10px;font-size:0.78em;text-align:center;border:1px solid #bbdefb">
+                            <div>📊</div><div style="font-weight:700;color:#1565c0;margin-top:3px">Live Leaderboard</div><div style="color:#888">Updates scores in real-time</div>
+                        </div>
+                    </div>
+                    <p style="color:#555;font-size:0.8em;margin:0;line-height:1.7">Apply for Instagram Graph API now (approval takes 3–7 days). Once live, likes + comments + views will be tracked automatically and combined with jury scores for final rankings. Your Phase 1 link submissions are ready to go!</p>
+                </div>
+
+                <!-- ── MONITORING SECTION (hidden until Super Admin enables) ── -->
+                <div id="vlogMonitoringSection" style="display:none;margin-top:18px">
+                    <div style="background:linear-gradient(135deg,#fce4ec,#f3e5f5);border-radius:12px;padding:18px;border:2px solid #f48fb1">
+                        <h4 style="color:#880e4f;margin:0 0 12px;font-size:0.95em">📊 Your Team's Social Score Tracking</h4>
+                        <div id="vlogMonitoringContent">
+                            <p style="color:#888;font-size:0.85em">Loading your class tracking data…</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <!-- ── END VLOG CHALLENGE TAB ──────────────────────────────────────── -->
         </div>
 
         <!-- Admin Section -->
@@ -1743,6 +2022,8 @@
                 <button class="tab super-admin-only" onclick="showTab('cloudinaryInspector')" id="cloudinaryInspectorTab">☁️ Cloudinary</button>
                 <button class="tab super-admin-only" onclick="showTab('firebaseDownloadMonitor')" id="firebaseDownloadMonitorTab">🔥 Download Monitor</button>
                 <button class="tab super-admin-only" onclick="showTab('managerPermissionsPanel')" id="managerPermissionsPanelTab">👔 Manager Permissions</button>
+                <button class="tab super-admin-only" onclick="showTab('vlogAdminPanel');loadVlogAdminPanel()" id="vlogAdminPanelTab">📹 Vlog Admin</button>
+                <button class="tab" onclick="showTab('facultyAdminPanel');loadFacultyAdminPanel()" id="facultyAdminPanelTab">👩‍🏫 Faculty</button>
                 <button class="tab" onclick="showTab('pdfHandoutsAdmin')" id="pdfHandoutsAdminTab" style="display:none">📄 PDF Handouts</button>
                 <button class="tab" onclick="showTab('paymentApprovalAdmin');paLoadPending()" id="paymentApprovalAdminTab" style="display:none">💳 Payment Approval</button>
                 <button class="tab" onclick="showTab('eventScheduleAdmin');esLoadEvents()" id="eventScheduleAdminTab" style="display:none">📅 Event Schedule</button>
@@ -1858,7 +2139,16 @@
                     </div>
                 </div>
 
-                <!-- Live Jury Monitor Tab (Super Admin Only) -->
+                <!-- ── VLOG SCORE CALCULATION (only visible when Vlog is selected) ── -->
+                <div id="vlogScoreCalcPanel" style="display:none;margin-top:24px;background:linear-gradient(135deg,#fce4ec,#e8eaf6);border-radius:14px;padding:20px;border:2px solid #f48fb1">
+                    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:14px">
+                        <h3 style="color:#880e4f;margin:0;font-size:1em">📹 Vlog Challenge — Score Calculation &amp; Live Results</h3>
+                        <button class="btn btn-small" onclick="loadVlogScoreCalcPanel([])" style="background:#880e4f;color:white;border:none;font-size:0.8em">🔄 Refresh</button>
+                    </div>
+                    <div id="vlogCalcSubmissions">
+                        <p style="color:#aaa;font-size:0.85em;text-align:center;padding:20px">Select Vlog event above to load score calculations.</p>
+                    </div>
+                </div>
                 <div id="juryLiveMonitor" class="form-section super-admin-only">
                     <h2 style="color:#c44569;margin-bottom:20px">📡 Live Jury Marks Monitor</h2>
                     <div class="form-group">
@@ -3528,6 +3818,246 @@
             </div>
             <!-- END MANAGER PERMISSIONS PANEL -->
 
+            <!-- ══════════════════════════════════════════════════════════════════
+                 VLOG ADMIN PANEL — Super Admin Only
+                 Controls event activation, jury setup, monitoring visibility,
+                 jury criteria, and leaderboard publishing for Vlog Challenge
+            ══════════════════════════════════════════════════════════════════ -->
+            <div id="vlogAdminPanel" class="form-section super-admin-only" style="margin-top:20px">
+                <h2 style="color:#833ab4;margin-bottom:6px">📹 Vlog Challenge — Super Admin Control</h2>
+                <p style="color:#888;margin-bottom:20px;font-size:.9em">All Vlog Challenge settings, event activation, jury setup, and score management live here. Nothing is visible to CRs or Jury until you activate it.</p>
+
+                <!-- ── EVENT ACTIVATION ── -->
+                <div style="background:linear-gradient(135deg,#fff3e0,#fce4ec);border-radius:14px;padding:20px;margin-bottom:20px;border:2px solid #ffab40">
+                    <h3 style="color:#e65100;margin:0 0 12px;font-size:1.05em">🔐 Event Activation & Visibility</h3>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px" class="vlog-admin-grid">
+                        <div style="background:white;border-radius:10px;padding:14px;border:1px solid #ffe0b2">
+                            <div style="font-weight:700;color:#333;font-size:0.9em;margin-bottom:8px">📹 Vlog Event Active?</div>
+                            <div style="color:#666;font-size:0.8em;margin-bottom:10px">When OFF — CRs see "Event not yet started". When ON — submissions open.</div>
+                            <div style="display:flex;gap:10px">
+                                <button class="btn btn-success" onclick="setVlogSetting('eventActive', true)" style="flex:1;font-size:0.85em">✅ Activate</button>
+                                <button class="btn btn-danger" onclick="setVlogSetting('eventActive', false)" style="flex:1;font-size:0.85em">🔒 Deactivate</button>
+                            </div>
+                            <div id="vlogStatusEventActive" style="margin-top:8px;font-size:0.82em;font-weight:700;color:#666">Loading…</div>
+                        </div>
+                        <div style="background:white;border-radius:10px;padding:14px;border:1px solid #ffe0b2">
+                            <div style="font-weight:700;color:#333;font-size:0.9em;margin-bottom:8px">📊 Monitoring Visible to CRs?</div>
+                            <div style="color:#666;font-size:0.8em;margin-bottom:10px">When ON — each CR can see social score tracking for their class teams.</div>
+                            <div style="display:flex;gap:10px">
+                                <button class="btn btn-success" onclick="setVlogSetting('monitoringVisible', true)" style="flex:1;font-size:0.85em">👁 Show</button>
+                                <button class="btn btn-secondary" onclick="setVlogSetting('monitoringVisible', false)" style="flex:1;font-size:0.85em">🙈 Hide</button>
+                            </div>
+                            <div id="vlogStatusMonitoringVisible" style="margin-top:8px;font-size:0.82em;font-weight:700;color:#666">Loading…</div>
+                        </div>
+                        <div style="background:white;border-radius:10px;padding:14px;border:1px solid #ffe0b2">
+                            <div style="font-weight:700;color:#333;font-size:0.9em;margin-bottom:8px">🏆 Leaderboard Published?</div>
+                            <div style="color:#666;font-size:0.8em;margin-bottom:10px">When ON — Vlog results appear in the main leaderboard / Event Results.</div>
+                            <div style="display:flex;gap:10px">
+                                <button class="btn btn-success" onclick="setVlogSetting('leaderboardPublished', true)" style="flex:1;font-size:0.85em">🚀 Publish</button>
+                                <button class="btn btn-secondary" onclick="setVlogSetting('leaderboardPublished', false)" style="flex:1;font-size:0.85em">📦 Unpublish</button>
+                            </div>
+                            <div id="vlogStatusLeaderboardPublished" style="margin-top:8px;font-size:0.82em;font-weight:700;color:#666">Loading…</div>
+                        </div>
+                        <div style="background:white;border-radius:10px;padding:14px;border:1px solid #ffe0b2">
+                            <div style="font-weight:700;color:#333;font-size:0.9em;margin-bottom:8px">🔖 Official Hashtag</div>
+                            <div style="color:#666;font-size:0.8em;margin-bottom:10px">Update the hashtag — auto-syncs to CR form and monitoring.</div>
+                            <div style="display:flex;gap:8px">
+                                <input type="text" id="vlogHashtagInput" placeholder="#SpurthiVlogChallenge2026" style="flex:1;padding:8px 10px;border:2px solid #ddd;border-radius:8px;font-size:0.88em;outline:none">
+                                <button class="btn btn-small" onclick="saveVlogHashtag()" style="background:#833ab4;color:white;border:none;white-space:nowrap">💾 Save</button>
+                            </div>
+                            <div id="vlogStatusHashtag" style="margin-top:8px;font-size:0.82em;font-weight:700;color:#666">Loading…</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ── SOCIAL SCORE FORMULA SETTINGS ── -->
+                <div style="background:linear-gradient(135deg,#fce4ec,#f3e5f5);border-radius:14px;padding:20px;margin-bottom:20px;border:2px solid #f48fb1">
+                    <h3 style="color:#880e4f;margin:0 0 10px;font-size:1.05em">📊 Social Score Formula — Weightage Settings</h3>
+                    <p style="color:#555;font-size:0.82em;margin:0 0 14px;line-height:1.6">
+                        Chandan G B manually enters <strong>Views, Likes, Comments</strong> from each team's Instagram insight screenshot daily (02-03-2026 to 07-03-2026).<br>
+                        The formula: <code style="background:#fff;padding:2px 6px;border-radius:4px;font-size:0.9em">Social Score = (Views × W₁) + (Likes × W₂) + (Comments × W₃)</code> → normalised to 50 marks.<br>
+                        Set the weights below. Default: Views=1, Likes=3, Comments=5 (comments signal deepest engagement).
+                    </p>
+                    <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px" class="vlog-admin-grid">
+                        <div>
+                            <label style="font-size:0.82em;font-weight:700;color:#444;display:block;margin-bottom:5px">Views Weight (W₁)</label>
+                            <input type="number" id="ssWeightViews" min="0" max="10" step="0.1" value="1" placeholder="1" style="width:100%;padding:8px 10px;border:2px solid #f48fb1;border-radius:8px;font-size:0.9em;outline:none;text-align:center">
+                        </div>
+                        <div>
+                            <label style="font-size:0.82em;font-weight:700;color:#444;display:block;margin-bottom:5px">Likes Weight (W₂)</label>
+                            <input type="number" id="ssWeightLikes" min="0" max="10" step="0.1" value="3" placeholder="3" style="width:100%;padding:8px 10px;border:2px solid #f48fb1;border-radius:8px;font-size:0.9em;outline:none;text-align:center">
+                        </div>
+                        <div>
+                            <label style="font-size:0.82em;font-weight:700;color:#444;display:block;margin-bottom:5px">Comments Weight (W₃)</label>
+                            <input type="number" id="ssWeightComments" min="0" max="10" step="0.1" value="5" placeholder="5" style="width:100%;padding:8px 10px;border:2px solid #f48fb1;border-radius:8px;font-size:0.9em;outline:none;text-align:center">
+                        </div>
+                        <div>
+                            <label style="font-size:0.82em;font-weight:700;color:#444;display:block;margin-bottom:5px">Max Raw Score (for normalisation)</label>
+                            <input type="number" id="ssMaxRaw" min="100" step="100" value="5000" placeholder="5000" style="width:100%;padding:8px 10px;border:2px solid #f48fb1;border-radius:8px;font-size:0.9em;outline:none;text-align:center">
+                            <p style="font-size:0.72em;color:#888;margin:4px 0 0">Raw score ÷ Max × 50 = Social %</p>
+                        </div>
+                    </div>
+                    <div style="margin-top:14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+                        <button class="btn btn-success" onclick="saveSocialFormula()" style="font-size:0.88em">💾 Save Formula</button>
+                        <button class="btn btn-secondary" onclick="loadSocialFormula()" style="font-size:0.88em">🔄 Reload</button>
+                        <span id="ssFormulaMsg" style="font-size:0.82em;font-weight:700;color:#155724;display:none"></span>
+                    </div>
+                    <div style="margin-top:14px;background:white;border-radius:8px;padding:12px;border:1px solid #e0c8f5">
+                        <p style="font-size:0.8em;color:#555;margin:0;line-height:1.7">
+                            📐 <strong>Why these weights?</strong><br>
+                            <strong>Comments (×5)</strong> — highest intent, viewer typed a response = deepest engagement<br>
+                            <strong>Likes (×3)</strong> — moderate intent, quick approval tap<br>
+                            <strong>Views (×1)</strong> — passive watch, still valuable but lowest intent<br>
+                            This is the industry-standard weighted engagement formula used by Instagram analytics tools.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- ── ALL SUBMISSIONS (Super Admin view) ── -->
+                <div style="background:white;border-radius:14px;border:2px solid #e0c8f5;overflow:hidden">
+                    <div style="background:linear-gradient(135deg,#833ab4,#fd1d1d);padding:14px 18px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+                        <h4 style="color:white;margin:0;font-size:0.95em">📋 All Vlog Submissions — All Classes</h4>
+                        <div style="display:flex;gap:8px;flex-wrap:wrap">
+                            <select id="vlogAdminClassFilter" onchange="loadVlogAdminPanel()" style="padding:6px 10px;border-radius:8px;border:none;font-size:0.82em;color:#333">
+                                <option value="">All Classes</option>
+                            </select>
+                            <button class="btn btn-small" onclick="loadVlogAdminPanel()" style="background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.5);color:white;font-size:0.8em">🔄 Refresh</button>
+                        </div>
+                    </div>
+                    <div style="padding:16px">
+                        <div id="vlogAdminEmpty" style="text-align:center;color:#aaa;padding:30px;font-size:0.9em">No submissions yet.</div>
+                        <div class="table-wrapper" style="margin:0;display:none" id="vlogAdminTableContainer">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Class</th>
+                                        <th>Members</th>
+                                        <th>Topic</th>
+                                        <th>Reel</th>
+                                        <th>Screenshot</th>
+                                        <th>Handle</th>
+                                        <th>Social Score</th>
+                                        <th>Jury J1</th>
+                                        <th>Jury J2</th>
+                                        <th>Final %</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="vlogAdminTableBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- END VLOG ADMIN PANEL -->
+
+            <!-- ══════════════════════════════════════════════════════════════════
+                 FACULTY ADMIN PANEL
+            ══════════════════════════════════════════════════════════════════ -->
+            <div id="facultyAdminPanel" class="form-section" style="margin-top:20px">
+                <h2 style="color:#2196F3;margin-bottom:6px">👩‍🏫 Faculty Incharge — Admin Panel</h2>
+                <p style="color:#888;margin-bottom:16px;font-size:.9em">All faculty incharges for Spurthi Youth Festival 2026 events. Super Admin sees full details including quiz passwords and all assigned events.</p>
+
+                <!-- Faculty Summary Cards (Super Admin sees all) -->
+                <div id="facultyCardsSuperAdmin" class="super-admin-only" style="margin-bottom:20px">
+                    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px" id="facultyCardsGrid">
+                        <!-- Cards injected by JS -->
+                    </div>
+                </div>
+
+                <!-- Faculty Table (All admins see their own) -->
+                <div style="background:white;border-radius:14px;border:2px solid #bbdefb;overflow:hidden">
+                    <div style="background:linear-gradient(135deg,#1565c0,#42a5f5);padding:14px 18px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+                        <h4 style="color:white;margin:0;font-size:0.95em">📋 Faculty Incharge Directory</h4>
+                        <span class="super-admin-only" style="background:rgba(255,255,255,0.2);color:white;padding:3px 12px;border-radius:12px;font-size:0.78em;font-weight:700">Super Admin — Full View with Phone Numbers</span>
+                    </div>
+                    <div style="padding:16px">
+                        <div class="table-wrapper" style="margin:0">
+                            <table id="facultyTable">
+                                <thead>
+                                    <tr>
+                                        <th>Sl.</th>
+                                        <th>Faculty Name</th>
+                                        <th>Class</th>
+                                        <th class="super-admin-only">Phone</th>
+                                        <th class="super-admin-only">Quiz Password</th>
+                                        <th>Events Incharge</th>
+                                        <th>Role</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="facultyTableBody">
+                                    <!-- Injected by JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Faculty Login -->
+                <div style="background:linear-gradient(135deg,#e3f2fd,#e8eaf6);border-radius:14px;padding:20px;margin-top:20px;border:2px solid #90caf9">
+                    <h3 style="color:#1565c0;margin:0 0 8px;font-size:1em">🔑 Faculty Login</h3>
+                    <p style="color:#555;font-size:0.83em;margin:0 0 14px">Select your name from the list — your phone number will be filled automatically. Enter your quiz registration password to log in.</p>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px" class="vlog-admin-grid">
+                        <div>
+                            <label style="font-size:0.85em;font-weight:700;color:#444;display:block;margin-bottom:5px">Select Faculty Name <span style="color:red">*</span></label>
+                            <select id="facultyLoginSelect" onchange="facultySelectChanged()" style="width:100%;padding:9px 12px;border:2px solid #ddd;border-radius:8px;font-size:0.9em;outline:none;transition:border 0.2s;background:white;color:#333" onfocus="this.style.borderColor='#1565c0'" onblur="this.style.borderColor='#ddd'">
+                                <option value="">— Select your name —</option>
+                            </select>
+                            <div id="facultySelectedPhone" style="display:none;margin-top:6px;background:#e3f2fd;border-radius:6px;padding:6px 10px;font-size:0.82em;color:#1565c0;font-weight:700"></div>
+                            <input type="hidden" id="facultyLoginPhone">
+                        </div>
+                        <div>
+                            <label style="font-size:0.85em;font-weight:700;color:#444;display:block;margin-bottom:5px">Password <span style="color:red">*</span></label>
+                            <div style="position:relative">
+                                <input type="password" id="facultyLoginPwd" placeholder="Your quiz registration password" style="width:100%;padding:9px 40px 9px 12px;border:2px solid #ddd;border-radius:8px;font-size:0.9em;outline:none;transition:border 0.2s;box-sizing:border-box" onfocus="this.style.borderColor='#1565c0'" onblur="this.style.borderColor='#ddd'" onkeydown="if(event.key==='Enter') facultyLogin()">
+                                <button type="button" onclick="toggleFacultyPwd()" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:1em;color:#888" id="facultyPwdToggle">👁</button>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="btn" onclick="facultyLogin()" style="background:linear-gradient(135deg,#1565c0,#42a5f5);border:none;min-width:180px">👩‍🏫 Login as Faculty</button>
+                    <div id="facultyLoginMsg" style="display:none;margin-top:10px;padding:9px 12px;border-radius:8px;font-size:0.85em;font-weight:600"></div>
+                </div>
+
+                <!-- Faculty Dashboard (shown after login) -->
+                <div id="facultyDashboard" style="display:none;margin-top:20px">
+                    <div style="background:linear-gradient(135deg,#1565c0,#42a5f5);border-radius:12px;padding:16px 20px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
+                        <div>
+                            <div style="color:white;font-weight:700;font-size:1.05em">Welcome, <span id="facultyDashName"></span> 👩‍🏫</div>
+                            <div style="color:rgba(255,255,255,0.85);font-size:0.82em;margin-top:3px">Class Incharge — <span id="facultyDashClass"></span> &nbsp;|&nbsp; Role: <span id="facultyDashRole" style="background:rgba(255,255,255,0.2);padding:2px 10px;border-radius:12px;font-size:0.9em">Incharge</span></div>
+                        </div>
+                        <button class="btn btn-secondary btn-small" onclick="facultyLogout()">Logout</button>
+                    </div>
+
+                    <!-- Social Monitor Panel (only for Chandan G B) -->
+                    <div id="chandanSocialPanel" style="display:none">
+                        <div style="background:linear-gradient(135deg,#e8f5e9,#f3e5f5);border-radius:14px;padding:18px;border:2px solid #a5d6a7;margin-bottom:16px">
+                            <h3 style="color:#1b5e20;margin:0 0 6px;font-size:1.05em">📊 Vlog Challenge — Social Score Monitor</h3>
+                            <p style="color:#555;font-size:0.82em;margin:0 0 10px">Enter daily Views, Likes, and Comments for each team from their Instagram Reel insight screenshots.<br>
+                            <strong>Active Period: 02-03-2026 to 07-03-2026</strong> &nbsp;|&nbsp; You can update multiple times — the latest entry is used.</p>
+                            <div id="chandanDateWarning" style="display:none;background:#fff3cd;border-radius:8px;padding:10px 14px;border-left:4px solid #ffc107;font-size:0.85em;color:#856404;margin-bottom:10px"></div>
+                        </div>
+
+                        <!-- Team cards with screenshot + metric entry -->
+                        <div id="chandanTeamList" style="display:flex;flex-direction:column;gap:16px">
+                            <div style="text-align:center;color:#aaa;padding:30px">Loading Vlog submissions…</div>
+                        </div>
+
+                        <div style="margin-top:16px;text-align:center">
+                            <button class="btn btn-secondary" onclick="loadChandanPanel()" style="font-size:0.88em">🔄 Refresh All Teams</button>
+                        </div>
+                    </div>
+
+                    <!-- Default coming-soon for other faculty -->
+                    <div id="facultyComingSoon" style="background:#fffde7;border-left:4px solid #ffc107;border-radius:10px;padding:14px 16px;font-size:0.87em;color:#856404">
+                        <strong>ℹ️ Coming Soon:</strong> Your specific role and permissions will be assigned by the Super Admin shortly. Once assigned, you will see your class's relevant data and controls here.
+                    </div>
+                </div>
+
+            </div>
+            <!-- END FACULTY ADMIN PANEL -->
+
             <div id="firebaseDownloadMonitor" class="form-section super-admin-only" style="margin-top:20px">
                 <h2 style="color:#c44569;margin-bottom:6px">🔥 Firebase Download Monitor</h2>
                 <p style="color:#888;margin-bottom:16px;font-size:.9em">Track your Firebase Storage 10 GB/day download limit. Manually log downloads or paste daily stats to visualise usage.</p>
@@ -3623,6 +4153,7 @@
             <!-- ================================================ -->
             <!-- END FIREBASE DOWNLOAD MONITOR                    -->
             <!-- ================================================ -->
+            </div>
 
             <div id="leaderboardAdmin" class="form-section super-admin-only" style="margin-top:20px">
                 <h2 style="color:#ffd700;margin-bottom:12px;text-shadow:0 2px 8px rgba(0,0,0,0.4)">🏆 Leaderboard Management</h2>
@@ -4523,7 +5054,7 @@
             'Interdisciplinary': {size:'5 Members',count:5,role:true,topic:true,topicLabel:'Topic',allow:false,maxPerClass:1},
             'Ramp Walk': {size:'Individual members',count:0,role:true,topic:true,topicLabel:'Theme',show:true,allow:false,maxPerClass:999,pctMax:30,dynamicCount:true,individual:true},
             'Quiz': {size:'6 Members',count:6,role:true,allow:false,maxPerClass:1},
-            'Vlog': {size:'3 Members',count:3,role:true,topic:true,topicLabel:'Topic',allow:true,maxPerClass:3,vlogTopics:['Travel Vlog','Educational Vlog','Event Vlog','Shops Vlog'],multiTeam:true},
+            'Vlog': {size:'2 Members',count:2,role:true,topic:true,topicLabel:'Topic',allow:true,maxPerClass:2,vlogTopics:['Travel Vlog','Educational Vlog','Event Vlog','Shops Vlog'],multiTeam:true},
             'YouTube Advertisement': {size:'8 Members',count:8,role:true,prod:true,allow:false,maxPerClass:1},
             'Mad Ads': {size:'8 Members',count:8,role:true,topic:true,topicLabel:'Topic',allow:false,maxPerClass:1},
             'Hand Writing': {size:'Individual',count:1,role:false,lang:true,allow:false,maxPerClass:999,pctMax:15,oneAtATime:true,individual:true},
@@ -5778,6 +6309,12 @@
                 baseData.showstopper = show.value.trim();
             }
             
+            // For multiTeam events: assign shared teamNum so all members of this submission are grouped as one team
+            if (cfg.multiTeam) {
+                const currentlyEnrolled = all.filter(e => e.event === selectedEvent && e.classYear === studentClass).length;
+                baseData.teamNum = Math.ceil(currentlyEnrolled / cfg.count) + 1;
+            }
+
             // Submit all members
             const promises = members.map(m => {
                 const data = {...baseData, name: m.name, phone: m.phone, role: m.role};
@@ -6108,12 +6645,18 @@
                 baseData.showstopper = show.value.trim();
             }
             
+            // For multiTeam events: assign shared teamNum so all members of this submission are grouped as one team
+            if (cfg.multiTeam) {
+                const currentlyEnrolled = all.filter(e => e.event === selectedEvent && e.classYear === crClass).length;
+                baseData.teamNum = Math.ceil(currentlyEnrolled / cfg.count) + 1;
+            }
+
             // Submit all members
             const promises = members.map(m => {
                 const data = {...baseData, name: m.name, phone: m.phone, role: m.role};
                 return ref.push(data);
             });
-            
+
             // Validate minCount before submitting
             if (cfg.minCount && members.length < cfg.minCount) {
                 alert('Minimum ' + cfg.minCount + ' members required for ' + selectedEvent + '. Please add at least ' + cfg.minCount + ' members.');
@@ -6144,6 +6687,1520 @@
             document.querySelectorAll('#crSection .form-section').forEach(s => s.classList.remove('active'));
             event.target.classList.add('active');
             document.getElementById(tab).classList.add('active');
+        }
+
+        // ══════════════════════════════════════════════════════════════
+        // VLOG CHALLENGE — Phase 1: Link Submission (2 members, 2 teams max, Instagram only)
+        // ══════════════════════════════════════════════════════════════
+        // ── Vlog screenshot preview & remove ──
+        // ══════════════════════════════════════════════════════════════
+        // VLOG: 2-SCREENSHOT SYSTEM
+        // Screenshot 1: Day 1 of event (02-03-2026)
+        // Screenshot 2: Last day of event (07-03-2026)
+        // Chandan reads these screenshots and manually enters Views/Likes/Comments
+        // ══════════════════════════════════════════════════════════════
+        const VLOG_SCREENSHOT_START = '2026-03-04';
+        const VLOG_SCREENSHOT_END   = '2026-03-07';
+
+        function initVlogDailyScreenshots() {
+            const container = document.getElementById('vlogDailyScreenshotsContainer');
+            if (!container) return;
+            container.innerHTML = '';
+
+            const today    = new Date();
+            const startDt  = new Date('2026-02-01T00:00:00'); // always open for testing
+            const endDt    = new Date('2026-02-01T00:00:00'); // always open for testing
+
+            const slots = [
+                {
+                    iso   : VLOG_SCREENSHOT_START,
+                    label : '📅 Screenshot 1 — Start of Event (04 Mar 2026)',
+                    hint  : 'Upload on or after 04-Mar-2026',
+                    unlock: startDt
+                },
+                {
+                    iso   : VLOG_SCREENSHOT_END,
+                    label : '📅 Screenshot 2 — End of Event (07 Mar 2026)',
+                    hint  : 'Upload on or after 07-Mar-2026',
+                    unlock: endDt
+                }
+            ];
+
+            slots.forEach(slot => {
+                const isFuture  = today < slot.unlock;
+                const isToday   = today.toDateString() === slot.unlock.toDateString();
+                const fileId    = 'vlogShotFile_'   + slot.iso;
+                const previewId = 'vlogShotPrev_'   + slot.iso;
+                const imgId     = 'vlogShotImg_'    + slot.iso;
+                const nameId    = 'vlogShotName_'   + slot.iso;
+                const statusId  = 'vlogShotStatus_' + slot.iso;
+                const slotId    = 'vlogShot_'       + slot.iso;
+
+                const borderColor = isToday ? '#9c27b0' : isFuture ? '#ddd' : '#a5d6a7';
+                const bgColor     = isToday ? '#fdf5ff' : isFuture ? '#fafafa' : '#f1f8e9';
+                const badge       = isToday
+                    ? '<span style="background:#9c27b0;color:white;padding:2px 8px;border-radius:10px;font-size:0.72em;font-weight:700;margin-left:6px">TODAY</span>'
+                    : isFuture
+                        ? `<span style="background:#ccc;color:#555;padding:2px 8px;border-radius:10px;font-size:0.72em;font-weight:400;margin-left:6px">OPENS ${slot.hint}</span>`
+                        : '<span style="background:#4caf50;color:white;padding:2px 8px;border-radius:10px;font-size:0.72em;font-weight:700;margin-left:6px">AVAILABLE</span>';
+                const disabled    = isFuture ? 'disabled' : '';
+                const disStyle    = isFuture ? 'opacity:0.5;cursor:not-allowed;' : '';
+
+                container.insertAdjacentHTML('beforeend', `
+                <div id="${slotId}" style="background:${bgColor};border:2px solid ${borderColor};border-radius:10px;padding:14px 16px;margin-bottom:4px">
+                    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;margin-bottom:10px">
+                        <div style="font-size:0.87em;font-weight:700;color:#444">${slot.label}${badge}</div>
+                        <div id="${statusId}" style="font-size:0.78em;font-weight:700;display:none;padding:3px 8px;border-radius:6px"></div>
+                    </div>
+                    <p style="font-size:0.76em;color:#777;margin:0 0 8px">
+                        📸 Open your Reel → tap <strong>⋯</strong> → <strong>View Insights</strong> → screenshot showing <strong>Views, Likes, Comments</strong>.<br>
+                        Chandan (Social Monitor) will read this and enter the numbers to calculate your Social Score.
+                    </p>
+                    <div id="${previewId}" style="display:none;margin-bottom:8px">
+                        <img id="${imgId}" src="" alt="Insight Screenshot" style="max-height:140px;max-width:100%;border-radius:8px;border:2px solid #ce93d8;object-fit:contain">
+                        <button type="button" onclick="removeDailyShot('${slot.iso}')" style="display:inline-block;margin-top:5px;background:#f44336;color:white;border:none;border-radius:6px;padding:3px 12px;font-size:0.76em;cursor:pointer">✕ Remove</button>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+                        <input type="file" id="${fileId}" accept="image/*" onchange="previewDailyShot('${slot.iso}',this)" style="display:none" ${disabled}>
+                        <button type="button" onclick="document.getElementById('${fileId}').click()"
+                            style="background:#9c27b0;color:white;border:none;border-radius:8px;padding:8px 16px;font-size:0.84em;font-weight:700;cursor:pointer;${disStyle}" ${disabled}>
+                            📷 Upload Screenshot
+                        </button>
+                        <span id="${nameId}" style="font-size:0.8em;color:#888">No file chosen</span>
+                    </div>
+                </div>`);
+            });
+        }
+
+        function previewDailyShot(iso, input) {
+            const file    = input.files[0];
+            const nameEl  = document.getElementById('vlogShotName_'   + iso);
+            const prevEl  = document.getElementById('vlogShotPrev_'   + iso);
+            const imgEl   = document.getElementById('vlogShotImg_'    + iso);
+            if (!file) return;
+            if (nameEl) nameEl.textContent = file.name;
+            const reader = new FileReader();
+            reader.onload = e => {
+                if (imgEl)  imgEl.src = e.target.result;
+                if (prevEl) prevEl.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function removeDailyShot(iso) {
+            const fileEl  = document.getElementById('vlogShotFile_'   + iso);
+            const prevEl  = document.getElementById('vlogShotPrev_'   + iso);
+            const nameEl  = document.getElementById('vlogShotName_'   + iso);
+            const imgEl   = document.getElementById('vlogShotImg_'    + iso);
+            if (fileEl)  fileEl.value = '';
+            if (prevEl)  prevEl.style.display = 'none';
+            if (imgEl)   imgEl.src = '';
+            if (nameEl)  nameEl.textContent = 'No file chosen';
+        }
+
+        async function uploadDailyShot(iso) {
+            const fileEl   = document.getElementById('vlogShotFile_'   + iso);
+            const statusEl = document.getElementById('vlogShotStatus_' + iso);
+            if (!fileEl || !fileEl.files[0]) return null;
+
+            function setS(msg, ok) {
+                if (!statusEl) return;
+                statusEl.style.display    = 'block';
+                statusEl.style.background = ok ? '#d4edda' : ok === false ? '#f8d7da' : '#fff3cd';
+                statusEl.style.color      = ok ? '#155724' : ok === false ? '#721c24' : '#856404';
+                statusEl.style.border     = ok ? '1px solid #c3e6cb' : ok === false ? '1px solid #f5c6cb' : '1px solid #ffc107';
+                statusEl.textContent = msg;
+            }
+
+            setS('⏳ Uploading…', null);
+            const formData = new FormData();
+            formData.append('file', fileEl.files[0]);
+            formData.append('upload_preset', 'scavenger_hunt');
+            formData.append('folder', 'vlog_insights/' + iso);
+            try {
+                const res  = await fetch('https://api.cloudinary.com/v1_1/dat0khbet/image/upload', { method:'POST', body:formData });
+                const data = await res.json();
+                if (data.secure_url) { setS('✅ Uploaded!', true); return { url: data.secure_url, date: iso }; }
+                else { setS('⚠️ Upload failed — skipped.', null); return null; }
+            } catch(e) {
+                setS('⚠️ Upload error — skipped.', null); return null;
+            }
+        }
+
+        async function uploadAllDailyShots() {
+            const start  = new Date(VLOG_SCREENSHOT_START + 'T00:00:00');
+            const end    = new Date(VLOG_SCREENSHOT_END   + 'T23:59:59');
+            const dayMs  = 86400000;
+            const results = {};
+            for (let d = new Date(start); d <= end; d = new Date(d.getTime() + dayMs)) {
+                const iso  = d.toISOString().slice(0, 10);
+                const fileEl = document.getElementById('vlogShotFile_' + iso);
+                if (fileEl && fileEl.files[0]) {
+                    const r = await uploadDailyShot(iso);
+                    if (r) results[iso.replace(/-/g,'_')] = r.url;
+                }
+            }
+            return results; // { '2026_03_02': 'https://...', ... }
+        }
+
+        // ── Separate screenshot-only submission (called after reel link submit) ──
+        async function submitVlogScreenshotsOnly() {
+            const msgEl = document.getElementById('vlogScreenshotSubmitMsg');
+            const btnEl = document.getElementById('vlogScreenshotSubmitBtn');
+            const cls   = (window.currentCRClass || crClass || '').trim();
+
+            function showShotMsg(text, ok) {
+                if (!msgEl) return;
+                msgEl.style.display    = 'block';
+                msgEl.style.background = ok ? '#d4edda' : '#f8d7da';
+                msgEl.style.color      = ok ? '#155724' : '#721c24';
+                msgEl.style.border     = ok ? '1px solid #c3e6cb' : '1px solid #f5c6cb';
+                msgEl.textContent = text;
+            }
+
+            if (!cls) { showShotMsg('❌ Class info missing. Please re-login.', false); return; }
+
+            btnEl.disabled = true;
+            btnEl.textContent = '⏳ Uploading screenshots…';
+
+            try {
+                const dailyScreenshots = await uploadAllDailyShots();
+                if (!Object.keys(dailyScreenshots).length) {
+                    showShotMsg('⚠️ No screenshots selected. Please choose at least one screenshot to upload.', false);
+                    return;
+                }
+
+                // Find the team entry for this CR's class and update it with screenshot data
+                const snap = await db.ref('vlogChallenge').orderByChild('classYear').equalTo(cls).once('value');
+                let updated = 0;
+                const updates = {};
+                snap.forEach(ch => {
+                    const today = new Date().toISOString().slice(0,10);
+                    const todayKey = today.replace(/-/g,'_');
+                    const existing = ch.val().dailyScreenshots || {};
+                    Object.assign(existing, dailyScreenshots);
+                    updates['vlogChallenge/' + ch.key + '/dailyScreenshots'] = existing;
+                    if (dailyScreenshots[todayKey]) {
+                        updates['vlogChallenge/' + ch.key + '/screenshotUrl'] = dailyScreenshots[todayKey];
+                    }
+                    updated++;
+                });
+
+                if (!updated) {
+                    showShotMsg('❌ No submitted team found for your class. Please submit the Reel Link first.', false);
+                    return;
+                }
+
+                await db.ref().update(updates);
+                showShotMsg('✅ Insight screenshots uploaded successfully! Admin will review and update your Social Score.', true);
+            } catch(err) {
+                showShotMsg('❌ Error: ' + err.message, false);
+            } finally {
+                btnEl.disabled = false;
+                btnEl.textContent = '📸 Submit Insight Screenshots';
+            }
+        }
+
+        function previewVlogScreenshot(input) {
+            // Legacy single-screenshot — kept for backward compat but not used in new form
+            const file = input.files[0];
+            if (!file) return;
+            const nameEl = document.getElementById('vlogScreenshotFileName');
+            if (nameEl) nameEl.textContent = file.name;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = document.getElementById('vlogScreenshotImg');
+                const prev = document.getElementById('vlogScreenshotPreview');
+                if (img) img.src = e.target.result;
+                if (prev) prev.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function removeVlogScreenshot() {
+            const fileEl = document.getElementById('vlogScreenshotFile');
+            const prev   = document.getElementById('vlogScreenshotPreview');
+            const nameEl = document.getElementById('vlogScreenshotFileName');
+            const img    = document.getElementById('vlogScreenshotImg');
+            if (fileEl) fileEl.value = '';
+            if (prev)   prev.style.display = 'none';
+            if (img)    img.src = '';
+            if (nameEl) nameEl.textContent = 'No file chosen';
+        }
+
+        async function uploadVlogScreenshot() {
+            // Legacy single upload — delegates to daily system; uploads today's slot if filled
+            const today   = new Date().toISOString().slice(0,10);
+            const fileEl  = document.getElementById('vlogShotFile_' + today);
+            const statusEl = document.getElementById('vlogScreenshotUploadStatus'); // may not exist now
+            if (fileEl && fileEl.files[0]) {
+                const r = await uploadDailyShot(today);
+                return r ? r.url : null;
+            }
+            return null;
+        }
+
+        async function submitVlogEntry() {
+            const member1 = (document.getElementById('vlogMember1').value || '').trim();
+            const member2 = (document.getElementById('vlogMember2').value || '').trim();
+            const topic   = (document.getElementById('vlogTopic').value || '').trim();
+            const handle  = (document.getElementById('vlogHandle').value || '').trim();
+            const link    = (document.getElementById('vlogLink').value || '').trim();
+            const title   = (document.getElementById('vlogTitle').value || '').trim();
+            const cls     = (window.currentCRClass || crClass || '').trim();
+            const msgEl   = document.getElementById('vlogSubmitMsg');
+            const btnEl   = document.getElementById('vlogSubmitBtn');
+
+            function showMsg(text, ok) {
+                msgEl.style.display = 'block';
+                msgEl.style.background = ok ? '#d4edda' : '#f8d7da';
+                msgEl.style.color      = ok ? '#155724' : '#721c24';
+                msgEl.style.border     = ok ? '1px solid #c3e6cb' : '1px solid #f5c6cb';
+                msgEl.textContent = text;
+            }
+
+            if (!member1)  { showMsg('❌ Please select your team first.', false); return; }
+            if (!member2)  { showMsg('❌ Member 2 name missing. Please re-select your team.', false); return; }
+            if (!topic)    { showMsg('❌ Topic missing. Please re-select your team.', false); return; }
+            if (!handle)   { showMsg('❌ Please enter the Instagram handle.', false); return; }
+            if (!link)     { showMsg('❌ Please enter the Instagram Reel link.', false); return; }
+            if (!title)    { showMsg('❌ Please enter the Reel title/caption.', false); return; }
+            if (!link.includes('instagram.com')) { showMsg('❌ Link must be an Instagram URL (instagram.com).', false); return; }
+            if (!cls)      { showMsg('❌ Class info missing. Please re-login.', false); return; }
+
+            btnEl.disabled = true;
+            btnEl.textContent = '⏳ Checking slots…';
+
+            // (Screenshots are submitted separately after reel link submission)
+
+            try {
+                const snap = await db.ref('vlogChallenge').orderByChild('classYear').equalTo(cls).once('value');
+                const existing = [];
+                if (snap.exists()) snap.forEach(ch => existing.push(ch.val()));
+
+                if (existing.length >= 2) {
+                    showMsg('❌ Your class already has 2 teams registered. No more slots available.', false);
+                    return;
+                }
+
+                const takenTopics = existing.map(e => e.topic);
+                if (takenTopics.includes(topic)) {
+                    showMsg('❌ Topic "' + topic + '" is already taken by another team in your class.', false);
+                    return;
+                }
+
+                const hashtag = document.getElementById('vlogHashtagDisplay').textContent || '#SpurthiVlogChallenge2026';
+                const entry = {
+                    member1         : member1,
+                    member2         : member2,
+                    members         : member1 + ' & ' + member2,
+                    topic           : topic,
+                    handle          : handle,
+                    link            : link,
+                    title           : title,
+                    classYear       : cls,
+                    status          : 'Pending Review',
+                    hashtag         : hashtag,
+                    socialScore     : 0,
+                    juryScore       : null,
+                    finalScore      : null,
+                    screenshotUrl       : null,
+                    dailyScreenshots    : null,
+                    submittedAt     : new Date().toISOString(),
+                    submittedBy     : 'CR'
+                };
+
+                btnEl.textContent = '⏳ Saving…';
+                await db.ref('vlogChallenge').push(entry);
+                showMsg('✅ Team submitted! ' + member1 + ' & ' + member2 + ' — "' + topic + '" registered successfully. Now upload your daily Insight screenshots below ⬇️', true);
+                clearVlogForm();
+                loadVlogSubmissions();
+                // Reveal the separate screenshot section and build its slots
+                const shotSection = document.getElementById('vlogInsightScreenshotSection');
+                if (shotSection) {
+                    shotSection.style.display = 'block';
+                    initVlogDailyScreenshots(); // populate screenshot date slots
+                    shotSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            } catch(err) {
+                showMsg('❌ Error: ' + err.message, false);
+            } finally {
+                btnEl.disabled = false;
+                btnEl.textContent = '📤 Submit Instagram Reel Link';
+            }
+        }
+
+        function clearVlogForm() {
+            ['vlogMember1','vlogMember2','vlogLink','vlogTitle','vlogHandle'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.value = '';
+            });
+            const tp = document.getElementById('vlogTopic');
+            if (tp) tp.value = '';
+            const msg = document.getElementById('vlogSubmitMsg');
+            if (msg) msg.style.display = 'none';
+            // Reset screenshot
+            removeVlogScreenshot();
+            const statusEl = document.getElementById('vlogScreenshotUploadStatus');
+            if (statusEl) statusEl.style.display = 'none';
+            // Reset team selector
+            const sel = document.getElementById('vlogTeamSelect');
+            if (sel) sel.value = '';
+            const disp = document.getElementById('vlogSelectedTeamDisplay');
+            if (disp) disp.style.display = 'none';
+        }
+
+        function loadVlogSubmissions() {
+            const cls = (window.currentCRClass || crClass || '').trim();
+            const lbl = document.getElementById('vlogCRClass');
+            if (lbl) lbl.textContent = cls;
+            if (!cls) return;
+
+            db.ref('vlogChallenge').orderByChild('classYear').equalTo(cls).once('value').then(snap => {
+                const entries = [];
+                if (snap.exists()) snap.forEach(ch => entries.push({ id: ch.key, ...ch.val() }));
+                entries.sort((a, b) => new Date(a.submittedAt) - new Date(b.submittedAt));
+
+                const badge     = document.getElementById('vlogCountBadge');
+                const empty     = document.getElementById('vlogEmptyMsg');
+                const container = document.getElementById('vlogTableContainer');
+                const tbody     = document.getElementById('vlogTableBody');
+                const slotsInfo = document.getElementById('vlogTeamSlotsInfo');
+                const topicSel  = document.getElementById('vlogTopic');
+
+                const usedSlots = entries.length;
+                if (badge) badge.textContent = usedSlots + ' / 2 slots used';
+
+                // Update slots info banner
+                if (slotsInfo) {
+                    if (usedSlots >= 2) {
+                        slotsInfo.style.background = '#fce4ec';
+                        slotsInfo.style.borderLeftColor = '#e91e63';
+                        slotsInfo.style.color = '#880e4f';
+                        slotsInfo.textContent = '🚫 Both team slots are full for your class. No more submissions allowed.';
+                        const btn = document.getElementById('vlogSubmitBtn');
+                        if (btn) { btn.disabled = true; btn.style.opacity = '0.5'; }
+                    } else {
+                        slotsInfo.style.background = '#e8f5e9';
+                        slotsInfo.style.borderLeftColor = '#4caf50';
+                        slotsInfo.style.color = '#1b5e20';
+                        slotsInfo.textContent = '✅ ' + (2 - usedSlots) + ' team slot(s) remaining for your class.';
+                        const btn = document.getElementById('vlogSubmitBtn');
+                        if (btn) { btn.disabled = false; btn.style.opacity = '1'; }
+                    }
+                }
+
+                // Grey out taken topics in dropdown
+                if (topicSel) {
+                    const takenTopics = entries.map(e => e.topic);
+                    Array.from(topicSel.options).forEach(opt => {
+                        if (opt.value && takenTopics.includes(opt.value)) {
+                            opt.disabled = true;
+                            opt.textContent = opt.textContent.replace(' ✅ Taken', '') + ' ✅ Taken';
+                            opt.style.color = '#aaa';
+                        } else if (opt.value) {
+                            opt.disabled = false;
+                            opt.textContent = opt.textContent.replace(' ✅ Taken', '');
+                            opt.style.color = '';
+                        }
+                    });
+                }
+
+                if (entries.length === 0) {
+                    if (empty) empty.style.display = 'block';
+                    if (container) container.style.display = 'none';
+                    return;
+                }
+                if (empty) empty.style.display = 'none';
+                if (container) container.style.display = 'block';
+
+                // If team(s) already submitted, reveal the separate screenshot section
+                const shotSection = document.getElementById('vlogInsightScreenshotSection');
+                if (shotSection) {
+                    shotSection.style.display = 'block';
+                    initVlogDailyScreenshots(); // populate screenshot date slots
+                }
+
+                const VLOG_MAX_SOCIAL = 1000; // adjust when API is live
+                let rows = '';
+                entries.forEach((e, i) => {
+                    const statusColor = e.status === 'Approved' ? '#155724' : e.status === 'Rejected' ? '#721c24' : '#856404';
+                    const statusBg    = e.status === 'Approved' ? '#d4edda'  : e.status === 'Rejected' ? '#f8d7da'  : '#fff3cd';
+                    const dt = e.submittedAt ? new Date(e.submittedAt).toLocaleString('en-IN', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' }) : '—';
+                    const socialStr = (e.socialScore != null && e.socialScore > 0) ? e.socialScore : '—';
+                    const juryStr   = (e.juryScore   != null) ? e.juryScore + '/100' : '—';
+                    const finalStr  = (e.finalScore  != null) ? '<strong>' + e.finalScore + '</strong>' : '—';
+                    rows += `<tr>
+                        <td style="text-align:center;font-weight:700;color:#833ab4">${i+1}</td>
+                        <td style="font-size:0.85em"><strong>${e.member1||'—'}</strong><br><span style="color:#888">${e.member2||''}</span></td>
+                        <td style="font-size:0.82em;font-weight:600;color:#4a148c">${e.topic||'—'}</td>
+                        <td style="text-align:center"><a href="${e.link}" target="_blank" rel="noopener" style="color:#e91e63;font-size:0.85em;text-decoration:none;font-weight:600">📸 Reel</a></td>
+                        <td style="font-size:0.82em;color:#777">${e.handle||'—'}</td>
+                        <td style="text-align:center;font-size:0.85em">${socialStr}</td>
+                        <td style="text-align:center;font-size:0.85em">${juryStr}</td>
+                        <td style="text-align:center"><span style="background:${statusBg};color:${statusColor};padding:3px 10px;border-radius:12px;font-size:0.75em;font-weight:700">${e.status||'Pending'}</span></td>
+                        <td style="font-size:0.78em;color:#666">${dt}</td>
+                    </tr>`;
+                });
+                if (tbody) tbody.innerHTML = rows;
+            }).catch(err => console.error('Vlog load error:', err));
+        }
+        // ══════════════════════════════════════════════════════════════
+        // END VLOG CHALLENGE
+        // ══════════════════════════════════════════════════════════════
+
+        // ══════════════════════════════════════════════════════════════
+        // VLOG: LOAD ENROLLED TEAMS & DRIVE TEAM SELECTOR
+        // ══════════════════════════════════════════════════════════════
+        let vlogEnrolledTeams = [];
+
+        async function autoFillVlogMembers() {
+            const cls = (window.currentCRClass || crClass || '').trim();
+            const listEl   = document.getElementById('vlogEnrolledTeamsList');
+            const selectEl = document.getElementById('vlogTeamSelect');
+
+            if (!cls) {
+                if (listEl) listEl.innerHTML = '<span style="color:#c62828">⚠️ Class not detected. Please log in again.</span>';
+                return;
+            }
+
+            if (listEl) listEl.innerHTML = '<span style="color:#666">🔄 Loading teams…</span>';
+            if (selectEl) selectEl.innerHTML = '<option value="">— Loading… —</option>';
+
+            try {
+                // Load Vlog enrollments for this class — filter client-side, no index required
+                const enrollSnap = await db.ref('youthfest-enrollments').once('value');
+                const memberRecords = [];
+                if (enrollSnap.exists()) {
+                    enrollSnap.forEach(ch => {
+                        const d = ch.val();
+                        if (d.event === 'Vlog' && (d.classYear || d.class || '').trim() === cls) {
+                            memberRecords.push(d);
+                        }
+                    });
+                }
+
+                vlogEnrolledTeams = [];
+
+                if (memberRecords.length === 0) {
+                    if (listEl) listEl.innerHTML = '<span style="color:#c62828">⚠️ No Vlog enrollment found for your class. Please enroll in the Vlog event first.</span>';
+                    if (selectEl) selectEl.innerHTML = '<option value="">— No enrolled teams found —</option>';
+                    return;
+                }
+
+                // Group member records into teams by teamNum → topic → sequential chunks
+                const teamsMap = {};
+                memberRecords.forEach((m, idx) => {
+                    let tKey;
+                    if (m.teamNum !== undefined && m.teamNum !== null) tKey = 'tn__' + m.teamNum;
+                    else if (m.topic) tKey = 'tp__' + m.topic;
+                    else tKey = 'idx__' + Math.floor(idx / 2);
+                    if (!teamsMap[tKey]) teamsMap[tKey] = { members: [], topic: m.topic || '', teamNum: m.teamNum };
+                    teamsMap[tKey].members.push(m);
+                });
+
+                const sortedKeys = Object.keys(teamsMap).sort((a, b) => {
+                    const an = teamsMap[a].teamNum, bn = teamsMap[b].teamNum;
+                    if (an != null && bn != null) return Number(an) - Number(bn);
+                    return a.localeCompare(b);
+                });
+
+                sortedKeys.forEach(k => {
+                    const t = teamsMap[k];
+                    vlogEnrolledTeams.push({
+                        ...t.members[0],
+                        _allMembers: t.members,
+                        topic: t.topic || t.members[0].topic || ''
+                    });
+                });
+
+                if (!listEl || !selectEl) return;
+
+                // Render team cards
+                listEl.innerHTML = vlogEnrolledTeams.map((enr, i) => {
+                    const names = extractVlogNames(enr);
+                    const topic = enr.topic || '—';
+                    return `<div style="padding:8px 0;${i < vlogEnrolledTeams.length - 1 ? 'border-bottom:1px solid #e1bee7;' : ''}display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+                        <span style="background:#e8eaf6;border-radius:20px;padding:2px 10px;font-size:0.82em;color:#3949ab;font-weight:700">Team ${i + 1}</span>
+                        <span style="font-weight:600;color:#222;font-size:0.88em">${names.join(' &amp; ')}</span>
+                        <span style="color:#9c27b0;font-size:0.82em">📌 ${topic}</span>
+                    </div>`;
+                }).join('');
+                listEl.style.color = '';
+
+                // Populate dropdown
+                selectEl.innerHTML = '<option value="">— Select your team from enrollment —</option>';
+                vlogEnrolledTeams.forEach((enr, i) => {
+                    const names = extractVlogNames(enr);
+                    const topic = enr.topic || '';
+                    const opt = document.createElement('option');
+                    opt.value = i;
+                    opt.textContent = `Team ${i + 1}: ${names.join(' & ')}${topic ? ' · ' + topic : ''}`;
+                    selectEl.appendChild(opt);
+                });
+
+                // Auto-select if only one team
+                if (vlogEnrolledTeams.length === 1) {
+                    selectEl.value = 0;
+                    vlogOnTeamSelect();
+                }
+
+            } catch (err) {
+                console.error('autoFillVlogMembers error:', err);
+                if (listEl) listEl.innerHTML = `<span style="color:#c62828">⚠️ Error: ${err.message} — click 🔄 Refresh to retry.</span>`;
+                if (selectEl) selectEl.innerHTML = '<option value="">— Error loading teams —</option>';
+            }
+        }
+
+        function extractVlogNames(enr) {
+            const names = [];
+            // If grouped team record, extract names from all member records
+            if (enr._allMembers && Array.isArray(enr._allMembers)) {
+                enr._allMembers.forEach(m => {
+                    const t = (m.name || '').trim();
+                    if (t && !names.includes(t)) names.push(t);
+                });
+                return names;
+            }
+            ['member1','member2','name'].forEach(k => {
+                if (enr[k]) String(enr[k]).split(',').forEach(n => {
+                    const t = n.trim();
+                    if (t && !names.includes(t) && names.length < 2) names.push(t);
+                });
+            });
+            if (enr.members && Array.isArray(enr.members)) {
+                enr.members.forEach(m => {
+                    const t = (m.name || m || '').trim();
+                    if (t && !names.includes(t) && names.length < 2) names.push(t);
+                });
+            }
+            return names;
+        }
+
+        function vlogOnTeamSelect() {
+            const selectEl = document.getElementById('vlogTeamSelect');
+            const dispEl   = document.getElementById('vlogSelectedTeamDisplay');
+            const infoEl   = document.getElementById('vlogSelectedTeamInfo');
+            const val      = selectEl ? selectEl.value : '';
+            const idx      = val !== '' ? parseInt(val) : NaN;
+
+            if (isNaN(idx) || !vlogEnrolledTeams[idx]) {
+                if (dispEl) dispEl.style.display = 'none';
+                document.getElementById('vlogMember1').value = '';
+                document.getElementById('vlogMember2').value = '';
+                document.getElementById('vlogTopic').value   = '';
+                return;
+            }
+
+            const enr   = vlogEnrolledTeams[idx];
+            const names = extractVlogNames(enr);
+            const topic = enr.topic || enr.Theme || '';
+
+            document.getElementById('vlogMember1').value = names[0] || '';
+            document.getElementById('vlogMember2').value = names[1] || '';
+            document.getElementById('vlogTopic').value   = topic;
+
+            if (enr.instagramHandle) {
+                const hEl = document.getElementById('vlogHandle');
+                if (hEl && !hEl.value) hEl.value = enr.instagramHandle;
+            }
+
+            if (dispEl) dispEl.style.display = 'block';
+            if (infoEl) infoEl.innerHTML = `<strong>${names.join(' & ')}</strong>${topic ? ' &nbsp;·&nbsp; 📌 ' + topic : ''}`;
+        }
+
+
+        // ══════════════════════════════════════════════════════════════
+        // VLOG ADMIN: SETTINGS (Super Admin)
+        // ══════════════════════════════════════════════════════════════
+        const VLOG_SETTINGS_KEYS = ['eventActive', 'monitoringVisible', 'leaderboardPublished'];
+        const VLOG_SETTINGS_LABELS = {
+            eventActive:          { on: '✅ ACTIVE — CRs can submit', off: '🔒 INACTIVE — Submissions locked' },
+            monitoringVisible:    { on: '👁 VISIBLE — CRs see tracking', off: '🙈 HIDDEN — CRs cannot see tracking' },
+            leaderboardPublished: { on: '🚀 PUBLISHED — Visible in results', off: '📦 UNPUBLISHED — Hidden from results' }
+        };
+
+        function setVlogSetting(key, value) {
+            db.ref('vlogSettings/' + key).set(value).then(() => {
+                loadVlogSettings();
+                alert('✅ Vlog setting updated: ' + key + ' = ' + value);
+            }).catch(e => alert('Error: ' + e.message));
+        }
+
+        function saveVlogHashtag() {
+            const val = (document.getElementById('vlogHashtagInput').value || '').trim();
+            if (!val) { alert('Please enter a hashtag'); return; }
+            const tag = val.startsWith('#') ? val : '#' + val;
+            db.ref('vlogSettings/hashtag').set(tag).then(() => {
+                loadVlogSettings();
+                alert('✅ Hashtag saved: ' + tag);
+            }).catch(e => alert('Error: ' + e.message));
+        }
+
+        function loadVlogSettings() {
+            db.ref('vlogSettings').once('value').then(snap => {
+                const s = snap.val() || {};
+                VLOG_SETTINGS_KEYS.forEach(key => {
+                    const el = document.getElementById('vlogStatus' + key.charAt(0).toUpperCase() + key.slice(1));
+                    if (el) {
+                        const on = s[key] === true;
+                        const labels = VLOG_SETTINGS_LABELS[key];
+                        el.textContent = on ? labels.on : labels.off;
+                        el.style.color = on ? '#1b5e20' : '#c62828';
+                    }
+                });
+                // Update hashtag display everywhere
+                const tag = s.hashtag || '#SpurthiVlogChallenge2026';
+                ['vlogHashtagDisplay','vlogHashtagInForm'].forEach(id => {
+                    const el = document.getElementById(id); if (el) el.textContent = tag;
+                });
+                const inp = document.getElementById('vlogHashtagInput');
+                if (inp && !inp.value) inp.value = tag;
+                const statusEl = document.getElementById('vlogStatusHashtag');
+                if (statusEl) statusEl.textContent = 'Current: ' + tag;
+            });
+        }
+
+        // ══════════════════════════════════════════════════════════════
+        // VLOG ADMIN: LOAD ALL SUBMISSIONS (Super Admin panel)
+        // ══════════════════════════════════════════════════════════════
+        async function loadVlogAdminPanel() {
+            if (!isSuperAdmin && !isAdmin) return;
+            loadVlogSettings();
+            loadSocialFormula();
+
+            const classFilter = (document.getElementById('vlogAdminClassFilter') || {}).value || '';
+            const snap = await db.ref('vlogChallenge').once('value');
+            const all = [];
+            if (snap.exists()) snap.forEach(ch => all.push({ id: ch.key, ...ch.val() }));
+
+            // Populate class filter
+            const clsSel = document.getElementById('vlogAdminClassFilter');
+            if (clsSel && clsSel.options.length <= 1) {
+                const classes = [...new Set(all.map(e => e.classYear).filter(Boolean))].sort();
+                classes.forEach(c => {
+                    const opt = document.createElement('option'); opt.value = c; opt.textContent = c; clsSel.appendChild(opt);
+                });
+            }
+
+            const filtered = classFilter ? all.filter(e => e.classYear === classFilter) : all;
+            filtered.sort((a, b) => (a.classYear || '').localeCompare(b.classYear || ''));
+
+            const empty = document.getElementById('vlogAdminEmpty');
+            const container = document.getElementById('vlogAdminTableContainer');
+            const tbody = document.getElementById('vlogAdminTableBody');
+            if (filtered.length === 0) {
+                if (empty) empty.style.display = 'block';
+                if (container) container.style.display = 'none';
+                return;
+            }
+            if (empty) empty.style.display = 'none';
+            if (container) container.style.display = 'block';
+
+            let rows = '';
+            filtered.forEach((e, i) => {
+                const j1Total = e.juryScores && e.juryScores.j1 ? Object.values(e.juryScores.j1).reduce((s,v)=>s+(+v||0),0) : null;
+                const j2Total = e.juryScores && e.juryScores.j2 ? Object.values(e.juryScores.j2).reduce((s,v)=>s+(+v||0),0) : null;
+                const juryAvg = (j1Total !== null && j2Total !== null) ? ((j1Total + j2Total) / 2).toFixed(1) : (j1Total !== null ? j1Total : (j2Total !== null ? j2Total : null));
+                const juryPct = juryAvg !== null ? ((+juryAvg / 50) * 50).toFixed(1) : null;
+                const socialPct = e.socialScore > 0 ? ((e.socialScore / 1000) * 50).toFixed(1) : 0;
+                const finalPct = juryPct !== null ? ((+juryPct + +socialPct)).toFixed(1) : '—';
+                const statusColor = e.status === 'Approved' ? '#155724' : e.status === 'Rejected' ? '#721c24' : '#856404';
+                const statusBg    = e.status === 'Approved' ? '#d4edda'  : e.status === 'Rejected' ? '#f8d7da'  : '#fff3cd';
+
+                // Screenshot cell
+                const screenshotCell = e.screenshotUrl
+                    ? `<a href="${e.screenshotUrl}" target="_blank" rel="noopener" title="View insight screenshot">
+                           <img src="${e.screenshotUrl}" style="width:48px;height:48px;object-fit:cover;border-radius:6px;border:2px solid #ce93d8;cursor:pointer" alt="Insight">
+                       </a>`
+                    : '<span style="color:#ccc;font-size:0.8em">—</span>';
+
+                // Social score: input + save button
+                const socialCell = `<div style="display:flex;align-items:center;gap:4px;flex-direction:column">
+                    <div style="display:flex;gap:4px;align-items:center">
+                        <input type="number" min="0" id="socialInp_${e.id}" value="${e.socialScore || ''}" placeholder="0"
+                               style="width:60px;padding:4px 6px;border:2px solid #e91e63;border-radius:6px;font-size:0.85em;text-align:center;outline:none">
+                        <button onclick="saveSocialScore('${e.id}')" style="background:#e91e63;color:white;border:none;border-radius:6px;padding:4px 8px;cursor:pointer;font-size:0.75em;font-weight:700">💾</button>
+                    </div>
+                    ${e.socialScore > 0 ? '<span style="font-size:0.72em;color:#999">('+socialPct+'%)</span>' : ''}
+                </div>`;
+
+                rows += `<tr>
+                    <td style="text-align:center;font-weight:700;color:#833ab4">${i+1}</td>
+                    <td style="font-weight:700;color:#1565c0;font-size:0.85em">${e.classYear||'—'}</td>
+                    <td style="font-size:0.82em"><strong>${e.member1||'—'}</strong><br>${e.member2||''}</td>
+                    <td style="font-size:0.82em;color:#4a148c;font-weight:600">${e.topic||'—'}</td>
+                    <td style="text-align:center"><a href="${e.link||'#'}" target="_blank" rel="noopener" style="color:#e91e63;font-weight:700;font-size:0.85em;text-decoration:none">📸 Reel</a></td>
+                    <td style="text-align:center">${screenshotCell}</td>
+                    <td style="font-size:0.8em;color:#777">${e.handle||'—'}</td>
+                    <td style="text-align:center">${socialCell}</td>
+                    <td style="text-align:center;font-size:0.85em">${j1Total !== null ? j1Total + '/50' : '—'}</td>
+                    <td style="text-align:center;font-size:0.85em">${j2Total !== null ? j2Total + '/50' : '—'}</td>
+                    <td style="text-align:center;font-weight:800;font-size:0.95em;color:${finalPct !== '—' ? '#1b5e20' : '#aaa'}">${finalPct !== '—' ? finalPct + '%' : '—'}</td>
+                    <td style="text-align:center"><span style="background:${statusBg};color:${statusColor};padding:3px 10px;border-radius:12px;font-size:0.75em;font-weight:700">${e.status||'Pending'}</span></td>
+                    <td style="text-align:center">
+                        <button onclick="approveVlogEntry('${e.id}')" style="background:#28a745;color:white;border:none;border-radius:6px;padding:4px 8px;cursor:pointer;font-size:0.75em;margin:2px">✅</button>
+                        <button onclick="rejectVlogEntry('${e.id}')" style="background:#dc3545;color:white;border:none;border-radius:6px;padding:4px 8px;cursor:pointer;font-size:0.75em;margin:2px">❌</button>
+                    </td>
+                </tr>`;
+            });
+            if (tbody) tbody.innerHTML = rows;
+        }
+
+        function approveVlogEntry(id) {
+            db.ref('vlogChallenge/' + id + '/status').set('Approved').then(() => { loadVlogAdminPanel(); });
+        }
+        function rejectVlogEntry(id) {
+            db.ref('vlogChallenge/' + id + '/status').set('Rejected').then(() => { loadVlogAdminPanel(); });
+        }
+        function saveSocialScore(id) {
+            const inp = document.getElementById('socialInp_' + id);
+            if (!inp) return;
+            const val = parseInt(inp.value) || 0;
+            if (val < 0) { alert('Score cannot be negative'); return; }
+            db.ref('vlogChallenge/' + id + '/socialScore').set(val).then(() => {
+                inp.style.borderColor = '#4caf50';
+                setTimeout(() => { inp.style.borderColor = '#e91e63'; loadVlogAdminPanel(); }, 1000);
+            }).catch(e => alert('Error saving score: ' + e.message));
+        }
+
+        // ══════════════════════════════════════════════════════════════
+        // FACULTY ADMIN PANEL
+        // ══════════════════════════════════════════════════════════════
+        const FACULTY_LIST = [
+            { sl:1,  name:'Priyanka V & Roopa M.C', class:'I BCA',   phone:'8088783099 / 9449683234' },
+            { sl:2,  name:'Smitha',                 class:'II BCA A', phone:'9972442555' },
+            { sl:3,  name:'Kotrappa K',              class:'II BCA B', phone:'9731067467' },
+            { sl:4,  name:'Anitha N',               class:'III BCA A',phone:'9164505025' },
+            { sl:5,  name:'Pooja C',                class:'III BCA B',phone:'9632736954' },
+            { sl:6,  name:'Anitha N',               class:'III BCA C',phone:'9164505025' },
+            { sl:7,  name:'Dr. Shilpa R Y',         class:'I B.Com',  phone:'9591724804' },
+            { sl:8,  name:'Lalitha S K',            class:'II B.Com', phone:'8073206168' },
+            { sl:9,  name:'Chandan G B',            class:'III B.Com',phone:'9964322171' },
+            { sl:10, name:'Hemavathi Desai',        class:'II BBA',   phone:'8197909244' },
+            { sl:11, name:'Shankar B C',            class:'III BBA',  phone:'9972652501' }
+        ];
+
+        // Define faculty roles (used in cards + dashboard)
+        const FACULTY_ROLES = {
+            'Chandan G B'           : { role: '📊 Vlog Social Monitor', color: '#1b5e20', bg: '#e8f5e9', detail: 'Enters daily Views/Likes/Comments for all Vlog teams (02–07 Mar 2026)' },
+            'Priyanka V & Roopa M.C': { role: '📋 Event Incharge',      color: '#6a1b9a', bg: '#f3e5f5', detail: 'Mime, Mad Ads, YouTube Advertisement, Case Analysis, Vlog' },
+            'Smitha'                : { role: '📋 Event Incharge',      color: '#6a1b9a', bg: '#f3e5f5', detail: 'Social Awareness Skit, YouTube Advertisement, Quiz' },
+            'Kotrappa K'            : { role: '📋 Event Incharge',      color: '#6a1b9a', bg: '#f3e5f5', detail: 'Mime, Nukkad Natak, Hand Writing' },
+            'Anitha N'              : { role: '📋 Event Incharge',      color: '#6a1b9a', bg: '#f3e5f5', detail: 'Group Dance, Talent Hunt, Hand Writing' },
+            'Pooja C'               : { role: '📋 Event Incharge',      color: '#6a1b9a', bg: '#f3e5f5', detail: 'Group Dance, Talent Hunt, Quiz' },
+            'Dr. Shilpa R Y'        : { role: '📋 Event Incharge',      color: '#6a1b9a', bg: '#f3e5f5', detail: 'Mad Ads, Case Analysis' },
+            'Lalitha S K'           : { role: '📋 Event Incharge',      color: '#6a1b9a', bg: '#f3e5f5', detail: 'Interdisciplinary, Best Out of Waste' },
+            'Hemavathi Desai'       : { role: '📋 Event Incharge',      color: '#6a1b9a', bg: '#f3e5f5', detail: 'Ramp Walk, Pod Casting, Interdisciplinary' },
+            'Shankar B C'           : { role: '📋 Event Incharge',      color: '#6a1b9a', bg: '#f3e5f5', detail: 'Social Awareness Skit, Nukkad Natak, Best Out of Waste' },
+        };
+
+        // ── All events from Event Schedule mapped to faculty names ──
+        const FACULTY_EVENT_MAP = {
+            'Priyanka V & Roopa M.C': [
+                { name:'Mime',               type:'On stage',  classes:"I BCA / II BCA 'B'" },
+                { name:'Mad Ads',            type:'On stage',  classes:'I BCOM / I BCA' },
+                { name:'YouTube Advertisement', type:'Off stage', classes:"I BCA 'A' / II BCA 'A'" },
+                { name:'Case Analysis',      type:'Off stage', classes:"I BCOM / I BCA 'A'" },
+                { name:'Vlog',               type:'Off stage', classes:'III BCOM' }
+            ],
+            'Smitha': [
+                { name:'Social Awareness Skit', type:'On stage',  classes:'III BBA / II BCA "A"' },
+                { name:'YouTube Advertisement', type:'Off stage', classes:"I BCA 'A' / II BCA 'A'" },
+                { name:'Quiz',               type:'Off stage', classes:'III BCA "B" / II BCA "A"' }
+            ],
+            'Kotrappa K': [
+                { name:'Mime',               type:'On stage',  classes:"I BCA / II BCA 'B'" },
+                { name:'Nukkad Natak',       type:'Off stage', classes:'II BCA "B" / III BBA' },
+                { name:'Hand Writing',       type:'Off stage', classes:'III BCA "A" / III BCA "C"' }
+            ],
+            'Anitha N': [
+                { name:'Group Dance',        type:'On stage',  classes:"III BCA 'C' / III BCA 'B'" },
+                { name:'Talent Hunt',        type:'Off stage', classes:'III BCA "B" / III BCA A' },
+                { name:'Hand Writing',       type:'Off stage', classes:'III BCA "A" / III BCA "C"' }
+            ],
+            'Pooja C': [
+                { name:'Group Dance',        type:'On stage',  classes:"III BCA 'C' / III BCA 'B'" },
+                { name:'Talent Hunt',        type:'Off stage', classes:'III BCA "B" / III BCA A' },
+                { name:'Quiz',               type:'Off stage', classes:'III BCA "B" / II BCA "A"' }
+            ],
+            'Dr. Shilpa R Y': [
+                { name:'Mad Ads',            type:'On stage',  classes:'I BCOM / I BCA' },
+                { name:'Case Analysis',      type:'Off stage', classes:"I BCOM / I BCA 'A'" }
+            ],
+            'Lalitha S K': [
+                { name:'Interdisciplinary',  type:'Off stage', classes:'II BBA / II BCOM' },
+                { name:'Best Out of Waste',  type:'Off stage', classes:'II BCOM / III BBA' }
+            ],
+            'Chandan G B': [
+                { name:'Ramp Walk',          type:'On stage',  classes:'II BBA / III B.Com' },
+                { name:'Pod Casting',        type:'Off stage', classes:'III BCOM / II BBA' },
+                { name:'Vlog',               type:'Off stage', classes:'III BCOM' }
+            ],
+            'Hemavathi Desai': [
+                { name:'Ramp Walk',          type:'On stage',  classes:'II BBA / III B.Com' },
+                { name:'Pod Casting',        type:'Off stage', classes:'III BCOM / II BBA' },
+                { name:'Interdisciplinary',  type:'Off stage', classes:'II BBA / II BCOM' }
+            ],
+            'Shankar B C': [
+                { name:'Social Awareness Skit', type:'On stage',  classes:'III BBA / II BCA "A"' },
+                { name:'Nukkad Natak',       type:'Off stage', classes:'II BCA "B" / III BBA' },
+                { name:'Best Out of Waste',  type:'Off stage', classes:'II BCOM / III BBA' }
+            ]
+        };
+
+        async function loadFacultyAdminPanel() {
+            initFacultyDropdown();
+
+            // Load quiz passwords for all faculty phones (Super Admin only)
+            const pwdMap = {};
+            if (isSuperAdmin) {
+                const qSnap = await db.ref('quizStudents').once('value');
+                if (qSnap.exists()) qSnap.forEach(ch => {
+                    const d = ch.val();
+                    if (d.phone && d.password) pwdMap[String(d.phone).replace(/\D/g,'').slice(-10)] = d.password;
+                });
+            }
+
+            function getPhone10(f) { return f.phone.replace(/\D/g,'').match(/\d{10}/g)?.[0] || ''; }
+            function getEvents(f) { return FACULTY_EVENT_MAP[f.name] || []; }
+            function eventBadges(evts) {
+                if (!evts.length) return '<span style="color:#aaa;font-size:0.78em">—</span>';
+                return evts.map(e => {
+                    const bg  = e.type === 'On stage' ? '#fff3e0' : '#e8f5e9';
+                    const col = e.type === 'On stage' ? '#e65100' : '#1b5e20';
+                    return `<span style="display:inline-block;background:${bg};color:${col};border-radius:12px;padding:2px 8px;font-size:0.74em;font-weight:700;margin:2px 2px 2px 0;white-space:nowrap">
+                        ${e.type==='On stage'?'🎭':'📋'} ${e.name}
+                    </span>`;
+                }).join('');
+            }
+
+            // ── Cards (Super Admin) ──
+            const cardsGrid = document.getElementById('facultyCardsGrid');
+            if (cardsGrid && isSuperAdmin) {
+                cardsGrid.innerHTML = FACULTY_LIST.map(f => {
+                    const r      = FACULTY_ROLES[f.name] || { role: '⏳ Role being assigned', color: '#856404', bg: '#fffde7', detail: '' };
+                    const ph10   = getPhone10(f);
+                    const pwd    = ph10 ? (pwdMap[ph10] || null) : null;
+                    const evts   = getEvents(f);
+                    const evtHtml = evts.length
+                        ? evts.map(e => `<div style="font-size:0.75em;padding:2px 0;color:#333">
+                            <span style="font-weight:700;color:${e.type==='On stage'?'#e65100':'#1b5e20'}">${e.type==='On stage'?'🎭':'📋'} ${e.name}</span>
+                            <span style="color:#888"> — ${e.classes}</span></div>`).join('')
+                        : '<span style="color:#aaa;font-size:0.75em">No events assigned</span>';
+
+                    return `<div style="background:white;border-radius:12px;padding:16px;border:2px solid #bbdefb;box-shadow:0 2px 8px rgba(0,0,0,0.06)">
+                        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+                            <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#1565c0,#42a5f5);display:flex;align-items:center;justify-content:center;color:white;font-weight:800;font-size:1em;flex-shrink:0">${f.sl}</div>
+                            <div><div style="font-weight:700;color:#1565c0;font-size:0.92em">${f.name}</div><div style="color:#666;font-size:0.8em">${f.class}</div></div>
+                        </div>
+                        <a href="tel:+91${ph10}" style="display:flex;align-items:center;gap:6px;background:#e3f2fd;border-radius:8px;padding:7px 10px;text-decoration:none;color:#1565c0;font-size:0.82em;font-weight:700;margin-bottom:6px">📞 ${f.phone}</a>
+                        ${pwd
+                            ? `<div style="background:#fff8e1;border-radius:7px;padding:5px 10px;font-size:0.78em;margin-bottom:6px;border-left:3px solid #ffc107">
+                                🔑 Quiz Password: <strong style="color:#e65100;letter-spacing:1px">${pwd}</strong></div>`
+                            : `<div style="background:#f5f5f5;border-radius:7px;padding:5px 10px;font-size:0.78em;margin-bottom:6px;color:#aaa">🔑 Not registered in quiz system</div>`
+                        }
+                        <div style="background:${r.bg};border-radius:8px;padding:7px 10px;border-left:3px solid ${r.color};margin-bottom:8px">
+                            <div style="font-size:0.8em;font-weight:700;color:${r.color}">${r.role}</div>
+                            ${r.detail ? `<div style="font-size:0.72em;color:#555;margin-top:2px">${r.detail}</div>` : ''}
+                        </div>
+                        <div style="background:#f8f9fa;border-radius:8px;padding:8px 10px;border:1px solid #e0e0e0">
+                            <div style="font-size:0.77em;font-weight:700;color:#1565c0;margin-bottom:5px">📅 Assigned Events (${evts.length}):</div>
+                            ${evtHtml}
+                        </div>
+                    </div>`;
+                }).join('');
+            } // end if(cardsGrid && isSuperAdmin)
+
+            // ── Table (all admins) ──
+            const tbody = document.getElementById('facultyTableBody');
+            if (!tbody) return;
+            tbody.innerHTML = FACULTY_LIST.map((f, i) => {
+                const bgColor= i % 2 === 0 ? '#fafafa' : 'white';
+                const r      = FACULTY_ROLES[f.name] || { role: '⏳ Role being assigned', color: '#856404', bg: '#fffde7' };
+                const ph10   = getPhone10(f);
+                const pwdVal   = ph10 ? (pwdMap[ph10] || null) : null;
+                const pwdCell  = isSuperAdmin
+                    ? (pwdVal ? `<code style="background:#fff8e1;padding:2px 8px;border-radius:6px;font-size:0.95em;color:#e65100;font-weight:700">${pwdVal}</code>`
+                               : '<span style="color:#aaa;font-size:0.82em">Not registered</span>')
+                    : '—';
+                const roleEl   = `<span style="background:${r.bg};color:${r.color};padding:3px 8px;border-radius:10px;font-size:0.78em;font-weight:700">${r.role}</span>`;
+                const evtBadges= eventBadges(getEvents(f));
+                return `<tr style="background:${bgColor};border-bottom:1px solid #eee">
+                    <td style="text-align:center;font-weight:700;color:#1565c0">${f.sl}</td>
+                    <td style="font-weight:600">${f.name}</td>
+                    <td style="font-size:0.85em">${f.class}</td>
+                    <td class="super-admin-only" style="font-size:0.85em">
+                        <a href="tel:+91${ph10}" style="color:#1565c0;text-decoration:none;font-weight:600">📞 ${f.phone}</a>
+                    </td>
+                    <td class="super-admin-only" style="text-align:center;font-size:0.88em">${pwdCell}</td>
+                    <td style="font-size:0.82em;line-height:1.6">${evtBadges}</td>
+                    <td>${roleEl}</td>
+                </tr>`;
+            }).join('');
+        }
+
+        // ── Populate faculty dropdown on page load ──
+        function initFacultyDropdown() {
+            const sel = document.getElementById('facultyLoginSelect');
+            if (!sel || sel.options.length > 1) return;
+            FACULTY_LIST.forEach(f => {
+                const opt = document.createElement('option');
+                opt.value = f.phone.replace(/[^0-9\/]/g,''); // store raw phone string
+                opt.textContent = f.name + ' — ' + f.class;
+                opt.dataset.name = f.name;
+                opt.dataset.phone = f.phone;
+                sel.appendChild(opt);
+            });
+        }
+
+        function facultySelectChanged() {
+            const sel      = document.getElementById('facultyLoginSelect');
+            const opt      = sel.options[sel.selectedIndex];
+            const phoneEl  = document.getElementById('facultyLoginPhone');
+            const dispEl   = document.getElementById('facultySelectedPhone');
+            if (!opt || !opt.value) {
+                if (phoneEl) phoneEl.value = '';
+                if (dispEl)  dispEl.style.display = 'none';
+                return;
+            }
+            // Take first 10-digit number from the phone string
+            const phones   = opt.dataset.phone.replace(/[^0-9]/g,' ').trim().split(/\s+/);
+            const first10  = (phones[0] || '').slice(-10);
+            if (phoneEl) phoneEl.value = first10;
+            if (dispEl)  { dispEl.style.display = 'block'; dispEl.textContent = '📞 ' + opt.dataset.phone; }
+        }
+
+        function toggleFacultyPwd() {
+            const inp = document.getElementById('facultyLoginPwd');
+            const btn = document.getElementById('facultyPwdToggle');
+            if (!inp) return;
+            if (inp.type === 'password') { inp.type = 'text';     if (btn) btn.textContent = '🙈'; }
+            else                          { inp.type = 'password'; if (btn) btn.textContent = '👁'; }
+        }
+
+        // ══════════════════════════════════════════════════════════════
+        // FACULTY LOGIN
+        // Uses quiz student DB — phone + password
+        // Super admin password works as master override for all faculty
+        // ══════════════════════════════════════════════════════════════
+        async function facultyLogin() {
+            const phone = (document.getElementById('facultyLoginPhone').value || '').trim();
+            const pwd   = (document.getElementById('facultyLoginPwd').value || '').trim();
+            const msgEl = document.getElementById('facultyLoginMsg');
+
+            function showMsg(text, ok) {
+                msgEl.style.display = 'block';
+                msgEl.style.background = ok ? '#d4edda' : '#f8d7da';
+                msgEl.style.color      = ok ? '#155724' : '#721c24';
+                msgEl.style.border     = ok ? '1px solid #c3e6cb' : '1px solid #f5c6cb';
+                msgEl.textContent = text;
+            }
+
+            // Get selected faculty from dropdown
+            const sel = document.getElementById('facultyLoginSelect');
+            const selOpt = sel ? sel.options[sel.selectedIndex] : null;
+            if (!selOpt || !selOpt.value) { showMsg('❌ Please select your name from the dropdown.', false); return; }
+            if (!pwd) { showMsg('❌ Please enter your password.', false); return; }
+
+            // Match faculty from FACULTY_LIST by name
+            const selectedName = selOpt.dataset.name;
+            const faculty = FACULTY_LIST.find(f => f.name === selectedName);
+            if (!faculty) { showMsg('❌ Faculty not found. Contact Super Admin.', false); return; }
+
+            // ── Master override: super admin password works for any faculty login ──
+            if (pwd === superAdminPassword || pwd === adminPassword) {
+                showMsg('✅ Welcome, ' + faculty.name + '! (Master login)', true);
+                document.getElementById('facultyDashboard').style.display = 'block';
+                document.getElementById('facultyDashName').textContent  = faculty.name;
+                document.getElementById('facultyDashClass').textContent = faculty.class;
+                const isChandan = faculty.name.toLowerCase().includes('chandan');
+                document.getElementById('chandanSocialPanel').style.display = isChandan ? 'block' : 'none';
+                document.getElementById('facultyComingSoon').style.display  = isChandan ? 'none'  : 'block';
+                if (isChandan) loadChandanPanel();
+                return;
+            }
+
+            // ── Normal: verify against quizStudents DB ──
+            const cleanPhone = (phone || '').replace(/\D/g,'').slice(-10);
+            if (!cleanPhone || cleanPhone.length < 10) {
+                showMsg('❌ Phone number missing. Please re-select your name.', false); return;
+            }
+
+            showMsg('⏳ Verifying…', true);
+            try {
+                const snap = await db.ref('quizStudents').orderByChild('phone').equalTo(cleanPhone).once('value');
+                if (!snap.exists()) {
+                    showMsg('❌ Not yet registered in the quiz system. Ask Super Admin to log you in using the master password.', false);
+                    return;
+                }
+                let matched = false;
+                snap.forEach(ch => { const d = ch.val(); if (d.password === pwd) matched = true; });
+                if (!matched) {
+                    showMsg('❌ Incorrect password. Use your quiz registration password, or ask Super Admin.', false);
+                    return;
+                }
+
+                // Logged in
+                showMsg('✅ Welcome, ' + faculty.name + '!', true);
+                document.getElementById('facultyDashboard').style.display = 'block';
+                document.getElementById('facultyDashName').textContent  = faculty.name;
+                document.getElementById('facultyDashClass').textContent = faculty.class;
+
+                const isChandan = faculty.name.toLowerCase().includes('chandan');
+                document.getElementById('chandanSocialPanel').style.display  = isChandan ? 'block' : 'none';
+                document.getElementById('facultyComingSoon').style.display   = isChandan ? 'none'  : 'block';
+                if (isChandan) loadChandanPanel();
+
+            } catch(err) {
+                showMsg('❌ Error: ' + err.message, false);
+            }
+        }
+
+        function facultyLogout() {
+            document.getElementById('facultyDashboard').style.display = 'none';
+            const sel = document.getElementById('facultyLoginSelect');
+            if (sel) sel.value = '';
+            const phoneEl = document.getElementById('facultyLoginPhone');
+            if (phoneEl) phoneEl.value = '';
+            const dispEl  = document.getElementById('facultySelectedPhone');
+            if (dispEl) dispEl.style.display = 'none';
+            document.getElementById('facultyLoginPwd').value = '';
+            const msg = document.getElementById('facultyLoginMsg');
+            if (msg) msg.style.display = 'none';
+        }
+
+        // ══════════════════════════════════════════════════════════════
+        // SOCIAL SCORE FORMULA — Save/Load (Super Admin sets in Vlog Admin)
+        // ══════════════════════════════════════════════════════════════
+        async function saveSocialFormula() {
+            const formula = {
+                weightViews   : parseFloat(document.getElementById('ssWeightViews').value)    || 1,
+                weightLikes   : parseFloat(document.getElementById('ssWeightLikes').value)    || 3,
+                weightComments: parseFloat(document.getElementById('ssWeightComments').value) || 5,
+                maxRaw        : parseInt(document.getElementById('ssMaxRaw').value)            || 5000
+            };
+            await db.ref('vlogSettings/socialFormula').set(formula);
+            const msg = document.getElementById('ssFormulaMsg');
+            if (msg) { msg.style.display = 'inline'; msg.textContent = '✅ Formula saved!'; setTimeout(() => { msg.style.display = 'none'; }, 3000); }
+        }
+
+        async function loadSocialFormula() {
+            const snap = await db.ref('vlogSettings/socialFormula').once('value');
+            const f = snap.val() || { weightViews:1, weightLikes:3, weightComments:5, maxRaw:5000 };
+            document.getElementById('ssWeightViews').value    = f.weightViews;
+            document.getElementById('ssWeightLikes').value    = f.weightLikes;
+            document.getElementById('ssWeightComments').value = f.weightComments;
+            document.getElementById('ssMaxRaw').value         = f.maxRaw;
+            return f;
+        }
+
+        function calcSocialScore(views, likes, comments, formula) {
+            const f = formula || { weightViews:1, weightLikes:3, weightComments:5, maxRaw:5000 };
+            const raw = (views * f.weightViews) + (likes * f.weightLikes) + (comments * f.weightComments);
+            const pct = Math.min(50, (raw / f.maxRaw) * 50);
+            return { raw, pct: +pct.toFixed(2) };
+        }
+
+        // ══════════════════════════════════════════════════════════════
+        // CHANDAN'S SOCIAL MONITOR PANEL
+        // ══════════════════════════════════════════════════════════════
+        async function loadChandanPanel() {
+            const listEl   = document.getElementById('chandanTeamList');
+            const warnEl   = document.getElementById('chandanDateWarning');
+            if (!listEl) return;
+            listEl.innerHTML = '<div style="text-align:center;color:#aaa;padding:20px">Loading…</div>';
+
+            // Date check — active 02-03-2026 to 07-03-2026
+            const VLOG_START = new Date('2026-03-02T00:00:00');
+            const VLOG_END   = new Date('2026-03-07T23:59:59');
+            const now        = new Date();
+            const inWindow   = now >= VLOG_START && now <= VLOG_END;
+            const afterEnd   = now > VLOG_END;
+
+            if (warnEl) {
+                warnEl.style.display = 'none'; // time lock removed for testing
+            }
+
+            try {
+            // Timeout helper — rejects after 10 seconds
+            const withTimeout = (promise, ms) => Promise.race([
+                promise,
+                new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), ms))
+            ]);
+
+            // Load social formula — fall back silently if permission denied
+            let formula = { weightViews:1, weightLikes:3, weightComments:5, maxRaw:5000 };
+            try {
+                const fSnap = await withTimeout(db.ref('vlogSettings/socialFormula').once('value'), 8000);
+                if (fSnap.val()) formula = fSnap.val();
+            } catch(fe) {
+                // Permission denied or timeout — use default formula, proceed
+                console.warn('vlogSettings/socialFormula not accessible, using defaults:', fe.message);
+            }
+
+            // Load all vlog submissions
+            const snap = await withTimeout(db.ref('vlogChallenge').once('value'), 10000);
+            const teams = [];
+            if (snap.exists()) snap.forEach(ch => teams.push({ id: ch.key, ...ch.val() }));
+
+            if (teams.length === 0) {
+                listEl.innerHTML = '<div style="text-align:center;color:#aaa;padding:30px">No Vlog submissions yet.</div>';
+                return;
+            }
+
+            listEl.innerHTML = teams.map((t, i) => {
+                const today      = now.toISOString().slice(0,10);
+                const metrics    = t.socialMetrics || {};
+                const latest     = t.latestSocialEntry || {};
+                const latestDate = latest.date || '—';
+                const { raw, pct } = calcSocialScore(latest.views||0, latest.likes||0, latest.comments||0, formula);
+                // Build screenshot HTML — prefer screenshotUrl, fall back to dailyScreenshots entries
+                let screenshotHtml = '';
+                const dailyShots = t.dailyScreenshots || {};
+                const dailyUrls  = Object.entries(dailyShots)
+                    .sort(([a],[b]) => a.localeCompare(b))
+                    .map(([dateKey, url]) => ({ label: dateKey.replace(/_/g,'-'), url }));
+                const primaryUrl = t.screenshotUrl || (dailyUrls.length ? dailyUrls[dailyUrls.length-1].url : null);
+
+                if (primaryUrl || dailyUrls.length) {
+                    screenshotHtml = '<div style="display:flex;flex-direction:column;gap:8px">';
+                    if (dailyUrls.length) {
+                        dailyUrls.forEach(({ label, url }) => {
+                            screenshotHtml += `<a href="${url}" target="_blank" rel="noopener" style="display:inline-block">
+                                <img src="${url}" style="max-height:120px;max-width:100%;border-radius:8px;border:2px solid #a5d6a7;object-fit:contain" alt="Insight Screenshot ${label}">
+                                <div style="font-size:0.72em;color:#4caf50;margin-top:2px">📸 ${label} — Click to enlarge</div>
+                            </a>`;
+                        });
+                    } else {
+                        screenshotHtml += `<a href="${primaryUrl}" target="_blank" rel="noopener" style="display:inline-block">
+                            <img src="${primaryUrl}" style="max-height:130px;max-width:100%;border-radius:8px;border:2px solid #a5d6a7;object-fit:contain" alt="Insight Screenshot">
+                            <div style="font-size:0.75em;color:#4caf50;margin-top:3px">📸 Click to open full screenshot</div>
+                        </a>`;
+                    }
+                    screenshotHtml += '</div>';
+                } else {
+                    screenshotHtml = '<div style="background:#f5f5f5;border-radius:8px;padding:16px;text-align:center;color:#bbb;font-size:0.82em;border:2px dashed #ddd">No screenshot uploaded by CR</div>';
+                }
+
+                const disabled = ''; // time lock removed for testing
+                const disabledStyle = ''; // time lock removed for testing
+
+                return `<div style="background:white;border-radius:12px;border:2px solid #e1bee7;padding:18px;box-shadow:0 2px 8px rgba(0,0,0,0.06)">
+                    <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px;margin-bottom:14px">
+                        <div>
+                            <span style="background:linear-gradient(135deg,#833ab4,#e91e63);color:white;border-radius:20px;padding:3px 12px;font-size:0.82em;font-weight:700">Team ${i+1}</span>
+                            <strong style="margin-left:8px;font-size:0.95em">${t.member1||'—'} &amp; ${t.member2||'—'}</strong>
+                            <span style="color:#9c27b0;font-size:0.82em;margin-left:8px">📌 ${t.topic||'—'}</span>
+                        </div>
+                        <span style="background:#e8f5e9;color:#1b5e20;border-radius:12px;padding:3px 12px;font-size:0.78em;font-weight:700">${t.classYear||'—'}</span>
+                    </div>
+
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+                        <!-- Screenshot -->
+                        <div>
+                            <div style="font-size:0.82em;font-weight:700;color:#444;margin-bottom:6px">📸 Insight Screenshot (uploaded by CR):</div>
+                            ${screenshotHtml}
+                        </div>
+
+                        <!-- Entry form -->
+                        <div>
+                            <div style="font-size:0.82em;font-weight:700;color:#444;margin-bottom:8px">📝 Enter Today's Metrics <span style="color:#888;font-weight:400">(${today})</span>:</div>
+                            <div style="display:flex;flex-direction:column;gap:8px">
+                                <div style="display:flex;align-items:center;gap:8px">
+                                    <span style="width:80px;font-size:0.82em;color:#555;font-weight:600">👁 Views</span>
+                                    <input type="number" id="sv_views_${t.id}" min="0" placeholder="0" value="${latest.views||''}"
+                                           style="flex:1;padding:7px 10px;border:2px solid #ce93d8;border-radius:8px;font-size:0.88em;outline:none;${disabledStyle}" ${disabled}>
+                                </div>
+                                <div style="display:flex;align-items:center;gap:8px">
+                                    <span style="width:80px;font-size:0.82em;color:#555;font-weight:600">❤️ Likes</span>
+                                    <input type="number" id="sv_likes_${t.id}" min="0" placeholder="0" value="${latest.likes||''}"
+                                           style="flex:1;padding:7px 10px;border:2px solid #ce93d8;border-radius:8px;font-size:0.88em;outline:none;${disabledStyle}" ${disabled}>
+                                </div>
+                                <div style="display:flex;align-items:center;gap:8px">
+                                    <span style="width:80px;font-size:0.82em;color:#555;font-weight:600">💬 Comments</span>
+                                    <input type="number" id="sv_comments_${t.id}" min="0" placeholder="0" value="${latest.comments||''}"
+                                           style="flex:1;padding:7px 10px;border:2px solid #ce93d8;border-radius:8px;font-size:0.88em;outline:none;${disabledStyle}" ${disabled}>
+                                </div>
+                                <div style="background:#f8f4ff;border-radius:8px;padding:8px 12px;font-size:0.8em;color:#6a1b9a;margin-top:2px">
+                                    Formula: (Views×${formula.weightViews}) + (Likes×${formula.weightLikes}) + (Comments×${formula.weightComments}) ÷ ${formula.maxRaw} × 50
+                                </div>
+                                <div style="display:flex;gap:8px;align-items:center;margin-top:4px">
+                                    <button onclick="saveChandanMetrics('${t.id}')" ${disabled}
+                                            style="background:linear-gradient(135deg,#9c27b0,#e91e63);color:white;border:none;border-radius:8px;padding:9px 18px;font-size:0.88em;font-weight:700;cursor:pointer;${disabledStyle}">
+                                        💾 Save Score
+                                    </button>
+                                    <span id="sv_msg_${t.id}" style="font-size:0.8em;font-weight:700;display:none"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Latest saved score display -->
+                    <div style="margin-top:12px;background:${latest.views ? '#e8f5e9' : '#f5f5f5'};border-radius:8px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
+                        <div style="font-size:0.82em;color:#555">
+                            Last updated: <strong>${latestDate}</strong> &nbsp;|&nbsp;
+                            Views: <strong>${latest.views||0}</strong> &nbsp;
+                            Likes: <strong>${latest.likes||0}</strong> &nbsp;
+                            Comments: <strong>${latest.comments||0}</strong>
+                        </div>
+                        <div style="font-size:0.88em;font-weight:700;color:${latest.views ? '#1b5e20' : '#aaa'}">
+                            Raw Score: ${raw} &nbsp;→&nbsp; Social Score: <strong>${pct} / 50</strong>
+                        </div>
+                    </div>
+                </div>`;
+            }).join('');
+            } catch(e) {
+                console.error('loadChandanPanel error:', e);
+                const isPermission = e && e.message && e.message.includes('permission_denied');
+                const isTimeout    = e && e.message === 'timeout';
+                let msg, hint;
+                if (isPermission) {
+                    msg  = '🔒 Firebase permission denied — your database rules block reads on <code>/vlogChallenge</code>.';
+                    hint = '👉 <strong>Fix:</strong> Go to <a href="https://console.firebase.google.com/" target="_blank" style="color:#1565c0">Firebase Console</a> → Realtime Database → Rules → change <code>".read": false</code> to <code>".read": true</code> for the <code>vlogChallenge</code> and <code>vlogSettings</code> paths, then publish. Or ask Harsha (Super Admin) to update the rules.';
+                } else if (isTimeout) {
+                    msg  = '⚠️ Connection timed out. Check your internet and try again.';
+                    hint = '';
+                } else {
+                    msg  = '⚠️ Failed to load teams: ' + (e && e.message ? e.message : 'Unknown error');
+                    hint = '';
+                }
+                listEl.innerHTML = `<div style="padding:24px;font-size:0.9em;background:#ffeef0;border-radius:10px;border:2px solid #f5c6cb;line-height:1.7">
+                    <div style="color:#c62828;margin-bottom:10px">${msg}</div>
+                    ${hint ? `<div style="color:#444;font-size:0.88em;background:#fff8e1;border-radius:8px;padding:10px 14px;border-left:4px solid #ffc107;margin-bottom:14px">${hint}</div>` : ''}
+                    <button onclick="loadChandanPanel()" style="background:#9c27b0;color:white;border:none;border-radius:8px;padding:8px 18px;cursor:pointer;font-weight:700">🔄 Try Again</button>
+                </div>`;
+            }
+        }
+
+        async function saveChandanMetrics(teamId) {
+            const views    = parseInt(document.getElementById('sv_views_'   + teamId).value) || 0;
+            const likes    = parseInt(document.getElementById('sv_likes_'   + teamId).value) || 0;
+            const comments = parseInt(document.getElementById('sv_comments_'+ teamId).value) || 0;
+            const msgEl    = document.getElementById('sv_msg_' + teamId);
+            const today    = new Date().toISOString().slice(0,10);
+
+            // Date check — removed for testing
+            // const now   = new Date();
+            // const start = new Date('2026-03-02T00:00:00');
+            // const end   = new Date('2026-03-07T23:59:59');
+            // if (now < start || now > end) {
+            //     if (msgEl) { msgEl.style.display='inline'; msgEl.style.color='#c62828'; msgEl.textContent='❌ Outside scoring window'; }
+            //     return;
+            // }
+
+            // Load formula
+            const fSnap   = await db.ref('vlogSettings/socialFormula').once('value');
+            const formula = fSnap.val() || { weightViews:1, weightLikes:3, weightComments:5, maxRaw:5000 };
+            const { raw, pct } = calcSocialScore(views, likes, comments, formula);
+
+            const entry = { date: today, views, likes, comments, rawScore: raw, socialPct: pct, savedAt: new Date().toISOString() };
+
+            // Save to socialMetrics/{date} and latestSocialEntry
+            const updates = {};
+            updates['socialMetrics/' + today.replace(/-/g,'_')] = entry;
+            updates['latestSocialEntry'] = entry;
+            updates['socialScore']       = pct; // this feeds into final score calculation
+
+            await db.ref('vlogChallenge/' + teamId).update(updates);
+
+            if (msgEl) {
+                msgEl.style.display = 'inline'; msgEl.style.color = '#1b5e20';
+                msgEl.textContent = '✅ Saved! Social Score: ' + pct + '/50';
+                setTimeout(() => { msgEl.style.display = 'none'; }, 3000);
+            }
+            // Reload to refresh display
+            setTimeout(loadChandanPanel, 1500);
+        }
+        let vlogJuryNum = null;
+        let vlogJuryCriteria = [];
+
+        async function vlogJuryLogin() {
+            const num = document.getElementById('vlogJuryLoginNumber').value;
+            const pwd = (document.getElementById('vlogJuryLoginPwd').value || '').trim();
+            const msgEl = document.getElementById('vlogJuryLoginMsg');
+
+            function showJMsg(text, ok) {
+                msgEl.style.display = 'block';
+                msgEl.style.background = ok ? '#d4edda' : '#f8d7da';
+                msgEl.style.color      = ok ? '#155724' : '#721c24';
+                msgEl.style.border     = ok ? '1px solid #c3e6cb' : '1px solid #f5c6cb';
+                msgEl.textContent = text;
+            }
+
+            if (!pwd) { showJMsg('❌ Please enter the jury password.', false); return; }
+
+            const snap = await db.ref('jurySetup/Vlog').once('value');
+            const setup = snap.val();
+            if (!setup) { showJMsg('❌ Jury setup not configured. Contact Super Admin.', false); return; }
+
+            const correctPwd = setup['jury' + num + 'Password'];
+            const juryName   = setup['jury' + num + 'Name'] || ('Jury ' + num);
+            if (!correctPwd || pwd !== correctPwd) { showJMsg('❌ Incorrect password.', false); return; }
+
+            vlogJuryNum = num;
+            vlogJuryCriteria = setup.criteria || ['Content Quality','Creativity & Originality','Presentation & Editing','Relevance to Topic','Engagement & Entertainment'];
+            showJMsg('✅ Logged in as ' + juryName, true);
+
+            const panel = document.getElementById('vlogJuryScoringPanel');
+            const lbl   = document.getElementById('vlogJuryWhoLabel');
+            if (panel) panel.style.display = 'block';
+            if (lbl)   lbl.textContent = juryName + ' (Jury ' + num + ')';
+
+            // Populate class filter
+            const snap2 = await db.ref('vlogChallenge').once('value');
+            const allClasses = new Set();
+            if (snap2.exists()) snap2.forEach(ch => { const d = ch.val(); if (d.classYear) allClasses.add(d.classYear); });
+            const clsSel = document.getElementById('vlogJuryClassFilter');
+            if (clsSel) {
+                clsSel.innerHTML = '<option value="">— All Classes —</option>';
+                [...allClasses].sort().forEach(c => {
+                    const opt = document.createElement('option'); opt.value = c; opt.textContent = c; clsSel.appendChild(opt);
+                });
+            }
+            loadVlogJuryScoringPanel();
+        }
+
+        async function loadVlogJuryScoringPanel() {
+            if (!vlogJuryNum) return;
+            const clsFilter = (document.getElementById('vlogJuryClassFilter') || {}).value || '';
+            const snap = await db.ref('vlogChallenge').once('value');
+            const teams = [];
+            if (snap.exists()) snap.forEach(ch => teams.push({ id: ch.key, ...ch.val() }));
+            const filtered = clsFilter ? teams.filter(t => t.classYear === clsFilter) : teams;
+            filtered.sort((a,b) => (a.classYear||'').localeCompare(b.classYear||''));
+
+            const cont = document.getElementById('vlogJuryScoringList');
+            if (!cont) return;
+            if (filtered.length === 0) { cont.innerHTML = '<p style="color:#999;text-align:center;padding:20px">No teams found.</p>'; return; }
+
+            cont.innerHTML = filtered.map(team => {
+                const existingScores = (team.juryScores && team.juryScores['j' + vlogJuryNum]) || {};
+                const total = vlogJuryCriteria.reduce((s, c) => s + (+existingScores[c] || 0), 0);
+                const scorePct = ((total / 50) * 50).toFixed(1);
+
+                const criteriaRows = vlogJuryCriteria.map(c => `
+                    <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f0f0f0">
+                        <span style="font-size:0.88em;color:#333;font-weight:600;flex:1">${c}</span>
+                        <div style="display:flex;align-items:center;gap:6px">
+                            <input type="number" min="0" max="10" value="${existingScores[c] || ''}" 
+                                   id="vjScore_${team.id}_${c.replace(/\s+/g,'_')}"
+                                   placeholder="0"
+                                   style="width:60px;padding:6px 8px;border:2px solid #ddd;border-radius:6px;font-size:0.9em;text-align:center;outline:none"
+                                   oninput="updateVlogJuryTotal('${team.id}')">
+                            <span style="color:#9c27b0;font-size:0.82em;font-weight:700">/10</span>
+                        </div>
+                    </div>
+                `).join('');
+
+                return `<div style="background:white;border-radius:12px;border:2px solid #e0c8f5;margin-bottom:16px;overflow:hidden">
+                    <div style="background:linear-gradient(135deg,#6a1b9a,#833ab4);padding:12px 16px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
+                        <div>
+                            <div style="color:white;font-weight:700;font-size:0.95em">${team.member1||'—'} & ${team.member2||'—'}</div>
+                            <div style="color:rgba(255,255,255,0.8);font-size:0.8em">${team.classYear} · ${team.topic||'—'}</div>
+                        </div>
+                        <a href="${team.link||'#'}" target="_blank" rel="noopener" style="background:rgba(255,255,255,0.2);color:white;padding:5px 12px;border-radius:20px;text-decoration:none;font-size:0.8em;font-weight:700">📸 View Reel</a>
+                    </div>
+                    <div style="padding:14px 16px">
+                        ${criteriaRows}
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;padding-top:10px;border-top:2px solid #e0c8f5">
+                            <div>
+                                <span style="font-size:0.88em;color:#666">Total: </span>
+                                <span id="vjTotal_${team.id}" style="font-size:1.2em;font-weight:800;color:#6a1b9a">${total}</span>
+                                <span style="font-size:0.85em;color:#9c27b0"> / 50 → </span>
+                                <span id="vjPct_${team.id}" style="font-size:1em;font-weight:800;color:#e91e63">${scorePct}%</span>
+                                <span style="font-size:0.78em;color:#aaa"> of final score</span>
+                            </div>
+                            <div style="display:flex;align-items:center;gap:8px">
+                                <span style="font-size:0.78em;color:#888">Social: <strong style="color:#e91e63">${team.socialScore > 0 ? team.socialScore : '—'}</strong></span>
+                                <button onclick="saveVlogJuryScore('${team.id}')" style="background:linear-gradient(135deg,#4caf50,#2196f3);color:white;border:none;border-radius:8px;padding:8px 18px;cursor:pointer;font-size:0.88em;font-weight:700">💾 Save Score</button>
+                            </div>
+                        </div>
+                        <div id="vjSaveMsg_${team.id}" style="display:none;margin-top:8px;font-size:0.82em;font-weight:600;padding:6px 10px;border-radius:6px"></div>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        function updateVlogJuryTotal(teamId) {
+            let total = 0;
+            vlogJuryCriteria.forEach(c => {
+                const inp = document.getElementById('vjScore_' + teamId + '_' + c.replace(/\s+/g,'_'));
+                if (inp) total += Math.min(10, Math.max(0, +inp.value || 0));
+            });
+            const totEl = document.getElementById('vjTotal_' + teamId);
+            const pctEl = document.getElementById('vjPct_' + teamId);
+            if (totEl) totEl.textContent = total;
+            if (pctEl) pctEl.textContent = ((total / 50) * 50).toFixed(1) + '%';
+        }
+
+        async function saveVlogJuryScore(teamId) {
+            const scores = {};
+            let total = 0;
+            let valid = true;
+            vlogJuryCriteria.forEach(c => {
+                const inp = document.getElementById('vjScore_' + teamId + '_' + c.replace(/\s+/g,'_'));
+                const val = inp ? Math.min(10, Math.max(0, +inp.value || 0)) : 0;
+                if (inp && inp.value === '') { valid = false; }
+                scores[c] = val;
+                total += val;
+            });
+            if (!valid) { alert('Please enter scores for all criteria (0–10 each)'); return; }
+
+            const juryPct = ((total / 50) * 50).toFixed(1);
+            const updates = {};
+            updates['juryScores/j' + vlogJuryNum] = scores;
+            updates['juryTotal_j' + vlogJuryNum]  = total;
+            updates['juryPct_j'   + vlogJuryNum]  = +juryPct;
+
+            // Recalculate final score
+            const snap = await db.ref('vlogChallenge/' + teamId).once('value');
+            const team = snap.val() || {};
+            const otherJury = vlogJuryNum === '1' ? team.juryTotal_j2 : team.juryTotal_j1;
+            if (otherJury !== null && otherJury !== undefined) {
+                const avgJury = ((total + otherJury) / 2);
+                const avgPct  = ((avgJury / 50) * 50);
+                const socialPct = team.socialScore > 0 ? Math.min(50, (team.socialScore / 1000) * 50) : 0;
+                updates['finalScore'] = +(avgPct + socialPct).toFixed(1);
+            }
+
+            const msgEl = document.getElementById('vjSaveMsg_' + teamId);
+            db.ref('vlogChallenge/' + teamId).update(updates).then(() => {
+                msgEl.style.display = 'block';
+                msgEl.style.background = '#d4edda'; msgEl.style.color = '#155724'; msgEl.style.border = '1px solid #c3e6cb';
+                msgEl.textContent = '✅ Score saved! Total: ' + total + '/50 → ' + juryPct + '% of final score';
+                setTimeout(() => msgEl.style.display = 'none', 4000);
+            }).catch(e => {
+                msgEl.style.display = 'block';
+                msgEl.style.background = '#f8d7da'; msgEl.style.color = '#721c24'; msgEl.style.border = '1px solid #f5c6cb';
+                msgEl.textContent = '❌ Error: ' + e.message;
+            });
+        }
+
+        // ══════════════════════════════════════════════════════════════
+        // VLOG: CR VIEW — check event active before showing form
+        // ══════════════════════════════════════════════════════════════
+        async function checkVlogEventActive() {
+            const snap = await db.ref('vlogSettings/eventActive').once('value');
+            const active = snap.val() === true;
+            const form = document.getElementById('vlogSubmitFormWrapper');
+            const lockMsg = document.getElementById('vlogLockedMsg');
+            if (!active) {
+                if (form) form.style.display = 'none';
+                if (lockMsg) lockMsg.style.display = 'block';
+            } else {
+                if (form) form.style.display = 'block';
+                if (lockMsg) lockMsg.style.display = 'none';
+                autoFillVlogMembers();
+                initVlogDailyScreenshots(); // build daily screenshot slots
+            }
+            // Check monitoring visibility
+            const mSnap = await db.ref('vlogSettings/monitoringVisible').once('value');
+            const monVis = mSnap.val() === true;
+            const monSection = document.getElementById('vlogMonitoringSection');
+            if (monSection) monSection.style.display = monVis ? 'block' : 'none';
+            // Load hashtag
+            loadVlogSettings();
         }
 
         function updateCREventFilter() {
@@ -6570,6 +8627,9 @@
             if (!event) {
                 document.getElementById('eventSetupContainer').style.display = 'none';
                 document.getElementById('eventEligibilityBanner').style.display = 'none';
+                // Hide vlog calc panel
+                const vcp = document.getElementById('vlogScoreCalcPanel');
+                if (vcp) vcp.style.display = 'none';
                 return;
             }
             
@@ -6598,8 +8658,8 @@
                 document.getElementById('jury1Password').value = data.jury1Password || '';
                 document.getElementById('jury2Password').value = data.jury2Password || '';
 
-                // Load event type — use saved value, fall back to auto-detected
-                const savedType = data.eventType || (autoIndividual ? 'individual' : autoMultiteam ? 'multiteam' : 'class');
+                // Load event type — config always wins for individual/multiteam; only use saved for class-based
+                const savedType = autoIndividual ? 'individual' : autoMultiteam ? 'multiteam' : (data.eventType || 'class');
                 document.getElementById('eventTypeClass').checked      = savedType === 'class';
                 document.getElementById('eventTypeIndividual').checked = savedType === 'individual';
                 document.getElementById('eventTypeMultiteam').checked  = savedType === 'multiteam';
@@ -6607,6 +8667,73 @@
                 // Load criteria
                 const criteria = data.criteria || [];
                 renderCriteriaInputs(criteria);
+
+                // ── VLOG SPECIAL: show score calculation panel ──
+                const vcp = document.getElementById('vlogScoreCalcPanel');
+                if (event === 'Vlog' && vcp) {
+                    vcp.style.display = 'block';
+                    loadVlogScoreCalcPanel(data.criteria || []);
+                } else if (vcp) {
+                    vcp.style.display = 'none';
+                }
+            });
+        }
+
+        function loadVlogScoreCalcPanel(criteria) {
+            const cont = document.getElementById('vlogCalcSubmissions');
+            if (!cont) return;
+            cont.innerHTML = '<p style="color:#aaa;font-size:0.85em;padding:10px">Loading submissions…</p>';
+
+            db.ref('vlogChallenge').once('value').then(snap => {
+                const teams = [];
+                if (snap.exists()) snap.forEach(ch => teams.push({ id: ch.key, ...ch.val() }));
+                if (teams.length === 0) {
+                    cont.innerHTML = '<p style="color:#aaa;font-size:0.85em;padding:10px;text-align:center">No Vlog submissions yet.</p>';
+                    return;
+                }
+
+                const maxSocial = 1000; // tune when API live
+                let rows = teams.map((t, i) => {
+                    const j1 = t.juryTotal_j1 != null ? t.juryTotal_j1 : null;
+                    const j2 = t.juryTotal_j2 != null ? t.juryTotal_j2 : null;
+                    const juryAvg = (j1 !== null && j2 !== null) ? (j1 + j2) / 2 : (j1 ?? j2 ?? null);
+                    const juryPct  = juryAvg !== null ? +((juryAvg / 50) * 50).toFixed(1) : null;
+                    const socialPct = t.socialScore > 0 ? +Math.min(50, (t.socialScore / maxSocial) * 50).toFixed(1) : 0;
+                    const final    = juryPct !== null ? +(juryPct + socialPct).toFixed(1) : null;
+
+                    const jStr  = juryPct  !== null ? juryPct  + '%' : '<span style="color:#aaa">—</span>';
+                    const sStr  = socialPct > 0     ? socialPct + '%' : '<span style="color:#aaa">—</span>';
+                    const fStr  = final !== null ? '<strong style="color:#1b5e20">' + final + '%</strong>' : '<span style="color:#aaa">—</span>';
+
+                    return `<tr style="background:${i%2===0?'#fafafa':'white'}">
+                        <td style="font-weight:700;color:#833ab4;text-align:center">${i+1}</td>
+                        <td style="font-size:0.85em"><strong>${t.member1||'—'}</strong> &amp; ${t.member2||'—'}</td>
+                        <td style="font-size:0.82em;color:#4a148c;font-weight:600">${t.classYear||'—'}</td>
+                        <td style="font-size:0.82em">${t.topic||'—'}</td>
+                        <td style="text-align:center;font-size:0.85em">${j1 !== null ? j1+'/50' : '<span style="color:#aaa">—</span>'}</td>
+                        <td style="text-align:center;font-size:0.85em">${j2 !== null ? j2+'/50' : '<span style="color:#aaa">—</span>'}</td>
+                        <td style="text-align:center;font-size:0.85em">${jStr}</td>
+                        <td style="text-align:center;font-size:0.85em;color:#e91e63;font-weight:700">${t.socialScore > 0 ? t.socialScore : '<span style="color:#aaa">—</span>'}</td>
+                        <td style="text-align:center;font-size:0.85em">${sStr}</td>
+                        <td style="text-align:center;font-size:0.95em">${fStr}</td>
+                    </tr>`;
+                }).join('');
+
+                cont.innerHTML = `
+                    <div style="font-size:0.8em;color:#555;background:#e8f5e9;border-radius:8px;padding:10px 14px;margin-bottom:10px;border-left:4px solid #4caf50">
+                        📐 <strong>Formula:</strong> Final % = (Jury Avg /50 × 50%) + (Social Score /1000 × 50%) &nbsp;|&nbsp;
+                        Jury score = avg of Jury 1 + Jury 2 out of 50 &nbsp;|&nbsp; Social = Likes+Comments+Views
+                    </div>
+                    <div class="table-wrapper" style="margin:0">
+                        <table>
+                            <thead><tr>
+                                <th>#</th><th>Members</th><th>Class</th><th>Topic</th>
+                                <th>J1 /50</th><th>J2 /50</th><th>Jury %</th>
+                                <th>Social</th><th>Social %</th><th>Final %</th>
+                            </tr></thead>
+                            <tbody>${rows}</tbody>
+                        </table>
+                    </div>`;
             });
         }
 
@@ -6677,9 +8804,12 @@
             try { classOrder = getClassOrderFromFields(); } catch(e) {}
 
             // Event type: individual vs class-based
-            const eventType = document.querySelector('input[name="juryEventType"]:checked')
+            // Always honour config — individual/multiteam events can't be saved as class-based
+            const eventTypeSel = document.querySelector('input[name="juryEventType"]:checked')
                 ? document.querySelector('input[name="juryEventType"]:checked').value
                 : 'class';
+            const eventCfg = events[event] || {};
+            const eventType = eventCfg.individual ? 'individual' : (eventCfg.multiTeam ? 'multiteam' : eventTypeSel);
 
             const setupData = {
                 jury1Name: jury1Name || 'Jury 1',
@@ -6852,18 +8982,47 @@
 
                 // Pass eventType and full enrollment records so renderJurySheet can handle individual events
                 const eventEnrollmentsForRender = all.filter(e => e.event === juryEvent);
-                renderJurySheet(orderedClasses, setup.criteria, setup.classAliases || {}, setup.eventType || 'class', eventEnrollmentsForRender);
-                loadExistingMarks();
+
+                // For Vlog: also load vlogChallenge to get social scores
+                if (juryEvent === 'Vlog') {
+                    db.ref('vlogChallenge').once('value').then(vlogSnap => {
+                        const vlogData = {};
+                        if (vlogSnap.exists()) {
+                            vlogSnap.forEach(ch => {
+                                const v = ch.val();
+                                const key = (v.classYear || '') + '__' + (v.topic || '');
+                                vlogData[key] = v;
+                            });
+                        }
+                        renderJurySheet(orderedClasses, setup.criteria, setup.classAliases || {}, setup.eventType || 'class', eventEnrollmentsForRender, vlogData);
+                        loadExistingMarks();
+                    }).catch(err => {
+                        console.warn('Could not load vlogChallenge social scores (non-fatal):', err);
+                        // Still render the sheet — social score column will show — (no data)
+                        renderJurySheet(orderedClasses, setup.criteria, setup.classAliases || {}, setup.eventType || 'class', eventEnrollmentsForRender, {});
+                        loadExistingMarks();
+                    });
+                } else {
+                    renderJurySheet(orderedClasses, setup.criteria, setup.classAliases || {}, setup.eventType || 'class', eventEnrollmentsForRender);
+                    loadExistingMarks();
+                }
             }).catch(err => {
                 console.error('Error loading jury sheet:', err);
                 document.getElementById('jurySheetContainer').innerHTML = '<p style="text-align:center;padding:40px;color:red;">Error loading jury sheet: ' + err.message + '</p>';
             });
         }
 
-        function renderJurySheet(enrolledClasses, criteria, aliasMap, eventType, eventEnrollments) {
+        function renderJurySheet(enrolledClasses, criteria, aliasMap, eventType, eventEnrollments, vlogData) {
             aliasMap    = aliasMap    || {};
             eventType   = eventType   || 'class';
+            vlogData    = vlogData    || {};
             eventEnrollments = eventEnrollments || all.filter(e => e.event === juryEvent);
+
+            // Always honour the events config — if the event is configured as multiTeam or individual,
+            // use that regardless of what was saved in jurySetup (guards against stale saved values)
+            const liveCfg = (events && juryEvent) ? (events[juryEvent] || {}) : {};
+            if (liveCfg.multiTeam) eventType = 'multiteam';
+            else if (liveCfg.individual) eventType = 'individual';
 
             let html = '';
 
@@ -6921,7 +9080,7 @@
                 html += '</div>';
 
                 html += '<div class="table-wrapper"><div class="marks-table"><table><thead><tr>';
-                html += '<th>#</th><th>Code Name</th><th>Class</th><th>Topic/Detail</th>';
+                html += '<th>#</th><th>Code Name</th><th>Class</th><th>Topic/Detail</th><th>Social Score</th>';
                 criteria.forEach(crit => {
                     html += '<th>'+crit+'<br><small>(10 marks)</small></th>';
                 });
@@ -6937,10 +9096,24 @@
                     // We build unique teams: group by teamNum if present, else treat each record as its own team (for individual fallback).
                     const classEnrollments = eventEnrollments.filter(e => e.classYear === cls);
 
-                    // Build teams: key = teamNum (or record index if no teamNum)
+                    // Build teams: group by teamNum if present.
+                    // Fallback for legacy records without teamNum:
+                    //   • If members have a topic field → same topic = same team (Vlog)
+                    //   • Otherwise chunk by cfg.count (2 members per team sequentially)
+                    const liveCfgMT = (events && juryEvent) ? (events[juryEvent] || {}) : {};
+                    const membersPerTeam = liveCfgMT.count || 2;
                     const teamsMap = {};
                     classEnrollments.forEach((enr, idx) => {
-                        const tKey = (enr.teamNum !== undefined && enr.teamNum !== null) ? String(enr.teamNum) : String(idx + 1);
+                        let tKey;
+                        if (enr.teamNum !== undefined && enr.teamNum !== null) {
+                            tKey = String(enr.teamNum);
+                        } else if (enr.topic) {
+                            // Group by topic — members with same topic are on the same team
+                            tKey = 'topic__' + enr.topic;
+                        } else {
+                            // Chunk sequentially by membersPerTeam
+                            tKey = String(Math.floor(idx / membersPerTeam) + 1);
+                        }
                         if (!teamsMap[tKey]) teamsMap[tKey] = [];
                         teamsMap[tKey].push(enr);
                     });
@@ -6952,15 +9125,21 @@
                         const displayLabel = classAlias + ' — Team ' + (tIdx + 1);
                         // Use topic/detail from first member of team
                         const detail = getDet(teamMembers[0]) || '-';
+                        // Look up social score from vlogChallenge by classYear+topic
+                        const teamTopic = teamMembers[0].topic || '';
+                        const vlogKey = cls + '__' + teamTopic;
+                        const vlogEntry = vlogData[vlogKey] || null;
+                        const teamSocialScore = vlogEntry ? (vlogEntry.socialScore || 0) : 0;
                         html += '<tr>';
                         html += '<td>'+seq+'</td>';
                         html += '<td><strong>'+displayLabel+'</strong></td>';
                         html += '<td><small style="color:#666">'+classAlias+'</small></td>';
                         html += '<td><small>'+detail+'</small></td>';
+                        html += '<td style="text-align:center;font-weight:700;color:' + (teamSocialScore > 0 ? '#e91e63' : '#aaa') + '">' + (teamSocialScore > 0 ? teamSocialScore : '—') + '</td>';
                         criteria.forEach((crit, i) => {
                             html += '<td><input type="number" class="marks-input" data-class="'+rowKey+'" data-origclass="'+cls+'" data-criterion="'+i+'" min="0" max="10" step="0.5" placeholder="0-10"></td>';
                         });
-                        html += '<td class="total-marks" id="total-'+rowKey+'">0</td>';
+                        html += '<td class="total-marks" id="total-'+rowKey+'" data-social="'+teamSocialScore+'">0</td>';
                         html += '</tr>';
                         seq++;
                     });
@@ -7097,7 +9276,11 @@
                 total += val;
             });
             const totalCell = document.getElementById('total-'+cls.replace(/\s+/g, '-'));
-            if (totalCell) totalCell.textContent = total.toFixed(1);
+            if (totalCell) {
+                // Add social score if present (multiteam events)
+                const social = parseFloat(totalCell.dataset.social) || 0;
+                totalCell.textContent = (total + social).toFixed(1);
+            }
         }
 
         function sanitizeKey(key) {
@@ -7313,10 +9496,14 @@
                         const sk = e.classYear.replace(/[.\[\]#$\/\s]/g, '_');
                         realClasses[sk] = e.classYear;
                     });
-                    // Tally totals from submitted marksData
+                    // Tally totals from submitted marksData (include social score from total cell)
                     const totals = [];
                     Object.entries(marksData).forEach(([sk, d]) => {
-                        const total = (d.marks || []).reduce((s, v) => s + (parseFloat(v)||0), 0);
+                        const juryTotal = (d.marks || []).reduce((s, v) => s + (parseFloat(v)||0), 0);
+                        // Read social score stored in the total cell's data-social attribute
+                        const totalCell = document.getElementById('total-' + sk);
+                        const social = totalCell ? (parseFloat(totalCell.dataset.social) || 0) : 0;
+                        const total = juryTotal + social;
                         const alias = aliasMap[sk] || sk;
                         const real = realClasses[sk] || sk;
                         totals.push({ sk, alias, real, total });
@@ -7394,25 +9581,73 @@
                 
                 // Load marks from both juries using raw event name
                 console.log('Loading marks from both juries...');
-                Promise.all([
+                const fetchList = [
                     db.ref('juryMarks/'+event+'/jury1').once('value'),
                     db.ref('juryMarks/'+event+'/jury2').once('value')
-                ]).then(([jury1Snap, jury2Snap]) => {
-                    const jury1Marks = jury1Snap.val() || {};
-                    const jury2Marks = jury2Snap.val() || {};
-                    
+                ];
+                // For Vlog: also fetch social scores and enrollment topics
+                if (event === 'Vlog') {
+                    fetchList.push(db.ref('vlogChallenge').once('value'));
+                    fetchList.push(db.ref('youthfest-enrollments').orderByChild('event').equalTo('Vlog').once('value'));
+                }
+                Promise.all(fetchList).then((snaps) => {
+                    const jury1Marks = snaps[0].val() || {};
+                    const jury2Marks = snaps[1].val() || {};
+
+                    // Build vlogSocialMap: originalClassName → best socialScore for that class
+                    const vlogSocialMap = {};
+                    if (event === 'Vlog' && snaps[2] && snaps[3]) {
+                        // Build topic→socialScore map from vlogChallenge
+                        const topicSocial = {};
+                        snaps[2].forEach(ch => {
+                            const v = ch.val();
+                            const k = (v.classYear||'') + '__' + (v.topic||'');
+                            topicSocial[k] = v.socialScore || 0;
+                        });
+                        // Build classYear+teamNum → topic from enrollments, then map rowKey → socialScore
+                        const enrollByClass = {};
+                        snaps[3].forEach(ch => {
+                            const e = ch.val();
+                            if (!enrollByClass[e.classYear]) enrollByClass[e.classYear] = [];
+                            enrollByClass[e.classYear].push(e);
+                        });
+                        // For each class, group into teams and map sanitised rowKey → socialScore
+                        Object.entries(enrollByClass).forEach(([cls, members]) => {
+                            const safeKey = cls.replace(/[.\[\]#$\/\s]/g,'_');
+                            const teamsMap = {};
+                            members.forEach((m, idx) => {
+                                let tKey;
+                                if (m.teamNum !== undefined && m.teamNum !== null) tKey = String(m.teamNum);
+                                else if (m.topic) tKey = 'topic__' + m.topic;
+                                else tKey = String(Math.floor(idx / 2) + 1);
+                                if (!teamsMap[tKey]) teamsMap[tKey] = m;
+                            });
+                            Object.keys(teamsMap).sort((a,b)=>{
+                                const na=Number(a), nb=Number(b);
+                                return (isNaN(na)||isNaN(nb)) ? a.localeCompare(b) : na-nb;
+                            }).forEach((tKey, tIdx) => {
+                                const m = teamsMap[tKey];
+                                const rowKey = safeKey + '__t' + (tIdx+1);
+                                const vKey = cls + '__' + (m.topic||'');
+                                vlogSocialMap[rowKey] = topicSocial[vKey] || 0;
+                            });
+                        });
+                    }
+
                     console.log('Jury 1 Marks:', jury1Marks);
                     console.log('Jury 2 Marks:', jury2Marks);
-                    
-                    displayResults(event, jury1Marks, jury2Marks, jury1Name, jury2Name);
+
+                    displayResults(event, jury1Marks, jury2Marks, jury1Name, jury2Name, vlogSocialMap);
                 });
             });
         }
 
-        function displayResults(event, jury1Marks, jury2Marks, jury1Name, jury2Name) {
+        function displayResults(event, jury1Marks, jury2Marks, jury1Name, jury2Name, vlogSocialMap) {
             // Default names if not provided
             jury1Name = jury1Name || 'Jury 1';
             jury2Name = jury2Name || 'Jury 2';
+            vlogSocialMap = vlogSocialMap || {};
+            const isVlog = (event === 'Vlog');
             
             console.log('=== DISPLAY RESULTS DEBUG ===');
             console.log('Jury 1 Marks:', jury1Marks);
@@ -7453,43 +9688,86 @@
                 }
                 
                 const avgTotal = (j1Total + j2Total) / 2;
+
+                // For Vlog: apply Final % = (juryAvg/50 × 50%) + (socialScore/1000 × 50%)
+                let finalScore = avgTotal;
+                let socialScore = 0;
+                let juryPct = null;
+                let socialPct = null;
+                let finalPct = null;
+                if (isVlog) {
+                    socialScore = vlogSocialMap[sanitizedCls] || 0;
+                    juryPct    = +(avgTotal / 50 * 50).toFixed(2);
+                    socialPct  = +Math.min(50, socialScore / 1000 * 50).toFixed(2);
+                    finalPct   = +(juryPct + socialPct).toFixed(2);
+                    finalScore = finalPct; // use finalPct for ranking
+                }
                 
                 results.push({
-                    class: displayCls,  // Use original name for display
+                    class: displayCls,
                     jury1Total: j1Total,
                     jury2Total: j2Total,
                     average: avgTotal,
+                    socialScore: socialScore,
+                    juryPct: juryPct,
+                    socialPct: socialPct,
+                    finalPct: finalPct,
+                    finalScore: finalScore,
                     jury1Completed: j1 && j1.completed,
                     jury2Completed: j2 && j2.completed
                 });
             });
             
-            // Sort by average (descending)
-            results.sort((a, b) => b.average - a.average);
+            // Sort by finalScore (descending) — for Vlog this is finalPct, others it's jury avg
+            results.sort((a, b) => b.finalScore - a.finalScore);
             
             // Display results
             let html = '<h3 style="color:#c44569;margin-bottom:20px">Results for '+event+'</h3>';
+
+            // For Vlog: show formula reminder
+            if (isVlog) {
+                html += '<div style="font-size:0.82em;color:#555;background:#e8f5e9;border-radius:8px;padding:10px 14px;margin-bottom:12px;border-left:4px solid #4caf50">';
+                html += '📐 <strong>Formula:</strong> Final % = (Jury Avg /50 × 50%) + (Social Score /1000 × 50%)';
+                html += '</div>';
+            }
             
             // Show marks detail only for super admin and jury
             if (isSuperAdmin || isJury) {
-                html += '<div class="table-wrapper"><table><thead><tr><th>Rank</th><th>Class</th><th>'+jury1Name+' Total</th><th>'+jury2Name+' Total</th><th>Average</th><th>Status</th></tr></thead><tbody>';
-                
-                results.forEach((r, i) => {
-                    const rank = i + 1;
-                    const badge = rank === 1 ? '<span class="winner-badge">🏆 Winner</span>' : 
-                                 rank === 2 ? '<span class="runner-badge">🥈 Runner Up</span>' : '';
-                    
-                    html += '<tr class="rank-'+(rank <= 3 ? rank : '')+'">';
-                    html += '<td><strong>'+rank+'</strong></td>';
-                    html += '<td><strong>'+r.class+'</strong> '+badge+'</td>';
-                    html += '<td>'+r.jury1Total.toFixed(1)+(r.jury1Completed ? ' ✓' : '')+'</td>';
-                    html += '<td>'+r.jury2Total.toFixed(1)+(r.jury2Completed ? ' ✓' : '')+'</td>';
-                    html += '<td><strong>'+r.average.toFixed(1)+'</strong></td>';
-                    html += '<td>'+(r.jury1Completed && r.jury2Completed ? '✅ Complete' : '⏳ In Progress')+'</td>';
-                    html += '</tr>';
-                });
-                
-                html += '</tbody></table></div>';
+                if (isVlog) {
+                    html += '<div class="table-wrapper"><table><thead><tr><th>Rank</th><th>Class/Team</th><th>'+jury1Name+' /50</th><th>'+jury2Name+' /50</th><th>Jury Avg</th><th>Jury %</th><th>Social Score</th><th>Social %</th><th>Final %</th><th>Status</th></tr></thead><tbody>';
+                    results.forEach((r, i) => {
+                        const rank = i + 1;
+                        const badge = rank === 1 ? '<span class="winner-badge">🏆 Winner</span>' : rank === 2 ? '<span class="runner-badge">🥈 Runner Up</span>' : '';
+                        html += '<tr class="rank-'+(rank <= 3 ? rank : '')+'">';
+                        html += '<td><strong>'+rank+'</strong></td>';
+                        html += '<td><strong>'+r.class+'</strong> '+badge+'</td>';
+                        html += '<td>'+r.jury1Total.toFixed(1)+(r.jury1Completed ? ' ✓' : '')+'</td>';
+                        html += '<td>'+r.jury2Total.toFixed(1)+(r.jury2Completed ? ' ✓' : '')+'</td>';
+                        html += '<td>'+r.average.toFixed(1)+'</td>';
+                        html += '<td>'+(r.juryPct !== null ? r.juryPct+'%' : '—')+'</td>';
+                        html += '<td style="color:#e91e63;font-weight:700">'+(r.socialScore > 0 ? r.socialScore : '—')+'</td>';
+                        html += '<td>'+(r.socialPct > 0 ? r.socialPct+'%' : '—')+'</td>';
+                        html += '<td><strong style="color:#1b5e20">'+(r.finalPct !== null ? r.finalPct+'%' : '—')+'</strong></td>';
+                        html += '<td>'+(r.jury1Completed && r.jury2Completed ? '✅ Complete' : '⏳ In Progress')+'</td>';
+                        html += '</tr>';
+                    });
+                    html += '</tbody></table></div>';
+                } else {
+                    html += '<div class="table-wrapper"><table><thead><tr><th>Rank</th><th>Class</th><th>'+jury1Name+' Total</th><th>'+jury2Name+' Total</th><th>Average</th><th>Status</th></tr></thead><tbody>';
+                    results.forEach((r, i) => {
+                        const rank = i + 1;
+                        const badge = rank === 1 ? '<span class="winner-badge">🏆 Winner</span>' : rank === 2 ? '<span class="runner-badge">🥈 Runner Up</span>' : '';
+                        html += '<tr class="rank-'+(rank <= 3 ? rank : '')+'">';
+                        html += '<td><strong>'+rank+'</strong></td>';
+                        html += '<td><strong>'+r.class+'</strong> '+badge+'</td>';
+                        html += '<td>'+r.jury1Total.toFixed(1)+(r.jury1Completed ? ' ✓' : '')+'</td>';
+                        html += '<td>'+r.jury2Total.toFixed(1)+(r.jury2Completed ? ' ✓' : '')+'</td>';
+                        html += '<td><strong>'+r.average.toFixed(1)+'</strong></td>';
+                        html += '<td>'+(r.jury1Completed && r.jury2Completed ? '✅ Complete' : '⏳ In Progress')+'</td>';
+                        html += '</tr>';
+                    });
+                    html += '</tbody></table></div>';
+                }
             } else {
                 // For regular admins, show only final results (no marks)
                 results.forEach((r, i) => {
@@ -7499,7 +9777,8 @@
                     if (rank === 1) html += ' <span class="winner-badge">🏆 Winner</span>';
                     if (rank === 2) html += ' <span class="runner-badge">🥈 Runner Up</span>';
                     html += '</h3>';
-                    html += '<p style="color:#666;margin-top:10px">Final Score: <strong>'+r.average.toFixed(1)+'</strong></p>';
+                    const scoreLabel = isVlog && r.finalPct !== null ? r.finalPct+'%' : r.finalScore.toFixed(1);
+                    html += '<p style="color:#666;margin-top:10px">Final Score: <strong>'+scoreLabel+'</strong></p>';
                     html += '</div>';
                 });
             }
@@ -13447,20 +15726,54 @@ Davan Institute Team`;
 
                     const isIndividual  = (setup.eventType === 'individual');
                     const isMultiteam   = (setup.eventType === 'multiteam');
+                    const isVlogEvent   = (evName === 'Vlog');
                     const j1 = mSnap.val().jury1 || {}, j2 = mSnap.val().jury2 || {};
                     const allK = new Set([...Object.keys(j1), ...Object.keys(j2)]);
 
+                    // For Vlog: load social scores keyed by rowKey
+                    let vlogSocialByRow = {};
+                    if (isVlogEvent) {
+                        const [vlogSnap2, enrSnap2] = await Promise.all([
+                            getDb().ref('vlogChallenge').once('value'),
+                            getDb().ref('youthfest-enrollments').orderByChild('event').equalTo('Vlog').once('value')
+                        ]);
+                        const topicSocial2 = {};
+                        if (vlogSnap2.exists()) vlogSnap2.forEach(ch => {
+                            const v = ch.val();
+                            topicSocial2[(v.classYear||'')+'__'+(v.topic||'')] = v.socialScore || 0;
+                        });
+                        if (enrSnap2.exists()) {
+                            const enrollByClass2 = {};
+                            enrSnap2.forEach(ch => {
+                                const e = ch.val();
+                                if (!enrollByClass2[e.classYear]) enrollByClass2[e.classYear] = [];
+                                enrollByClass2[e.classYear].push(e);
+                            });
+                            Object.entries(enrollByClass2).forEach(([cls, members]) => {
+                                const safeKey2 = cls.replace(/[.\[\]#$\/\s]/g,'_');
+                                const tMap2 = {};
+                                members.forEach((m,idx) => {
+                                    let tk;
+                                    if (m.teamNum!==undefined&&m.teamNum!==null) tk=String(m.teamNum);
+                                    else if (m.topic) tk='topic__'+m.topic;
+                                    else tk=String(Math.floor(idx/2)+1);
+                                    if (!tMap2[tk]) tMap2[tk] = m;
+                                });
+                                Object.keys(tMap2).sort((a,b)=>{const na=Number(a),nb=Number(b);return(isNaN(na)||isNaN(nb))?a.localeCompare(b):na-nb;}).forEach((tk,ti) => {
+                                    const m = tMap2[tk];
+                                    const rk = safeKey2+'__t'+(ti+1);
+                                    vlogSocialByRow[rk] = topicSocial2[cls+'__'+(m.topic||'')] || 0;
+                                });
+                            });
+                        }
+                    }
+
                     if (isIndividual || isMultiteam) {
-                        // Individual: rows are CLASS__pN  |  Multi-team: rows are CLASS__tN
-                        // Both follow the same rule: group rows by their source class,
-                        // take the best average score per class, rank classes by that best score.
                         const bestPerClass = {};
                         allK.forEach(sk => {
                             const d1 = j1[sk], d2 = j2[sk];
-                            // Resolve original class from stored originalClassName or parse key prefix
                             let cls = (d1 && d1.originalClassName) || (d2 && d2.originalClassName) || '';
                             if (!cls) {
-                                // Key format: SANITISED_CLASS__pN  or  SANITISED_CLASS__tN
                                 const match = sk.match(/^(.+?)__[pt]\d+$/);
                                 if (match) {
                                     const sanitisedPrefix = match[1];
@@ -13472,22 +15785,25 @@ Davan Institute Team`;
                             let t1=0, t2=0;
                             if(d1&&d1.marks)(Array.isArray(d1.marks)?d1.marks:Object.values(d1.marks)).forEach(m=>t1+=(m||0));
                             if(d2&&d2.marks)(Array.isArray(d2.marks)?d2.marks:Object.values(d2.marks)).forEach(m=>t2+=(m||0));
-                            const avg = (t1 + t2) / 2;
-                            if (bestPerClass[cls] === undefined || avg > bestPerClass[cls]) {
-                                bestPerClass[cls] = avg;
+                            const juryAvg = (t1 + t2) / 2;
+                            // For Vlog: apply Final % = (juryAvg/50 × 50%) + (socialScore/1000 × 50%)
+                            let score = juryAvg;
+                            if (isVlogEvent) {
+                                const soc = vlogSocialByRow[sk] || 0;
+                                score = (juryAvg / 50 * 50) + Math.min(50, soc / 1000 * 50);
+                            }
+                            if (bestPerClass[cls] === undefined || score > bestPerClass[cls]) {
+                                bestPerClass[cls] = score;
                             }
                         });
-                        // Rank classes by their best performer / best team
                         const evRes = Object.entries(bestPerClass).map(([cls, best]) => ({cls, avg: best}));
                         evRes.sort((a,b) => b.avg - a.avg);
                         if (evRes[0] && resultPts[evRes[0].cls] !== undefined) resultPts[evRes[0].cls] += cfg.winnerPts;
                         if (evRes[1] && resultPts[evRes[1].cls] !== undefined) resultPts[evRes[1].cls] += cfg.runnerUpPts;
-                        // Edge case: top 2 both from same class → that class gets both points
                         if (evRes[0] && evRes[1] && evRes[0].cls === evRes[1].cls && resultPts[evRes[0].cls] !== undefined) {
                             resultPts[evRes[0].cls] += cfg.runnerUpPts;
                         }
                     } else {
-                        // Class-based: original logic
                         const evRes = [];
                         allK.forEach(sk => {
                             const d1=j1[sk], d2=j2[sk];
@@ -13997,6 +16313,28 @@ Davan Institute Team`;
                         const j1=mSnap.val().jury1||{}, j2=mSnap.val().jury2||{};
                         const allK=new Set([...Object.keys(j1),...Object.keys(j2)]);
                         const isIndividualOrMulti = (setup.eventType === 'individual' || setup.eventType === 'multiteam');
+                        const isVlogEv = (evName === 'Vlog');
+
+                        // For Vlog: build rowKey→socialScore map
+                        let vlogSocLb = {};
+                        if (isVlogEv) {
+                            const [vs3, es3] = await Promise.all([
+                                getDb().ref('vlogChallenge').once('value'),
+                                getDb().ref('youthfest-enrollments').orderByChild('event').equalTo('Vlog').once('value')
+                            ]);
+                            const ts3 = {};
+                            if (vs3.exists()) vs3.forEach(ch=>{ const v=ch.val(); ts3[(v.classYear||'')+'__'+(v.topic||'')]=v.socialScore||0; });
+                            if (es3.exists()) {
+                                const ec3 = {};
+                                es3.forEach(ch=>{ const e=ch.val(); if(!ec3[e.classYear])ec3[e.classYear]=[]; ec3[e.classYear].push(e); });
+                                Object.entries(ec3).forEach(([cls,members])=>{
+                                    const sk3=cls.replace(/[.\[\]#$\/\s]/g,'_');
+                                    const tm3={};
+                                    members.forEach((m,i)=>{ let tk; if(m.teamNum!=null) tk=String(m.teamNum); else if(m.topic) tk='topic__'+m.topic; else tk=String(Math.floor(i/2)+1); if(!tm3[tk])tm3[tk]=m; });
+                                    Object.keys(tm3).sort((a,b)=>{const na=Number(a),nb=Number(b);return(isNaN(na)||isNaN(nb))?a.localeCompare(b):na-nb;}).forEach((tk,ti)=>{ const m=tm3[tk]; vlogSocLb[sk3+'__t'+(ti+1)]=ts3[cls+'__'+(m.topic||'')]||0; });
+                                });
+                            }
+                        }
 
                         if (isIndividualOrMulti) {
                             // Best score per class
@@ -14012,8 +16350,10 @@ Davan Institute Team`;
                                 let t1=0,t2=0;
                                 if(d1&&d1.marks)(Array.isArray(d1.marks)?d1.marks:Object.values(d1.marks)).forEach(m=>t1+=(m||0));
                                 if(d2&&d2.marks)(Array.isArray(d2.marks)?d2.marks:Object.values(d2.marks)).forEach(m=>t2+=(m||0));
-                                const avg=(t1+t2)/2;
-                                if (bestPerClass[cls]===undefined || avg>bestPerClass[cls]) bestPerClass[cls]=avg;
+                                const juryAvg=(t1+t2)/2;
+                                let score = juryAvg;
+                                if (isVlogEv) { const soc=vlogSocLb[sk]||0; score=(juryAvg/50*50)+Math.min(50,soc/1000*50); }
+                                if (bestPerClass[cls]===undefined || score>bestPerClass[cls]) bestPerClass[cls]=score;
                             });
                             const evR=Object.entries(bestPerClass).map(([c,a])=>({cls:c,avg:a})).sort((a,b)=>b.avg-a.avg);
                             if(evR[0]) winner=`<strong>${evR[0].cls}</strong> <span style="color:#c44569">+${cfg.winnerPts}pts</span>`;
@@ -14177,6 +16517,27 @@ Davan Institute Team`;
                     const j1=mSnap.val().jury1||{}, j2=mSnap.val().jury2||{};
                     const allK=new Set([...Object.keys(j1),...Object.keys(j2)]);
                     const isIndividualOrMulti = (setup.eventType === 'individual' || setup.eventType === 'multiteam');
+                    const isVlogEv4 = (ev === 'Vlog');
+
+                    // For Vlog: build rowKey→socialScore map
+                    let vlogSocLb4 = {};
+                    if (isVlogEv4) {
+                        const [vs4, es4] = await Promise.all([
+                            getDb().ref('vlogChallenge').once('value'),
+                            getDb().ref('youthfest-enrollments').orderByChild('event').equalTo('Vlog').once('value')
+                        ]);
+                        const ts4={};
+                        if(vs4.exists()) vs4.forEach(ch=>{ const v=ch.val(); ts4[(v.classYear||'')+'__'+(v.topic||'')]=v.socialScore||0; });
+                        if(es4.exists()) {
+                            const ec4={};
+                            es4.forEach(ch=>{ const e=ch.val(); if(!ec4[e.classYear])ec4[e.classYear]=[]; ec4[e.classYear].push(e); });
+                            Object.entries(ec4).forEach(([cls,members])=>{
+                                const sk4=cls.replace(/[.\[\]#$\/\s]/g,'_'); const tm4={};
+                                members.forEach((m,i)=>{ let tk; if(m.teamNum!=null) tk=String(m.teamNum); else if(m.topic) tk='topic__'+m.topic; else tk=String(Math.floor(i/2)+1); if(!tm4[tk])tm4[tk]=m; });
+                                Object.keys(tm4).sort((a,b)=>{const na=Number(a),nb=Number(b);return(isNaN(na)||isNaN(nb))?a.localeCompare(b):na-nb;}).forEach((tk,ti)=>{ const m=tm4[tk]; vlogSocLb4[sk4+'__t'+(ti+1)]=ts4[cls+'__'+(m.topic||'')]||0; });
+                            });
+                        }
+                    }
 
                     if (isIndividualOrMulti) {
                         const bestPerClass = {};
@@ -14191,8 +16552,10 @@ Davan Institute Team`;
                             let t1=0,t2=0;
                             if(d1&&d1.marks)(Array.isArray(d1.marks)?d1.marks:Object.values(d1.marks)).forEach(m=>t1+=(m||0));
                             if(d2&&d2.marks)(Array.isArray(d2.marks)?d2.marks:Object.values(d2.marks)).forEach(m=>t2+=(m||0));
-                            const avg=(t1+t2)/2;
-                            if(bestPerClass[cls]===undefined||avg>bestPerClass[cls]) bestPerClass[cls]=avg;
+                            const juryAvg=(t1+t2)/2;
+                            let score=juryAvg;
+                            if(isVlogEv4){ const soc=vlogSocLb4[sk]||0; score=(juryAvg/50*50)+Math.min(50,soc/1000*50); }
+                            if(bestPerClass[cls]===undefined||score>bestPerClass[cls]) bestPerClass[cls]=score;
                         });
                         const evR=Object.entries(bestPerClass).map(([c,a])=>({cls:c,avg:a})).sort((a,b)=>b.avg-a.avg);
                         if(evR[0]&&resP[evR[0].cls]!==undefined) resP[evR[0].cls]+=cfg.winnerPts;
@@ -19870,6 +22233,8 @@ Proceed?`)) return;
                 devLogin('admin');
             } else if (id === 'managerPassword') {
                 devLogin('manager');
+            } else if (id === 'facultyLoginPwd') {
+                devLogin('faculty');
             } else {
                 // Unknown field — check which competition/usertype is currently selected
                 const ct = document.getElementById('competitionType');
@@ -19972,6 +22337,30 @@ Proceed?`)) return;
                     if (pw) pw.value = DEV_PASS;
                     await sscLogin();
                 }, 120);
+
+            } else if (role === 'faculty') {
+                // Scroll to / show the faculty section
+                const ut = document.getElementById('userType');
+                if (ut) { ut.value = 'faculty'; handleUserTypeChange(); }
+                setTimeout(() => {
+                    // Select Chandan G B in the dropdown
+                    const sel = document.getElementById('facultyLoginSelect');
+                    if (sel) {
+                        for (let i = 0; i < sel.options.length; i++) {
+                            if ((sel.options[i].dataset.name || sel.options[i].value || '').toLowerCase().includes('chandan')) {
+                                sel.selectedIndex = i;
+                                // Trigger the onchange to populate hidden phone field
+                                const evt = new Event('change');
+                                sel.dispatchEvent(evt);
+                                break;
+                            }
+                        }
+                    }
+                    // Fill password with superAdminPassword and login
+                    const pw = document.getElementById('facultyLoginPwd');
+                    if (pw) { pw.value = superAdminPassword; }
+                    facultyLogin();
+                }, 150);
             }
         };
     })();
@@ -20287,7 +22676,7 @@ Proceed?`)) return;
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;" id="devTriggerVersion">
-                <strong>Version:</strong> 3.38 WhatsApp preview — removed ₹1,500 text from share description   | <strong>Last Updated:</strong> February 23, 2026 1.13pm
+                <strong>Version:</strong> 3.68 — Chandan panel now shows screenshots from dailyScreenshots (not just screenshotUrl); Social Score in jury Total; all time locks removed for testing   | <strong>Last Updated:</strong> February 23, 2026 — 20:20
             </p>
             <!-- ============================================ -->
             
