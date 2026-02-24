@@ -452,6 +452,8 @@
         .admin-badge { display: inline-block; background: #FFD700; color: #333; padding: 5px 15px; border-radius: 20px; font-size: 0.9em; font-weight: bold; margin-left: 10px; }
         .super-admin-badge { display: inline-block; background: #FF6B6B; color: white; padding: 5px 15px; border-radius: 20px; font-size: 0.9em; font-weight: bold; margin-left: 10px; }
         .jury-badge { display: inline-block; background: #4ECDC4; color: white; padding: 5px 15px; border-radius: 20px; font-size: 0.9em; font-weight: bold; margin-left: 10px; }
+        .super-jury-badge { display: inline-block; background: linear-gradient(135deg, #7b1fa2, #e91e63); color: white; padding: 5px 15px; border-radius: 20px; font-size: 0.9em; font-weight: bold; margin-left: 10px; box-shadow: 0 2px 8px rgba(233,30,99,0.4); }
+        .super-jury-only { display: none; }
         
         /* Class Indicator */
         .class-indicator {
@@ -588,6 +590,7 @@
         .admin-only { display: none; }
         .super-admin-only { display: none; }
         .jury-only { display: none; }
+        .super-jury-only-section { display: none; }
         .student-section { background: #f0f0f0; padding: 20px; border-radius: 8px; margin-bottom: 30px; }
         .cr-section { background: #e3f2fd; padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 2px solid #2196F3; }
         
@@ -1324,7 +1327,6 @@
                 <button class="btn" onclick="juryLogin()">Login as Jury</button>
             </div>
             
-            <!-- Divider -->
             <div style="margin: 30px 0; border-top: 2px solid #ddd;"></div>
             
             <!-- Online Competition Dropdown -->
@@ -1554,6 +1556,8 @@
                 <button class="tab" onclick="showCRTab('crQuizStats');loadCRQuizStats()">🧠 Quiz Stats</button>
                 <button class="tab" onclick="showCRTab('crScavengerStats');loadCRScavengerStats()">🗺️ Scavenger Hunt</button>
                 <button class="tab" onclick="showCRTab('crVlogChallenge');checkVlogEventActive();loadVlogSubmissions();initVlogDailyScreenshots()">📹 Vlog Challenge</button>
+                <button class="tab" onclick="showCRTab('crPodCasting');checkPodcastEventActive();loadPodcastSubmissions()">🎙️ Pod Casting</button>
+                <button class="tab" onclick="showCRTab('crBestOutWaste');loadBOWSubmissions()">♻️ Best Out of Waste</button>
             </div>
 
             <div id="crEnroll" class="form-section active">
@@ -1979,6 +1983,281 @@
 
             </div>
             <!-- ── END VLOG CHALLENGE TAB ──────────────────────────────────────── -->
+
+            <!-- ══════════════════════════════════════════════════════════════════ -->
+            <!-- CR: POD CASTING TAB                                               -->
+            <!-- ══════════════════════════════════════════════════════════════════ -->
+            <div id="crPodCasting" class="form-section">
+
+                <!-- Hero Banner -->
+                <div style="background:linear-gradient(135deg,#1db954,#191414,#1db954);background-size:300% 300%;animation:vlogGradient 6s ease infinite;border-radius:16px;padding:24px;margin-bottom:20px;text-align:center;position:relative;overflow:hidden">
+                    <div style="position:absolute;top:-20px;right:-20px;font-size:5em;opacity:0.12;transform:rotate(15deg)">🎙️</div>
+                    <div style="font-size:2.2em;margin-bottom:6px">🎙️🎧✨</div>
+                    <h2 style="color:white;margin:0 0 5px;font-size:1.5em;text-shadow:0 2px 8px rgba(0,0,0,0.35)">Pod Casting Challenge</h2>
+                    <p style="color:rgba(255,255,255,0.92);margin:0 0 10px;font-size:0.9em">Record your podcast, upload to <strong>Spotify</strong> & submit the link!</p>
+                    <div style="display:flex;justify-content:center;gap:8px;flex-wrap:wrap">
+                        <div style="background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.5);border-radius:20px;padding:4px 14px;color:white;font-size:0.78em;font-weight:700;backdrop-filter:blur(4px)">🎵 Spotify Only</div>
+                        <div style="background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.5);border-radius:20px;padding:4px 14px;color:white;font-size:0.78em;font-weight:700;backdrop-filter:blur(4px)">👤 Individual Event</div>
+                        <div style="background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.5);border-radius:20px;padding:4px 14px;color:white;font-size:0.78em;font-weight:700;backdrop-filter:blur(4px)">⏱ Min 3 Minutes</div>
+                    </div>
+                </div>
+
+                <!-- Locked message -->
+                <div id="podcastLockedMsg" style="display:none;background:linear-gradient(135deg,#fff3e0,#fce4ec);border-radius:12px;padding:24px;text-align:center;border:2px dashed #ffab40;margin-bottom:20px">
+                    <div style="font-size:2.5em;margin-bottom:8px">🔒</div>
+                    <h3 style="color:#e65100;margin:0 0 8px">Event Not Yet Started</h3>
+                    <p style="color:#666;font-size:0.9em;margin:0">The Pod Casting event has not been activated by the Super Admin yet. Please check back soon!</p>
+                </div>
+
+                <!-- Submit Form -->
+                <div id="podcastSubmitFormWrapper">
+                <div style="background:white;border-radius:14px;border:2px solid #c8e6c9;padding:22px;margin-bottom:20px">
+                    <h3 style="color:#1b5e20;margin:0 0 6px;font-size:1.05em">🎙️ Submit Spotify Podcast Link — <span id="podcastCRClass" style="color:#1db954"></span></h3>
+                    <p style="color:#888;font-size:0.82em;margin:0 0 16px">Max 3 participants per class · Individual event · Spotify only</p>
+
+                    <!-- Slots info -->
+                    <div id="podcastTeamSlotsInfo" style="background:#e8f5e9;border-radius:8px;padding:10px 14px;margin-bottom:16px;font-size:0.85em;color:#1b5e20;border-left:4px solid #4caf50">
+                        ✅ Loading slots for your class…
+                    </div>
+
+                    <!-- Enrolled participants -->
+                    <div style="margin-bottom:16px">
+                        <label style="font-size:0.88em;font-weight:700;color:#444;display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+                            <span>👤 Select Enrolled Participant <span style="color:red">*</span></span>
+                            <button type="button" onclick="autoFillPodcastMembers()" style="background:#1db954;color:white;border:none;border-radius:6px;padding:4px 12px;font-size:0.78em;cursor:pointer;font-weight:600">🔄 Refresh</button>
+                        </label>
+                        <div id="podcastEnrolledList" style="background:#f1f8e9;border-radius:10px;border:2px solid #a5d6a7;padding:12px;margin-bottom:8px;font-size:0.85em;color:#555">
+                            Loading enrolled participants from registration…
+                        </div>
+                        <select id="podcastParticipantSelect" onchange="podcastOnParticipantSelect()" style="width:100%;padding:10px 12px;border:2px solid #1db954;border-radius:8px;font-size:0.9em;outline:none;background:white;font-weight:600;color:#1b5e20">
+                            <option value="">— Select participant from enrollment —</option>
+                        </select>
+                    </div>
+
+                    <!-- Hidden populated by select -->
+                    <input type="hidden" id="podcastMemberName">
+                    <input type="hidden" id="podcastMemberTopic">
+
+                    <!-- Selected confirmation -->
+                    <div id="podcastSelectedDisplay" style="display:none;background:#e8f5e9;border-radius:8px;padding:10px 14px;margin-bottom:14px;border-left:4px solid #4caf50;font-size:0.88em">
+                        <strong style="color:#1b5e20">✅ Selected:</strong> <span id="podcastSelectedInfo"></span>
+                    </div>
+
+                    <!-- Fields -->
+                    <div style="display:flex;flex-direction:column;gap:14px">
+                        <div>
+                            <label style="font-size:0.88em;font-weight:700;color:#444;display:block;margin-bottom:5px">🎵 Spotify Podcast Link <span style="color:red">*</span></label>
+                            <input type="url" id="podcastLink" placeholder="https://open.spotify.com/episode/..." style="width:100%;padding:10px 12px;border:2px solid #ddd;border-radius:8px;font-size:0.9em;outline:none;transition:border 0.2s" onfocus="this.style.borderColor='#1db954'" onblur="this.style.borderColor='#ddd'">
+                            <p style="font-size:0.78em;color:#999;margin:5px 0 0">Make sure the episode is <strong>publicly accessible</strong> on Spotify</p>
+                        </div>
+                        <div>
+                            <label style="font-size:0.88em;font-weight:700;color:#444;display:block;margin-bottom:5px">📝 Episode Title <span style="color:red">*</span></label>
+                            <input type="text" id="podcastTitle" placeholder="E.g. The Future of AI in Education" style="width:100%;padding:10px 12px;border:2px solid #ddd;border-radius:8px;font-size:0.9em;outline:none;transition:border 0.2s" onfocus="this.style.borderColor='#1db954'" onblur="this.style.borderColor='#ddd'">
+                        </div>
+                        <div>
+                            <label style="font-size:0.88em;font-weight:700;color:#444;display:block;margin-bottom:5px">⏱ Episode Duration (minutes) <span style="color:red">*</span></label>
+                            <input type="number" id="podcastDuration" placeholder="e.g. 5" min="1" style="width:100%;padding:10px 12px;border:2px solid #ddd;border-radius:8px;font-size:0.9em;outline:none;transition:border 0.2s" onfocus="this.style.borderColor='#1db954'" onblur="this.style.borderColor='#ddd'">
+                        </div>
+                    </div>
+
+                    <div id="podcastSubmitMsg" style="display:none;margin-top:12px;padding:10px 14px;border-radius:8px;font-size:0.88em;font-weight:600"></div>
+                    <div style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap">
+                        <button class="btn" id="podcastSubmitBtn" onclick="submitPodcastEntry()" style="background:linear-gradient(135deg,#1db954,#191414);border:none;flex:1;min-width:160px">🎙️ Submit Podcast Link</button>
+                        <button class="btn btn-secondary" onclick="clearPodcastForm()" style="flex:0">🗑️ Clear</button>
+                    </div>
+                </div>
+                </div><!-- end podcastSubmitFormWrapper -->
+
+                <!-- Submissions Table -->
+                <div style="background:white;border-radius:14px;border:2px solid #c8e6c9;overflow:hidden">
+                    <div style="background:linear-gradient(135deg,#1db954,#191414);padding:14px 18px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+                        <h4 style="color:white;margin:0;font-size:0.95em">🎙️ Your Class Submissions — <span id="podcastCountBadge" style="background:rgba(255,255,255,0.25);padding:2px 10px;border-radius:12px;font-size:0.85em">0 / 3 slots used</span></h4>
+                        <button class="btn btn-small" onclick="loadPodcastSubmissions()" style="background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.5);color:white;font-size:0.8em">🔄 Refresh</button>
+                    </div>
+                    <div id="podcastTableWrap" style="padding:16px">
+                        <div id="podcastEmptyMsg" style="text-align:center;color:#aaa;padding:30px;font-size:0.9em">
+                            No submissions yet for your class. Submit your Spotify link! 🎙️
+                        </div>
+                        <div class="table-wrapper" style="margin:0;display:none" id="podcastTableContainer">
+                            <table id="podcastTable">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Participant</th>
+                                        <th>Topic</th>
+                                        <th>Episode Title</th>
+                                        <th>Spotify Link</th>
+                                        <th>Duration</th>
+                                        <th>Status</th>
+                                        <th>Jury Score</th>
+                                        <th>Submitted</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="podcastTableBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <!-- ── END POD CASTING TAB ──────────────────────────────────────── -->
+
+            <!-- ══════════════════════════════════════════════════════════════════ -->
+            <!-- CR: BEST OUT OF WASTE TAB                                         -->
+            <!-- ══════════════════════════════════════════════════════════════════ -->
+            <div id="crBestOutWaste" class="form-section">
+
+                <!-- Hero Banner -->
+                <div style="background:linear-gradient(135deg,#e65100,#f9a825,#2e7d32);background-size:300% 300%;animation:vlogGradient 6s ease infinite;border-radius:16px;padding:24px;margin-bottom:20px;text-align:center;position:relative;overflow:hidden">
+                    <div style="position:absolute;top:-20px;right:-20px;font-size:5em;opacity:0.12;transform:rotate(15deg)">♻️</div>
+                    <div style="font-size:2.2em;margin-bottom:6px">♻️🎨✨</div>
+                    <h2 style="color:white;margin:0 0 5px;font-size:1.5em;text-shadow:0 2px 8px rgba(0,0,0,0.35)">Best Out of Waste — <span id="bowCRClass" style="color:#ffe082"></span></h2>
+                    <p style="color:rgba(255,255,255,0.92);margin:0 0 10px;font-size:0.9em">Pre-register before event day · Upload finished photo on event day</p>
+                    <div style="display:flex;justify-content:center;gap:8px;flex-wrap:wrap">
+                        <div style="background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.5);border-radius:20px;padding:4px 14px;color:white;font-size:0.78em;font-weight:700">♻️ Waste Materials Only</div>
+                        <div style="background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.5);border-radius:20px;padding:4px 14px;color:white;font-size:0.78em;font-weight:700">👤 Individual or 2-Member Team</div>
+                        <div style="background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.5);border-radius:20px;padding:4px 14px;color:white;font-size:0.78em;font-weight:700">📅 2 Steps · 2 Deadlines</div>
+                    </div>
+                </div>
+
+                <!-- ── STEP 1: PRE-REGISTER ── -->
+                <div style="background:white;border-radius:14px;border:2px solid #ffe082;padding:22px;margin-bottom:20px">
+
+                    <!-- Step header -->
+                    <div style="display:flex;align-items:center;gap:12px;margin-bottom:4px">
+                        <div style="background:linear-gradient(135deg,#e65100,#f9a825);color:white;border-radius:50%;width:32px;height:32px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:1em;flex-shrink:0">1</div>
+                        <h3 style="color:#e65100;margin:0;font-size:1.05em">Pre-Register Theme &amp; Materials</h3>
+                    </div>
+                    <p style="color:#888;font-size:0.82em;margin:0 0 16px;padding-left:44px">Declare your theme and waste materials <strong>before</strong> the event day. Shankar sir will verify — no duplicate themes allowed per class.</p>
+
+                    <!-- Enrolled participants -->
+                    <div style="margin-bottom:14px">
+                        <label style="font-size:0.88em;font-weight:700;color:#444;display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+                            <span>👤 Select Enrolled Participant / Team <span style="color:red">*</span></span>
+                            <button type="button" onclick="autoFillBOWMembers()" style="background:#e65100;color:white;border:none;border-radius:6px;padding:4px 12px;font-size:0.78em;cursor:pointer;font-weight:600">🔄 Refresh</button>
+                        </label>
+                        <div id="bowEnrolledList" style="background:#fff8e1;border-radius:10px;border:2px solid #ffe082;padding:12px;margin-bottom:8px;font-size:0.85em;color:#555">
+                            Loading enrolled participants…
+                        </div>
+                        <select id="bowParticipantSelect" onchange="bowOnParticipantSelect()" style="width:100%;padding:10px 12px;border:2px solid #ffe082;border-radius:8px;font-size:0.9em;outline:none;background:white;font-weight:600;color:#e65100">
+                            <option value="">— Select participant/team —</option>
+                        </select>
+                    </div>
+
+                    <input type="hidden" id="bowMemberName">
+                    <input type="hidden" id="bowMemberKey">
+
+                    <div id="bowSelectedDisplay" style="display:none;background:#fff3e0;border-radius:8px;padding:10px 14px;margin-bottom:14px;border-left:4px solid #ff8f00;font-size:0.88em">
+                        <strong style="color:#e65100">✅ Selected:</strong> <span id="bowSelectedInfo"></span>
+                    </div>
+
+                    <div style="display:flex;flex-direction:column;gap:14px">
+                        <div>
+                            <label style="font-size:0.88em;font-weight:700;color:#444;display:block;margin-bottom:5px">🎨 Theme / Product Name <span style="color:red">*</span></label>
+                            <input type="text" id="bowTheme" placeholder="e.g. Newspaper Pen Stand, Bottle Vase, Cardboard Shelf…" style="width:100%;padding:10px 12px;border:2px solid #ddd;border-radius:8px;font-size:0.9em;outline:none;transition:border 0.2s;box-sizing:border-box" onfocus="this.style.borderColor='#e65100'" onblur="this.style.borderColor='#ddd'">
+                        </div>
+                        <div>
+                            <label style="font-size:0.88em;font-weight:700;color:#444;display:block;margin-bottom:5px">♻️ Waste Materials Used <span style="color:red">*</span></label>
+                            <input type="text" id="bowMaterials" placeholder="e.g. Newspaper, Plastic Bottles, Cardboard, Old CDs…" style="width:100%;padding:10px 12px;border:2px solid #ddd;border-radius:8px;font-size:0.9em;outline:none;transition:border 0.2s;box-sizing:border-box" onfocus="this.style.borderColor='#e65100'" onblur="this.style.borderColor='#ddd'">
+                            <p style="font-size:0.78em;color:#999;margin:5px 0 0">List all waste materials — duplicates with other teams in your class will be flagged.</p>
+                        </div>
+                        <div>
+                            <label style="font-size:0.88em;font-weight:700;color:#444;display:block;margin-bottom:5px">📝 Brief Description</label>
+                            <textarea id="bowDescription" placeholder="Briefly describe what you're making and how waste is used creatively…" rows="2" style="width:100%;padding:10px 12px;border:2px solid #ddd;border-radius:8px;font-size:0.9em;outline:none;resize:vertical;transition:border 0.2s;box-sizing:border-box" onfocus="this.style.borderColor='#e65100'" onblur="this.style.borderColor='#ddd'"></textarea>
+                        </div>
+                    </div>
+
+                    <div id="bowSubmitMsg" style="display:none;margin-top:12px;padding:10px 14px;border-radius:8px;font-size:0.88em;font-weight:600"></div>
+                    <div style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap">
+                        <button class="btn" id="bowSubmitBtn" onclick="submitBOWEntry()" style="background:linear-gradient(135deg,#e65100,#f9a825);border:none;flex:1;min-width:160px">📋 Submit Pre-Registration</button>
+                        <button class="btn btn-secondary" onclick="clearBOWForm()" style="flex:0">🗑️ Clear</button>
+                    </div>
+                </div>
+
+                <!-- ── STEP 2: FINAL PHOTO SUBMISSION (event day) ── -->
+                <div style="background:white;border-radius:14px;border:2px solid #a5d6a7;padding:22px;margin-bottom:20px" id="bowStep2Section">
+
+                    <!-- Step header -->
+                    <div style="display:flex;align-items:center;gap:12px;margin-bottom:4px">
+                        <div style="background:linear-gradient(135deg,#2e7d32,#66bb6a);color:white;border-radius:50%;width:32px;height:32px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:1em;flex-shrink:0">2</div>
+                        <h3 style="color:#2e7d32;margin:0;font-size:1.05em">Final Submission — Upload Finished Product Photo</h3>
+                    </div>
+                    <p style="color:#888;font-size:0.82em;margin:0 0 16px;padding-left:44px">On event day, select your pre-registered participant and upload a clear photo of your <strong>finished craft</strong>. Shankar sir will review and forward to the jury.</p>
+
+                    <!-- Locked notice shown until pre-reg exists -->
+                    <div id="bowStep2Locked" style="background:#fff8e1;border-radius:10px;padding:16px;border:2px dashed #ffe082;text-align:center;margin-bottom:14px">
+                        <div style="font-size:1.8em;margin-bottom:6px">🔒</div>
+                        <div style="font-weight:700;color:#856404;font-size:0.9em">Complete Step 1 first</div>
+                        <div style="color:#888;font-size:0.8em;margin-top:4px">Pre-register your theme &amp; materials above before uploading the finished photo.</div>
+                    </div>
+
+                    <!-- Actual step 2 form (shown once pre-reg exists) -->
+                    <div id="bowStep2Form" style="display:none">
+                        <div style="margin-bottom:14px">
+                            <label style="font-size:0.88em;font-weight:700;color:#444;display:block;margin-bottom:6px">👤 Select Pre-Registered Participant <span style="color:red">*</span></label>
+                            <select id="bowPhotoParticipantSelect" onchange="bowPhotoParticipantChanged()" style="width:100%;padding:10px 12px;border:2px solid #a5d6a7;border-radius:8px;font-size:0.9em;outline:none;background:white;font-weight:600;color:#2e7d32">
+                                <option value="">— Select participant —</option>
+                            </select>
+                        </div>
+
+                        <!-- Shows pre-reg details once selected -->
+                        <div id="bowStep2PreRegInfo" style="display:none;background:#f1f8e9;border-radius:8px;padding:10px 14px;margin-bottom:14px;border-left:4px solid #4caf50;font-size:0.85em">
+                            <strong style="color:#2e7d32">📋 Pre-Registration:</strong> <span id="bowStep2ThemeDisplay"></span>
+                        </div>
+
+                        <input type="hidden" id="bowPhotoEntryKey">
+
+                        <!-- Photo upload — REQUIRED -->
+                        <div style="background:#f1f8e9;border-radius:10px;padding:16px;border:2px solid #a5d6a7;margin-bottom:14px">
+                            <label style="font-size:0.88em;font-weight:700;color:#2e7d32;display:block;margin-bottom:8px">📸 Finished Product Photo <span style="color:red">*</span></label>
+                            <p style="font-size:0.78em;color:#666;margin:0 0 10px">Take a clear photo of your completed craft item. This is mandatory for final submission.</p>
+                            <input type="file" id="bowPhotoInput" accept="image/*" onchange="bowPreviewPhoto()" style="display:none">
+                            <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+                                <button type="button" onclick="document.getElementById('bowPhotoInput').click()" style="background:#2e7d32;color:white;border:none;border-radius:8px;padding:9px 18px;font-size:0.88em;font-weight:700;cursor:pointer">📷 Choose Photo</button>
+                                <span id="bowPhotoFileName" style="font-size:0.82em;color:#666">No photo chosen</span>
+                            </div>
+                            <div id="bowPhotoPreview" style="display:none;margin-top:12px">
+                                <img id="bowPhotoImg" style="max-height:200px;max-width:100%;border-radius:10px;border:2px solid #a5d6a7;object-fit:contain" alt="Craft preview">
+                                <div style="font-size:0.75em;color:#2e7d32;margin-top:4px">✅ Photo ready to upload</div>
+                            </div>
+                            <div id="bowUploadProgress" style="display:none;margin-top:10px;font-size:0.82em;color:#1565c0;font-weight:600">⏳ Uploading photo…</div>
+                        </div>
+
+                        <div id="bowPhotoSubmitMsg" style="display:none;margin-top:12px;padding:10px 14px;border-radius:8px;font-size:0.88em;font-weight:600"></div>
+                        <button class="btn" id="bowPhotoSubmitBtn" onclick="submitBOWFinalPhoto()" style="background:linear-gradient(135deg,#2e7d32,#66bb6a);border:none;width:100%">📸 Submit Final Photo to Shankar</button>
+                    </div>
+                </div>
+
+                <!-- ── YOUR CLASS REGISTRATIONS TABLE ── -->
+                <div style="background:white;border-radius:14px;border:2px solid #ffe082;overflow:hidden">
+                    <div style="background:linear-gradient(135deg,#e65100,#f9a825);padding:14px 18px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+                        <h4 style="color:white;margin:0;font-size:0.95em">♻️ Your Class Registrations</h4>
+                        <button class="btn btn-small" onclick="loadBOWSubmissions()" style="background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.5);color:white;font-size:0.8em">🔄 Refresh</button>
+                    </div>
+                    <div id="bowTableWrap" style="padding:16px">
+                        <div id="bowEmptyMsg" style="text-align:center;color:#aaa;padding:30px;font-size:0.9em">No registrations yet for your class.</div>
+                        <div class="table-wrapper" style="margin:0;display:none" id="bowTableContainer">
+                            <table id="bowTable">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Participant</th>
+                                        <th>Theme / Product</th>
+                                        <th>Materials</th>
+                                        <th>Step 1</th>
+                                        <th>Final Photo</th>
+                                        <th>Attendance</th>
+                                        <th>Jury Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="bowTableBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <!-- ── END BEST OUT OF WASTE TAB ──────────────────────────────────── -->
         </div>
 
         <!-- Admin Section -->
@@ -2023,6 +2302,8 @@
                 <button class="tab super-admin-only" onclick="showTab('firebaseDownloadMonitor')" id="firebaseDownloadMonitorTab">🔥 Download Monitor</button>
                 <button class="tab super-admin-only" onclick="showTab('managerPermissionsPanel')" id="managerPermissionsPanelTab">👔 Manager Permissions</button>
                 <button class="tab super-admin-only" onclick="showTab('vlogAdminPanel');loadVlogAdminPanel()" id="vlogAdminPanelTab">📹 Vlog Admin</button>
+                <button class="tab super-admin-only" onclick="showTab('podcastAdminPanel');loadPodcastAdminPanel()" id="podcastAdminPanelTab">🎙️ Podcast Admin</button>
+                <button class="tab super-admin-only" onclick="showTab('bowResultsPublisher');bowRpLoad()" id="superJuryMgmtTab">♻️ BOW Results</button>
                 <button class="tab" onclick="showTab('facultyAdminPanel');loadFacultyAdminPanel()" id="facultyAdminPanelTab">👩‍🏫 Faculty</button>
                 <button class="tab" onclick="showTab('pdfHandoutsAdmin')" id="pdfHandoutsAdminTab" style="display:none">📄 PDF Handouts</button>
                 <button class="tab" onclick="showTab('paymentApprovalAdmin');paLoadPending()" id="paymentApprovalAdminTab" style="display:none">💳 Payment Approval</button>
@@ -3954,6 +4235,137 @@
             <!-- END VLOG ADMIN PANEL -->
 
             <!-- ══════════════════════════════════════════════════════════════════
+                 POD CASTING ADMIN PANEL
+            ══════════════════════════════════════════════════════════════════ -->
+            <div id="podcastAdminPanel" class="form-section super-admin-only" style="margin-top:20px">
+                <h2 style="color:#1db954;margin-bottom:6px">🎙️ Pod Casting — Super Admin Control</h2>
+                <p style="color:#888;margin-bottom:20px;font-size:.9em">Activate the event, set jury criteria, publish results, and view all submissions.</p>
+
+                <!-- Event Activation -->
+                <div style="background:linear-gradient(135deg,#e8f5e9,#f1f8e9);border-radius:14px;padding:20px;margin-bottom:20px;border:2px solid #a5d6a7">
+                    <h3 style="color:#1b5e20;margin:0 0 12px;font-size:1.05em">🔐 Event Activation & Visibility</h3>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px" class="vlog-admin-grid">
+                        <div style="background:white;border-radius:10px;padding:14px;border:1px solid #c8e6c9">
+                            <div style="font-weight:700;color:#333;font-size:0.9em;margin-bottom:8px">🎙️ Podcast Event Active?</div>
+                            <div style="color:#666;font-size:0.8em;margin-bottom:10px">When OFF — CRs see "Event not yet started". When ON — submissions open.</div>
+                            <div style="display:flex;gap:10px">
+                                <button class="btn btn-success" onclick="setPodcastSetting('eventActive', true)" style="flex:1;font-size:0.85em">✅ Activate</button>
+                                <button class="btn btn-danger" onclick="setPodcastSetting('eventActive', false)" style="flex:1;font-size:0.85em">🔒 Deactivate</button>
+                            </div>
+                            <div id="podcastStatusEventActive" style="margin-top:8px;font-size:0.82em;font-weight:700;color:#666">Loading…</div>
+                        </div>
+                        <div style="background:white;border-radius:10px;padding:14px;border:1px solid #c8e6c9">
+                            <div style="font-weight:700;color:#333;font-size:0.9em;margin-bottom:8px">🏆 Leaderboard Published?</div>
+                            <div style="color:#666;font-size:0.8em;margin-bottom:10px">When ON — Podcast results appear in the main leaderboard.</div>
+                            <div style="display:flex;gap:10px">
+                                <button class="btn btn-success" onclick="setPodcastSetting('leaderboardPublished', true)" style="flex:1;font-size:0.85em">🚀 Publish</button>
+                                <button class="btn btn-secondary" onclick="setPodcastSetting('leaderboardPublished', false)" style="flex:1;font-size:0.85em">📦 Unpublish</button>
+                            </div>
+                            <div id="podcastStatusLeaderboardPublished" style="margin-top:8px;font-size:0.82em;font-weight:700;color:#666">Loading…</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- All Submissions -->
+                <div style="background:white;border-radius:14px;border:2px solid #c8e6c9;overflow:hidden">
+                    <div style="background:linear-gradient(135deg,#1db954,#191414);padding:14px 18px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+                        <h4 style="color:white;margin:0;font-size:0.95em">🎙️ All Podcast Submissions</h4>
+                        <button class="btn btn-small" onclick="loadPodcastAdminPanel()" style="background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.5);color:white;font-size:0.8em">🔄 Refresh</button>
+                    </div>
+                    <div id="podcastAdminTableWrap" style="padding:16px">
+                        <p style="color:#aaa;text-align:center;padding:20px">Click Refresh to load submissions.</p>
+                    </div>
+                </div>
+            </div>
+            <!-- END PODCAST ADMIN PANEL -->
+
+            <!-- ══════════════════════════════════════════════════════════════════
+                 BOW RESULTS PUBLISHER PANEL (Super Admin Only)
+            ══════════════════════════════════════════════════════════════════ -->
+            <div id="bowResultsPublisher" class="form-section super-admin-only" style="margin-top:20px">
+
+                <!-- Header -->
+                <div style="background:linear-gradient(135deg,#2e7d32,#66bb6a);border-radius:14px;padding:20px 24px;margin-bottom:20px;color:white;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
+                    <div>
+                        <h2 style="margin:0 0 4px;font-size:1.25em">♻️ Best Out of Waste — Results Publisher</h2>
+                        <p style="margin:0;opacity:0.88;font-size:0.85em">Review final averaged scores from Jury 1 &amp; Jury 2 · Flag disputes · Publish results live</p>
+                    </div>
+                    <button onclick="bowRpLoad()" style="background:rgba(255,255,255,0.2);color:white;border:2px solid rgba(255,255,255,0.5);border-radius:8px;padding:9px 18px;font-size:0.88em;font-weight:700;cursor:pointer">🔄 Load / Refresh</button>
+                </div>
+
+                <!-- Publish Status Banner -->
+                <div id="bowRpStatusBanner" style="display:none;border-radius:10px;padding:14px 18px;margin-bottom:16px;font-weight:700;font-size:0.92em;text-align:center"></div>
+
+                <!-- Summary Stats -->
+                <div id="bowRpStats" style="display:none;display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:12px;margin-bottom:20px">
+                    <div style="background:white;border-radius:10px;padding:14px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,0.08);border-top:3px solid #6a1b9a">
+                        <div id="bowRpTotalEntries" style="font-size:1.8em;font-weight:800;color:#6a1b9a">—</div>
+                        <div style="color:#888;font-size:0.78em;font-weight:600">Total Entries</div>
+                    </div>
+                    <div style="background:white;border-radius:10px;padding:14px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,0.08);border-top:3px solid #2e7d32">
+                        <div id="bowRpBothScored" style="font-size:1.8em;font-weight:800;color:#2e7d32">—</div>
+                        <div style="color:#888;font-size:0.78em;font-weight:600">Both Juries Done</div>
+                    </div>
+                    <div style="background:white;border-radius:10px;padding:14px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,0.08);border-top:3px solid #f44336">
+                        <div id="bowRpDisputes" style="font-size:1.8em;font-weight:800;color:#f44336">—</div>
+                        <div style="color:#888;font-size:0.78em;font-weight:600">⚠️ Disputes</div>
+                    </div>
+                    <div style="background:white;border-radius:10px;padding:14px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,0.08);border-top:3px solid #1565c0">
+                        <div id="bowRpTopClass" style="font-size:1.1em;font-weight:800;color:#1565c0">—</div>
+                        <div style="color:#888;font-size:0.78em;font-weight:600">🥇 Leading</div>
+                    </div>
+                </div>
+
+                <!-- Main Scores Table -->
+                <div style="background:white;border-radius:12px;box-shadow:0 2px 10px rgba(0,0,0,0.08);margin-bottom:20px;overflow:hidden">
+                    <div style="background:linear-gradient(135deg,#e8f5e9,#f1f8e9);padding:14px 20px;border-bottom:2px solid #a5d6a7;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+                        <h3 style="color:#2e7d32;margin:0;font-size:0.95em">📊 Final Averaged Scores — All Entries</h3>
+                        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+                            <span style="font-size:0.78em;color:#666">Sort:</span>
+                            <select id="bowRpSort" onchange="bowRpRenderTable()" style="padding:5px 10px;border:1px solid #a5d6a7;border-radius:6px;font-size:0.82em;outline:none;background:white">
+                                <option value="rank">By Rank (High→Low)</option>
+                                <option value="class">By Class Name</option>
+                                <option value="dispute">Disputes First</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div id="bowRpTableWrap" style="overflow-x:auto;padding:0">
+                        <p style="color:#999;text-align:center;padding:40px">Click "Load / Refresh" to fetch jury scores.</p>
+                    </div>
+                </div>
+
+                <!-- Dispute Flagged Entries -->
+                <div id="bowRpDisputeSection" style="display:none;background:white;border-radius:12px;box-shadow:0 2px 10px rgba(0,0,0,0.08);margin-bottom:20px;overflow:hidden">
+                    <div style="background:linear-gradient(135deg,#fff3e0,#fce4ec);padding:14px 20px;border-bottom:2px solid #ffcc02;display:flex;justify-content:space-between;align-items:center">
+                        <h3 style="color:#e65100;margin:0;font-size:0.95em">⚠️ Flagged Disputes — Score Gap ≥ 15 pts</h3>
+                        <span id="bowRpDisputeCount" style="background:#ffcc02;color:#333;padding:3px 12px;border-radius:20px;font-size:0.8em;font-weight:700"></span>
+                    </div>
+                    <div id="bowRpDisputeList" style="padding:16px;display:grid;gap:10px"></div>
+                </div>
+
+                <!-- Publish Actions -->
+                <div style="background:white;border-radius:12px;box-shadow:0 2px 10px rgba(0,0,0,0.08);overflow:hidden">
+                    <div style="background:linear-gradient(135deg,#e3f2fd,#e8eaf6);padding:14px 20px;border-bottom:2px solid #90caf9">
+                        <h3 style="color:#1565c0;margin:0;font-size:0.95em">📢 Publish / Unpublish Results</h3>
+                    </div>
+                    <div style="padding:20px">
+                        <p style="color:#555;font-size:0.88em;margin-bottom:18px">Once you are satisfied with all scores and disputes are resolved, press <strong>Publish</strong>. This makes BOW results visible to all admins in the Results tab.</p>
+                        <div style="display:flex;gap:12px;flex-wrap:wrap">
+                            <button onclick="bowRpPublish()" style="flex:1;min-width:180px;background:linear-gradient(135deg,#2e7d32,#66bb6a);color:white;border:none;border-radius:10px;padding:14px 20px;font-size:1em;font-weight:700;cursor:pointer;box-shadow:0 4px 12px rgba(46,125,50,0.3)">
+                                ✅ Publish BOW Results
+                            </button>
+                            <button onclick="bowRpUnpublish()" style="flex:1;min-width:180px;background:#f5f5f5;color:#666;border:2px solid #ddd;border-radius:10px;padding:14px 20px;font-size:1em;font-weight:700;cursor:pointer">
+                                ❌ Unpublish / Retract
+                            </button>
+                        </div>
+                        <div id="bowRpPublishMsg" class="message" style="margin-top:14px"></div>
+                    </div>
+                </div>
+
+            </div>
+            <!-- END BOW RESULTS PUBLISHER PANEL -->
+
+            <!-- ══════════════════════════════════════════════════════════════════
                  FACULTY ADMIN PANEL
             ══════════════════════════════════════════════════════════════════ -->
             <div id="facultyAdminPanel" class="form-section" style="margin-top:20px">
@@ -4046,6 +4458,67 @@
 
                         <div style="margin-top:16px;text-align:center">
                             <button class="btn btn-secondary" onclick="loadChandanPanel()" style="font-size:0.88em">🔄 Refresh All Teams</button>
+                        </div>
+                    </div>
+
+                    <!-- ── Pod Casting Approval Panel (only for Chandan G B) ── -->
+                    <div id="chandanPodcastPanel" style="display:none;margin-top:24px">
+                        <div style="background:linear-gradient(135deg,#e8f5e9,#e3f2fd);border-radius:14px;padding:18px;border:2px solid #a5d6a7;margin-bottom:16px">
+                            <h3 style="color:#1b5e20;margin:0 0 6px;font-size:1.05em">🎙️ Pod Casting — Approval Panel</h3>
+                            <p style="color:#555;font-size:0.82em;margin:0">Listen to each submitted Spotify episode and approve/reject. Approved entries are forwarded to Jury 1 and Jury 2 for scoring.</p>
+                        </div>
+                        <div id="chandanPodcastList" style="display:flex;flex-direction:column;gap:16px">
+                            <div style="text-align:center;color:#aaa;padding:30px">Loading podcast submissions…</div>
+                        </div>
+                        <div style="margin-top:16px;text-align:center">
+                            <button class="btn btn-secondary" onclick="loadChandanPodcastPanel()" style="font-size:0.88em">🔄 Refresh All</button>
+                        </div>
+                    </div>
+
+                    <!-- ── Best Out of Waste — Entry Verification Panel (Shankar B C) ── -->
+                    <div id="shankarBowPanel" style="display:none;margin-top:24px">
+                        <div style="background:linear-gradient(135deg,#fff8e1,#e8f5e9);border-radius:14px;padding:18px;border:2px solid #ffe082;margin-bottom:16px">
+                            <h3 style="color:#e65100;margin:0 0 6px;font-size:1.05em">♻️ Best Out of Waste — Entry Verification</h3>
+                            <p style="color:#555;font-size:0.82em;margin:0 0 6px">View all enrolled participants across all classes. Mark who actually showed up on event day as <strong>Present</strong> or <strong>Absent</strong>. Only <strong>Present</strong> entries will be forwarded to the Jury for scoring.</p>
+                            <div style="background:#fff3cd;border-radius:8px;padding:8px 12px;font-size:0.8em;color:#856404;margin-top:8px">
+                                ⚠️ Once marked Present, the entry appears in the Jury sheet automatically. Absent entries are excluded.
+                            </div>
+                        </div>
+
+                        <!-- Filter bar -->
+                        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px">
+                            <select id="bowClassFilter" onchange="loadShankarBowPanel()" style="padding:8px 12px;border:2px solid #ffe082;border-radius:8px;font-size:0.88em;outline:none;background:white;color:#333;font-weight:600">
+                                <option value="">All Classes</option>
+                            </select>
+                            <select id="bowStatusFilter" onchange="loadShankarBowPanel()" style="padding:8px 12px;border:2px solid #ffe082;border-radius:8px;font-size:0.88em;outline:none;background:white;color:#333;font-weight:600">
+                                <option value="">All Statuses</option>
+                                <option value="present">✅ Present</option>
+                                <option value="absent">❌ Absent</option>
+                                <option value="pending">⏳ Not Marked</option>
+                            </select>
+                            <button class="btn btn-secondary" onclick="loadShankarBowPanel()" style="font-size:0.85em">🔄 Refresh</button>
+                            <span id="bowSummaryBadge" style="background:#e8f5e9;color:#1b5e20;padding:4px 14px;border-radius:20px;font-size:0.82em;font-weight:700;margin-left:auto"></span>
+                        </div>
+
+                        <!-- Stats row -->
+                        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px" id="bowStatsRow">
+                            <div style="background:white;border-radius:10px;padding:12px;text-align:center;border:2px solid #e0e0e0">
+                                <div style="font-size:1.6em;font-weight:900;color:#1565c0" id="bowStatTotal">—</div>
+                                <div style="font-size:0.78em;color:#666;font-weight:600">Total Enrolled</div>
+                            </div>
+                            <div style="background:white;border-radius:10px;padding:12px;text-align:center;border:2px solid #a5d6a7">
+                                <div style="font-size:1.6em;font-weight:900;color:#2e7d32" id="bowStatPresent">—</div>
+                                <div style="font-size:0.78em;color:#666;font-weight:600">✅ Present</div>
+                            </div>
+                            <div style="background:white;border-radius:10px;padding:12px;text-align:center;border:2px solid #ef9a9a">
+                                <div style="font-size:1.6em;font-weight:900;color:#c62828" id="bowStatAbsent">—</div>
+                                <div style="font-size:0.78em;color:#666;font-weight:600">❌ Absent</div>
+                            </div>
+                        </div>
+
+                        <!-- Entries list -->
+                        <div id="shankarBowList" style="display:flex;flex-direction:column;gap:10px">
+                            <div style="text-align:center;color:#aaa;padding:30px">Loading entries…</div>
                         </div>
                     </div>
 
@@ -4407,8 +4880,7 @@
         <!-- ── End Leaderboard Admin Panel ── -->
 
         <!-- Jury Section -->
-        <div class="jury-only" id="jurySection">
-            <button class="btn btn-secondary" onclick="logout()" style="float:right">Logout</button>
+        <div class="jury-only" id="jurySection">            <button class="btn btn-secondary" onclick="logout()" style="float:right">Logout</button>
             
             <div class="content">
                 <h2 style="color:#c44569;margin-bottom:20px" id="juryEventTitle">Jury Evaluation Sheet</h2>
@@ -4430,6 +4902,11 @@
             </div>
         </div>
         
+        <!-- ============================================ -->
+        <!-- SUPER JURY SECTION                           -->
+        <!-- ============================================ -->
+        <!-- ============================================ -->
+
         <!-- ============================================ -->
         <!-- DAILY QUIZ COMPETITION SYSTEM                -->
         <!-- ============================================ -->
@@ -5751,6 +6228,221 @@
                 alert('Error loading jury setup: ' + err.message);
             });
         }
+
+        // BOW RESULTS PUBLISHER — Super Admin Panel
+        // ─────────────────────────────────────────────────────────────────────────
+        let bowRpData = []; // cached entries
+
+        async function bowRpLoad() {
+            const tableWrap  = document.getElementById('bowRpTableWrap');
+            const statsBanner = document.getElementById('bowRpStatusBanner');
+            const statsBox   = document.getElementById('bowRpStats');
+            if (tableWrap)  tableWrap.innerHTML  = '<p style="color:#999;text-align:center;padding:30px">🔄 Loading BOW jury scores…</p>';
+            if (statsBanner) statsBanner.style.display = 'none';
+
+            try {
+                const EVENT = 'Best out of Waste';
+                const [setupSnap, j1Snap, j2Snap, bowRegSnap] = await Promise.all([
+                    db.ref('jurySetup/' + EVENT).once('value'),
+                    db.ref('juryMarks/' + EVENT + '/jury1').once('value'),
+                    db.ref('juryMarks/' + EVENT + '/jury2').once('value'),
+                    db.ref('bowRegistrations').once('value')
+                ]);
+
+                const setup   = setupSnap.val() || {};
+                const j1All   = j1Snap.val() || {};
+                const j2All   = j2Snap.val() || {};
+                const bowRegs = bowRegSnap.val() || {};
+
+                const j1Name  = setup.jury1Name || 'Jury 1';
+                const j2Name  = setup.jury2Name || 'Jury 2';
+                const isPub   = setup.resultsPublished === true;
+
+                // Published banner
+                if (statsBanner) {
+                    statsBanner.style.display = 'block';
+                    if (isPub) {
+                        statsBanner.style.background = '#d4edda';
+                        statsBanner.style.color = '#155724';
+                        statsBanner.style.border = '2px solid #a5d6a7';
+                        statsBanner.textContent = '✅ BOW Results are currently PUBLISHED — visible to all admins in Results tab.';
+                    } else {
+                        statsBanner.style.background = '#fff3cd';
+                        statsBanner.style.color = '#856404';
+                        statsBanner.style.border = '2px solid #ffc107';
+                        statsBanner.textContent = '📦 BOW Results are NOT published yet — only you (Super Admin) can see them here.';
+                    }
+                }
+
+                // Gather all class keys from both juries
+                const allKeys = new Set([...Object.keys(j1All), ...Object.keys(j2All)]);
+                bowRpData = [];
+
+                allKeys.forEach(key => {
+                    const j1 = j1All[key] || {};
+                    const j2 = j2All[key] || {};
+                    const displayName = (j1.originalClassName || j2.originalClassName || key).replace(/_/g,' ');
+
+                    const j1marks = Array.isArray(j1.marks) ? j1.marks : [];
+                    const j2marks = Array.isArray(j2.marks) ? j2.marks : [];
+                    const j1Total = j1marks.reduce((s,v) => s+(+v||0), 0);
+                    const j2Total = j2marks.reduce((s,v) => s+(+v||0), 0);
+                    const j1done  = j1.completed === true || j1marks.length > 0;
+                    const j2done  = j2.completed === true || j2marks.length > 0;
+
+                    let avg = null;
+                    if (j1done && j2done) avg = (j1Total + j2Total) / 2;
+                    else if (j1done) avg = j1Total;
+                    else if (j2done) avg = j2Total;
+
+                    const gap = (j1done && j2done) ? Math.abs(j1Total - j2Total) : null;
+                    const dispute = gap !== null && gap >= 15;
+
+                    // Try to get participant name from bowRegistrations
+                    let participantName = '—';
+                    Object.values(bowRegs).forEach(r => {
+                        const rKey = (r.classYear||'').replace(/[.\[\]#$\/\s]/g,'_');
+                        if (rKey === key || r.classYear === displayName) {
+                            participantName = r.participantName || r.member1 || '—';
+                        }
+                    });
+
+                    bowRpData.push({ key, displayName, j1Total, j2Total, j1done, j2done, avg, gap, dispute, j1Name, j2Name, participantName });
+                });
+
+                // Stats
+                const bothDone  = bowRpData.filter(r => r.j1done && r.j2done).length;
+                const disputes  = bowRpData.filter(r => r.dispute).length;
+                const topEntry  = bowRpData.filter(r => r.avg !== null).sort((a,b) => b.avg - a.avg)[0];
+                const setEl = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+                setEl('bowRpTotalEntries', bowRpData.length || '0');
+                setEl('bowRpBothScored',   bothDone);
+                setEl('bowRpDisputes',     disputes);
+                setEl('bowRpTopClass',     topEntry ? topEntry.displayName : '—');
+                if (statsBox) statsBox.style.display = 'grid';
+
+                bowRpRenderTable();
+
+            } catch(e) {
+                if (tableWrap) tableWrap.innerHTML = '<p style="color:#c62828;padding:20px;text-align:center">❌ Error loading data: ' + e.message + '</p>';
+            }
+        }
+
+        function bowRpRenderTable() {
+            const wrap = document.getElementById('bowRpTableWrap');
+            if (!wrap || bowRpData.length === 0) return;
+
+            const sort = (document.getElementById('bowRpSort') || {}).value || 'rank';
+            let data = [...bowRpData];
+
+            if (sort === 'rank')    data.sort((a,b) => (b.avg||0) - (a.avg||0));
+            if (sort === 'class')   data.sort((a,b) => a.displayName.localeCompare(b.displayName));
+            if (sort === 'dispute') data.sort((a,b) => (b.dispute?1:0) - (a.dispute?1:0) || (b.avg||0) - (a.avg||0));
+
+            const j1Name = data[0] ? data[0].j1Name : 'Jury 1';
+            const j2Name = data[0] ? data[0].j2Name : 'Jury 2';
+
+            let html = `<table style="width:100%;border-collapse:collapse;font-size:0.85em">
+                <thead>
+                    <tr style="background:linear-gradient(135deg,#2e7d32,#66bb6a);color:white">
+                        <th style="padding:10px 12px;text-align:center;width:40px">Rank</th>
+                        <th style="padding:10px 12px;text-align:left">Class / Entry</th>
+                        <th style="padding:10px 12px;text-align:center">${j1Name}</th>
+                        <th style="padding:10px 12px;text-align:center">${j2Name}</th>
+                        <th style="padding:10px 12px;text-align:center">Avg Score</th>
+                        <th style="padding:10px 12px;text-align:center">Gap</th>
+                        <th style="padding:10px 12px;text-align:center">Status</th>
+                    </tr>
+                </thead><tbody>`;
+
+            // Sort by avg for rank numbers
+            const ranked = [...data].sort((a,b) => (b.avg||0) - (a.avg||0));
+            data.forEach(row => {
+                const rankPos = row.avg !== null ? ranked.findIndex(r => r.key === row.key) + 1 : '—';
+                const rankMedal = rankPos === 1 ? '🥇' : rankPos === 2 ? '🥈' : rankPos === 3 ? '🥉' : rankPos;
+                const rowBg = row.dispute ? '#fff8e1' : (ranked.indexOf(row) < 3 && row.avg !== null ? '#f1f8e9' : 'white');
+                const borderLeft = row.dispute ? 'border-left:4px solid #ff9800' : (rankPos <= 3 && row.avg !== null ? 'border-left:4px solid #66bb6a' : '');
+
+                const j1Cell = row.j1done
+                    ? `<strong style="color:#1565c0">${row.j1Total}</strong>`
+                    : `<span style="color:#ccc;font-size:0.8em">⏳ Pending</span>`;
+                const j2Cell = row.j2done
+                    ? `<strong style="color:#1565c0">${row.j2Total}</strong>`
+                    : `<span style="color:#ccc;font-size:0.8em">⏳ Pending</span>`;
+                const avgCell = row.avg !== null
+                    ? `<strong style="font-size:1.1em;color:#2e7d32">${row.avg % 1 === 0 ? row.avg : row.avg.toFixed(1)}</strong>`
+                    : `<span style="color:#aaa">—</span>`;
+                const gapCell = row.gap !== null
+                    ? `<span style="color:${row.gap >= 15 ? '#f44336' : row.gap >= 8 ? '#ff9800' : '#2e7d32'};font-weight:700">${row.gap >= 15 ? '⚠️ ' : ''}Δ${row.gap}</span>`
+                    : `<span style="color:#aaa">—</span>`;
+                const statusCell = row.dispute
+                    ? `<span style="background:#fff3e0;color:#e65100;padding:3px 8px;border-radius:20px;font-size:0.78em;font-weight:700">⚠️ Dispute</span>`
+                    : (row.j1done && row.j2done
+                        ? `<span style="background:#d4edda;color:#155724;padding:3px 8px;border-radius:20px;font-size:0.78em;font-weight:700">✅ Ready</span>`
+                        : `<span style="background:#f5f5f5;color:#888;padding:3px 8px;border-radius:20px;font-size:0.78em">⏳ Partial</span>`);
+
+                html += `<tr style="background:${rowBg};border-bottom:1px solid #eee;${borderLeft}">
+                    <td style="padding:9px 12px;text-align:center;font-weight:700;font-size:1.05em">${rankMedal}</td>
+                    <td style="padding:9px 12px;font-weight:600;color:#333">${row.displayName}</td>
+                    <td style="padding:9px 12px;text-align:center">${j1Cell}</td>
+                    <td style="padding:9px 12px;text-align:center">${j2Cell}</td>
+                    <td style="padding:9px 12px;text-align:center">${avgCell}</td>
+                    <td style="padding:9px 12px;text-align:center">${gapCell}</td>
+                    <td style="padding:9px 12px;text-align:center">${statusCell}</td>
+                </tr>`;
+            });
+
+            html += '</tbody></table>';
+            wrap.innerHTML = html;
+
+            // Render disputes section
+            const disputes = bowRpData.filter(r => r.dispute);
+            const dSection = document.getElementById('bowRpDisputeSection');
+            const dList    = document.getElementById('bowRpDisputeList');
+            const dCount   = document.getElementById('bowRpDisputeCount');
+            if (dSection) dSection.style.display = disputes.length > 0 ? 'block' : 'none';
+            if (dCount)   dCount.textContent = disputes.length + ' entr' + (disputes.length === 1 ? 'y' : 'ies');
+            if (dList && disputes.length > 0) {
+                dList.innerHTML = disputes.map(r => `
+                    <div style="background:#fff8e1;border:2px solid #ffcc02;border-radius:10px;padding:14px 16px">
+                        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+                            <div>
+                                <div style="font-weight:700;color:#333;font-size:0.95em">${r.displayName}</div>
+                                <div style="color:#666;font-size:0.82em;margin-top:2px">${r.j1Name}: <strong>${r.j1Total}</strong> &nbsp;vs&nbsp; ${r.j2Name}: <strong>${r.j2Total}</strong> &nbsp;|&nbsp; Gap: <strong style="color:#f44336">Δ${r.gap}</strong></div>
+                            </div>
+                            <div style="text-align:right">
+                                <div style="font-size:1.2em;font-weight:800;color:#2e7d32">Avg: ${r.avg !== null ? (r.avg % 1 === 0 ? r.avg : r.avg.toFixed(1)) : '—'}</div>
+                                <div style="font-size:0.75em;color:#e65100;font-weight:600">⚠️ Review before publishing</div>
+                            </div>
+                        </div>
+                    </div>`).join('');
+            }
+        }
+
+        async function bowRpPublish() {
+            const msgEl = document.getElementById('bowRpPublishMsg');
+            if (!confirm('✅ Publish Best Out of Waste results?\n\nThis will make scores visible to all admins in the Results tab.\n\nMake sure you have reviewed all disputes before publishing!')) return;
+            try {
+                await db.ref('jurySetup/Best out of Waste/resultsPublished').set(true);
+                if (msgEl) { msgEl.className = 'message success show'; msgEl.textContent = '✅ BOW Results published! All admins can now view them in the Results tab.'; setTimeout(() => msgEl.classList.remove('show'), 6000); }
+                bowRpLoad();
+            } catch(e) {
+                if (msgEl) { msgEl.className = 'message error show'; msgEl.textContent = '❌ Error: ' + e.message; }
+            }
+        }
+
+        async function bowRpUnpublish() {
+            const msgEl = document.getElementById('bowRpPublishMsg');
+            if (!confirm('❌ Unpublish BOW Results?\n\nAdmins will no longer see the results.')) return;
+            try {
+                await db.ref('jurySetup/Best out of Waste/resultsPublished').set(false);
+                if (msgEl) { msgEl.className = 'message show'; msgEl.textContent = 'Results unpublished. BOW results are now hidden from admins.'; setTimeout(() => msgEl.classList.remove('show'), 5000); }
+                bowRpLoad();
+            } catch(e) {
+                if (msgEl) { msgEl.className = 'message error show'; msgEl.textContent = '❌ Error: ' + e.message; }
+            }
+        }
+        // ─────────────────────────────────────────────────────────────────────────
 
         function reloadStudentData() {
             console.log('=== RELOADING DATA FROM FIREBASE ===');
@@ -7468,41 +8160,49 @@
         // FACULTY ADMIN PANEL
         // ══════════════════════════════════════════════════════════════
         const FACULTY_LIST = [
-            { sl:1,  name:'Priyanka V & Roopa M.C', class:'I BCA',   phone:'8088783099 / 9449683234' },
-            { sl:2,  name:'Smitha',                 class:'II BCA A', phone:'9972442555' },
-            { sl:3,  name:'Kotrappa K',              class:'II BCA B', phone:'9731067467' },
-            { sl:4,  name:'Anitha N',               class:'III BCA A',phone:'9164505025' },
-            { sl:5,  name:'Pooja C',                class:'III BCA B',phone:'9632736954' },
-            { sl:6,  name:'Anitha N',               class:'III BCA C',phone:'9164505025' },
-            { sl:7,  name:'Dr. Shilpa R Y',         class:'I B.Com',  phone:'9591724804' },
-            { sl:8,  name:'Lalitha S K',            class:'II B.Com', phone:'8073206168' },
-            { sl:9,  name:'Chandan G B',            class:'III B.Com',phone:'9964322171' },
-            { sl:10, name:'Hemavathi Desai',        class:'II BBA',   phone:'8197909244' },
-            { sl:11, name:'Shankar B C',            class:'III BBA',  phone:'9972652501' }
+            { sl:1,  name:'Priyanka V',             class:'I BCA',   phone:'8088783099' },
+            { sl:2,  name:'Roopa M.C',              class:'I BCA',   phone:'9449683234' },
+            { sl:3,  name:'Smitha',                 class:'II BCA A', phone:'9972442555' },
+            { sl:4,  name:'Kotrappa K',              class:'II BCA B', phone:'9731067467' },
+            { sl:5,  name:'Anitha N',               class:'III BCA A',phone:'9164505025' },
+            { sl:6,  name:'Pooja C',                class:'III BCA B',phone:'9632736954' },
+            { sl:7,  name:'Anitha N',               class:'III BCA C',phone:'9164505025' },
+            { sl:8,  name:'Dr. Shilpa R Y',         class:'I B.Com',  phone:'9591724804' },
+            { sl:9,  name:'Lalitha S K',            class:'II B.Com', phone:'8073206168' },
+            { sl:10, name:'Chandan G B',            class:'III B.Com',phone:'9964322171' },
+            { sl:11, name:'Hemavathi Desai',        class:'II BBA',   phone:'8197909244' },
+            { sl:12, name:'Shankar B C',            class:'III BBA',  phone:'9972652501' }
         ];
 
         // Define faculty roles (used in cards + dashboard)
         const FACULTY_ROLES = {
-            'Chandan G B'           : { role: '📊 Vlog Social Monitor', color: '#1b5e20', bg: '#e8f5e9', detail: 'Enters daily Views/Likes/Comments for all Vlog teams (02–07 Mar 2026)' },
-            'Priyanka V & Roopa M.C': { role: '📋 Event Incharge',      color: '#6a1b9a', bg: '#f3e5f5', detail: 'Mime, Mad Ads, YouTube Advertisement, Case Analysis, Vlog' },
-            'Smitha'                : { role: '📋 Event Incharge',      color: '#6a1b9a', bg: '#f3e5f5', detail: 'Social Awareness Skit, YouTube Advertisement, Quiz' },
-            'Kotrappa K'            : { role: '📋 Event Incharge',      color: '#6a1b9a', bg: '#f3e5f5', detail: 'Mime, Nukkad Natak, Hand Writing' },
-            'Anitha N'              : { role: '📋 Event Incharge',      color: '#6a1b9a', bg: '#f3e5f5', detail: 'Group Dance, Talent Hunt, Hand Writing' },
-            'Pooja C'               : { role: '📋 Event Incharge',      color: '#6a1b9a', bg: '#f3e5f5', detail: 'Group Dance, Talent Hunt, Quiz' },
-            'Dr. Shilpa R Y'        : { role: '📋 Event Incharge',      color: '#6a1b9a', bg: '#f3e5f5', detail: 'Mad Ads, Case Analysis' },
-            'Lalitha S K'           : { role: '📋 Event Incharge',      color: '#6a1b9a', bg: '#f3e5f5', detail: 'Interdisciplinary, Best Out of Waste' },
-            'Hemavathi Desai'       : { role: '📋 Event Incharge',      color: '#6a1b9a', bg: '#f3e5f5', detail: 'Ramp Walk, Pod Casting, Interdisciplinary' },
-            'Shankar B C'           : { role: '📋 Event Incharge',      color: '#6a1b9a', bg: '#f3e5f5', detail: 'Social Awareness Skit, Nukkad Natak, Best Out of Waste' },
+            'Chandan G B'     : { role: '📊 Vlog Monitor + 🎙️ Podcast Approval', color: '#1b5e20', bg: '#c8e6c9', detail: 'Vlog Social Score Monitor & Pod Casting Approval Incharge' },
+            'Priyanka V'      : { role: '📊 Vlog Monitor + 📋 Event Incharge',   color: '#4a148c', bg: '#e1bee7', detail: 'Vlog Social Score Monitor & Incharge: Mime, Mad Ads, YouTube Advertisement, Case Analysis, Vlog' },
+            'Roopa M.C'       : { role: '📋 Event Incharge',                     color: '#1a237e', bg: '#c5cae9', detail: 'Mime, Mad Ads, YouTube Advertisement, Case Analysis' },
+            'Smitha'          : { role: '📋 Event Incharge',                     color: '#1a237e', bg: '#c5cae9', detail: 'Social Awareness Skit, YouTube Advertisement, Quiz' },
+            'Kotrappa K'      : { role: '📋 Event Incharge',                     color: '#1a237e', bg: '#c5cae9', detail: 'Mime, Nukkad Natak, Hand Writing' },
+            'Anitha N'        : { role: '📋 Event Incharge',                     color: '#1a237e', bg: '#c5cae9', detail: 'Group Dance, Talent Hunt, Hand Writing' },
+            'Pooja C'         : { role: '📋 Event Incharge',                     color: '#1a237e', bg: '#c5cae9', detail: 'Group Dance, Talent Hunt, Quiz' },
+            'Dr. Shilpa R Y'  : { role: '📋 Event Incharge',                     color: '#1a237e', bg: '#c5cae9', detail: 'Mad Ads, Case Analysis' },
+            'Lalitha S K'     : { role: '📋 Event Incharge',                     color: '#1a237e', bg: '#c5cae9', detail: 'Interdisciplinary, Best Out of Waste' },
+            'Hemavathi Desai' : { role: '🎙️ Podcast Approval + 📋 Event Incharge', color: '#bf360c', bg: '#ffccbc', detail: 'Pod Casting Approval Incharge, Ramp Walk, Interdisciplinary' },
+            'Shankar B C'     : { role: '✅ BOW Entry Verifier + 📋 Event Incharge', color: '#e65100', bg: '#ffe0b2', detail: 'Best Out of Waste — marks participant attendance on event day (Present/Absent) for jury forwarding. Also Incharge: Social Awareness Skit, Nukkad Natak' },
         };
 
         // ── All events from Event Schedule mapped to faculty names ──
         const FACULTY_EVENT_MAP = {
-            'Priyanka V & Roopa M.C': [
-                { name:'Mime',               type:'On stage',  classes:"I BCA / II BCA 'B'" },
-                { name:'Mad Ads',            type:'On stage',  classes:'I BCOM / I BCA' },
+            'Priyanka V': [
+                { name:'Mime',                  type:'On stage',  classes:"I BCA / II BCA 'B'" },
+                { name:'Mad Ads',               type:'On stage',  classes:'I BCOM / I BCA' },
                 { name:'YouTube Advertisement', type:'Off stage', classes:"I BCA 'A' / II BCA 'A'" },
-                { name:'Case Analysis',      type:'Off stage', classes:"I BCOM / I BCA 'A'" },
-                { name:'Vlog',               type:'Off stage', classes:'III BCOM' }
+                { name:'Case Analysis',         type:'Off stage', classes:"I BCOM / I BCA 'A'" },
+                { name:'Vlog',                  type:'Off stage', classes:'III BCOM' }
+            ],
+            'Roopa M.C': [
+                { name:'Mime',                  type:'On stage',  classes:"I BCA / II BCA 'B'" },
+                { name:'Mad Ads',               type:'On stage',  classes:'I BCOM / I BCA' },
+                { name:'YouTube Advertisement', type:'Off stage', classes:"I BCA 'A' / II BCA 'A'" },
+                { name:'Case Analysis',         type:'Off stage', classes:"I BCOM / I BCA 'A'" }
             ],
             'Smitha': [
                 { name:'Social Awareness Skit', type:'On stage',  classes:'III BBA / II BCA "A"' },
@@ -7711,13 +8411,27 @@
             // ── Master override: super admin password works for any faculty login ──
             if (pwd === superAdminPassword || pwd === adminPassword) {
                 showMsg('✅ Welcome, ' + faculty.name + '! (Master login)', true);
+                // Reset all panels first
+                document.getElementById('chandanSocialPanel').style.display  = 'none';
+                document.getElementById('chandanPodcastPanel').style.display = 'none';
+                document.getElementById('shankarBowPanel').style.display     = 'none';
+                document.getElementById('facultyComingSoon').style.display   = 'none';
                 document.getElementById('facultyDashboard').style.display = 'block';
                 document.getElementById('facultyDashName').textContent  = faculty.name;
                 document.getElementById('facultyDashClass').textContent = faculty.class;
-                const isChandan = faculty.name.toLowerCase().includes('chandan');
-                document.getElementById('chandanSocialPanel').style.display = isChandan ? 'block' : 'none';
-                document.getElementById('facultyComingSoon').style.display  = isChandan ? 'none'  : 'block';
-                if (isChandan) loadChandanPanel();
+                const isChandan   = faculty.name === 'Chandan G B';
+                const isPriyanka  = faculty.name === 'Priyanka V';
+                const isHemavathi = faculty.name === 'Hemavathi Desai';
+                const isShankar   = faculty.name === 'Shankar B C';
+                const hasVlogAccess    = isChandan || isPriyanka;
+                const hasPodcastAccess = isChandan || isHemavathi;
+                document.getElementById('chandanSocialPanel').style.display  = hasVlogAccess    ? 'block' : 'none';
+                document.getElementById('chandanPodcastPanel').style.display = hasPodcastAccess ? 'block' : 'none';
+                document.getElementById('shankarBowPanel').style.display     = isShankar        ? 'block' : 'none';
+                document.getElementById('facultyComingSoon').style.display   = (hasVlogAccess || hasPodcastAccess || isShankar) ? 'none' : 'block';
+                if (hasVlogAccess)    loadChandanPanel();
+                if (hasPodcastAccess) loadChandanPodcastPanel();
+                if (isShankar)        loadShankarBowPanel();
                 return;
             }
 
@@ -7743,14 +8457,28 @@
 
                 // Logged in
                 showMsg('✅ Welcome, ' + faculty.name + '!', true);
+                // Reset all panels first so no bleed-through from previous session
+                document.getElementById('chandanSocialPanel').style.display  = 'none';
+                document.getElementById('chandanPodcastPanel').style.display = 'none';
+                document.getElementById('shankarBowPanel').style.display     = 'none';
+                document.getElementById('facultyComingSoon').style.display   = 'none';
                 document.getElementById('facultyDashboard').style.display = 'block';
                 document.getElementById('facultyDashName').textContent  = faculty.name;
                 document.getElementById('facultyDashClass').textContent = faculty.class;
 
-                const isChandan = faculty.name.toLowerCase().includes('chandan');
-                document.getElementById('chandanSocialPanel').style.display  = isChandan ? 'block' : 'none';
-                document.getElementById('facultyComingSoon').style.display   = isChandan ? 'none'  : 'block';
-                if (isChandan) loadChandanPanel();
+                const isChandan   = faculty.name === 'Chandan G B';
+                const isPriyanka  = faculty.name === 'Priyanka V';
+                const isHemavathi = faculty.name === 'Hemavathi Desai';
+                const isShankar   = faculty.name === 'Shankar B C';
+                const hasVlogAccess    = isChandan || isPriyanka;
+                const hasPodcastAccess = isChandan || isHemavathi;
+                document.getElementById('chandanSocialPanel').style.display  = hasVlogAccess    ? 'block' : 'none';
+                document.getElementById('chandanPodcastPanel').style.display = hasPodcastAccess ? 'block' : 'none';
+                document.getElementById('shankarBowPanel').style.display     = isShankar        ? 'block' : 'none';
+                document.getElementById('facultyComingSoon').style.display   = (hasVlogAccess || hasPodcastAccess || isShankar) ? 'none' : 'block';
+                if (hasVlogAccess)    loadChandanPanel();
+                if (hasPodcastAccess) loadChandanPodcastPanel();
+                if (isShankar)        loadShankarBowPanel();
 
             } catch(err) {
                 showMsg('❌ Error: ' + err.message, false);
@@ -8176,6 +8904,953 @@
                 msgEl.textContent = '❌ Error: ' + e.message;
             });
         }
+
+        // ══════════════════════════════════════════════════════════════
+        // POD CASTING — ALL FUNCTIONS
+        // ══════════════════════════════════════════════════════════════
+
+        // ── CR: Check event active ──
+        async function checkPodcastEventActive() {
+            const snap = await db.ref('podcastSettings/eventActive').once('value');
+            const active = snap.val() === true;
+            const form = document.getElementById('podcastSubmitFormWrapper');
+            const lockMsg = document.getElementById('podcastLockedMsg');
+            if (!active) {
+                if (form)    form.style.display = 'none';
+                if (lockMsg) lockMsg.style.display = 'block';
+            } else {
+                if (form)    form.style.display = 'block';
+                if (lockMsg) lockMsg.style.display = 'none';
+                autoFillPodcastMembers();
+            }
+        }
+
+        // ── CR: Load enrolled participants from youthfest-enrollments ──
+        async function autoFillPodcastMembers() {
+            const cls      = (window.currentCRClass || crClass || '').trim();
+            const listEl   = document.getElementById('podcastEnrolledList');
+            const selectEl = document.getElementById('podcastParticipantSelect');
+            if (!cls) {
+                if (listEl) listEl.innerHTML = '<span style="color:#c62828">⚠️ Class not detected. Please log in again.</span>';
+                return;
+            }
+            if (listEl)   listEl.innerHTML   = '<span style="color:#666">🔄 Loading…</span>';
+            if (selectEl) selectEl.innerHTML = '<option value="">— Loading… —</option>';
+            try {
+                const snap = await db.ref('youthfest-enrollments').once('value');
+                const members = [];
+                if (snap.exists()) {
+                    snap.forEach(ch => {
+                        const d = ch.val();
+                        if (d.event === 'Pod Casting' && (d.classYear || d.class || '').trim() === cls) {
+                            members.push(d);
+                        }
+                    });
+                }
+                if (!members.length) {
+                    if (listEl)   listEl.innerHTML   = '<span style="color:#c62828">⚠️ No Pod Casting enrollment found for your class. Please enroll first.</span>';
+                    if (selectEl) selectEl.innerHTML = '<option value="">— No enrolled participants —</option>';
+                    return;
+                }
+                if (listEl) {
+                    listEl.innerHTML = members.map((m, i) => `
+                        <div style="padding:6px 0;${i < members.length-1?'border-bottom:1px solid #c8e6c9;':''}display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+                            <span style="background:#e8f5e9;border-radius:20px;padding:2px 10px;font-size:0.82em;color:#1b5e20;font-weight:700">${i+1}</span>
+                            <span style="font-weight:600;color:#222;font-size:0.88em">${m.name||'—'}</span>
+                            <span style="color:#1db954;font-size:0.82em">📌 ${m.topic||'—'}</span>
+                        </div>`).join('');
+                }
+                if (selectEl) {
+                    selectEl.innerHTML = '<option value="">— Select participant —</option>' +
+                        members.map((m, i) => `<option value="${i}" data-name="${m.name||''}" data-topic="${m.topic||''}">${m.name||'—'} — ${m.topic||'—'}</option>`).join('');
+                }
+            } catch(e) {
+                if (listEl) listEl.innerHTML = '<span style="color:#c62828">⚠️ Error: ' + e.message + '</span>';
+            }
+        }
+
+        // ── CR: Handle participant select ──
+        function podcastOnParticipantSelect() {
+            const sel  = document.getElementById('podcastParticipantSelect');
+            const opt  = sel ? sel.options[sel.selectedIndex] : null;
+            const disp = document.getElementById('podcastSelectedDisplay');
+            const info = document.getElementById('podcastSelectedInfo');
+            const nameEl  = document.getElementById('podcastMemberName');
+            const topicEl = document.getElementById('podcastMemberTopic');
+            if (!opt || !opt.value) {
+                if (disp) disp.style.display = 'none';
+                if (nameEl)  nameEl.value = '';
+                if (topicEl) topicEl.value = '';
+                return;
+            }
+            const name  = opt.dataset.name  || '';
+            const topic = opt.dataset.topic || '';
+            if (nameEl)  nameEl.value  = name;
+            if (topicEl) topicEl.value = topic;
+            if (info) info.textContent  = name + (topic ? ' — 📌 ' + topic : '');
+            if (disp) disp.style.display = 'block';
+        }
+
+        // ── CR: Submit podcast entry ──
+        async function submitPodcastEntry() {
+            const cls     = (window.currentCRClass || crClass || '').trim();
+            const name    = (document.getElementById('podcastMemberName').value  || '').trim();
+            const topic   = (document.getElementById('podcastMemberTopic').value || '').trim();
+            const link    = (document.getElementById('podcastLink').value        || '').trim();
+            const title   = (document.getElementById('podcastTitle').value       || '').trim();
+            const dur     = (document.getElementById('podcastDuration').value    || '').trim();
+            const msgEl   = document.getElementById('podcastSubmitMsg');
+            const btnEl   = document.getElementById('podcastSubmitBtn');
+
+            function showMsg(text, ok) {
+                msgEl.style.display    = 'block';
+                msgEl.style.background = ok ? '#d4edda' : '#f8d7da';
+                msgEl.style.color      = ok ? '#155724' : '#721c24';
+                msgEl.style.border     = ok ? '1px solid #c3e6cb' : '1px solid #f5c6cb';
+                msgEl.textContent = text;
+            }
+
+            if (!name)  { showMsg('❌ Please select a participant first.', false); return; }
+            if (!link)  { showMsg('❌ Please enter the Spotify link.', false); return; }
+            if (!title) { showMsg('❌ Please enter the episode title.', false); return; }
+            if (!dur)   { showMsg('❌ Please enter the episode duration.', false); return; }
+            if (!link.includes('spotify.com')) { showMsg('❌ Link must be a Spotify URL (spotify.com).', false); return; }
+            if (!cls)   { showMsg('❌ Class info missing. Please re-login.', false); return; }
+
+            btnEl.disabled = true;
+            btnEl.textContent = '⏳ Checking slots…';
+
+            try {
+                const snap = await db.ref('podcastChallenge').orderByChild('classYear').equalTo(cls).once('value');
+                const existing = [];
+                if (snap.exists()) snap.forEach(ch => existing.push({ key: ch.key, ...ch.val() }));
+
+                if (existing.length >= 3) {
+                    showMsg('❌ Your class already has 3 submissions. No more slots available.', false); return;
+                }
+                const alreadySubmitted = existing.find(e => e.memberName === name);
+                if (alreadySubmitted) {
+                    showMsg('❌ ' + name + ' has already submitted a podcast. Only one submission per participant.', false); return;
+                }
+
+                const entry = {
+                    memberName    : name,
+                    topic         : topic,
+                    link          : link,
+                    episodeTitle  : title,
+                    duration      : dur,
+                    classYear     : cls,
+                    status        : 'Pending Review',
+                    approvalStatus: 'pending',   // pending | approved | rejected
+                    juryScore     : null,
+                    finalScore    : null,
+                    submittedAt   : new Date().toISOString(),
+                    submittedBy   : 'CR'
+                };
+
+                btnEl.textContent = '⏳ Saving…';
+                await db.ref('podcastChallenge').push(entry);
+                showMsg('✅ Podcast submitted! ' + name + ' — "' + title + '" registered successfully. Awaiting Chandan\'s approval.', true);
+                clearPodcastForm();
+                loadPodcastSubmissions();
+            } catch(err) {
+                showMsg('❌ Error: ' + err.message, false);
+            } finally {
+                btnEl.disabled = false;
+                btnEl.textContent = '🎙️ Submit Podcast Link';
+            }
+        }
+
+        // ── CR: Clear form ──
+        function clearPodcastForm() {
+            ['podcastLink','podcastTitle','podcastDuration'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.value = '';
+            });
+            const sel  = document.getElementById('podcastParticipantSelect');
+            if (sel) sel.value = '';
+            const disp = document.getElementById('podcastSelectedDisplay');
+            if (disp) disp.style.display = 'none';
+            const nameEl  = document.getElementById('podcastMemberName');
+            const topicEl = document.getElementById('podcastMemberTopic');
+            if (nameEl)  nameEl.value = '';
+            if (topicEl) topicEl.value = '';
+        }
+
+        // ── CR: Load submissions table ──
+        function loadPodcastSubmissions() {
+            const cls = (window.currentCRClass || crClass || '').trim();
+            const lbl = document.getElementById('podcastCRClass');
+            if (lbl) lbl.textContent = cls;
+            if (!cls) return;
+
+            db.ref('podcastChallenge').orderByChild('classYear').equalTo(cls).once('value').then(snap => {
+                const entries = [];
+                if (snap.exists()) snap.forEach(ch => entries.push({ id: ch.key, ...ch.val() }));
+                entries.sort((a, b) => new Date(a.submittedAt) - new Date(b.submittedAt));
+
+                const badge     = document.getElementById('podcastCountBadge');
+                const empty     = document.getElementById('podcastEmptyMsg');
+                const container = document.getElementById('podcastTableContainer');
+                const tbody     = document.getElementById('podcastTableBody');
+                const slotsInfo = document.getElementById('podcastTeamSlotsInfo');
+
+                if (badge) badge.textContent = entries.length + ' / 3 slots used';
+                if (slotsInfo) {
+                    if (entries.length >= 3) {
+                        slotsInfo.style.background = '#fce4ec'; slotsInfo.style.borderLeftColor = '#e91e63';
+                        slotsInfo.style.color = '#880e4f';
+                        slotsInfo.textContent = '🚫 All 3 slots are full. No more submissions allowed.';
+                        const btn = document.getElementById('podcastSubmitBtn');
+                        if (btn) { btn.disabled = true; btn.style.opacity = '0.5'; }
+                    } else {
+                        slotsInfo.style.background = '#e8f5e9'; slotsInfo.style.borderLeftColor = '#4caf50';
+                        slotsInfo.style.color = '#1b5e20';
+                        slotsInfo.textContent = '✅ ' + (3 - entries.length) + ' slot(s) remaining.';
+                        const btn = document.getElementById('podcastSubmitBtn');
+                        if (btn) { btn.disabled = false; btn.style.opacity = '1'; }
+                    }
+                }
+
+                if (!entries.length) {
+                    if (empty)     empty.style.display = 'block';
+                    if (container) container.style.display = 'none';
+                    return;
+                }
+                if (empty)     empty.style.display = 'none';
+                if (container) container.style.display = 'block';
+
+                const approvalColor = { pending:'#856404', approved:'#155724', rejected:'#721c24' };
+                const approvalBg    = { pending:'#fff3cd', approved:'#d4edda', rejected:'#f8d7da' };
+                let rows = '';
+                entries.forEach((e, i) => {
+                    const dt = e.submittedAt ? new Date(e.submittedAt).toLocaleString('en-IN',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}) : '—';
+                    const approval = e.approvalStatus || 'pending';
+                    const approvalLabel = approval === 'approved' ? '✅ Approved' : approval === 'rejected' ? '❌ Rejected' : '⏳ Pending';
+                    const juryStr  = e.juryScore != null ? e.juryScore + '/100' : '—';
+                    rows += `<tr>
+                        <td style="text-align:center;font-weight:700;color:#1db954">${i+1}</td>
+                        <td style="font-size:0.85em"><strong>${e.memberName||'—'}</strong></td>
+                        <td style="font-size:0.82em;color:#555">${e.topic||'—'}</td>
+                        <td style="font-size:0.82em;font-weight:600;color:#1b5e20">${e.episodeTitle||'—'}</td>
+                        <td style="text-align:center"><a href="${e.link}" target="_blank" rel="noopener" style="color:#1db954;font-weight:700;text-decoration:none;font-size:0.85em">🎵 Listen</a></td>
+                        <td style="text-align:center;font-size:0.85em">${e.duration||'—'} min</td>
+                        <td style="text-align:center"><span style="background:${approvalBg[approval]||approvalBg.pending};color:${approvalColor[approval]||approvalColor.pending};padding:3px 10px;border-radius:12px;font-size:0.75em;font-weight:700">${approvalLabel}</span></td>
+                        <td style="text-align:center;font-size:0.85em">${juryStr}</td>
+                        <td style="font-size:0.78em;color:#666">${dt}</td>
+                    </tr>`;
+                });
+                if (tbody) tbody.innerHTML = rows;
+            }).catch(err => console.error('Podcast load error:', err));
+        }
+
+        // ── Chandan: Load podcast approval panel ──
+        async function loadChandanPodcastPanel() {
+            const listEl = document.getElementById('chandanPodcastList');
+            if (!listEl) return;
+            listEl.innerHTML = '<div style="text-align:center;color:#aaa;padding:30px">Loading…</div>';
+            try {
+                const snap = await db.ref('podcastChallenge').once('value');
+                const entries = [];
+                if (snap.exists()) snap.forEach(ch => entries.push({ id: ch.key, ...ch.val() }));
+                entries.sort((a, b) => new Date(a.submittedAt) - new Date(b.submittedAt));
+
+                if (!entries.length) {
+                    listEl.innerHTML = '<div style="text-align:center;color:#aaa;padding:30px">No podcast submissions yet.</div>';
+                    return;
+                }
+
+                listEl.innerHTML = entries.map((e, i) => {
+                    const approval = e.approvalStatus || 'pending';
+                    const approvalColor = approval === 'approved' ? '#155724' : approval === 'rejected' ? '#721c24' : '#856404';
+                    const approvalBg    = approval === 'approved' ? '#d4edda' : approval === 'rejected' ? '#f8d7da' : '#fff3cd';
+                    const approvalLabel = approval === 'approved' ? '✅ Approved' : approval === 'rejected' ? '❌ Rejected' : '⏳ Pending';
+                    return `<div style="background:white;border-radius:12px;border:2px solid ${approval==='approved'?'#a5d6a7':approval==='rejected'?'#f5c6cb':'#ffe0b2'};padding:18px;box-shadow:0 2px 8px rgba(0,0,0,0.06)">
+                        <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px;margin-bottom:12px">
+                            <div>
+                                <span style="background:linear-gradient(135deg,#1db954,#191414);color:white;border-radius:20px;padding:3px 12px;font-size:0.82em;font-weight:700">#${i+1}</span>
+                                <strong style="margin-left:8px;font-size:0.95em">${e.memberName||'—'}</strong>
+                                <span style="color:#1db954;font-size:0.82em;margin-left:8px">📌 ${e.topic||'—'}</span>
+                            </div>
+                            <span style="background:#e8f5e9;color:#1b5e20;border-radius:12px;padding:3px 12px;font-size:0.78em;font-weight:700">${e.classYear||'—'}</span>
+                        </div>
+                        <div style="background:#f8f9fa;border-radius:8px;padding:12px 14px;margin-bottom:12px">
+                            <div style="font-size:0.85em;font-weight:700;color:#333;margin-bottom:6px">🎵 "${e.episodeTitle||'—'}" &nbsp;·&nbsp; ⏱ ${e.duration||'—'} min</div>
+                            <a href="${e.link}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:6px;background:#1db954;color:white;padding:8px 18px;border-radius:20px;text-decoration:none;font-size:0.85em;font-weight:700">
+                                🎵 Open on Spotify & Listen
+                            </a>
+                        </div>
+                        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+                            <span style="background:${approvalBg};color:${approvalColor};padding:4px 14px;border-radius:12px;font-size:0.82em;font-weight:700">${approvalLabel}</span>
+                            <div style="display:flex;gap:8px;flex-wrap:wrap">
+                                <button onclick="chandanApprovePodcast('${e.id}', 'approved')"
+                                    style="background:#4caf50;color:white;border:none;border-radius:8px;padding:8px 16px;font-size:0.85em;font-weight:700;cursor:pointer;${approval==='approved'?'opacity:0.5':''}"
+                                    ${approval==='approved'?'disabled':''}>✅ Approve</button>
+                                <button onclick="chandanApprovePodcast('${e.id}', 'rejected')"
+                                    style="background:#f44336;color:white;border:none;border-radius:8px;padding:8px 16px;font-size:0.85em;font-weight:700;cursor:pointer;${approval==='rejected'?'opacity:0.5':''}"
+                                    ${approval==='rejected'?'disabled':''}>❌ Reject</button>
+                            </div>
+                        </div>
+                        <div id="chandanPodMsg_${e.id}" style="display:none;margin-top:8px;font-size:0.82em;font-weight:600;padding:6px 10px;border-radius:6px"></div>
+                    </div>`;
+                }).join('');
+            } catch(err) {
+                listEl.innerHTML = `<div style="padding:20px;color:#c62828">❌ Error: ${err.message}</div>`;
+            }
+        }
+
+        // ── Chandan: Approve / Reject a podcast ──
+        async function chandanApprovePodcast(entryId, decision) {
+            const msgEl = document.getElementById('chandanPodMsg_' + entryId);
+            try {
+                await db.ref('podcastChallenge/' + entryId).update({
+                    approvalStatus : decision,
+                    approvedBy     : 'Chandan G B',
+                    approvedAt     : new Date().toISOString(),
+                    status         : decision === 'approved' ? 'Approved — Forwarded to Jury' : 'Rejected'
+                });
+                if (msgEl) {
+                    msgEl.style.display = 'block';
+                    msgEl.style.background = decision === 'approved' ? '#d4edda' : '#f8d7da';
+                    msgEl.style.color      = decision === 'approved' ? '#155724' : '#721c24';
+                    msgEl.textContent = decision === 'approved'
+                        ? '✅ Approved! Entry forwarded to Jury 1 & Jury 2.'
+                        : '❌ Rejected. CR will see this status.';
+                    setTimeout(() => loadChandanPodcastPanel(), 1500);
+                }
+            } catch(err) {
+                if (msgEl) {
+                    msgEl.style.display    = 'block';
+                    msgEl.style.background = '#f8d7da';
+                    msgEl.style.color      = '#721c24';
+                    msgEl.textContent = '❌ Error: ' + err.message;
+                }
+            }
+        }
+
+        // ── Super Admin: Load podcast admin panel ──
+        async function loadPodcastAdminPanel() {
+            // Load status toggles
+            const snap = await db.ref('podcastSettings').once('value');
+            const settings = snap.val() || {};
+            const evEl   = document.getElementById('podcastStatusEventActive');
+            const lbEl   = document.getElementById('podcastStatusLeaderboardPublished');
+            if (evEl) evEl.textContent   = settings.eventActive          ? '✅ Active'    : '🔒 Inactive';
+            if (lbEl) lbEl.textContent   = settings.leaderboardPublished ? '🚀 Published' : '📦 Unpublished';
+
+            // Load all submissions
+            const wrapEl = document.getElementById('podcastAdminTableWrap');
+            if (!wrapEl) return;
+            wrapEl.innerHTML = '<p style="color:#aaa;text-align:center;padding:20px">Loading…</p>';
+            try {
+                const allSnap = await db.ref('podcastChallenge').once('value');
+                const all = [];
+                if (allSnap.exists()) allSnap.forEach(ch => all.push({ id: ch.key, ...ch.val() }));
+                if (!all.length) { wrapEl.innerHTML = '<p style="text-align:center;color:#aaa;padding:20px">No submissions yet.</p>'; return; }
+                all.sort((a,b) => (a.classYear||'').localeCompare(b.classYear||'') || new Date(a.submittedAt)-new Date(b.submittedAt));
+                wrapEl.innerHTML = `
+                    <div class="table-wrapper" style="margin:0">
+                    <table>
+                        <thead><tr>
+                            <th>#</th><th>Participant</th><th>Class</th><th>Topic</th>
+                            <th>Episode Title</th><th>Spotify</th><th>Duration</th>
+                            <th>Approval</th><th>Jury Score</th><th>Submitted</th>
+                        </tr></thead>
+                        <tbody>${all.map((e,i) => {
+                            const approval = e.approvalStatus || 'pending';
+                            const approvalColor = approval==='approved'?'#155724':approval==='rejected'?'#721c24':'#856404';
+                            const approvalBg    = approval==='approved'?'#d4edda':approval==='rejected'?'#f8d7da':'#fff3cd';
+                            const approvalLabel = approval==='approved'?'✅ Approved':approval==='rejected'?'❌ Rejected':'⏳ Pending';
+                            const dt = e.submittedAt ? new Date(e.submittedAt).toLocaleString('en-IN',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}) : '—';
+                            return `<tr>
+                                <td style="text-align:center;font-weight:700">${i+1}</td>
+                                <td><strong>${e.memberName||'—'}</strong></td>
+                                <td style="font-size:0.85em">${e.classYear||'—'}</td>
+                                <td style="font-size:0.82em">${e.topic||'—'}</td>
+                                <td style="font-size:0.82em;font-weight:600">${e.episodeTitle||'—'}</td>
+                                <td style="text-align:center"><a href="${e.link}" target="_blank" style="color:#1db954;font-weight:700;text-decoration:none">🎵 Listen</a></td>
+                                <td style="text-align:center;font-size:0.85em">${e.duration||'—'} min</td>
+                                <td style="text-align:center"><span style="background:${approvalBg};color:${approvalColor};padding:3px 10px;border-radius:12px;font-size:0.75em;font-weight:700">${approvalLabel}</span></td>
+                                <td style="text-align:center;font-size:0.85em">${e.juryScore!=null?e.juryScore+'/100':'—'}</td>
+                                <td style="font-size:0.78em;color:#666">${dt}</td>
+                            </tr>`;
+                        }).join('')}</tbody>
+                    </table></div>`;
+            } catch(err) {
+                wrapEl.innerHTML = `<p style="color:#c62828;padding:20px">❌ Error: ${err.message}</p>`;
+            }
+        }
+
+        // ── Super Admin: Toggle podcast settings ──
+        async function setPodcastSetting(key, value) {
+            try {
+                await db.ref('podcastSettings/' + key).set(value);
+                loadPodcastAdminPanel();
+            } catch(e) {
+                alert('❌ Error: ' + e.message);
+            }
+        }
+
+        // ══════════════════════════════════════════════════════════════
+        // END POD CASTING
+        // ══════════════════════════════════════════════════════════════
+
+
+        // ══════════════════════════════════════════════════════════════
+        // BEST OUT OF WASTE — SHANKAR B C — ENTRY VERIFICATION
+        // ══════════════════════════════════════════════════════════════
+
+        async function loadShankarBowPanel() {
+            const listEl    = document.getElementById('shankarBowList');
+            const statTotal = document.getElementById('bowStatTotal');
+            const statPres  = document.getElementById('bowStatPresent');
+            const statAbs   = document.getElementById('bowStatAbsent');
+            const badge     = document.getElementById('bowSummaryBadge');
+            const clsFilter = (document.getElementById('bowClassFilter')  || {}).value || '';
+            const stFilter  = (document.getElementById('bowStatusFilter') || {}).value || '';
+
+            if (!listEl) return;
+            listEl.innerHTML = '<div style="text-align:center;color:#aaa;padding:30px">Loading entries…</div>';
+
+            try {
+                // Load all BOW enrollments from youthfest-enrollments
+                const enrollSnap = await db.ref('youthfest-enrollments').once('value');
+                const entries = [];
+                if (enrollSnap.exists()) {
+                    enrollSnap.forEach(ch => {
+                        const d = ch.val();
+                        const evName = (d.event || '').toLowerCase().replace(/\s/g,'');
+                        if (evName === 'bestoutofwaste' || evName === 'best out of waste' || d.event === 'Best out of Waste') {
+                            entries.push({ key: ch.key, ...d });
+                        }
+                    });
+                }
+
+                // Load attendance records + bow registrations
+                const [attSnap, regSnap] = await Promise.all([
+                    db.ref('bowAttendance').once('value'),
+                    db.ref('bowRegistrations').once('value')
+                ]);
+                const attData = attSnap.val() || {};
+                // Build bowRegs map keyed by enrollmentKey
+                const bowRegs = {};
+                if (regSnap.exists()) {
+                    regSnap.forEach(ch => {
+                        const d = ch.val();
+                        bowRegs[d.enrollmentKey] = { ...d, regId: ch.key };
+                    });
+                }
+
+                // Populate class filter dropdown
+                const clsFilterEl = document.getElementById('bowClassFilter');
+                if (clsFilterEl && clsFilterEl.options.length <= 1) {
+                    const classes = [...new Set(entries.map(e => e.classYear || e.class || '').filter(Boolean))].sort();
+                    classes.forEach(c => {
+                        const opt = document.createElement('option');
+                        opt.value = c; opt.textContent = c;
+                        clsFilterEl.appendChild(opt);
+                    });
+                }
+
+                // Attach attendance status to each entry
+                entries.forEach(e => {
+                    e._attendance = attData[e.key] || { status: 'pending' };
+                });
+
+                // Stats
+                const totalCount   = entries.length;
+                const presentCount = entries.filter(e => e._attendance.status === 'present').length;
+                const absentCount  = entries.filter(e => e._attendance.status === 'absent').length;
+                if (statTotal) statTotal.textContent = totalCount;
+                if (statPres)  statPres.textContent  = presentCount;
+                if (statAbs)   statAbs.textContent   = absentCount;
+                if (badge)     badge.textContent      = presentCount + ' Present · ' + absentCount + ' Absent · ' + (totalCount - presentCount - absentCount) + ' Pending';
+
+                // Filter
+                let filtered = entries;
+                if (clsFilter) filtered = filtered.filter(e => (e.classYear || e.class || '') === clsFilter);
+                if (stFilter)  filtered = filtered.filter(e => e._attendance.status === stFilter);
+
+                // Group by class
+                const byClass = {};
+                filtered.forEach(e => {
+                    const cls = e.classYear || e.class || 'Unknown';
+                    if (!byClass[cls]) byClass[cls] = [];
+                    byClass[cls].push(e);
+                });
+
+                if (!filtered.length) {
+                    listEl.innerHTML = '<div style="text-align:center;color:#aaa;padding:30px;font-size:0.9em">No entries found for the selected filters.</div>';
+                    return;
+                }
+
+                listEl.innerHTML = Object.entries(byClass).sort(([a],[b]) => a.localeCompare(b)).map(([cls, members]) => {
+                    const rows = members.map((e, i) => {
+                        const att    = e._attendance.status || 'pending';
+                        const markedBy  = e._attendance.markedBy  || '';
+                        const markedAt  = e._attendance.markedAt
+                            ? new Date(e._attendance.markedAt).toLocaleString('en-IN',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'})
+                            : '';
+                        const attColor = att === 'present' ? '#2e7d32' : att === 'absent' ? '#c62828' : '#856404';
+                        const attBg    = att === 'present' ? '#e8f5e9' : att === 'absent' ? '#fce4ec' : '#fff8e1';
+                        const attLabel = att === 'present' ? '✅ Present' : att === 'absent' ? '❌ Absent' : '⏳ Not Marked';
+                        const reg = bowRegs[e.key] || {};
+                        const finalPhoto = reg.finalPhotoUrl;
+                        const photoThumb = finalPhoto
+                            ? `<a href="${finalPhoto}" target="_blank" rel="noopener" style="flex-shrink:0"><img src="${finalPhoto}" style="width:56px;height:56px;object-fit:cover;border-radius:8px;border:2px solid #4caf50" alt="craft"></a>`
+                            : '<span style="width:56px;height:56px;background:#fff3e0;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.4em;flex-shrink:0;border:2px dashed #ffe082">📦</span>';
+                        const sentToJury = reg.sentToJury === true;
+                        return `<div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:10px;padding:12px 14px;background:${i%2===0?'#fafafa':'white'};border-radius:8px;border:1px solid #f5f5f5">
+                            <div style="display:flex;align-items:flex-start;gap:12px;flex:1;min-width:200px">
+                                ${photoThumb}
+                                <div>
+                                    <div style="font-weight:700;color:#222;font-size:0.92em">${e.name || '—'}</div>
+                                    <div style="font-size:0.78em;color:#e65100;margin-top:2px">${reg.theme ? '🎨 ' + reg.theme : '<em style="color:#aaa">No theme pre-registered</em>'}</div>
+                                    <div style="font-size:0.74em;color:#777;margin-top:2px">${reg.materials ? '♻️ ' + reg.materials : ''}</div>
+                                    <div style="font-size:0.72em;color:#aaa;margin-top:2px">${markedAt ? '⏰ Marked: ' + markedAt : ''}</div>
+                                    <div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap">
+                                        <span style="background:${reg.theme?'#e8f5e9':'#fce4ec'};color:${reg.theme?'#2e7d32':'#c62828'};padding:2px 8px;border-radius:8px;font-size:0.72em;font-weight:700">${reg.theme?'✅ Pre-Registered':'❌ Not Pre-Registered'}</span>
+                                        <span style="background:${finalPhoto?'#e3f2fd':'#fff3e0'};color:${finalPhoto?'#1565c0':'#e65100'};padding:2px 8px;border-radius:8px;font-size:0.72em;font-weight:700">${finalPhoto?'📸 Final Photo Submitted':'⏳ No Final Photo Yet'}</span>
+                                        ${sentToJury ? '<span style="background:#f3e5f5;color:#6a1b9a;padding:2px 8px;border-radius:8px;font-size:0.72em;font-weight:700">📋 Sent to Jury</span>' : ''}
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-wrap:wrap">
+                                <div style="display:flex;gap:6px;flex-wrap:wrap">
+                                    <span style="background:${attBg};color:${attColor};padding:3px 10px;border-radius:12px;font-size:0.78em;font-weight:700">${attLabel}</span>
+                                </div>
+                                <div style="display:flex;gap:6px;flex-wrap:wrap">
+                                    <button onclick="shankarMarkBow('${e.key}','present')"
+                                        style="background:#4caf50;color:white;border:none;border-radius:7px;padding:5px 12px;font-size:0.8em;font-weight:700;cursor:pointer;${att==='present'?'opacity:0.4;cursor:default':''}"
+                                        ${att==='present'?'disabled':''}>✅ Present</button>
+                                    <button onclick="shankarMarkBow('${e.key}','absent')"
+                                        style="background:#f44336;color:white;border:none;border-radius:7px;padding:5px 12px;font-size:0.8em;font-weight:700;cursor:pointer;${att==='absent'?'opacity:0.4;cursor:default':''}"
+                                        ${att==='absent'?'disabled':''}>❌ Absent</button>
+                                    <button onclick="shankarMarkBow('${e.key}','pending')"
+                                        style="background:#9e9e9e;color:white;border:none;border-radius:7px;padding:5px 8px;font-size:0.76em;cursor:pointer;${att==='pending'?'opacity:0.4;cursor:default':''}"
+                                        ${att==='pending'?'disabled':''}>↩</button>
+                                </div>
+                                ${finalPhoto && att==='present' && !sentToJury ? `<button onclick="shankarSendToJury('${reg.regId || ''}')"
+                                    style="background:linear-gradient(135deg,#6a1b9a,#9c27b0);color:white;border:none;border-radius:7px;padding:6px 14px;font-size:0.8em;font-weight:700;cursor:pointer;width:100%">📋 Send to Jury</button>` : ''}
+                                ${sentToJury ? '<span style="background:#f3e5f5;color:#6a1b9a;padding:4px 12px;border-radius:8px;font-size:0.78em;font-weight:700;text-align:center">📋 Sent to Jury ✅</span>' : ''}
+                            </div>
+                            <div id="bowMsg_${e.key}" style="display:none;width:100%;font-size:0.78em;font-weight:600;padding:4px 10px;border-radius:6px;margin-top:4px"></div>
+                        </div>`;
+                    }).join('');
+
+                    const clsPresent = members.filter(m => m._attendance.status === 'present').length;
+                    const clsTotal   = members.length;
+                    return `<div style="background:white;border-radius:12px;border:2px solid #ffe082;margin-bottom:14px;overflow:hidden">
+                        <div style="background:linear-gradient(135deg,#ff8f00,#f9a825);padding:10px 16px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
+                            <span style="color:white;font-weight:700;font-size:0.95em">♻️ ${cls}</span>
+                            <span style="background:rgba(255,255,255,0.25);color:white;padding:2px 12px;border-radius:12px;font-size:0.82em;font-weight:700">${clsPresent} / ${clsTotal} Present</span>
+                        </div>
+                        <div style="padding:10px 12px;display:flex;flex-direction:column;gap:6px">${rows}</div>
+                    </div>`;
+                }).join('');
+
+            } catch(err) {
+                if (listEl) listEl.innerHTML = `<div style="padding:20px;color:#c62828">❌ Error: ${err.message}</div>`;
+            }
+        }
+
+        async function shankarMarkBow(entryKey, status) {
+            const msgEl = document.getElementById('bowMsg_' + entryKey);
+            try {
+                await db.ref('bowAttendance/' + entryKey).set({
+                    status    : status,
+                    markedBy  : 'Shankar B C',
+                    markedAt  : new Date().toISOString()
+                });
+                if (msgEl) {
+                    msgEl.style.display    = 'block';
+                    msgEl.style.background = status === 'present' ? '#d4edda' : status === 'absent' ? '#f8d7da' : '#e9ecef';
+                    msgEl.style.color      = status === 'present' ? '#155724' : status === 'absent' ? '#721c24' : '#495057';
+                    msgEl.textContent      = status === 'present' ? '✅ Marked Present — forwarded to Jury'
+                                          : status === 'absent'  ? '❌ Marked Absent — excluded from Jury'
+                                          : '↩ Reset to Not Marked';
+                }
+                setTimeout(() => loadShankarBowPanel(), 1200);
+            } catch(err) {
+                if (msgEl) {
+                    msgEl.style.display = 'block';
+                    msgEl.style.background = '#f8d7da';
+                    msgEl.style.color = '#721c24';
+                    msgEl.textContent = '❌ Error: ' + err.message;
+                }
+            }
+        }
+
+        async function shankarSendToJury(regId) {
+            if (!regId) { alert('❌ Registration ID missing.'); return; }
+            try {
+                await db.ref('bowRegistrations/' + regId).update({
+                    sentToJury   : true,
+                    sentToJuryAt : new Date().toISOString(),
+                    sentToJuryBy : 'Shankar B C'
+                });
+                loadShankarBowPanel();
+            } catch(err) {
+                alert('❌ Error: ' + err.message);
+            }
+        }
+
+        // ══════════════════════════════════════════════════════════════
+        // END BEST OUT OF WASTE
+        // ══════════════════════════════════════════════════════════════
+
+        // ══════════════════════════════════════════════════════════════
+        // BEST OUT OF WASTE — CR FUNCTIONS (Option A + C)
+        // ══════════════════════════════════════════════════════════════
+
+        // Load enrolled BOW participants for CR class
+        async function autoFillBOWMembers() {
+            const cls      = (window.currentCRClass || crClass || '').trim();
+            const listEl   = document.getElementById('bowEnrolledList');
+            const selectEl = document.getElementById('bowParticipantSelect');
+            const lbl      = document.getElementById('bowCRClass');
+            if (lbl) lbl.textContent = cls;
+            if (!cls) {
+                if (listEl) listEl.innerHTML = '<span style="color:#c62828">⚠️ Class not detected. Please log in again.</span>';
+                return;
+            }
+            if (listEl)   listEl.innerHTML   = '<span style="color:#666">🔄 Loading…</span>';
+            if (selectEl) selectEl.innerHTML = '<option value="">— Loading… —</option>';
+            try {
+                const snap = await db.ref('youthfest-enrollments').once('value');
+                const members = [];
+                if (snap.exists()) {
+                    snap.forEach(ch => {
+                        const d = ch.val();
+                        const evNorm = (d.event||'').toLowerCase().replace(/\s/g,'');
+                        if ((evNorm === 'bestoutofwaste') && (d.classYear||d.class||'').trim() === cls) {
+                            members.push({ key: ch.key, ...d });
+                        }
+                    });
+                }
+                if (!members.length) {
+                    if (listEl)   listEl.innerHTML   = '<span style="color:#c62828">⚠️ No Best Out of Waste enrollment found for your class.</span>';
+                    if (selectEl) selectEl.innerHTML = '<option value="">— No enrolled participants —</option>';
+                    return;
+                }
+                if (listEl) {
+                    listEl.innerHTML = members.map((m, i) => `
+                        <div style="padding:6px 0;${i<members.length-1?'border-bottom:1px solid #ffe082;':''}display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+                            <span style="background:#fff3e0;border-radius:20px;padding:2px 10px;font-size:0.82em;color:#e65100;font-weight:700">${i+1}</span>
+                            <span style="font-weight:600;color:#222;font-size:0.88em">${m.name||'—'}</span>
+                            ${m.role?`<span style="color:#f9a825;font-size:0.82em">🎭 ${m.role}</span>`:''}
+                        </div>`).join('');
+                }
+                if (selectEl) {
+                    selectEl.innerHTML = '<option value="">— Select participant/team —</option>' +
+                        members.map(m => `<option value="${m.key}" data-name="${m.name||''}" data-key="${m.key}">${m.name||'—'}${m.role?' — '+m.role:''}</option>`).join('');
+                }
+            } catch(e) {
+                if (listEl) listEl.innerHTML = '<span style="color:#c62828">⚠️ Error: ' + e.message + '</span>';
+            }
+        }
+
+        function bowOnParticipantSelect() {
+            const sel  = document.getElementById('bowParticipantSelect');
+            const opt  = sel ? sel.options[sel.selectedIndex] : null;
+            const disp = document.getElementById('bowSelectedDisplay');
+            const info = document.getElementById('bowSelectedInfo');
+            const nameEl = document.getElementById('bowMemberName');
+            const keyEl  = document.getElementById('bowMemberKey');
+            if (!opt || !opt.value) {
+                if (disp) disp.style.display = 'none';
+                if (nameEl) nameEl.value = '';
+                if (keyEl)  keyEl.value  = '';
+                return;
+            }
+            if (nameEl) nameEl.value = opt.dataset.name || '';
+            if (keyEl)  keyEl.value  = opt.value;
+            if (info)   info.textContent = opt.dataset.name || '';
+            if (disp)   disp.style.display = 'block';
+        }
+
+        function bowPreviewPhoto() {
+            const input    = document.getElementById('bowPhotoInput');
+            const preview  = document.getElementById('bowPhotoPreview');
+            const img      = document.getElementById('bowPhotoImg');
+            const nameSpan = document.getElementById('bowPhotoFileName');
+            if (!input || !input.files || !input.files[0]) return;
+            const file = input.files[0];
+            if (nameSpan) nameSpan.textContent = file.name;
+            const reader = new FileReader();
+            reader.onload = e => {
+                if (img)     img.src = e.target.result;
+                if (preview) preview.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        }
+
+        async function uploadBOWPhoto(file) {
+            const prog = document.getElementById('bowUploadProgress');
+            if (prog) prog.style.display = 'block';
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('upload_preset', 'scavenger_hunt');
+            formData.append('folder', 'bow_crafts');
+            const res  = await fetch('https://api.cloudinary.com/v1_1/dat0khbet/image/upload', { method:'POST', body:formData });
+            const data = await res.json();
+            if (prog) prog.style.display = 'none';
+            if (!data.secure_url) throw new Error('Photo upload failed');
+            return data.secure_url;
+        }
+
+        async function submitBOWEntry() {
+            const cls      = (window.currentCRClass || crClass || '').trim();
+            const name     = (document.getElementById('bowMemberName').value  || '').trim();
+            const entryKey = (document.getElementById('bowMemberKey').value   || '').trim();
+            const theme    = (document.getElementById('bowTheme').value       || '').trim();
+            const materials= (document.getElementById('bowMaterials').value   || '').trim();
+            const desc     = (document.getElementById('bowDescription').value || '').trim();
+            const photoInput = document.getElementById('bowPhotoInput');
+            const msgEl    = document.getElementById('bowSubmitMsg');
+            const btnEl    = document.getElementById('bowSubmitBtn');
+
+            function showMsg(text, ok) {
+                msgEl.style.display    = 'block';
+                msgEl.style.background = ok ? '#d4edda' : '#f8d7da';
+                msgEl.style.color      = ok ? '#155724' : '#721c24';
+                msgEl.style.border     = ok ? '1px solid #c3e6cb' : '1px solid #f5c6cb';
+                msgEl.textContent = text;
+            }
+
+            if (!name)      { showMsg('❌ Please select a participant/team first.', false); return; }
+            if (!theme)     { showMsg('❌ Please enter your theme / product name.', false); return; }
+            if (!materials) { showMsg('❌ Please enter the waste materials you will use.', false); return; }
+            if (!cls)       { showMsg('❌ Class info missing. Please re-login.', false); return; }
+
+            // Check duplicate theme in same class
+            try {
+                btnEl.disabled = true;
+                btnEl.textContent = '⏳ Checking duplicates…';
+                const existSnap = await db.ref('bowRegistrations').orderByChild('classYear').equalTo(cls).once('value');
+                const existing = [];
+                if (existSnap.exists()) existSnap.forEach(ch => existing.push({ id: ch.key, ...ch.val() }));
+
+                const dupTheme = existing.find(e => e.enrollmentKey !== entryKey &&
+                    e.theme.toLowerCase().trim() === theme.toLowerCase().trim());
+                if (dupTheme) {
+                    showMsg('❌ Theme "' + theme + '" is already taken by another team in your class. Choose a different theme!', false);
+                    return;
+                }
+
+                // Upload photo if selected
+                let photoUrl = null;
+                if (photoInput && photoInput.files && photoInput.files[0]) {
+                    btnEl.textContent = '⏳ Uploading photo…';
+                    try { photoUrl = await uploadBOWPhoto(photoInput.files[0]); }
+                    catch(e) { showMsg('❌ Photo upload failed: ' + e.message, false); return; }
+                }
+
+                btnEl.textContent = '⏳ Saving…';
+                // Check if this entry already has a registration (update vs create)
+                const prev = existing.find(e => e.enrollmentKey === entryKey);
+                const entry = {
+                    memberName    : name,
+                    classYear     : cls,
+                    enrollmentKey : entryKey,
+                    theme         : theme,
+                    materials     : materials,
+                    description   : desc,
+                    photoUrl      : photoUrl || (prev && prev.photoUrl) || null,
+                    registeredAt  : new Date().toISOString(),
+                    updatedAt     : new Date().toISOString()
+                };
+                if (prev) {
+                    await db.ref('bowRegistrations/' + prev.id).update(entry);
+                    showMsg('✅ Registration updated! Theme: "' + theme + '" — Photo ' + (photoUrl ? 'uploaded ✅' : 'unchanged'), true);
+                } else {
+                    await db.ref('bowRegistrations').push(entry);
+                    showMsg('✅ Registered! Theme: "' + theme + '" — ' + (photoUrl ? 'Photo uploaded ✅' : 'No photo (you can add later)'), true);
+                }
+                loadBOWSubmissions();
+            } catch(err) {
+                showMsg('❌ Error: ' + err.message, false);
+            } finally {
+                btnEl.disabled = false;
+                btnEl.textContent = '♻️ Submit Registration';
+            }
+        }
+
+        function clearBOWForm() {
+            ['bowTheme','bowMaterials','bowDescription'].forEach(id => {
+                const el = document.getElementById(id); if (el) el.value = '';
+            });
+            const sel = document.getElementById('bowParticipantSelect');
+            if (sel) sel.value = '';
+            const disp = document.getElementById('bowSelectedDisplay');
+            if (disp) disp.style.display = 'none';
+            ['bowMemberName','bowMemberKey'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
+            const pi = document.getElementById('bowPhotoInput');
+            if (pi) pi.value = '';
+            const pv = document.getElementById('bowPhotoPreview');
+            if (pv) pv.style.display = 'none';
+            const fn = document.getElementById('bowPhotoFileName');
+            if (fn) fn.textContent = 'No photo chosen';
+        }
+
+        async function loadBOWSubmissions() {
+            const cls  = (window.currentCRClass || crClass || '').trim();
+            const lbl  = document.getElementById('bowCRClass');
+            if (lbl) lbl.textContent = cls;
+            if (!cls) return;
+
+            const sel = document.getElementById('bowParticipantSelect');
+            if (sel && sel.options.length <= 1) autoFillBOWMembers();
+
+            const empty     = document.getElementById('bowEmptyMsg');
+            const container = document.getElementById('bowTableContainer');
+            const tbody     = document.getElementById('bowTableBody');
+
+            try {
+                const [regSnap, attSnap] = await Promise.all([
+                    db.ref('bowRegistrations').orderByChild('classYear').equalTo(cls).once('value'),
+                    db.ref('bowAttendance').once('value')
+                ]);
+                const regs = [];
+                if (regSnap.exists()) regSnap.forEach(ch => regs.push({ id: ch.key, ...ch.val() }));
+                const attData = attSnap.val() || {};
+
+                // ── Update Step 2 select with pre-registered participants ──
+                const step2Locked = document.getElementById('bowStep2Locked');
+                const step2Form   = document.getElementById('bowStep2Form');
+                const photoSel    = document.getElementById('bowPhotoParticipantSelect');
+                const regsWithPhoto = regs.filter(r => r.finalPhotoUrl);
+                const regsDone    = regs.filter(r => !r.finalPhotoUrl);
+
+                if (regs.length > 0) {
+                    if (step2Locked) step2Locked.style.display = 'none';
+                    if (step2Form)   step2Form.style.display   = 'block';
+                    if (photoSel) {
+                        photoSel.innerHTML = '<option value="">— Select participant —</option>' +
+                            regs.map(r => `<option value="${r.id}" data-theme="${r.theme||''}" data-materials="${r.materials||''}" data-name="${r.memberName||''}">${r.memberName||'—'} — ${r.theme||'—'}${r.finalPhotoUrl?' ✅ Photo submitted':''}</option>`).join('');
+                    }
+                } else {
+                    if (step2Locked) step2Locked.style.display = 'block';
+                    if (step2Form)   step2Form.style.display   = 'none';
+                }
+
+                if (!regs.length) {
+                    if (empty)     empty.style.display = 'block';
+                    if (container) container.style.display = 'none';
+                    return;
+                }
+                if (empty)     empty.style.display = 'none';
+                if (container) container.style.display = 'block';
+
+                const attColor  = { present:'#2e7d32', absent:'#c62828', pending:'#856404' };
+                const attBg     = { present:'#e8f5e9', absent:'#fce4ec', pending:'#fff8e1' };
+                const attLabel  = { present:'✅ Present', absent:'❌ Absent', pending:'⏳ Not Marked' };
+
+                tbody.innerHTML = regs.map((e, i) => {
+                    const att = (attData[e.enrollmentKey] || {}).status || 'pending';
+                    const step1Badge = '<span style="background:#e8f5e9;color:#2e7d32;padding:3px 10px;border-radius:12px;font-size:0.75em;font-weight:700">✅ Done</span>';
+                    const photoCell = e.finalPhotoUrl
+                        ? `<a href="${e.finalPhotoUrl}" target="_blank" rel="noopener"><img src="${e.finalPhotoUrl}" style="width:52px;height:52px;object-fit:cover;border-radius:6px;border:2px solid #a5d6a7" alt="craft"></a>`
+                        : '<span style="background:#fff3e0;color:#e65100;padding:3px 10px;border-radius:12px;font-size:0.75em;font-weight:700">⏳ Pending</span>';
+                    const juryStatus = e.sentToJury
+                        ? '<span style="background:#e3f2fd;color:#1565c0;padding:3px 10px;border-radius:12px;font-size:0.75em;font-weight:700">📋 Sent to Jury</span>'
+                        : '<span style="background:#f5f5f5;color:#999;padding:3px 10px;border-radius:12px;font-size:0.75em;font-weight:700">Awaiting</span>';
+                    return `<tr>
+                        <td style="text-align:center;font-weight:700;color:#e65100">${i+1}</td>
+                        <td><strong>${e.memberName||'—'}</strong></td>
+                        <td style="font-size:0.85em;font-weight:600;color:#e65100">${e.theme||'—'}</td>
+                        <td style="font-size:0.82em;color:#555">${e.materials||'—'}</td>
+                        <td style="text-align:center">${step1Badge}</td>
+                        <td style="text-align:center">${photoCell}</td>
+                        <td style="text-align:center"><span style="background:${attBg[att]};color:${attColor[att]};padding:3px 10px;border-radius:12px;font-size:0.75em;font-weight:700">${attLabel[att]}</span></td>
+                        <td style="text-align:center">${juryStatus}</td>
+                    </tr>`;
+                }).join('');
+            } catch(err) {
+                console.error('BOW load error:', err);
+            }
+        }
+
+        function bowPhotoParticipantChanged() {
+            const sel   = document.getElementById('bowPhotoParticipantSelect');
+            const opt   = sel ? sel.options[sel.selectedIndex] : null;
+            const info  = document.getElementById('bowStep2PreRegInfo');
+            const theme = document.getElementById('bowStep2ThemeDisplay');
+            const keyEl = document.getElementById('bowPhotoEntryKey');
+            if (!opt || !opt.value) {
+                if (info) info.style.display = 'none';
+                if (keyEl) keyEl.value = '';
+                return;
+            }
+            if (keyEl)  keyEl.value  = opt.value;
+            if (theme)  theme.textContent = (opt.dataset.name || '') + ' — 🎨 ' + (opt.dataset.theme || '') + ' | ♻️ ' + (opt.dataset.materials || '');
+            if (info)   info.style.display = 'block';
+        }
+
+        async function submitBOWFinalPhoto() {
+            const cls      = (window.currentCRClass || crClass || '').trim();
+            const entryId  = (document.getElementById('bowPhotoEntryKey').value || '').trim();
+            const photoInput = document.getElementById('bowPhotoInput');
+            const msgEl    = document.getElementById('bowPhotoSubmitMsg');
+            const btnEl    = document.getElementById('bowPhotoSubmitBtn');
+
+            function showMsg(text, ok) {
+                msgEl.style.display    = 'block';
+                msgEl.style.background = ok ? '#d4edda' : '#f8d7da';
+                msgEl.style.color      = ok ? '#155724' : '#721c24';
+                msgEl.style.border     = ok ? '1px solid #c3e6cb' : '1px solid #f5c6cb';
+                msgEl.textContent = text;
+            }
+
+            if (!entryId)  { showMsg('❌ Please select a participant first.', false); return; }
+            if (!photoInput || !photoInput.files || !photoInput.files[0]) {
+                showMsg('❌ Please choose a photo of the finished product.', false); return;
+            }
+
+            btnEl.disabled = true;
+            btnEl.textContent = '⏳ Uploading photo…';
+            try {
+                const prog = document.getElementById('bowUploadProgress');
+                if (prog) prog.style.display = 'block';
+                const formData = new FormData();
+                formData.append('file', photoInput.files[0]);
+                formData.append('upload_preset', 'scavenger_hunt');
+                formData.append('folder', 'bow_crafts');
+                const res  = await fetch('https://api.cloudinary.com/v1_1/dat0khbet/image/upload', { method:'POST', body:formData });
+                const data = await res.json();
+                if (prog) prog.style.display = 'none';
+                if (!data.secure_url) throw new Error('Photo upload failed');
+
+                btnEl.textContent = '⏳ Saving…';
+                await db.ref('bowRegistrations/' + entryId).update({
+                    finalPhotoUrl  : data.secure_url,
+                    finalSubmittedAt: new Date().toISOString(),
+                    sentToJury     : false
+                });
+                showMsg('✅ Final photo submitted! Shankar sir will review and forward to the jury.', true);
+                // Reset photo form
+                photoInput.value = '';
+                const pv = document.getElementById('bowPhotoPreview');
+                if (pv) pv.style.display = 'none';
+                const fn = document.getElementById('bowPhotoFileName');
+                if (fn) fn.textContent = 'No photo chosen';
+                document.getElementById('bowPhotoParticipantSelect').value = '';
+                document.getElementById('bowPhotoEntryKey').value = '';
+                const info = document.getElementById('bowStep2PreRegInfo');
+                if (info) info.style.display = 'none';
+                loadBOWSubmissions();
+            } catch(err) {
+                showMsg('❌ Error: ' + err.message, false);
+            } finally {
+                btnEl.disabled = false;
+                btnEl.textContent = '📸 Submit Final Photo to Shankar';
+            }
+        }
+
+        // ══════════════════════════════════════════════════════════════
+        // END BOW CR FUNCTIONS
+        // ══════════════════════════════════════════════════════════════
+
 
         // ══════════════════════════════════════════════════════════════
         // VLOG: CR VIEW — check event active before showing form
@@ -8863,9 +10538,10 @@
         }
 
         function checkResultsPublished() {
-            // For super admin, always show Results tab
+            // For super admin and super jury, always show Results tab
             if (isSuperAdmin) {
-                document.getElementById('resultsTab').style.display = 'block';
+                const rt = document.getElementById('resultsTab');
+                if (rt) rt.style.display = 'block';
                 return;
             }
             
@@ -22339,27 +24015,13 @@ Proceed?`)) return;
                 }, 120);
 
             } else if (role === 'faculty') {
-                // Scroll to / show the faculty section
+                // Scroll to / show the faculty section — do NOT auto-select anyone
                 const ut = document.getElementById('userType');
                 if (ut) { ut.value = 'faculty'; handleUserTypeChange(); }
+                // Just pre-fill the master password so the user only needs to pick their name
                 setTimeout(() => {
-                    // Select Chandan G B in the dropdown
-                    const sel = document.getElementById('facultyLoginSelect');
-                    if (sel) {
-                        for (let i = 0; i < sel.options.length; i++) {
-                            if ((sel.options[i].dataset.name || sel.options[i].value || '').toLowerCase().includes('chandan')) {
-                                sel.selectedIndex = i;
-                                // Trigger the onchange to populate hidden phone field
-                                const evt = new Event('change');
-                                sel.dispatchEvent(evt);
-                                break;
-                            }
-                        }
-                    }
-                    // Fill password with superAdminPassword and login
                     const pw = document.getElementById('facultyLoginPwd');
-                    if (pw) { pw.value = superAdminPassword; }
-                    facultyLogin();
+                    if (pw) pw.value = superAdminPassword;
                 }, 150);
             }
         };
@@ -22676,7 +24338,7 @@ Proceed?`)) return;
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;" id="devTriggerVersion">
-                <strong>Version:</strong> 3.68 — Chandan panel now shows screenshots from dailyScreenshots (not just screenshotUrl); Social Score in jury Total; all time locks removed for testing   | <strong>Last Updated:</strong> February 23, 2026 — 20:20
+                <strong>Version:</strong> 3.74 — BOW Results Publisher tab added in Super Admin: see Jury 1 &amp; Jury 2 averaged scores, rank table, dispute flags (gap ≥15pts), publish/unpublish BOW results live   | <strong>Last Updated:</strong> February 24, 2026 — 17:30
             </p>
             <!-- ============================================ -->
             
