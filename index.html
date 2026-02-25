@@ -1246,6 +1246,7 @@
                     <option value="admin">Admin</option>
                     <option value="superadmin">Super Admin</option>
                     <option value="manager">Manager</option>
+                    <option value="manager2">Manager 2 (Jury Setup)</option>
                     <option value="jury">Jury</option>
                 </select>
             </div>
@@ -1304,6 +1305,20 @@
                     </label>
                 </div>
                 <button class="btn" style="background:#2196F3" onclick="managerLogin()">Login as Manager</button>
+            </div>
+
+            <!-- Manager 2 Login (Jury Setup only) -->
+            <div id="manager2Login" style="display:none">
+                <div class="form-group">
+                    <label>Manager 2 Password:</label>
+                    <input type="password" id="manager2Password" placeholder="Enter Manager 2 password" onkeydown="if(event.key==='Enter') manager2Login()">
+                </div>
+                <div style="margin-bottom:12px">
+                    <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:0.9em;color:#555;font-weight:normal">
+                        <input type="checkbox" id="manager2RememberMe" style="width:auto;accent-color:#9c27b0"> Remember password on this device
+                    </label>
+                </div>
+                <button class="btn" style="background:#9c27b0" onclick="manager2Login()">Login as Manager 2</button>
             </div>
 
             <!-- Jury Login -->
@@ -2604,6 +2619,8 @@
                 <button class="tab super-admin-only" onclick="showTab('podcastAdminPanel');loadPodcastAdminPanel()" id="podcastAdminPanelTab">🎙️ Podcast Admin</button>
                 <button class="tab super-admin-only" onclick="showTab('bowResultsPublisher');bowRpLoad()" id="superJuryMgmtTab">♻️ BOW Results</button>
                 <button class="tab super-admin-only" onclick="showTab('nukkadAdminPanel');loadNukkadAdminPanel()" id="nukkadAdminTab">🎭 Nukkad Admin</button>
+                <button class="tab super-admin-only" onclick="showTab('hwAdminPanel');loadHwAdminPanel()" id="hwAdminPanelTab">✍️ HW Admin</button>
+                <button class="tab super-admin-only" onclick="showTab('thAdminPanel');loadThAdminPanel()" id="thAdminPanelTab">🎭 TH Admin</button>
                 <button class="tab super-admin-only" onclick="showTab('ytAdAdminPanel');loadYtAdAdminPanel()" id="ytAdAdminPanelTab">📺 YT Ad Admin</button>
                 <button class="tab" onclick="showTab('facultyAdminPanel');loadFacultyAdminPanel()" id="facultyAdminPanelTab">👩‍🏫 Faculty</button>
                 <button class="tab super-admin-only" onclick="showTab('pdfHandoutsAdmin')" id="pdfHandoutsAdminTab">📄 PDF Handouts</button>
@@ -4836,6 +4853,180 @@
                 <span id="nukkadAdminBadge" style="display:none"></span>
             </div>
             <!-- END NUKKAD NATAK ADMIN PANEL -->
+
+            <!-- ══════════════════════════════════════════════════════════════════
+                 HAND WRITING ADMIN PANEL (Super Admin Only)
+            ══════════════════════════════════════════════════════════════════ -->
+            <div id="hwAdminPanel" class="form-section super-admin-only" style="margin-top:20px;display:none">
+                <h2 style="color:#1a237e;margin-bottom:6px">✍️ Hand Writing — Super Admin Panel</h2>
+                <p style="color:#888;margin-bottom:20px;font-size:.9em">View all enrolled participants with sitting codes, attendance status and jury results. Publish to leaderboard when ready.</p>
+
+                <!-- Leaderboard Publish -->
+                <div style="background:linear-gradient(135deg,#e8eaf6,#ede7f6);border-radius:14px;padding:18px;margin-bottom:20px;border:2px solid #b39ddb">
+                    <h3 style="color:#4a148c;margin:0 0 12px;font-size:1.05em">🏆 Leaderboard Published?</h3>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px" class="vlog-admin-grid">
+                        <div>
+                            <div style="color:#666;font-size:0.82em;margin-bottom:12px">When ON — Hand Writing results appear in the main leaderboard / Class of the Year.</div>
+                            <div style="display:flex;gap:10px">
+                                <button class="btn btn-success" onclick="hwSetLeaderboard(true)" style="flex:1;font-size:0.9em">🚀 Publish</button>
+                                <button class="btn btn-secondary" onclick="hwSetLeaderboard(false)" style="flex:1;font-size:0.9em">📦 Unpublish</button>
+                            </div>
+                        </div>
+                        <div style="display:flex;align-items:center">
+                            <div id="hwLeaderboardStatusDisplay" style="background:#f5f5f5;border-radius:10px;padding:12px 18px;font-weight:700;font-size:0.92em;color:#666;width:100%;text-align:center">Loading…</div>
+                        </div>
+                    </div>
+                    <div id="hwLeaderboardMsg" style="display:none;margin-top:10px;padding:8px 12px;border-radius:8px;font-weight:700;font-size:0.85em"></div>
+                </div>
+
+                <!-- Stats -->
+                <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px">
+                    <div style="background:white;border-radius:10px;padding:12px;text-align:center;border:2px solid #c5cae9">
+                        <div style="font-size:1.5em;font-weight:900;color:#1a237e" id="hwAdminStatTotal">—</div>
+                        <div style="font-size:0.78em;color:#666">Total Enrolled</div>
+                    </div>
+                    <div style="background:white;border-radius:10px;padding:12px;text-align:center;border:2px solid #a5d6a7">
+                        <div style="font-size:1.5em;font-weight:900;color:#2e7d32" id="hwAdminStatPresent">—</div>
+                        <div style="font-size:0.78em;color:#666">✅ Present</div>
+                    </div>
+                    <div style="background:white;border-radius:10px;padding:12px;text-align:center;border:2px solid #ef9a9a">
+                        <div style="font-size:1.5em;font-weight:900;color:#c62828" id="hwAdminStatAbsent">—</div>
+                        <div style="font-size:0.78em;color:#666">❌ Absent</div>
+                    </div>
+                    <div style="background:white;border-radius:10px;padding:12px;text-align:center;border:2px solid #ffe082">
+                        <div style="font-size:1.5em;font-weight:900;color:#f57f17" id="hwAdminStatScored">—</div>
+                        <div style="font-size:0.78em;color:#666">🏅 Scored by Jury</div>
+                    </div>
+                </div>
+
+                <!-- All Participants Table -->
+                <div style="background:white;border-radius:14px;border:2px solid #c5cae9;overflow:hidden">
+                    <div style="background:linear-gradient(135deg,#1a237e,#4a148c);padding:14px 18px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+                        <h4 style="color:white;margin:0;font-size:0.95em">📋 All Hand Writing Participants</h4>
+                        <div style="display:flex;gap:8px;flex-wrap:wrap">
+                            <select id="hwAdminClassFilter" onchange="loadHwAdminPanel()" style="padding:6px 10px;border-radius:8px;border:none;font-size:0.82em;color:#333">
+                                <option value="">All Classes</option>
+                            </select>
+                            <select id="hwAdminStatusFilter" onchange="loadHwAdminPanel()" style="padding:6px 10px;border-radius:8px;border:none;font-size:0.82em;color:#333">
+                                <option value="">All Statuses</option>
+                                <option value="present">✅ Present</option>
+                                <option value="absent">❌ Absent</option>
+                                <option value="pending">⏳ Not Marked</option>
+                            </select>
+                            <button onclick="loadHwAdminPanel()" style="background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.5);color:white;font-size:0.8em;padding:5px 12px;border-radius:8px;cursor:pointer;font-weight:700">🔄 Refresh</button>
+                        </div>
+                    </div>
+                    <div style="padding:16px">
+                        <div id="hwAdminEmpty" style="text-align:center;color:#aaa;padding:30px;font-size:0.9em">Click Refresh to load data.</div>
+                        <div class="table-wrapper" style="margin:0;display:none" id="hwAdminTableContainer">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Sitting Code</th>
+                                        <th>Name</th>
+                                        <th>Class</th>
+                                        <th>Language</th>
+                                        <th>Attendance</th>
+                                        <th style="background:#1565c0">Jury J1</th>
+                                        <th style="background:#1565c0">Jury J2</th>
+                                        <th style="background:#1b5e20">Final Score</th>
+                                        <th>Rank</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="hwAdminTableBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- END HAND WRITING ADMIN PANEL -->
+
+            <!-- ══════════════════════════════════════════════════════════════════
+                 TALENT HUNT ADMIN PANEL (Super Admin Only)
+            ══════════════════════════════════════════════════════════════════ -->
+            <div id="thAdminPanel" class="form-section super-admin-only" style="margin-top:20px;display:none">
+                <h2 style="color:#e65100;margin-bottom:6px">🎭 Talent Hunt — Super Admin Panel</h2>
+                <p style="color:#888;margin-bottom:20px;font-size:.9em">View all 6 enrolled individual participants with sitting codes, attendance and jury results. Publish to leaderboard when ready.</p>
+
+                <!-- Leaderboard Publish -->
+                <div style="background:linear-gradient(135deg,#fff8e1,#fce4ec);border-radius:14px;padding:18px;margin-bottom:20px;border:2px solid #ffcc80">
+                    <h3 style="color:#e65100;margin:0 0 12px;font-size:1.05em">🏆 Leaderboard Published?</h3>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px" class="vlog-admin-grid">
+                        <div>
+                            <div style="color:#666;font-size:0.82em;margin-bottom:12px">When ON — Talent Hunt results appear in the main leaderboard / Class of the Year.</div>
+                            <div style="display:flex;gap:10px">
+                                <button class="btn btn-success" onclick="thSetLeaderboard(true)" style="flex:1;font-size:0.9em">🚀 Publish</button>
+                                <button class="btn btn-secondary" onclick="thSetLeaderboard(false)" style="flex:1;font-size:0.9em">📦 Unpublish</button>
+                            </div>
+                        </div>
+                        <div style="display:flex;align-items:center">
+                            <div id="thLeaderboardStatusDisplay" style="background:#f5f5f5;border-radius:10px;padding:12px 18px;font-weight:700;font-size:0.92em;color:#666;width:100%;text-align:center">Loading…</div>
+                        </div>
+                    </div>
+                    <div id="thLeaderboardMsg" style="display:none;margin-top:10px;padding:8px 12px;border-radius:8px;font-weight:700;font-size:0.85em"></div>
+                </div>
+
+                <!-- Stats -->
+                <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px">
+                    <div style="background:white;border-radius:10px;padding:12px;text-align:center;border:2px solid #ffcc80">
+                        <div style="font-size:1.5em;font-weight:900;color:#e65100" id="thAdminStatTotal">—</div>
+                        <div style="font-size:0.78em;color:#666">Total Enrolled</div>
+                    </div>
+                    <div style="background:white;border-radius:10px;padding:12px;text-align:center;border:2px solid #a5d6a7">
+                        <div style="font-size:1.5em;font-weight:900;color:#2e7d32" id="thAdminStatPresent">—</div>
+                        <div style="font-size:0.78em;color:#666">✅ Present</div>
+                    </div>
+                    <div style="background:white;border-radius:10px;padding:12px;text-align:center;border:2px solid #ef9a9a">
+                        <div style="font-size:1.6em;font-weight:900;color:#c62828" id="thAdminStatAbsent">—</div>
+                        <div style="font-size:0.78em;color:#666">❌ Absent</div>
+                    </div>
+                    <div style="background:white;border-radius:10px;padding:12px;text-align:center;border:2px solid #ffe082">
+                        <div style="font-size:1.5em;font-weight:900;color:#f57f17" id="thAdminStatScored">—</div>
+                        <div style="font-size:0.78em;color:#666">🏅 Scored by Jury</div>
+                    </div>
+                </div>
+
+                <!-- All Participants Table -->
+                <div style="background:white;border-radius:14px;border:2px solid #ffcc80;overflow:hidden">
+                    <div style="background:linear-gradient(135deg,#e65100,#ff6f00);padding:14px 18px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+                        <h4 style="color:white;margin:0;font-size:0.95em">📋 All Talent Hunt Participants</h4>
+                        <div style="display:flex;gap:8px;flex-wrap:wrap">
+                            <select id="thAdminClassFilter" onchange="loadThAdminPanel()" style="padding:6px 10px;border-radius:8px;border:none;font-size:0.82em;color:#333">
+                                <option value="">All Classes</option>
+                            </select>
+                            <select id="thAdminStatusFilter" onchange="loadThAdminPanel()" style="padding:6px 10px;border-radius:8px;border:none;font-size:0.82em;color:#333">
+                                <option value="">All Statuses</option>
+                                <option value="present">✅ Present</option>
+                                <option value="absent">❌ Absent</option>
+                                <option value="pending">⏳ Not Marked</option>
+                            </select>
+                            <button onclick="loadThAdminPanel()" style="background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.5);color:white;font-size:0.8em;padding:5px 12px;border-radius:8px;cursor:pointer;font-weight:700">🔄 Refresh</button>
+                        </div>
+                    </div>
+                    <div style="padding:16px">
+                        <div id="thAdminEmpty" style="text-align:center;color:#aaa;padding:30px;font-size:0.9em">Click Refresh to load data.</div>
+                        <div class="table-wrapper" style="margin:0;display:none" id="thAdminTableContainer">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Sitting Code</th>
+                                        <th>Name</th>
+                                        <th>Class</th>
+                                        <th>Talent Type</th>
+                                        <th>Attendance</th>
+                                        <th style="background:#1565c0">Jury J1</th>
+                                        <th style="background:#1565c0">Jury J2</th>
+                                        <th style="background:#1b5e20">Final Score</th>
+                                        <th>Rank</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="thAdminTableBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- END TALENT HUNT ADMIN PANEL -->
             <div id="ytAdAdminPanel" class="form-section super-admin-only" style="margin-top:20px">
                 <h2 style="color:#cc0000;margin-bottom:6px">📺 YouTube Advertisement — Super Admin Control</h2>
                 <p style="color:#888;margin-bottom:20px;font-size:.9em">Activate the event, manage jury scoring, enter social scores (Views + Likes + Original Comments), flag disputes, and publish results. Eligible classes: I BCA 'A' (1ST BCA) and II BCA 'A' (2ND BCA A SEC).</p>
@@ -5193,6 +5384,85 @@
                         </div>
                         <div id="nukkadPostList" style="display:flex;flex-direction:column;gap:12px">
                             <div style="text-align:center;color:#aaa;padding:30px">Loading post-event submissions…</div>
+                        </div>
+                    </div>
+
+                    <!-- ── Handwriting Competition — Attendance Panel (Kotrappa K / Anitha N) ── -->
+                    <div id="hwAttendancePanel" style="display:none;margin-top:24px">
+                        <div style="background:linear-gradient(135deg,#e8eaf6,#e3f2fd);border-radius:14px;padding:18px;border:2px solid #9fa8da;margin-bottom:16px">
+                            <h3 style="color:#1a237e;margin:0 0 6px;font-size:1.05em">✍️ Handwriting Competition — Attendance &amp; Sitting Codes</h3>
+                            <p style="color:#555;font-size:0.82em;margin:0 0 6px">View all enrolled participants. Each participant gets a unique 2-letter sitting code. Mark Present or Absent on event day. Codes are sent to Jury automatically.</p>
+                            <div style="background:#e3f2fd;border-radius:8px;padding:8px 12px;font-size:0.8em;color:#1565c0;margin-top:8px">
+                                📅 <strong>Event Date:</strong> 14th March 2026 @ 12:00 PM &nbsp;|&nbsp; 🖊️ Duration: 45 minutes
+                            </div>
+                        </div>
+                        <!-- Filter bar -->
+                        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px">
+                            <select id="hwClassFilter" onchange="loadHwAttendancePanel()" style="padding:8px 12px;border:2px solid #9fa8da;border-radius:8px;font-size:0.88em;outline:none;background:white;color:#333;font-weight:600">
+                                <option value="">All Classes</option>
+                            </select>
+                            <select id="hwStatusFilter" onchange="loadHwAttendancePanel()" style="padding:8px 12px;border:2px solid #9fa8da;border-radius:8px;font-size:0.88em;outline:none;background:white;color:#333;font-weight:600">
+                                <option value="">All Statuses</option>
+                                <option value="present">✅ Present</option>
+                                <option value="absent">❌ Absent</option>
+                                <option value="pending">⏳ Not Marked</option>
+                            </select>
+                            <button onclick="loadHwAttendancePanel()" style="background:#3949ab;color:white;border:none;border-radius:8px;padding:8px 16px;font-weight:700;cursor:pointer;font-size:0.85em">🔄 Refresh</button>
+                            <span id="hwSummaryBadge" style="background:#e8eaf6;color:#1a237e;padding:4px 14px;border-radius:20px;font-size:0.82em;font-weight:700;margin-left:auto"></span>
+                        </div>
+                        <!-- Stats -->
+                        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px">
+                            <div style="background:white;border-radius:10px;padding:12px;text-align:center;border:2px solid #c5cae9"><div style="font-size:1.6em;font-weight:900;color:#1a237e" id="hwStatTotal">—</div><div style="font-size:0.78em;color:#666;font-weight:600">Total Enrolled</div></div>
+                            <div style="background:white;border-radius:10px;padding:12px;text-align:center;border:2px solid #a5d6a7"><div style="font-size:1.6em;font-weight:900;color:#2e7d32" id="hwStatPresent">—</div><div style="font-size:0.78em;color:#666;font-weight:600">✅ Present</div></div>
+                            <div style="background:white;border-radius:10px;padding:12px;text-align:center;border:2px solid #ef9a9a"><div style="font-size:1.6em;font-weight:900;color:#c62828" id="hwStatAbsent">—</div><div style="font-size:0.78em;color:#666;font-weight:600">❌ Absent</div></div>
+                        </div>
+                        <div id="handwritingList" style="display:flex;flex-direction:column;gap:10px">
+                            <div style="text-align:center;color:#aaa;padding:30px">Loading entries…</div>
+                        </div>
+                    </div>
+
+                    <!-- ── Talent Hunt — Attendance Panel (Anitha N / Pooja C) ── -->
+                    <div id="thAttendancePanel" style="display:none;margin-top:24px">
+                        <div style="background:linear-gradient(135deg,#fff8e1,#fce4ec);border-radius:14px;padding:18px;border:2px solid #ffcc02;margin-bottom:16px">
+                            <h3 style="color:#e65100;margin:0 0 6px;font-size:1.05em">🎭 Talent Hunt — Attendance &amp; Sitting Codes</h3>
+                            <p style="color:#555;font-size:0.82em;margin:0 0 6px">View all enrolled individual performers. Each gets a unique 2-letter sitting code shared with Jury. Mark Present or Absent on event day.</p>
+                            <div style="background:#fff3cd;border-radius:8px;padding:8px 12px;font-size:0.8em;color:#856404;margin-top:8px">
+                                ⏱️ <strong>Time Limit:</strong> 2 minutes per performance &nbsp;|&nbsp; Max 6 students total from college
+                            </div>
+                        </div>
+                        <!-- Filter bar -->
+                        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px">
+                            <select id="thClassFilter" onchange="loadThAttendancePanel()" style="padding:8px 12px;border:2px solid #ffcc02;border-radius:8px;font-size:0.88em;outline:none;background:white;color:#333;font-weight:600">
+                                <option value="">All Classes</option>
+                            </select>
+                            <select id="thStatusFilter" onchange="loadThAttendancePanel()" style="padding:8px 12px;border:2px solid #ffcc02;border-radius:8px;font-size:0.88em;outline:none;background:white;color:#333;font-weight:600">
+                                <option value="">All Statuses</option>
+                                <option value="present">✅ Present</option>
+                                <option value="absent">❌ Absent</option>
+                                <option value="pending">⏳ Not Marked</option>
+                            </select>
+                            <select id="thTalentFilter" onchange="loadThAttendancePanel()" style="padding:8px 12px;border:2px solid #ffcc02;border-radius:8px;font-size:0.88em;outline:none;background:white;color:#333;font-weight:600">
+                                <option value="">All Talents</option>
+                                <option value="Singing">🎤 Singing</option>
+                                <option value="Dancing">💃 Dancing</option>
+                                <option value="Acting">🎭 Acting</option>
+                                <option value="Instrument">🎸 Instrument</option>
+                                <option value="Mimicry">😄 Mimicry</option>
+                                <option value="Magic">🎩 Magic</option>
+                                <option value="Stand-up Comedy">😂 Stand-up Comedy</option>
+                                <option value="Other">⭐ Other</option>
+                            </select>
+                            <button onclick="loadThAttendancePanel()" style="background:#e65100;color:white;border:none;border-radius:8px;padding:8px 16px;font-weight:700;cursor:pointer;font-size:0.85em">🔄 Refresh</button>
+                            <span id="thSummaryBadge" style="background:#fff3cd;color:#e65100;padding:4px 14px;border-radius:20px;font-size:0.82em;font-weight:700;margin-left:auto"></span>
+                        </div>
+                        <!-- Stats -->
+                        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px">
+                            <div style="background:white;border-radius:10px;padding:12px;text-align:center;border:2px solid #ffe082"><div style="font-size:1.6em;font-weight:900;color:#e65100" id="thStatTotal">—</div><div style="font-size:0.78em;color:#666;font-weight:600">Total Enrolled</div></div>
+                            <div style="background:white;border-radius:10px;padding:12px;text-align:center;border:2px solid #a5d6a7"><div style="font-size:1.6em;font-weight:900;color:#2e7d32" id="thStatPresent">—</div><div style="font-size:0.78em;color:#666;font-weight:600">✅ Present</div></div>
+                            <div style="background:white;border-radius:10px;padding:12px;text-align:center;border:2px solid #ef9a9a"><div style="font-size:1.6em;font-weight:900;color:#c62828" id="thStatAbsent">—</div><div style="font-size:0.78em;color:#666;font-weight:600">❌ Absent</div></div>
+                        </div>
+                        <div id="talentHuntList" style="display:flex;flex-direction:column;gap:10px">
+                            <div style="text-align:center;color:#aaa;padding:30px">Loading entries…</div>
                         </div>
                     </div>
 
@@ -6224,6 +6494,7 @@
         let isAdmin = false;
         let isSuperAdmin = false;
         let isManager = false;
+        let isManager2 = false;
         let isCR = false;
         let isJury = false;
         let juryEvent = null;
@@ -6232,6 +6503,7 @@
         let adminPassword = 'admin123';
         let superAdminPassword = 'superadmin123';
         let managerPassword = 'manager123'; // Change this to your desired manager password
+        let manager2Password = 'manager2123'; // Change this to your desired Manager 2 password
 
         // ─────────────────────────────────────────────────────────────────────────
         // MANAGER PERMISSIONS — Super Admin toggles these in the Manager Permissions
@@ -6391,6 +6663,7 @@
             document.getElementById('adminLogin').style.display = type === 'admin' ? 'block' : 'none';
             document.getElementById('superAdminLogin').style.display = type === 'superadmin' ? 'block' : 'none';
             document.getElementById('managerLogin').style.display = type === 'manager' ? 'block' : 'none';
+            document.getElementById('manager2Login').style.display = type === 'manager2' ? 'block' : 'none';
             document.getElementById('juryLogin').style.display = type === 'jury' ? 'block' : 'none';
 
             // Auto-fill saved credentials
@@ -6421,6 +6694,11 @@
                 const saved = localStorage.getItem('spurthi_manager_pwd');
                 if (saved) document.getElementById('managerPassword').value = saved;
                 document.getElementById('managerRememberMe').checked = true;
+            }
+            if (type === 'manager2' && localStorage.getItem('spurthi_manager2_remember') === '1') {
+                const saved = localStorage.getItem('spurthi_manager2_pwd');
+                if (saved) document.getElementById('manager2Password').value = saved;
+                document.getElementById('manager2RememberMe').checked = true;
             }
 
             // Reset competition dropdown when user type is selected
@@ -6759,7 +7037,59 @@
         }
 
         // ─────────────────────────────────────────────────────────────────────────
-        // applyManagerPermissions()
+        // MANAGER 2 LOGIN (Jury Setup only)
+        // ─────────────────────────────────────────────────────────────────────────
+        function manager2Login() {
+            const pwd = document.getElementById('manager2Password').value;
+            if (pwd !== manager2Password) { alert('Invalid Manager 2 password'); return; }
+
+            if (document.getElementById('manager2RememberMe').checked) {
+                localStorage.setItem('spurthi_manager2_pwd', pwd);
+                localStorage.setItem('spurthi_manager2_remember', '1');
+            } else {
+                localStorage.removeItem('spurthi_manager2_pwd');
+                localStorage.removeItem('spurthi_manager2_remember');
+            }
+
+            isAdmin    = true;
+            isManager2 = true;
+            currentUser = 'Manager 2';
+            document.getElementById('userInfo').innerHTML =
+                'Logged in as: <span style="display:inline-block;background:#9c27b0;color:white;padding:5px 15px;border-radius:20px;font-size:0.9em;font-weight:bold;margin-left:10px">🎛️ Manager 2</span>';
+            document.getElementById('loginSection').style.display = 'none';
+            document.getElementById('adminSection').style.display = 'block';
+
+            // Hide all super-admin-only elements first
+            document.querySelectorAll('.super-admin-only').forEach(el => el.style.display = 'none');
+
+            // Show ONLY Jury Setup tab for Manager 2
+            // Remove inline display:none from super-admin-only panels so showTab() can work
+            document.querySelectorAll('.super-admin-only.form-section').forEach(el => el.style.removeProperty('display'));
+
+            // Hide all tabs first, then show only allowed ones
+            document.querySelectorAll('.tabs .tab').forEach(t => t.style.display = 'none');
+
+            // Show Jury Setup tab only
+            const allTabBtns = document.querySelectorAll('.tabs button.tab');
+            allTabBtns.forEach(btn => {
+                if (btn.textContent.includes('Jury Setup')) {
+                    btn.style.display = 'inline-block';
+                }
+            });
+
+            // Navigate to Jury Setup tab
+            showTab('jurySetup');
+
+            // Load registration data (minimal, just in case needed)
+            ref.once('value', snap => {
+                all = [];
+                if (snap.exists()) {
+                    snap.forEach(child => { all.push({id: child.key, ...child.val()}); });
+                }
+            });
+        }
+
+        // ─────────────────────────────────────────────────────────────────────────
         // Shows/hides tabs based on managerPermissions object.
         // Called on Manager login AND when Super Admin saves from the panel.
         //
@@ -7294,6 +7624,7 @@
             // Note: we do NOT clear localStorage here — saved credentials persist across logouts
             isSuperAdmin = false;
             isManager = false;
+            isManager2 = false;
             isCR = false;
             isJury = false;
             juryEvent = null;
@@ -9814,9 +10145,9 @@
             'Priyanka V'      : { role: '📊 Vlog Monitor + 📋 Event Incharge',   color: '#4a148c', bg: '#e1bee7', detail: 'Vlog Social Score Monitor & Incharge: Mime, Mad Ads, YouTube Advertisement, Case Analysis, Vlog' },
             'Roopa M.C'       : { role: '📺 YT Ad Monitor + 📋 Event Incharge',  color: '#b71c1c', bg: '#ffcdd2', detail: 'YouTube Ad Social Score Monitor & Incharge: Mime, Mad Ads, YouTube Advertisement, Case Analysis' },
             'Smitha'          : { role: '📺 YT Ad Monitor + 📋 Event Incharge',  color: '#b71c1c', bg: '#ffcdd2', detail: 'YouTube Ad Social Score Monitor & Incharge: Social Awareness Skit, YouTube Advertisement, Quiz' },
-            'Kotrappa K'      : { role: '🎭 Nukkad Natak Pre-event + 📋 Event Incharge', color: '#1a237e', bg: '#c5cae9', detail: 'Nukkad Natak — theme verification, clash detection & permission slip. Also Incharge: Nukkad Natak, Hand Writing' },
-            'Anitha N'        : { role: '📋 Event Incharge',                     color: '#1a237e', bg: '#c5cae9', detail: 'Group Dance, Talent Hunt, Hand Writing' },
-            'Pooja C'         : { role: '📋 Event Incharge',                     color: '#1a237e', bg: '#c5cae9', detail: 'Group Dance, Talent Hunt, Quiz' },
+            'Kotrappa K'      : { role: '🎭 Nukkad Pre-event + ✍️ Handwriting Incharge', color: '#1a237e', bg: '#c5cae9', detail: 'Nukkad Natak — theme verification & permission slip. Also Incharge: Hand Writing' },
+            'Anitha N'        : { role: '✍️ Handwriting + 🎭 Talent Hunt Incharge',       color: '#1a237e', bg: '#c5cae9', detail: 'Handwriting Competition & Talent Hunt — attendance & sitting codes' },
+            'Pooja C'         : { role: '🎭 Talent Hunt Incharge',                        color: '#1a237e', bg: '#c5cae9', detail: 'Talent Hunt — attendance & sitting codes' },
             'Dr. Shilpa R Y'  : { role: '📋 Event Incharge',                     color: '#1a237e', bg: '#c5cae9', detail: 'Mad Ads, Case Analysis' },
             'Lalitha S K'     : { role: '✅ BOW Entry Verifier + 📋 Event Incharge', color: '#e65100', bg: '#ffe0b2', detail: 'Best Out of Waste — marks participant attendance on event day (Present/Absent) for jury forwarding. Also Incharge: Interdisciplinary, Best Out of Waste' },
             'Hemavathi Desai' : { role: '🎙️ Podcast Approval + 📋 Event Incharge', color: '#bf360c', bg: '#ffccbc', detail: 'Pod Casting Approval Incharge, Ramp Walk, Interdisciplinary' },
@@ -10052,6 +10383,8 @@
                 document.getElementById('roopaSmitraYtAdPanel').style.display = 'none';
                 document.getElementById('nukkadPrePanel').style.display      = 'none';
                 document.getElementById('nukkadPostPanel').style.display     = 'none';
+                document.getElementById('hwAttendancePanel').style.display   = 'none';
+                document.getElementById('thAttendancePanel').style.display   = 'none';
                 document.getElementById('facultyComingSoon').style.display   = 'none';
                 document.getElementById('facultyDashboard').style.display = 'block';
                 document.getElementById('facultyDashName').textContent  = faculty.name;
@@ -10064,19 +10397,25 @@
                 const isKotrappa  = faculty.name === 'Kotrappa K';
                 const isRoopa     = faculty.name === 'Roopa M.C';
                 const isSmitha    = faculty.name === 'Smitha';
+                const isAnitha    = faculty.name === 'Anitha N';
+                const isPooja     = faculty.name === 'Pooja C';
                 const hasVlogAccess    = isChandan || isPriyanka;
                 const hasPodcastAccess = isChandan || isHemavathi;
                 const hasYtAdAccess    = isRoopa || isSmitha;
                 const hasBowAccess     = isShankar || isLalitha;
                 const hasNukkadPre     = isKotrappa;
                 const hasNukkadPost    = isShankar;
+                const hasHandwriting   = isKotrappa || isAnitha;
+                const hasTalentHunt    = isAnitha || isPooja;
                 document.getElementById('chandanSocialPanel').style.display   = hasVlogAccess    ? 'block' : 'none';
                 document.getElementById('chandanPodcastPanel').style.display  = hasPodcastAccess ? 'block' : 'none';
                 document.getElementById('shankarBowPanel').style.display      = hasBowAccess     ? 'block' : 'none';
                 document.getElementById('roopaSmitraYtAdPanel').style.display = hasYtAdAccess    ? 'block' : 'none';
                 document.getElementById('nukkadPrePanel').style.display       = hasNukkadPre     ? 'block' : 'none';
                 document.getElementById('nukkadPostPanel').style.display      = hasNukkadPost    ? 'block' : 'none';
-                document.getElementById('facultyComingSoon').style.display    = (hasVlogAccess || hasPodcastAccess || hasBowAccess || hasYtAdAccess || hasNukkadPre || hasNukkadPost) ? 'none' : 'block';
+                document.getElementById('hwAttendancePanel').style.display    = hasHandwriting   ? 'block' : 'none';
+                document.getElementById('thAttendancePanel').style.display    = hasTalentHunt    ? 'block' : 'none';
+                document.getElementById('facultyComingSoon').style.display    = (hasVlogAccess || hasPodcastAccess || hasBowAccess || hasYtAdAccess || hasNukkadPre || hasNukkadPost || hasHandwriting || hasTalentHunt) ? 'none' : 'block';
                 const roleInfo = FACULTY_ROLES[faculty.name];
                 const roleLbl = document.getElementById('facultyDashRole');
                 if (roleLbl && roleInfo) roleLbl.textContent = roleInfo.role;
@@ -10086,6 +10425,8 @@
                 if (hasYtAdAccess)    loadYtAdMonitorPanel();
                 if (hasNukkadPre)     loadNukkadPrePanel();
                 if (hasNukkadPost)    loadNukkadPostPanel();
+                if (hasHandwriting)   loadHwAttendancePanel();
+                if (hasTalentHunt)    loadThAttendancePanel();
                 return;
             }
 
@@ -10118,6 +10459,8 @@
                 document.getElementById('roopaSmitraYtAdPanel').style.display = 'none';
                 document.getElementById('nukkadPrePanel').style.display      = 'none';
                 document.getElementById('nukkadPostPanel').style.display     = 'none';
+                document.getElementById('hwAttendancePanel').style.display   = 'none';
+                document.getElementById('thAttendancePanel').style.display   = 'none';
                 document.getElementById('facultyComingSoon').style.display   = 'none';
                 document.getElementById('facultyDashboard').style.display = 'block';
                 document.getElementById('facultyDashName').textContent  = faculty.name;
@@ -10131,28 +10474,36 @@
                 const isKotrappa  = faculty.name === 'Kotrappa K';
                 const isRoopa     = faculty.name === 'Roopa M.C';
                 const isSmitha    = faculty.name === 'Smitha';
+                const isAnitha    = faculty.name === 'Anitha N';
+                const isPooja     = faculty.name === 'Pooja C';
                 const hasVlogAccess    = isChandan || isPriyanka;
                 const hasPodcastAccess = isChandan || isHemavathi;
                 const hasYtAdAccess    = isRoopa || isSmitha;
                 const hasBowAccess     = isShankar || isLalitha;
                 const hasNukkadPre     = isKotrappa;
                 const hasNukkadPost    = isShankar;
+                const hasHandwriting   = isKotrappa || isAnitha;
+                const hasTalentHunt    = isAnitha || isPooja;
                 document.getElementById('chandanSocialPanel').style.display   = hasVlogAccess    ? 'block' : 'none';
                 document.getElementById('chandanPodcastPanel').style.display  = hasPodcastAccess ? 'block' : 'none';
                 document.getElementById('shankarBowPanel').style.display      = hasBowAccess     ? 'block' : 'none';
                 document.getElementById('roopaSmitraYtAdPanel').style.display = hasYtAdAccess    ? 'block' : 'none';
                 document.getElementById('nukkadPrePanel').style.display       = hasNukkadPre     ? 'block' : 'none';
                 document.getElementById('nukkadPostPanel').style.display      = hasNukkadPost    ? 'block' : 'none';
-                document.getElementById('facultyComingSoon').style.display    = (hasVlogAccess || hasPodcastAccess || hasBowAccess || hasYtAdAccess || hasNukkadPre || hasNukkadPost) ? 'none' : 'block';
-                const roleInfoN = FACULTY_ROLES[faculty.name];
-                const roleLblN  = document.getElementById('facultyDashRole');
-                if (roleLblN && roleInfoN) roleLblN.textContent = roleInfoN.role;
+                document.getElementById('hwAttendancePanel').style.display    = hasHandwriting   ? 'block' : 'none';
+                document.getElementById('thAttendancePanel').style.display    = hasTalentHunt    ? 'block' : 'none';
+                document.getElementById('facultyComingSoon').style.display    = (hasVlogAccess || hasPodcastAccess || hasBowAccess || hasYtAdAccess || hasNukkadPre || hasNukkadPost || hasHandwriting || hasTalentHunt) ? 'none' : 'block';
+                const roleInfo = FACULTY_ROLES[faculty.name];
+                const roleLbl = document.getElementById('facultyDashRole');
+                if (roleLbl && roleInfo) roleLbl.textContent = roleInfo.role;
                 if (hasVlogAccess)    loadChandanPanel();
                 if (hasPodcastAccess) loadChandanPodcastPanel();
                 if (hasBowAccess)     loadShankarBowPanel();
                 if (hasYtAdAccess)    loadYtAdMonitorPanel();
                 if (hasNukkadPre)     loadNukkadPrePanel();
                 if (hasNukkadPost)    loadNukkadPostPanel();
+                if (hasHandwriting)   loadHwAttendancePanel();
+                if (hasTalentHunt)    loadThAttendancePanel();
 
             } catch(err) {
                 showMsg('❌ Error: ' + err.message, false);
@@ -10171,7 +10522,7 @@
             const msg = document.getElementById('facultyLoginMsg');
             if (msg) msg.style.display = 'none';
             // Reset all functional panels
-            const resetIds = ['chandanSocialPanel','chandanPodcastPanel','shankarBowPanel','roopaSmitraYtAdPanel','nukkadPrePanel','nukkadPostPanel','facultyComingSoon'];
+            const resetIds = ['chandanSocialPanel','chandanPodcastPanel','shankarBowPanel','roopaSmitraYtAdPanel','nukkadPrePanel','nukkadPostPanel','hwAttendancePanel','thAttendancePanel','facultyComingSoon'];
             resetIds.forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
         }
 
@@ -12103,7 +12454,393 @@
         }
 
         // ══════════════════════════════════════════════════════════════
-        // NUKKAD NATAK — SETTINGS (Event Active / Leaderboard)
+        // SITTING CODE GENERATOR (2-letter unique per event)
+        // ══════════════════════════════════════════════════════════════
+        function generateSittingCode(existingCodes) {
+            const alpha = 'ABCDEFGHJKLMNPQRSTUVWXYZ'; // no I, O to avoid confusion
+            let code;
+            let attempts = 0;
+            do {
+                code = alpha[Math.floor(Math.random()*alpha.length)] + alpha[Math.floor(Math.random()*alpha.length)];
+                attempts++;
+            } while (existingCodes.has(code) && attempts < 500);
+            existingCodes.add(code);
+            return code;
+        }
+
+        async function ensureSittingCodes(event, dbPath) {
+            // Load ALL enrollments and filter in JS (avoids orderByChild index issues)
+            const fullSnap = await db.ref('youthfest-enrollments').once('value');
+            if (!fullSnap.exists()) return;
+            const existing = new Set();
+            const updates = {};
+            fullSnap.forEach(ch => { const d = ch.val(); if (d.event === event && d.sittingCode) existing.add(d.sittingCode); });
+            fullSnap.forEach(ch => {
+                const d = ch.val();
+                if (d.event === event && !d.sittingCode) {
+                    const code = generateSittingCode(existing);
+                    updates['youthfest-enrollments/' + ch.key + '/sittingCode'] = code;
+                }
+            });
+            if (Object.keys(updates).length) await db.ref().update(updates);
+        }
+
+        // ══════════════════════════════════════════════════════════════
+        // HAND WRITING — Faculty Attendance Panel
+        // ══════════════════════════════════════════════════════════════
+        async function loadHwAttendancePanel() {
+            const listEl = document.getElementById('handwritingList');
+            if (!listEl) return;
+            listEl.innerHTML = '<div style="text-align:center;color:#aaa;padding:20px">Loading…</div>';
+            await ensureSittingCodes('Hand Writing', 'handwriting');
+            try {
+                // Use full load + JS filter (reliable, no index needed)
+                const [fullSnap, attSnap] = await Promise.all([
+                    db.ref('youthfest-enrollments').once('value'),
+                    db.ref('hwAttendance').once('value')
+                ]);
+                const att = attSnap.val() || {};
+                let entries = [];
+                if (fullSnap.exists()) fullSnap.forEach(ch => { const d = ch.val(); if (d.event === 'Hand Writing') entries.push({ key: ch.key, ...d }); });
+
+                // Populate class filter
+                const clsSel = document.getElementById('hwClassFilter');
+                if (clsSel && clsSel.options.length <= 1) {
+                    [...new Set(entries.map(e => e.classYear||e.class||'').filter(Boolean))].sort()
+                        .forEach(c => { const o = document.createElement('option'); o.value = c; o.textContent = c; clsSel.appendChild(o); });
+                }
+
+                const cf = (document.getElementById('hwClassFilter')||{}).value || '';
+                const sf = (document.getElementById('hwStatusFilter')||{}).value || '';
+                let filtered = entries;
+                if (cf) filtered = filtered.filter(e => (e.classYear||e.class||'') === cf);
+                if (sf) filtered = filtered.filter(e => {
+                    const st = att[e.key] ? att[e.key].status : 'pending';
+                    return sf === 'pending' ? !att[e.key] || !att[e.key].status : st === sf;
+                });
+
+                const total   = entries.length;
+                const present = entries.filter(e => att[e.key] && att[e.key].status === 'present').length;
+                const absent  = entries.filter(e => att[e.key] && att[e.key].status === 'absent').length;
+                const setEl = (id,v) => { const el=document.getElementById(id); if(el) el.textContent=v; };
+                setEl('hwStatTotal', total); setEl('hwStatPresent', present); setEl('hwStatAbsent', absent);
+                const badge = document.getElementById('hwSummaryBadge');
+                if (badge) badge.textContent = `${filtered.length} shown · ${present} present · ${absent} absent`;
+
+                if (!filtered.length) { listEl.innerHTML = '<div style="text-align:center;color:#aaa;padding:20px">No participants found.</div>'; return; }
+
+                listEl.innerHTML = filtered.map(e => {
+                    const attData = att[e.key] || {};
+                    const status  = attData.status || 'pending';
+                    const statusColor = status==='present'?'#155724':status==='absent'?'#721c24':'#856404';
+                    const statusBg    = status==='present'?'#d4edda':status==='absent'?'#f8d7da':'#fff3cd';
+                    const statusLabel = status==='present'?'✅ Present':status==='absent'?'❌ Absent':'⏳ Not Marked';
+                    const code = e.sittingCode ? 'HW-' + e.sittingCode : '—';
+                    return `<div style="background:white;border-radius:10px;border:2px solid #e8eaf6;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+                        <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+                            <div style="background:linear-gradient(135deg,#1a237e,#4a148c);color:white;border-radius:10px;padding:8px 14px;font-weight:900;font-size:1.3em;letter-spacing:3px;min-width:60px;text-align:center">${code}</div>
+                            <div>
+                                <div style="font-weight:700;color:#333;font-size:0.95em">${e.name||e.memberName||'—'}</div>
+                                <div style="font-size:0.8em;color:#666">${e.classYear||e.class||'—'} &nbsp;·&nbsp; ${e.languages||'English'}</div>
+                            </div>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+                            <span style="background:${statusBg};color:${statusColor};padding:4px 12px;border-radius:10px;font-size:0.82em;font-weight:700">${statusLabel}</span>
+                            <button onclick="hwMarkAttV1('${e.key}','present')" style="background:#2e7d32;color:white;border:none;border-radius:7px;padding:5px 12px;cursor:pointer;font-weight:700;font-size:0.82em;${status==='present'?'opacity:0.5':''}">✅ Present</button>
+                            <button onclick="hwMarkAttV1('${e.key}','absent')"  style="background:#c62828;color:white;border:none;border-radius:7px;padding:5px 12px;cursor:pointer;font-weight:700;font-size:0.82em;${status==='absent'?'opacity:0.5':''}">❌ Absent</button>
+                        </div>
+                    </div>`;
+                }).join('');
+            } catch(e) { listEl.innerHTML = `<div style="color:#c62828;padding:20px">❌ Error: ${e.message}</div>`; }
+        }
+
+        async function hwMarkAttV1(key, status) {
+            const faculty = document.getElementById('facultyDashName').textContent || 'Faculty';
+            await db.ref('hwAttendance/' + key).set({ status, markedBy: faculty, markedAt: new Date().toISOString() });
+            loadHwAttendancePanel();
+        }
+
+        // ══════════════════════════════════════════════════════════════
+        // TALENT HUNT — Faculty Attendance Panel
+        // ══════════════════════════════════════════════════════════════
+        async function loadThAttendancePanel() {
+            const listEl = document.getElementById('talentHuntList');
+            if (!listEl) return;
+            listEl.innerHTML = '<div style="text-align:center;color:#aaa;padding:20px">Loading…</div>';
+            await ensureSittingCodes('Talent Hunt', 'talenthunt');
+            try {
+                // Use full load + JS filter (reliable, no index needed)
+                const [fullSnap, attSnap] = await Promise.all([
+                    db.ref('youthfest-enrollments').once('value'),
+                    db.ref('thAttendance').once('value')
+                ]);
+                const att = attSnap.val() || {};
+                let entries = [];
+                if (fullSnap.exists()) fullSnap.forEach(ch => { const d = ch.val(); if (d.event === 'Talent Hunt') entries.push({ key: ch.key, ...d }); });
+
+                // Populate filters
+                const clsSel = document.getElementById('thClassFilter');
+                if (clsSel && clsSel.options.length <= 1) {
+                    [...new Set(entries.map(e => e.classYear||e.class||'').filter(Boolean))].sort()
+                        .forEach(c => { const o = document.createElement('option'); o.value = c; o.textContent = c; clsSel.appendChild(o); });
+                }
+
+                const cf = (document.getElementById('thClassFilter')||{}).value || '';
+                const tf = (document.getElementById('thTalentFilter')||{}).value || '';
+                const sf = (document.getElementById('thStatusFilter')||{}).value || '';
+                let filtered = entries;
+                if (cf) filtered = filtered.filter(e => (e.classYear||e.class||'') === cf);
+                if (tf) filtered = filtered.filter(e => (e.talentType||'') === tf);
+                if (sf) filtered = filtered.filter(e => {
+                    const st = att[e.key] ? att[e.key].status : 'pending';
+                    return sf === 'pending' ? !att[e.key] || !att[e.key].status : st === sf;
+                });
+
+                const total   = entries.length;
+                const present = entries.filter(e => att[e.key] && att[e.key].status === 'present').length;
+                const absent  = entries.filter(e => att[e.key] && att[e.key].status === 'absent').length;
+                const setEl = (id,v) => { const el=document.getElementById(id); if(el) el.textContent=v; };
+                setEl('thStatTotal', total); setEl('thStatPresent', present); setEl('thStatAbsent', absent);
+                const badge = document.getElementById('thSummaryBadge');
+                if (badge) badge.textContent = `${filtered.length} shown · ${present} present · ${absent} absent`;
+
+                if (!filtered.length) { listEl.innerHTML = '<div style="text-align:center;color:#aaa;padding:20px">No participants found.</div>'; return; }
+
+                listEl.innerHTML = filtered.map(e => {
+                    const attData = att[e.key] || {};
+                    const status  = attData.status || 'pending';
+                    const statusColor = status==='present'?'#155724':status==='absent'?'#721c24':'#856404';
+                    const statusBg    = status==='present'?'#d4edda':status==='absent'?'#f8d7da':'#fff3cd';
+                    const statusLabel = status==='present'?'✅ Present':status==='absent'?'❌ Absent':'⏳ Not Marked';
+                    const code = e.sittingCode ? 'TH-' + e.sittingCode : '—';
+                    const talentIcons = { 'Singing':'🎤','Dancing':'💃','Acting':'🎭','Instrument Playing':'🎸','Mimicry':'😄','Magic':'🎩','Stand-up Comedy':'😂' };
+                    const talentIcon = talentIcons[e.talentType] || '⭐';
+                    return `<div style="background:white;border-radius:10px;border:2px solid #ffe0b2;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+                        <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+                            <div style="background:linear-gradient(135deg,#e65100,#ff6f00);color:white;border-radius:10px;padding:8px 14px;font-weight:900;font-size:1.3em;letter-spacing:3px;min-width:60px;text-align:center">${code}</div>
+                            <div>
+                                <div style="font-weight:700;color:#333;font-size:0.95em">${e.name||e.memberName||'—'}</div>
+                                <div style="font-size:0.8em;color:#666">${e.classYear||e.class||'—'} &nbsp;·&nbsp; ${talentIcon} ${e.talentType||'—'}</div>
+                            </div>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+                            <span style="background:${statusBg};color:${statusColor};padding:4px 12px;border-radius:10px;font-size:0.82em;font-weight:700">${statusLabel}</span>
+                            <button onclick="thMarkAttV1('${e.key}','present')" style="background:#2e7d32;color:white;border:none;border-radius:7px;padding:5px 12px;cursor:pointer;font-weight:700;font-size:0.82em;${status==='present'?'opacity:0.5':''}">✅ Present</button>
+                            <button onclick="thMarkAttV1('${e.key}','absent')"  style="background:#c62828;color:white;border:none;border-radius:7px;padding:5px 12px;cursor:pointer;font-weight:700;font-size:0.82em;${status==='absent'?'opacity:0.5':''}">❌ Absent</button>
+                        </div>
+                    </div>`;
+                }).join('');
+            } catch(e) { listEl.innerHTML = `<div style="color:#c62828;padding:20px">❌ Error: ${e.message}</div>`; }
+        }
+
+        async function thMarkAttV1(key, status) {
+            const faculty = document.getElementById('facultyDashName').textContent || 'Faculty';
+            await db.ref('thAttendance/' + key).set({ status, markedBy: faculty, markedAt: new Date().toISOString() });
+            loadThAttendancePanel();
+        }
+
+        // ══════════════════════════════════════════════════════════════
+        // HW + TH — Super Admin Panel Loaders
+        // ══════════════════════════════════════════════════════════════
+        async function loadHwAdminPanel() {
+            if (!isSuperAdmin && !isAdmin) return;
+            hwLoadLeaderboardStatus();
+            const empty = document.getElementById('hwAdminEmpty');
+            const container = document.getElementById('hwAdminTableContainer');
+            const tbody = document.getElementById('hwAdminTableBody');
+            if (!tbody) return;
+            if (empty) { empty.textContent = 'Loading…'; empty.style.display = 'block'; }
+            if (container) container.style.display = 'none';
+            await ensureSittingCodes('Hand Writing', 'handwriting');
+            try {
+                const [fullSnap, attSnap, jurySnap] = await Promise.all([
+                    db.ref('youthfest-enrollments').once('value'),
+                    db.ref('hwAttendance').once('value'),
+                    db.ref('handwriting/juryScores').once('value')
+                ]);
+                let entries = [];
+                if (fullSnap.exists()) fullSnap.forEach(ch => { const d = ch.val(); if (d.event === 'Hand Writing') entries.push({ key: ch.key, ...d }); });
+                const att   = attSnap.val()  || {};
+                const jury  = jurySnap.val() || {};
+
+                const clsSel = document.getElementById('hwAdminClassFilter');
+                if (clsSel && clsSel.options.length <= 1) {
+                    [...new Set(entries.map(e=>e.classYear||e.class||'').filter(Boolean))].sort()
+                        .forEach(c=>{const o=document.createElement('option');o.value=c;o.textContent=c;clsSel.appendChild(o);});
+                }
+                const cf = (document.getElementById('hwAdminClassFilter')||{}).value||'';
+                const sf = (document.getElementById('hwAdminStatusFilter')||{}).value||'';
+                let filtered = [...entries];
+                if (cf) filtered = filtered.filter(e=>(e.classYear||e.class||'')===cf);
+                if (sf) filtered = filtered.filter(e=>{
+                    const st = att[e.key]?att[e.key].status:'pending';
+                    return sf==='pending'?!att[e.key]||!att[e.key].status:st===sf;
+                });
+
+                const total   = entries.length;
+                const present = entries.filter(e=>att[e.key]&&att[e.key].status==='present').length;
+                const absent  = entries.filter(e=>att[e.key]&&att[e.key].status==='absent').length;
+                const scored  = entries.filter(e=>jury[e.key]&&(jury[e.key].j1!=null||jury[e.key].j2!=null)).length;
+                const setEl=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
+                setEl('hwAdminStatTotal',total);setEl('hwAdminStatPresent',present);setEl('hwAdminStatAbsent',absent);setEl('hwAdminStatScored',scored);
+
+                // Rank by final score
+                const withScores = filtered.map(e=>{
+                    const j = jury[e.key]||{};
+                    const j1 = j.j1!=null?+j.j1:null;
+                    const j2 = j.j2!=null?+j.j2:null;
+                    const avg = (j1!==null&&j2!==null)?(j1+j2)/2:(j1!==null?j1:(j2!==null?j2:null));
+                    return {...e, _j1:j1, _j2:j2, _avg:avg};
+                }).sort((a,b)=>(b._avg||0)-(a._avg||0));
+
+                let rank=0, lastAvg=null;
+                const rows = withScores.map((e,i)=>{
+                    if(e._avg!==null&&e._avg!==lastAvg){rank=i+1;lastAvg=e._avg;}
+                    const status = att[e.key]?att[e.key].status:'pending';
+                    const statusBg=status==='present'?'#d4edda':status==='absent'?'#f8d7da':'#fff3cd';
+                    const statusColor=status==='present'?'#155724':status==='absent'?'#721c24':'#856404';
+                    return `<tr>
+                        <td style="text-align:center;font-weight:900;color:#1a237e;font-size:1.1em;letter-spacing:2px">${e.sittingCode?'HW-'+e.sittingCode:'—'}</td>
+                        <td style="font-weight:700;color:#333">${e.name||e.memberName||'—'}</td>
+                        <td style="font-size:0.85em;color:#666">${e.classYear||e.class||'—'}</td>
+                        <td style="font-size:0.82em">${e.languages||'English'}</td>
+                        <td style="text-align:center"><span style="background:${statusBg};color:${statusColor};padding:2px 10px;border-radius:10px;font-size:0.75em;font-weight:700">${status==='present'?'✅ Present':status==='absent'?'❌ Absent':'⏳ Pending'}</span></td>
+                        <td style="text-align:center;background:#e3f2fd;font-weight:700;color:#1565c0">${e._j1!==null?e._j1+'/50':'—'}</td>
+                        <td style="text-align:center;background:#e3f2fd;font-weight:700;color:#1565c0">${e._j2!==null?e._j2+'/50':'—'}</td>
+                        <td style="text-align:center;background:#e8f5e9;font-weight:800;font-size:0.95em;color:#1b5e20">${e._avg!==null?e._avg.toFixed(1)+'/50':'—'}</td>
+                        <td style="text-align:center;font-weight:800;color:${e._avg!==null?'#6a1b9a':'#aaa'}">${e._avg!==null?'#'+rank:'—'}</td>
+                    </tr>`;
+                }).join('');
+
+                if (empty) empty.style.display = 'none';
+                if (container) container.style.display = 'block';
+                if (tbody) tbody.innerHTML = rows || '<tr><td colspan="9" style="text-align:center;color:#aaa;padding:20px">No participants.</td></tr>';
+            } catch(e) {
+                if (empty) { empty.textContent='❌ Error: '+e.message; empty.style.display='block'; }
+            }
+        }
+
+        async function loadThAdminPanel() {
+            if (!isSuperAdmin && !isAdmin) return;
+            thLoadLeaderboardStatus();
+            const empty = document.getElementById('thAdminEmpty');
+            const container = document.getElementById('thAdminTableContainer');
+            const tbody = document.getElementById('thAdminTableBody');
+            if (!tbody) return;
+            if (empty) { empty.textContent = 'Loading…'; empty.style.display = 'block'; }
+            if (container) container.style.display = 'none';
+            await ensureSittingCodes('Talent Hunt', 'talenthunt');
+            try {
+                const [fullSnap, attSnap, jurySnap] = await Promise.all([
+                    db.ref('youthfest-enrollments').once('value'),
+                    db.ref('thAttendance').once('value'),
+                    db.ref('talenthunt/juryScores').once('value')
+                ]);
+                let entries = [];
+                if (fullSnap.exists()) fullSnap.forEach(ch => { const d = ch.val(); if (d.event === 'Talent Hunt') entries.push({ key: ch.key, ...d }); });
+                const att  = attSnap.val()  || {};
+                const jury = jurySnap.val() || {};
+
+                const clsSel = document.getElementById('thAdminClassFilter');
+                if (clsSel && clsSel.options.length <= 1) {
+                    [...new Set(entries.map(e=>e.classYear||e.class||'').filter(Boolean))].sort()
+                        .forEach(c=>{const o=document.createElement('option');o.value=c;o.textContent=c;clsSel.appendChild(o);});
+                }
+                const cf=(document.getElementById('thAdminClassFilter')||{}).value||'';
+                const sf=(document.getElementById('thAdminStatusFilter')||{}).value||'';
+                let filtered=[...entries];
+                if(cf)filtered=filtered.filter(e=>(e.classYear||e.class||'')===cf);
+                if(sf)filtered=filtered.filter(e=>{
+                    const st=att[e.key]?att[e.key].status:'pending';
+                    return sf==='pending'?!att[e.key]||!att[e.key].status:st===sf;
+                });
+
+                const total   = entries.length;
+                const present = entries.filter(e=>att[e.key]&&att[e.key].status==='present').length;
+                const absent  = entries.filter(e=>att[e.key]&&att[e.key].status==='absent').length;
+                const scored  = entries.filter(e=>jury[e.key]&&(jury[e.key].j1!=null||jury[e.key].j2!=null)).length;
+                const setEl=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
+                setEl('thAdminStatTotal',total);setEl('thAdminStatPresent',present);setEl('thAdminStatAbsent',absent);setEl('thAdminStatScored',scored);
+
+                const talentIcons={'Singing':'🎤','Dancing':'💃','Acting':'🎭','Instrument Playing':'🎸','Mimicry':'😄','Magic':'🎩','Stand-up Comedy':'😂'};
+
+                const withScores=filtered.map(e=>{
+                    const j=jury[e.key]||{};
+                    const j1=j.j1!=null?+j.j1:null;
+                    const j2=j.j2!=null?+j.j2:null;
+                    const avg=(j1!==null&&j2!==null)?(j1+j2)/2:(j1!==null?j1:(j2!==null?j2:null));
+                    return{...e,_j1:j1,_j2:j2,_avg:avg};
+                }).sort((a,b)=>(b._avg||0)-(a._avg||0));
+
+                let rank=0, lastAvg=null;
+                const rows=withScores.map((e,i)=>{
+                    if(e._avg!==null&&e._avg!==lastAvg){rank=i+1;lastAvg=e._avg;}
+                    const status=att[e.key]?att[e.key].status:'pending';
+                    const statusBg=status==='present'?'#d4edda':status==='absent'?'#f8d7da':'#fff3cd';
+                    const statusColor=status==='present'?'#155724':status==='absent'?'#721c24':'#856404';
+                    const tIcon=talentIcons[e.talentType]||'⭐';
+                    return`<tr>
+                        <td style="text-align:center;font-weight:900;color:#e65100;font-size:1.1em;letter-spacing:2px">${e.sittingCode?'TH-'+e.sittingCode:'—'}</td>
+                        <td style="font-weight:700;color:#333">${e.name||e.memberName||'—'}</td>
+                        <td style="font-size:0.85em;color:#666">${e.classYear||e.class||'—'}</td>
+                        <td style="font-size:0.82em">${tIcon} ${e.talentType||'—'}</td>
+                        <td style="text-align:center"><span style="background:${statusBg};color:${statusColor};padding:2px 10px;border-radius:10px;font-size:0.75em;font-weight:700">${status==='present'?'✅ Present':status==='absent'?'❌ Absent':'⏳ Pending'}</span></td>
+                        <td style="text-align:center;background:#e3f2fd;font-weight:700;color:#1565c0">${e._j1!==null?e._j1+'/50':'—'}</td>
+                        <td style="text-align:center;background:#e3f2fd;font-weight:700;color:#1565c0">${e._j2!==null?e._j2+'/50':'—'}</td>
+                        <td style="text-align:center;background:#e8f5e9;font-weight:800;font-size:0.95em;color:#1b5e20">${e._avg!==null?e._avg.toFixed(1)+'/50':'—'}</td>
+                        <td style="text-align:center;font-weight:800;color:${e._avg!==null?'#e65100':'#aaa'}">${e._avg!==null?'#'+rank:'—'}</td>
+                    </tr>`;
+                }).join('');
+
+                if(empty)empty.style.display='none';
+                if(container)container.style.display='block';
+                if(tbody)tbody.innerHTML=rows||'<tr><td colspan="9" style="text-align:center;color:#aaa;padding:20px">No participants.</td></tr>';
+            } catch(e) {
+                if(empty){empty.textContent='❌ Error: '+e.message;empty.style.display='block';}
+            }
+        }
+
+        // ── HW + TH Leaderboard toggles ─────────────────────────────
+        async function hwLoadLeaderboardStatus() {
+            const el = document.getElementById('hwLeaderboardStatusDisplay');
+            if (!el) return;
+            try {
+                const snap = await db.ref('handwriting/settings/leaderboardPublished').once('value');
+                const val = snap.val() === true;
+                el.textContent = val ? '🚀 PUBLISHED — Visible in leaderboard' : '📦 Not Published';
+                el.style.background = val ? '#d4edda' : '#f5f5f5';
+                el.style.color      = val ? '#155724' : '#666';
+            } catch(e) { el.textContent = '⚠️ Error'; }
+        }
+        async function hwSetLeaderboard(value) {
+            const msgEl = document.getElementById('hwLeaderboardMsg');
+            const showM=(t,ok)=>{msgEl.style.display='block';msgEl.style.background=ok?'#d4edda':'#f8d7da';msgEl.style.color=ok?'#155724':'#721c24';msgEl.textContent=t;};
+            try {
+                await db.ref('handwriting/settings/leaderboardPublished').set(value);
+                showM(value?'✅ Hand Writing results published!':'📦 Hand Writing results unpublished.',true);
+                hwLoadLeaderboardStatus();
+            } catch(e){showM('❌ Error: '+e.message,false);}
+        }
+        async function thLoadLeaderboardStatus() {
+            const el = document.getElementById('thLeaderboardStatusDisplay');
+            if (!el) return;
+            try {
+                const snap = await db.ref('talenthunt/settings/leaderboardPublished').once('value');
+                const val = snap.val() === true;
+                el.textContent = val ? '🚀 PUBLISHED — Visible in leaderboard' : '📦 Not Published';
+                el.style.background = val ? '#d4edda' : '#f5f5f5';
+                el.style.color      = val ? '#155724' : '#666';
+            } catch(e) { el.textContent = '⚠️ Error'; }
+        }
+        async function thSetLeaderboard(value) {
+            const msgEl = document.getElementById('thLeaderboardMsg');
+            const showM=(t,ok)=>{msgEl.style.display='block';msgEl.style.background=ok?'#d4edda':'#f8d7da';msgEl.style.color=ok?'#155724':'#721c24';msgEl.textContent=t;};
+            try {
+                await db.ref('talenthunt/settings/leaderboardPublished').set(value);
+                showM(value?'✅ Talent Hunt results published!':'📦 Talent Hunt results unpublished.',true);
+                thLoadLeaderboardStatus();
+            } catch(e){showM('❌ Error: '+e.message,false);}
+        }
         // ══════════════════════════════════════════════════════════════
         const NUKKAD_SETTINGS_KEYS = ['eventActive', 'leaderboardPublished'];
         const NUKKAD_SETTINGS_LABELS = {
@@ -12312,6 +13049,177 @@
                 msgEl.style.background = '#f8d7da'; msgEl.style.color = '#721c24';
                 msgEl.textContent = '❌ Error: ' + e.message;
             });
+        }
+
+        // ══════════════════════════════════════════════════════════════
+        // HANDWRITING & TALENT HUNT — SITTING CODE UTILITIES
+        // ══════════════════════════════════════════════════════════════
+
+        function generateSittingCode(key, eventPrefix) {
+            const LETTERS = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+            let hash = 0;
+            const s = eventPrefix + key;
+            for (let i = 0; i < s.length; i++) hash = ((hash << 5) - hash) + s.charCodeAt(i);
+            hash = Math.abs(hash);
+            return LETTERS[hash % LETTERS.length] + LETTERS[Math.floor(hash / LETTERS.length) % LETTERS.length];
+        }
+
+        // ══════════════════════════════════════════════════════════════
+        // HANDWRITING COMPETITION — FACULTY PANEL
+        // ══════════════════════════════════════════════════════════════
+
+        async function loadHandwritingPanel() {
+            const listEl = document.getElementById('handwritingList');
+            if (!listEl) return;
+            listEl.innerHTML = '<div style="text-align:center;color:#aaa;padding:30px">Loading…</div>';
+            const classFilter  = (document.getElementById('hwClassFilter')  || {}).value || '';
+            const statusFilter = (document.getElementById('hwStatusFilter') || {}).value || '';
+            try {
+                const [fullSnap, attendSnap] = await Promise.all([
+                    db.ref('youthfest-enrollments').once('value'),
+                    db.ref('hwAttendance').once('value')
+                ]);
+                let entries = [];
+                if (fullSnap.exists()) {
+                    fullSnap.forEach(ch => {
+                        const d = ch.val(); const key = ch.key;
+                        if (d.event !== 'Hand Writing') return;
+                        const code = generateSittingCode(key, 'HW');
+                        const att  = (attendSnap.val() || {})[key] || {};
+                        entries.push({ ...d, _key: key, _code: code, _status: att.status || 'pending' });
+                    });
+                }
+                const clsSel = document.getElementById('hwClassFilter');
+                if (clsSel && clsSel.options.length <= 1) {
+                    const classes = [...new Set(entries.map(e => e.classYear || e.class || '').filter(Boolean))].sort();
+                    classes.forEach(c => { const opt = document.createElement('option'); opt.value = c; opt.textContent = c; clsSel.appendChild(opt); });
+                }
+                const allSnap2 = attendSnap.val() || {};
+                let allEntries = entries; // entries already filtered to Hand Writing
+                const setStat = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+                setStat('hwStatTotal',   allEntries.length);
+                setStat('hwStatPresent', allEntries.filter(e => e._status === 'present').length);
+                setStat('hwStatAbsent',  allEntries.filter(e => e._status === 'absent').length);
+                const badge = document.getElementById('hwSummaryBadge');
+                if (badge) badge.textContent = allEntries.filter(e=>e._status==='present').length + ' Present / ' + allEntries.length + ' Total';
+                if (classFilter)  entries = entries.filter(e => (e.classYear||e.class||'') === classFilter);
+                if (statusFilter) entries = entries.filter(e => e._status === statusFilter);
+                if (!entries.length) { listEl.innerHTML = '<div style="text-align:center;color:#aaa;padding:30px">No entries found.</div>'; return; }
+                const byClass = {};
+                entries.forEach(e => { const cls = e.classYear||e.class||'Unknown'; if (!byClass[cls]) byClass[cls] = []; byClass[cls].push(e); });
+                listEl.innerHTML = Object.entries(byClass).sort(([a],[b]) => a.localeCompare(b)).map(([cls, members]) => {
+                    const clsPresent = members.filter(m => m._status === 'present').length;
+                    const rows = members.map((e, idx) => {
+                        const name = e.name || e.studentName || e.participantName || '—';
+                        const lang = e.languages || 'English';
+                        const bg   = idx % 2 === 0 ? '#fafafa' : 'white';
+                        const statusBadge = e._status === 'present' ? '<span style="background:#d4edda;color:#155724;padding:2px 10px;border-radius:10px;font-size:0.75em;font-weight:700">✅ Present</span>' : e._status === 'absent' ? '<span style="background:#f8d7da;color:#721c24;padding:2px 10px;border-radius:10px;font-size:0.75em;font-weight:700">❌ Absent</span>' : '<span style="background:#e9ecef;color:#495057;padding:2px 10px;border-radius:10px;font-size:0.75em;font-weight:700">⏳ Not Marked</span>';
+                        return `<div style="background:${bg};border-radius:8px;padding:10px 12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+                            <span style="background:#1a237e;color:white;font-weight:900;padding:3px 10px;border-radius:8px;font-size:0.88em;min-width:40px;text-align:center;letter-spacing:3px">HW-${e._code}</span>
+                            <div style="flex:1;min-width:140px"><div style="font-weight:700;color:#333;font-size:0.88em">${name}</div><div style="font-size:0.75em;color:#888">${cls} &nbsp;|&nbsp; 🌐 ${lang}</div></div>
+                            ${statusBadge}
+                            <div style="display:flex;gap:6px">
+                                <button onclick="hwMarkAttendance('${e._key}','present')" style="background:#28a745;color:white;border:none;border-radius:6px;padding:4px 10px;cursor:pointer;font-size:0.78em;font-weight:700">✅ Present</button>
+                                <button onclick="hwMarkAttendance('${e._key}','absent')"  style="background:#dc3545;color:white;border:none;border-radius:6px;padding:4px 10px;cursor:pointer;font-size:0.78em;font-weight:700">❌ Absent</button>
+                            </div>
+                            <div id="hwMsg_${e._key}" style="display:none;font-size:0.75em;font-weight:600;padding:3px 8px;border-radius:6px"></div>
+                        </div>`;
+                    }).join('');
+                    return `<div style="background:white;border-radius:12px;border:2px solid #c5cae9;margin-bottom:14px;overflow:hidden">
+                        <div style="background:linear-gradient(135deg,#1a237e,#3949ab);padding:10px 16px;display:flex;justify-content:space-between;align-items:center">
+                            <span style="color:white;font-weight:700;font-size:0.95em">✍️ ${cls}</span>
+                            <span style="background:rgba(255,255,255,0.25);color:white;padding:2px 12px;border-radius:12px;font-size:0.82em;font-weight:700">${clsPresent} / ${members.length} Present</span>
+                        </div>
+                        <div style="padding:8px 10px;display:flex;flex-direction:column;gap:6px">${rows}</div>
+                    </div>`;
+                }).join('');
+            } catch(err) { if (listEl) listEl.innerHTML = `<div style="padding:20px;color:#c62828">❌ Error: ${err.message}</div>`; }
+        }
+
+        async function hwMarkAttendance(key, status) {
+            const markedBy = (document.getElementById('facultyDashName')||{}).textContent || 'Faculty';
+            const msgEl = document.getElementById('hwMsg_' + key);
+            try {
+                await db.ref('hwAttendance/' + key).set({ status, markedBy, markedAt: new Date().toISOString() });
+                if (msgEl) { msgEl.style.display='block'; msgEl.style.background=status==='present'?'#d4edda':'#f8d7da'; msgEl.style.color=status==='present'?'#155724':'#721c24'; msgEl.textContent=status==='present'?'✅ Marked Present':'❌ Marked Absent'; }
+                setTimeout(() => loadHwAttendancePanel(), 1000);
+            } catch(err) { if (msgEl) { msgEl.style.display='block'; msgEl.style.background='#f8d7da'; msgEl.style.color='#721c24'; msgEl.textContent='❌ '+err.message; } }
+        }
+
+        // ══════════════════════════════════════════════════════════════
+        // TALENT HUNT — FACULTY PANEL
+        // ══════════════════════════════════════════════════════════════
+
+        async function loadTalentHuntPanel() {
+            const listEl = document.getElementById('talentHuntList');
+            if (!listEl) return;
+            listEl.innerHTML = '<div style="text-align:center;color:#aaa;padding:30px">Loading…</div>';
+            const classFilter  = (document.getElementById('thClassFilter')  || {}).value || '';
+            const statusFilter = (document.getElementById('thStatusFilter') || {}).value || '';
+            const talentFilter = (document.getElementById('thTalentFilter') || {}).value || '';
+            const TALENT_EMOJIS = {'Singing':'🎤','Dancing':'💃','Acting':'🎭','Instrument':'🎸','Mimicry':'😄','Magic':'🎩','Stand-up Comedy':'😂','Other':'⭐'};
+            try {
+                const [fullSnap, attendSnap] = await Promise.all([
+                    db.ref('youthfest-enrollments').once('value'),
+                    db.ref('thAttendance').once('value')
+                ]);
+                let entries = [];
+                if (fullSnap.exists()) {
+                    fullSnap.forEach(ch => {
+                        const d = ch.val(); const key = ch.key;
+                        if (d.event !== 'Talent Hunt') return;
+                        const code = generateSittingCode(key, 'TH');
+                        const att  = (attendSnap.val() || {})[key] || {};
+                        entries.push({ ...d, _key: key, _code: code, _status: att.status || 'pending' });
+                    });
+                }
+                const clsSel = document.getElementById('thClassFilter');
+                if (clsSel && clsSel.options.length <= 1) {
+                    const classes = [...new Set(entries.map(e => e.classYear||e.class||'').filter(Boolean))].sort();
+                    classes.forEach(c => { const opt = document.createElement('option'); opt.value=c; opt.textContent=c; clsSel.appendChild(opt); });
+                }
+                const allSnap2 = attendSnap.val() || {};
+                let allEntries = entries; // entries already filtered to Talent Hunt
+                const setStat = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+                setStat('thStatTotal',   allEntries.length);
+                setStat('thStatPresent', allEntries.filter(e=>e._status==='present').length);
+                setStat('thStatAbsent',  allEntries.filter(e=>e._status==='absent').length);
+                const badge = document.getElementById('thSummaryBadge');
+                if (badge) badge.textContent = allEntries.filter(e=>e._status==='present').length + ' Present / ' + allEntries.length + ' Total';
+                if (classFilter)  entries = entries.filter(e => (e.classYear||e.class||'') === classFilter);
+                if (statusFilter) entries = entries.filter(e => e._status === statusFilter);
+                if (talentFilter) entries = entries.filter(e => (e.talentType||'') === talentFilter);
+                if (!entries.length) { listEl.innerHTML = '<div style="text-align:center;color:#aaa;padding:30px">No entries found for current filters.</div>'; return; }
+                entries.sort((a,b) => a._code.localeCompare(b._code));
+                listEl.innerHTML = entries.map((e, idx) => {
+                    const name   = e.name||e.studentName||e.participantName||'—';
+                    const cls    = e.classYear||e.class||'—';
+                    const talent = e.talentType||'—';
+                    const emoji  = TALENT_EMOJIS[talent]||'⭐';
+                    const bg     = idx%2===0?'#fffde7':'white';
+                    const statusBadge = e._status==='present' ? '<span style="background:#d4edda;color:#155724;padding:2px 10px;border-radius:10px;font-size:0.75em;font-weight:700">✅ Present</span>' : e._status==='absent' ? '<span style="background:#f8d7da;color:#721c24;padding:2px 10px;border-radius:10px;font-size:0.75em;font-weight:700">❌ Absent</span>' : '<span style="background:#e9ecef;color:#495057;padding:2px 10px;border-radius:10px;font-size:0.75em;font-weight:700">⏳ Not Marked</span>';
+                    return `<div style="background:${bg};border-radius:8px;border:1.5px solid #ffe082;padding:10px 12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+                        <span style="background:#e65100;color:white;font-weight:900;padding:3px 10px;border-radius:8px;font-size:0.88em;min-width:40px;text-align:center;letter-spacing:3px">TH-${e._code}</span>
+                        <div style="flex:1;min-width:140px"><div style="font-weight:700;color:#333;font-size:0.88em">${name}</div><div style="font-size:0.75em;color:#888">${cls} &nbsp;|&nbsp; ${emoji} ${talent}</div></div>
+                        ${statusBadge}
+                        <div style="display:flex;gap:6px">
+                            <button onclick="thMarkAttendance('${e._key}','present')" style="background:#28a745;color:white;border:none;border-radius:6px;padding:4px 10px;cursor:pointer;font-size:0.78em;font-weight:700">✅ Present</button>
+                            <button onclick="thMarkAttendance('${e._key}','absent')"  style="background:#dc3545;color:white;border:none;border-radius:6px;padding:4px 10px;cursor:pointer;font-size:0.78em;font-weight:700">❌ Absent</button>
+                        </div>
+                        <div id="thMsg_${e._key}" style="display:none;font-size:0.75em;font-weight:600;padding:3px 8px;border-radius:6px"></div>
+                    </div>`;
+                }).join('');
+            } catch(err) { if (listEl) listEl.innerHTML = `<div style="padding:20px;color:#c62828">❌ Error: ${err.message}</div>`; }
+        }
+
+        async function thMarkAttendance(key, status) {
+            const markedBy = (document.getElementById('facultyDashName')||{}).textContent || 'Faculty';
+            const msgEl = document.getElementById('thMsg_' + key);
+            try {
+                await db.ref('thAttendance/' + key).set({ status, markedBy, markedAt: new Date().toISOString() });
+                if (msgEl) { msgEl.style.display='block'; msgEl.style.background=status==='present'?'#d4edda':'#f8d7da'; msgEl.style.color=status==='present'?'#155724':'#721c24'; msgEl.textContent=status==='present'?'✅ Marked Present':'❌ Marked Absent'; }
+                setTimeout(() => loadThAttendancePanel(), 1000);
+            } catch(err) { if (msgEl) { msgEl.style.display='block'; msgEl.style.background='#f8d7da'; msgEl.style.color='#721c24'; msgEl.textContent='❌ '+err.message; } }
         }
 
         // ══════════════════════════════════════════════════════════════
@@ -14127,23 +15035,39 @@
             const sel = document.getElementById('resultsEventSelect');
             sel.innerHTML = '<option value="">-- Select Event --</option>';
             
-            db.ref('jurySetup').once('value').then(snap => {
-                if (!snap.exists()) return;
-                
-                snap.forEach(child => {
-                    const event = child.key;
-                    const setup = child.val();
-                    
-                    // For super admin, show all events
-                    // For admin, show only published events
-                    if (isSuperAdmin || setup.resultsPublished) {
+            if (isSuperAdmin) {
+                // Super admin: show ALL events from events object, merged with jurySetup status
+                db.ref('jurySetup').once('value').then(snap => {
+                    const jurySetupData = snap.exists() ? snap.val() : {};
+                    // Show all events from the events const
+                    Object.keys(events).forEach(eventName => {
+                        const setup = jurySetupData[eventName] || {};
                         const opt = document.createElement('option');
-                        opt.value = event;
-                        opt.textContent = event + (setup.resultsPublished ? ' ✓' : '');
+                        opt.value = eventName;
+                        let label = eventName;
+                        if (setup.resultsPublished) label += ' ✓ Published';
+                        else if (jurySetupData[eventName]) label += ' (Setup done)';
+                        else label += ' (Not set up)';
+                        opt.textContent = label;
                         sel.appendChild(opt);
-                    }
+                    });
                 });
-            });
+            } else {
+                db.ref('jurySetup').once('value').then(snap => {
+                    if (!snap.exists()) return;
+                    snap.forEach(child => {
+                        const event = child.key;
+                        const setup = child.val();
+                        // For admin, show only published events
+                        if (setup.resultsPublished) {
+                            const opt = document.createElement('option');
+                            opt.value = event;
+                            opt.textContent = event + ' ✓';
+                            sel.appendChild(opt);
+                        }
+                    });
+                });
+            }
         }
 
         function loadEventResults() {
@@ -14167,6 +15091,20 @@
                 
                 const jury1Name = setup.jury1Name || 'Jury 1';
                 const jury2Name = setup.jury2Name || 'Jury 2';
+
+                // For super admin: if event not set up at all, show info summary
+                if (isSuperAdmin && !setupSnap.exists()) {
+                    const eventInfo = events[event] || {};
+                    document.getElementById('resultsContainer').innerHTML =
+                        '<div style="background:#fff3cd;border:2px solid #ffc107;border-radius:10px;padding:20px;margin-top:10px">' +
+                        '<h3 style="color:#856404;margin-bottom:10px">⚠️ ' + event + ' — Jury Not Set Up Yet</h3>' +
+                        '<p style="color:#666;margin-bottom:8px">This event has not been configured in Jury Setup yet.</p>' +
+                        '<p style="color:#666"><strong>Event size:</strong> ' + (eventInfo.size || '—') + '</p>' +
+                        '<p style="color:#666"><strong>Type:</strong> ' + (eventInfo.individual ? 'Individual' : eventInfo.multiTeam ? 'Multi-Team' : 'Class-based') + '</p>' +
+                        '<p style="color:#888;margin-top:10px;font-size:0.85em">Go to <strong>Jury Setup</strong> tab to configure this event first.</p>' +
+                        '</div>';
+                    return;
+                }
                 
                 // Load marks from both juries using raw event name
                 console.log('Loading marks from both juries...');
@@ -14225,6 +15163,24 @@
 
                     console.log('Jury 1 Marks:', jury1Marks);
                     console.log('Jury 2 Marks:', jury2Marks);
+
+                    // Super admin: if no marks yet, show a "no marks yet" summary with event info
+                    if (isSuperAdmin && Object.keys(jury1Marks).length === 0 && Object.keys(jury2Marks).length === 0) {
+                        const eventInfo = events[event] || {};
+                        const pubStatus = setup.resultsPublished ? '✅ Published' : '❌ Not Published';
+                        document.getElementById('resultsContainer').innerHTML =
+                            '<div style="background:#e8f5e9;border:2px solid #66bb6a;border-radius:10px;padding:20px;margin-top:10px">' +
+                            '<h3 style="color:#2e7d32;margin-bottom:12px">📋 ' + event + ' — Event Progress</h3>' +
+                            '<table style="width:100%;border-collapse:collapse">' +
+                            '<tr><td style="padding:6px 10px;color:#555;font-weight:600">Publication Status:</td><td style="padding:6px 10px">' + pubStatus + '</td></tr>' +
+                            '<tr><td style="padding:6px 10px;color:#555;font-weight:600">Jury 1:</td><td style="padding:6px 10px">' + jury1Name + (setup.jury1Password ? ' (Password set ✓)' : ' (No password)') + '</td></tr>' +
+                            '<tr><td style="padding:6px 10px;color:#555;font-weight:600">Jury 2:</td><td style="padding:6px 10px">' + jury2Name + (setup.jury2Password ? ' (Password set ✓)' : ' (No password)') + '</td></tr>' +
+                            '<tr><td style="padding:6px 10px;color:#555;font-weight:600">Event Type:</td><td style="padding:6px 10px">' + (setup.eventType || eventInfo.individual ? 'Individual' : eventInfo.multiTeam ? 'Multi-Team' : 'Class-based') + '</td></tr>' +
+                            '</table>' +
+                            '<p style="color:#e65100;background:#fff3e0;padding:10px;border-radius:6px;margin-top:12px">⏳ No jury marks submitted yet for this event.</p>' +
+                            '</div>';
+                        return;
+                    }
 
                     displayResults(event, jury1Marks, jury2Marks, jury1Name, jury2Name, vlogSocialMap);
                 });
@@ -27254,7 +28210,7 @@ Proceed?`)) return;
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;" id="devTriggerVersion">
-                <strong>Version:</strong> 3.94 — Built on v393. Nukkad Natak: Added Event Activation toggle, Leaderboard Publish toggle, and full Jury Scoring Panel (J1+J2, 5 criteria: Script &amp; Story / Stage Presence / Message Delivery / Teamwork / Overall Impact, each 0–10 = 50 total). Table now shows Jury J1, Jury J2, Final avg columns. Publish pushes jury avg to leaderboardConfig. BOW Results panel: Added Leaderboard Published toggle (🚀 Publish / 📦 Unpublish). Firebase paths: nukkadNatak/juryScores/, nukkadNatak/settings/.   | <strong>Last Updated:</strong> February 25, 2026 — 23:20
+                <strong>Version:</strong> 4.01 — Built on v400. Added Manager 2 login (Jury Setup only role). Super Admin Event Results now shows all events in dropdown (including unscored/not-set-up events) with progress details on selection.   | <strong>Last Updated:</strong> February 25, 2026 — 19:30
             </p>
             <!-- ============================================ -->
             
