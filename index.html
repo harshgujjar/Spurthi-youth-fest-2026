@@ -1559,6 +1559,7 @@
                 <button class="tab" onclick="showCRTab('crPodCasting');checkPodcastEventActive();loadPodcastSubmissions()">🎙️ Pod Casting</button>
                 <button class="tab" onclick="showCRTab('crBestOutWaste');loadBOWSubmissions()">♻️ Best Out of Waste</button>
                 <button class="tab" id="crYtAdTab" onclick="showCRTab('crYtAd');checkYtAdEventActive();loadYtAdSubmissions()">📺 YT Advertisement</button>
+                <button class="tab" onclick="showCRTab('crNukkadNatak');loadCRNukkadPanel()">🎭 Nukkad Natak</button>
             </div>
 
             <div id="crEnroll" class="form-section active">
@@ -2468,6 +2469,79 @@
             <!-- ── END YOUTUBE ADVERTISEMENT TAB ──────────────────────────────── -->
         </div>
         <!-- END CR SECTION -->
+        <!-- ── NUKKAD NATAK CR PANEL ──────────────────────────────────── -->
+        <div id="crNukkadNatak" class="form-section" style="display:none">
+
+            <!-- ── PRE-EVENT SUBMISSIONS ───────────────────────────────── -->
+            <div style="background:linear-gradient(135deg,#4a148c,#7b1fa2);border-radius:14px;padding:18px;margin-bottom:16px;color:white">
+                <h3 style="margin:0 0 4px;font-size:1.1em">🎓 Nukkad Natak — Pre-Event Submissions</h3>
+                <p style="margin:0;font-size:0.82em;opacity:0.85">Submit your Social Adviser details before the event. A Social Adviser from a recognised media house is mandatory.</p>
+            </div>
+
+            <!-- Social Adviser -->
+            <div style="background:white;border-radius:12px;border:2px solid #ce93d8;padding:16px;margin-bottom:20px">
+                <h4 style="color:#6a1b9a;margin:0 0 10px;font-size:0.95em">🎓 Social Adviser (from Media House)</h4>
+                <div style="margin-bottom:12px">
+                    <label style="font-weight:600;font-size:0.88em;color:#333;display:block;margin-bottom:4px">Adviser Name: <span style="color:red">*</span></label>
+                    <input type="text" id="crAdviserName" placeholder="Enter Social Adviser full name" style="width:100%;padding:9px 12px;border:2px solid #ce93d8;border-radius:8px;font-size:0.88em">
+                </div>
+                <div style="margin-bottom:12px">
+                    <label style="font-weight:600;font-size:0.88em;color:#333;display:block;margin-bottom:4px">Media House / Organisation: <span style="color:red">*</span></label>
+                    <input type="text" id="crAdviserOrg" placeholder="e.g. Prajavani, Deccan Herald, DD Chandana" style="width:100%;padding:9px 12px;border:2px solid #ce93d8;border-radius:8px;font-size:0.88em">
+                </div>
+                <p style="font-size:0.8em;color:#4a148c;margin:0 0 12px;padding:8px;background:#f3e5f5;border-radius:6px">⚠️ A Social Adviser from a recognised media house is mandatory for Nukkad Natak.</p>
+                <button onclick="saveNukkadAdviser()" style="background:#6a1b9a;color:white;border:none;border-radius:8px;padding:9px 20px;font-weight:700;cursor:pointer;font-size:0.88em">💾 Save Adviser Details</button>
+                <div id="crAdviserMsg" style="display:none;margin-top:8px;font-size:0.8em;font-weight:600;padding:6px 10px;border-radius:6px"></div>
+            </div>
+            <!-- ── END PRE-EVENT SUBMISSIONS ───────────────────────────── -->
+
+            <!-- ── POST-EVENT SUBMISSIONS ──────────────────────────────── -->
+            <div style="background:linear-gradient(135deg,#1a237e,#3949ab);border-radius:14px;padding:18px;margin-bottom:20px;color:white">
+                <h3 style="margin:0 0 4px;font-size:1.1em">🎭 Nukkad Natak — Post-Event Submissions</h3>
+                <p style="margin:0;font-size:0.82em;opacity:0.85">Submit your YouTube video link, upload newspaper article photo, and set your feedback form link after the event.</p>
+            </div>
+
+            <div id="crNukkadStatus" style="background:#fffde7;border:2px solid #ffe082;border-radius:10px;padding:14px;margin-bottom:18px;font-size:0.85em;color:#856404">
+                Loading your enrollment status…
+            </div>
+
+            <!-- YouTube Link -->
+            <div style="background:white;border-radius:12px;border:2px solid #ffcdd2;padding:16px;margin-bottom:14px">
+                <h4 style="color:#c62828;margin:0 0 10px;font-size:0.95em">📺 YouTube Video Link</h4>
+                <p style="font-size:0.8em;color:#666;margin:0 0 10px">Upload your complete Nukkad Natak recording to YouTube and paste the link here.</p>
+                <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end">
+                    <div style="flex:1;min-width:200px">
+                        <input type="url" id="crNukkadYtLink" placeholder="https://youtube.com/watch?v=..." style="width:100%;padding:9px 12px;border:2px solid #ffcdd2;border-radius:8px;font-size:0.88em">
+                    </div>
+                    <button onclick="saveNukkadYtLink()" style="background:#c62828;color:white;border:none;border-radius:8px;padding:9px 18px;font-weight:700;cursor:pointer;font-size:0.88em">💾 Save Link</button>
+                </div>
+                <div id="crNukkadYtMsg" style="display:none;margin-top:8px;font-size:0.8em;font-weight:600;padding:6px 10px;border-radius:6px"></div>
+            </div>
+
+            <!-- Newspaper Article Photo -->
+            <div style="background:white;border-radius:12px;border:2px solid #c8e6c9;padding:16px;margin-bottom:14px">
+                <h4 style="color:#2e7d32;margin:0 0 10px;font-size:0.95em">📰 Newspaper Article Photo</h4>
+                <p style="font-size:0.8em;color:#666;margin:0 0 10px">Upload a clear photo of the newspaper article published about your social awareness campaign.</p>
+                <div id="crNukkadNewspaperCurrent" style="margin-bottom:10px"></div>
+                <input type="file" id="crNukkadNewspaperFile" accept="image/*" style="font-size:0.85em;margin-bottom:8px">
+                <button onclick="saveNukkadNewspaper()" style="background:#2e7d32;color:white;border:none;border-radius:8px;padding:9px 18px;font-weight:700;cursor:pointer;font-size:0.88em;display:block;margin-top:6px">📤 Upload Photo</button>
+                <div id="crNukkadNewspaperMsg" style="display:none;margin-top:8px;font-size:0.8em;font-weight:600;padding:6px 10px;border-radius:6px"></div>
+            </div>
+
+            <!-- Google Form Feedback Link -->
+            <div style="background:white;border-radius:12px;border:2px solid #b39ddb;padding:16px;margin-bottom:14px">
+                <h4 style="color:#4a148c;margin:0 0 10px;font-size:0.95em">📋 Feedback Form Link (Google Form)</h4>
+                <p style="font-size:0.8em;color:#666;margin:0 0 10px">Paste your class's Google Form feedback link here. This will be shared with the organizing team.</p>
+                <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end">
+                    <div style="flex:1;min-width:200px">
+                        <input type="url" id="crNukkadFormLink" placeholder="https://forms.gle/..." style="width:100%;padding:9px 12px;border:2px solid #b39ddb;border-radius:8px;font-size:0.88em">
+                    </div>
+                    <button onclick="saveNukkadFormLink()" style="background:#4a148c;color:white;border:none;border-radius:8px;padding:9px 18px;font-weight:700;cursor:pointer;font-size:0.88em">💾 Save Link</button>
+                </div>
+                <div id="crNukkadFormMsg" style="display:none;margin-top:8px;font-size:0.8em;font-weight:600;padding:6px 10px;border-radius:6px"></div>
+            </div>
+        </div>
+        <!-- ── END NUKKAD NATAK CR PANEL ───────────────────────────────── -->
 
         <!-- Admin Section -->
         <div class="admin-only" id="adminSection">
@@ -2529,11 +2603,12 @@
                 <button class="tab super-admin-only" onclick="showTab('vlogAdminPanel');loadVlogAdminPanel()" id="vlogAdminPanelTab">📹 Vlog Admin</button>
                 <button class="tab super-admin-only" onclick="showTab('podcastAdminPanel');loadPodcastAdminPanel()" id="podcastAdminPanelTab">🎙️ Podcast Admin</button>
                 <button class="tab super-admin-only" onclick="showTab('bowResultsPublisher');bowRpLoad()" id="superJuryMgmtTab">♻️ BOW Results</button>
+                <button class="tab super-admin-only" onclick="showTab('nukkadAdminPanel');loadNukkadAdminPanel()" id="nukkadAdminTab">🎭 Nukkad Admin</button>
                 <button class="tab super-admin-only" onclick="showTab('ytAdAdminPanel');loadYtAdAdminPanel()" id="ytAdAdminPanelTab">📺 YT Ad Admin</button>
                 <button class="tab" onclick="showTab('facultyAdminPanel');loadFacultyAdminPanel()" id="facultyAdminPanelTab">👩‍🏫 Faculty</button>
-                <button class="tab" onclick="showTab('pdfHandoutsAdmin')" id="pdfHandoutsAdminTab" style="display:none">📄 PDF Handouts</button>
-                <button class="tab" onclick="showTab('paymentApprovalAdmin');paLoadPending()" id="paymentApprovalAdminTab" style="display:none">💳 Payment Approval</button>
-                <button class="tab" onclick="showTab('eventScheduleAdmin');esLoadEvents()" id="eventScheduleAdminTab" style="display:none">📅 Event Schedule</button>
+                <button class="tab super-admin-only" onclick="showTab('pdfHandoutsAdmin')" id="pdfHandoutsAdminTab">📄 PDF Handouts</button>
+                <button class="tab super-admin-only" onclick="showTab('paymentApprovalAdmin');paLoadPending()" id="paymentApprovalAdminTab">💳 Payment Approval</button>
+                <button class="tab super-admin-only" onclick="showTab('eventScheduleAdmin');esLoadEvents()" id="eventScheduleAdminTab">📅 Event Schedule</button>
             </div><!-- end .tabs -->
 
             <div class="content" id="adminContentBox">
@@ -4583,7 +4658,29 @@
                     <div id="bowRpDisputeList" style="padding:16px;display:grid;gap:10px"></div>
                 </div>
 
-                <!-- Publish Actions -->
+                <!-- ── LEADERBOARD PUBLISH TOGGLE ── -->
+                <div style="background:white;border-radius:12px;box-shadow:0 2px 10px rgba(0,0,0,0.08);overflow:hidden;margin-bottom:20px">
+                    <div style="background:linear-gradient(135deg,#e8f5e9,#f1f8e9);padding:14px 20px;border-bottom:2px solid #a5d6a7">
+                        <h3 style="color:#2e7d32;margin:0;font-size:0.95em">🏆 Leaderboard Published?</h3>
+                    </div>
+                    <div style="padding:18px">
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px" class="vlog-admin-grid">
+                            <div>
+                                <div style="color:#666;font-size:0.82em;margin-bottom:12px">When ON — BOW results appear in the main leaderboard / Class of the Year.</div>
+                                <div style="display:flex;gap:10px">
+                                    <button class="btn btn-success" onclick="bowSetLeaderboard(true)" style="flex:1;font-size:0.9em">🚀 Publish</button>
+                                    <button class="btn btn-secondary" onclick="bowSetLeaderboard(false)" style="flex:1;font-size:0.9em">📦 Unpublish</button>
+                                </div>
+                            </div>
+                            <div style="display:flex;align-items:center">
+                                <div id="bowLeaderboardStatusDisplay" style="background:#f5f5f5;border-radius:10px;padding:12px 18px;font-weight:700;font-size:0.92em;color:#666;width:100%;text-align:center">Loading…</div>
+                            </div>
+                        </div>
+                        <div id="bowLeaderboardMsg" style="display:none;margin-top:10px;padding:8px 12px;border-radius:8px;font-weight:700;font-size:0.85em"></div>
+                    </div>
+                </div>
+
+                <!-- Publish Actions (score publish) -->
                 <div style="background:white;border-radius:12px;box-shadow:0 2px 10px rgba(0,0,0,0.08);overflow:hidden">
                     <div style="background:linear-gradient(135deg,#e3f2fd,#e8eaf6);padding:14px 20px;border-bottom:2px solid #90caf9">
                         <h3 style="color:#1565c0;margin:0;font-size:0.95em">📢 Publish / Unpublish Results</h3>
@@ -4606,8 +4703,139 @@
             <!-- END BOW RESULTS PUBLISHER PANEL -->
 
             <!-- ══════════════════════════════════════════════════════════════════
-                 YOUTUBE ADVERTISEMENT ADMIN PANEL (Super Admin Only)
+                 NUKKAD NATAK ADMIN PANEL (Super Admin Only)
             ══════════════════════════════════════════════════════════════════ -->
+            <div id="nukkadAdminPanel" class="form-section super-admin-only" style="margin-top:20px;display:none">
+                <h2 style="color:#1a237e;margin-bottom:6px">🎭 Nukkad Natak — Super Admin Overview</h2>
+                <p style="color:#888;margin-bottom:20px;font-size:.9em">Full overview of all enrolled classes, pre-event submissions, post-event submissions, jury scoring and verification status. Super Admin can override any action.</p>
+
+                <!-- ── EVENT ACTIVATION & LEADERBOARD PUBLISH ── -->
+                <div style="background:linear-gradient(135deg,#ede7f6,#e8eaf6);border-radius:14px;padding:20px;margin-bottom:20px;border:2px solid #b39ddb">
+                    <h3 style="color:#4a148c;margin:0 0 12px;font-size:1.05em">🔐 Event Activation &amp; Leaderboard</h3>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px" class="vlog-admin-grid">
+                        <div style="background:white;border-radius:10px;padding:14px;border:1px solid #ce93d8">
+                            <div style="font-weight:700;color:#333;font-size:0.9em;margin-bottom:8px">🎭 Nukkad Natak Active?</div>
+                            <div style="color:#666;font-size:0.8em;margin-bottom:10px">When ON — CR Pre/Post submission tabs are unlocked.</div>
+                            <div style="display:flex;gap:10px">
+                                <button class="btn btn-success" onclick="setNukkadSetting('eventActive', true)" style="flex:1;font-size:0.85em">✅ Activate</button>
+                                <button class="btn btn-danger" onclick="setNukkadSetting('eventActive', false)" style="flex:1;font-size:0.85em">🔒 Deactivate</button>
+                            </div>
+                            <div id="nukkadStatusEventActive" style="margin-top:8px;font-size:0.82em;font-weight:700;color:#666">Loading…</div>
+                        </div>
+                        <div style="background:white;border-radius:10px;padding:14px;border:1px solid #ce93d8">
+                            <div style="font-weight:700;color:#333;font-size:0.9em;margin-bottom:8px">🏆 Leaderboard Published?</div>
+                            <div style="color:#666;font-size:0.8em;margin-bottom:10px">When ON — Nukkad Natak jury results appear in the main leaderboard.</div>
+                            <div style="display:flex;gap:10px">
+                                <button class="btn btn-success" onclick="setNukkadSetting('leaderboardPublished', true)" style="flex:1;font-size:0.85em">🚀 Publish</button>
+                                <button class="btn btn-secondary" onclick="setNukkadSetting('leaderboardPublished', false)" style="flex:1;font-size:0.85em">📦 Unpublish</button>
+                            </div>
+                            <div id="nukkadStatusLeaderboardPublished" style="margin-top:8px;font-size:0.82em;font-weight:700;color:#666">Loading…</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Stats row -->
+                <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:20px">
+                    <div style="background:white;border-radius:10px;padding:12px;text-align:center;border:2px solid #c5cae9">
+                        <div style="font-size:1.5em;font-weight:900;color:#1a237e" id="nukkadAdminStatClasses">—</div>
+                        <div style="font-size:0.78em;color:#666">Classes Enrolled</div>
+                    </div>
+                    <div style="background:white;border-radius:10px;padding:12px;text-align:center;border:2px solid #ce93d8">
+                        <div style="font-size:1.5em;font-weight:900;color:#6a1b9a" id="nukkadAdminStatAdviser">—</div>
+                        <div style="font-size:0.78em;color:#666">Adviser Submitted</div>
+                    </div>
+                    <div style="background:white;border-radius:10px;padding:12px;text-align:center;border:2px solid #a5d6a7">
+                        <div style="font-size:1.5em;font-weight:900;color:#2e7d32" id="nukkadAdminStatPerm">—</div>
+                        <div style="font-size:0.78em;color:#666">Permission Granted</div>
+                    </div>
+                    <div style="background:white;border-radius:10px;padding:12px;text-align:center;border:2px solid #ffcc80">
+                        <div style="font-size:1.5em;font-weight:900;color:#e65100" id="nukkadAdminStatYt">—</div>
+                        <div style="font-size:0.78em;color:#666">YouTube Verified</div>
+                    </div>
+                    <div style="background:white;border-radius:10px;padding:12px;text-align:center;border:2px solid #80cbc4">
+                        <div style="font-size:1.5em;font-weight:900;color:#00695c" id="nukkadAdminStatNews">—</div>
+                        <div style="font-size:0.78em;color:#666">Newspaper Verified</div>
+                    </div>
+                </div>
+
+                <!-- ── JURY SCORING PANEL ── -->
+                <div style="background:white;border-radius:14px;border:2px solid #c5cae9;overflow:hidden;margin-bottom:20px">
+                    <div style="background:linear-gradient(135deg,#1a237e,#4a148c);padding:14px 18px">
+                        <h4 style="color:white;margin:0;font-size:0.95em">👨‍⚖️ Nukkad Natak Jury Scoring Panel</h4>
+                        <p style="color:rgba(255,255,255,0.8);margin:4px 0 0;font-size:0.82em">Jury 1 and Jury 2 log in here to score each class's performance. 5 criteria × 10 marks = 50 each. Super Admin can also enter scores directly.</p>
+                    </div>
+                    <div style="padding:18px">
+                        <!-- Jury Login Row -->
+                        <div style="background:#ede7f6;border-radius:10px;padding:14px;margin-bottom:16px;display:grid;grid-template-columns:1fr 1fr auto;gap:12px;align-items:end" class="vlog-admin-grid">
+                            <div>
+                                <label style="font-size:0.82em;font-weight:700;color:#444;display:block;margin-bottom:5px">Jury Number</label>
+                                <select id="nukkadJuryLoginNum" style="width:100%;padding:8px 10px;border:2px solid #b39ddb;border-radius:8px;font-size:0.9em;outline:none">
+                                    <option value="1">Jury 1</option>
+                                    <option value="2">Jury 2</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label style="font-size:0.82em;font-weight:700;color:#444;display:block;margin-bottom:5px">Jury Password</label>
+                                <input type="password" id="nukkadJuryLoginPwd" placeholder="Enter jury password" style="width:100%;padding:8px 10px;border:2px solid #b39ddb;border-radius:8px;font-size:0.9em;outline:none" onkeydown="if(event.key==='Enter') nukkadJuryLogin()">
+                            </div>
+                            <button class="btn" onclick="nukkadJuryLogin()" style="background:linear-gradient(135deg,#1a237e,#4a148c);border:none;white-space:nowrap;padding:8px 16px;font-size:0.88em">🔑 Login as Jury</button>
+                        </div>
+                        <div id="nukkadJuryLoginMsg" style="display:none;padding:9px 12px;border-radius:8px;font-size:0.85em;font-weight:600;margin-bottom:12px"></div>
+                        <!-- Jury Scoring Panel (shown after login) -->
+                        <div id="nukkadJuryScoringPanel" style="display:none">
+                            <div style="background:#ede7f6;border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:0.88em;font-weight:700;color:#4a148c">
+                                Scoring as: <span id="nukkadJuryWhoLabel">—</span>
+                            </div>
+                            <p style="font-size:0.82em;color:#666;margin-bottom:14px">Score each class's Nukkad Natak performance on 5 criteria (0–10 each = 50 total). Score is saved per class.</p>
+                            <div id="nukkadJuryScoringList"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- All Nukkad Submissions Table -->
+                <div style="background:white;border-radius:14px;border:2px solid #c5cae9;overflow:hidden">
+                    <div style="background:linear-gradient(135deg,#1a237e,#7b1fa2);padding:14px 18px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+                        <h4 style="color:white;margin:0;font-size:0.95em">📋 All Nukkad Natak Submissions — All Classes</h4>
+                        <div style="display:flex;gap:8px;flex-wrap:wrap">
+                            <select id="nukkadAdminClassFilter" onchange="loadNukkadAdminPanel()" style="padding:6px 10px;border-radius:8px;border:none;font-size:0.82em;color:#333">
+                                <option value="">All Classes</option>
+                            </select>
+                            <button onclick="loadNukkadAdminPanel()" style="background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.5);color:white;font-size:0.8em;padding:5px 12px;border-radius:8px;cursor:pointer;font-weight:700">🔄 Refresh</button>
+                        </div>
+                    </div>
+                    <div style="padding:16px">
+                        <div id="nukkadAdminEmpty" style="text-align:center;color:#aaa;padding:30px;font-size:0.9em">Click Refresh to load data.</div>
+                        <div class="table-wrapper" style="margin:0;display:none" id="nukkadAdminTableContainer">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Class</th>
+                                        <th>Theme / Cause</th>
+                                        <th>Members</th>
+                                        <th style="background:#6a1b9a">Adviser Name</th>
+                                        <th style="background:#6a1b9a">Media House</th>
+                                        <th style="background:#1a237e">Permission</th>
+                                        <th style="background:#1a237e">Slot</th>
+                                        <th style="background:#c62828">YouTube</th>
+                                        <th style="background:#2e7d32">Newspaper</th>
+                                        <th style="background:#4a148c">Form Link</th>
+                                        <th style="background:#1565c0">Jury J1</th>
+                                        <th style="background:#1565c0">Jury J2</th>
+                                        <th style="background:#1b5e20">Final %</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="nukkadAdminTableBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <span id="nukkadAdminBadge" style="display:none"></span>
+            </div>
+            <!-- END NUKKAD NATAK ADMIN PANEL -->
             <div id="ytAdAdminPanel" class="form-section super-admin-only" style="margin-top:20px">
                 <h2 style="color:#cc0000;margin-bottom:6px">📺 YouTube Advertisement — Super Admin Control</h2>
                 <p style="color:#888;margin-bottom:20px;font-size:.9em">Activate the event, manage jury scoring, enter social scores (Views + Likes + Original Comments), flag disputes, and publish results. Eligible classes: I BCA 'A' (1ST BCA) and II BCA 'A' (2ND BCA A SEC).</p>
@@ -4935,6 +5163,36 @@
                         </div>
                         <div style="margin-top:16px;text-align:center">
                             <button class="btn btn-secondary" onclick="loadYtAdMonitorPanel()" style="font-size:0.88em">🔄 Refresh All Classes</button>
+                        </div>
+                    </div>
+
+                    <!-- ── Nukkad Natak Pre-event Panel (Kotrappa K) ── -->
+                    <div id="nukkadPrePanel" style="display:none;margin-top:24px">
+                        <div style="background:linear-gradient(135deg,#e8eaf6,#c5cae9);border-radius:14px;padding:18px;border:2px solid #9fa8da;margin-bottom:16px">
+                            <h3 style="color:#1a237e;margin:0 0 6px;font-size:1.05em">🎭 Nukkad Natak — Pre-Event Panel</h3>
+                            <p style="color:#555;font-size:0.82em;margin:0 0 6px">View all enrolled teams, verify social awareness themes (check for duplicates across all classes), and issue permission slips with date/time clash detection.</p>
+                        </div>
+                        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px">
+                            <button onclick="loadNukkadPrePanel()" style="background:#3949ab;color:white;border:none;border-radius:8px;padding:8px 16px;font-weight:700;cursor:pointer;font-size:0.85em">🔄 Refresh</button>
+                            <span id="nukkadPreBadge" style="background:#e8eaf6;color:#1a237e;padding:4px 14px;border-radius:20px;font-size:0.82em;font-weight:700;margin-left:auto"></span>
+                        </div>
+                        <div id="nukkadPreList" style="display:flex;flex-direction:column;gap:12px">
+                            <div style="text-align:center;color:#aaa;padding:30px">Loading Nukkad Natak enrollments…</div>
+                        </div>
+                    </div>
+
+                    <!-- ── Nukkad Natak Post-event Panel (Shankar B C) ── -->
+                    <div id="nukkadPostPanel" style="display:none;margin-top:24px">
+                        <div style="background:linear-gradient(135deg,#fff3e0,#ffe0b2);border-radius:14px;padding:18px;border:2px solid #ffcc80;margin-bottom:16px">
+                            <h3 style="color:#e65100;margin:0 0 6px;font-size:1.05em">🎭 Nukkad Natak — Post-Event Verification</h3>
+                            <p style="color:#555;font-size:0.82em;margin:0 0 6px">Verify YouTube video links and newspaper article photos submitted by each class. Verified submissions earn <strong>+10 pts</strong> each on the leaderboard.</p>
+                        </div>
+                        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px">
+                            <button onclick="loadNukkadPostPanel()" style="background:#e65100;color:white;border:none;border-radius:8px;padding:8px 16px;font-weight:700;cursor:pointer;font-size:0.85em">🔄 Refresh</button>
+                            <span id="nukkadPostBadge" style="background:#fff3e0;color:#e65100;padding:4px 14px;border-radius:20px;font-size:0.82em;font-weight:700;margin-left:auto"></span>
+                        </div>
+                        <div id="nukkadPostList" style="display:flex;flex-direction:column;gap:12px">
+                            <div style="text-align:center;color:#aaa;padding:30px">Loading post-event submissions…</div>
                         </div>
                     </div>
 
@@ -5951,11 +6209,11 @@
             'YouTube Advertisement': {size:'8 Members',count:8,role:true,prod:true,allow:false,maxPerClass:1},
             'Mad Ads': {size:'8 Members',count:8,role:true,topic:true,topicLabel:'Topic',allow:false,maxPerClass:1},
             'Hand Writing': {size:'Individual',count:1,role:false,lang:true,allow:false,maxPerClass:999,pctMax:15,oneAtATime:true,individual:true},
-            'Best out of Waste': {size:'2 Members (or Individual)',count:2,role:true,allow:true,maxPerClass:999,pctMax:10,allowIndividual:true},
+            'Best out of Waste': {size:'2 Members (or Individual)',count:2,role:true,allow:true,maxPerClass:999,pctMax:10,allowIndividual:true,multiTeam:true},
             'Social Awareness Skit': {size:'8 Members',count:8,role:true,cause:true,allow:false,maxPerClass:1},
             'Talent Hunt': {size:'Individual',count:1,role:false,talent:true,allow:true,maxPerClass:6,oneAtATime:true,individual:true},
             'Group Dance': {size:'5-8 Members',count:5,role:true,allow:false,maxPerClass:1,minCount:5,maxCount:8},
-            'Nukkad Natak': {size:'8 to 30% of class',count:8,role:true,cause:true,causeLabel:'Different Cause',allow:false,maxPerClass:1,pctMax:30,dynamicCount:true,minCount:8,camera:true},
+            'Nukkad Natak': {size:'8 to 30% of class',count:8,role:true,cause:true,causeLabel:'Social Awareness Theme',allow:false,maxPerClass:1,pctMax:30,dynamicCount:true,minCount:8,camera:true,adviser:true},
             'Case Analysis': {size:'2 Members',count:2,role:true,allow:false,maxPerClass:1}
         };
 
@@ -6437,11 +6695,6 @@
             document.querySelectorAll('.super-admin-only:not(.form-section)').forEach(el => el.style.display = 'block');
             // Remove inline display:none from super-admin-only PANELS so showTab() can activate them
             document.querySelectorAll('.super-admin-only.form-section').forEach(el => el.style.removeProperty('display'));
-            // Show the 3 new tab buttons (not super-admin-only, hidden by default via inline style)
-            ['pdfHandoutsAdminTab','paymentApprovalAdminTab','eventScheduleAdminTab'].forEach(id => {
-                const el = document.getElementById(id);
-                if (el) el.style.display = 'inline-block';
-            });
             
             // Show HWP edit controls for Super Admin
             if (typeof hwpShowAdminControls === 'function') hwpShowAdminControls();
@@ -6536,16 +6789,6 @@
             document.querySelectorAll('.manager-whatsapp-btn').forEach(el => {
                 el.style.display = managerPermissions.whatsappMessages ? 'inline-block' : 'none';
             });
-
-            // Show/hide the 3 new tab BUTTONS based on permissions
-            const pdfTab = document.getElementById('pdfHandoutsAdminTab');
-            if (pdfTab) pdfTab.style.display = managerPermissions.pdfHandouts ? 'inline-block' : 'none';
-
-            const paTab = document.getElementById('paymentApprovalAdminTab');
-            if (paTab) paTab.style.display = managerPermissions.paymentApproval ? 'inline-block' : 'none';
-
-            const esTab = document.getElementById('eventScheduleAdminTab');
-            if (esTab) esTab.style.display = managerPermissions.eventSchedule ? 'inline-block' : 'none';
         }
 
         // ─────────────────────────────────────────────────────────────────────────
@@ -6650,6 +6893,7 @@
         let bowRpData = []; // cached entries
 
         async function bowRpLoad() {
+            loadBowLeaderboardStatus();
             const tableWrap  = document.getElementById('bowRpTableWrap');
             const statsBanner = document.getElementById('bowRpStatusBanner');
             const statsBox   = document.getElementById('bowRpStats');
@@ -7419,8 +7663,12 @@
             
             // For multiTeam events: assign shared teamNum so all members of this submission are grouped as one team
             if (cfg.multiTeam) {
-                const currentlyEnrolled = all.filter(e => e.event === selectedEvent && e.classYear === studentClass).length;
-                baseData.teamNum = Math.ceil(currentlyEnrolled / cfg.count) + 1;
+                const sameEventEntries = all.filter(e => e.event === selectedEvent && e.classYear === studentClass);
+                // For allowIndividual events (e.g. BOW), count distinct existing teamNums to avoid miscalc
+                const existingTeamNums = cfg.allowIndividual
+                    ? new Set(sameEventEntries.map(e => e.teamNum).filter(n => n != null)).size
+                    : Math.ceil(sameEventEntries.length / cfg.count);
+                baseData.teamNum = existingTeamNums + 1;
             }
 
             // Submit all members
@@ -7755,8 +8003,12 @@
             
             // For multiTeam events: assign shared teamNum so all members of this submission are grouped as one team
             if (cfg.multiTeam) {
-                const currentlyEnrolled = all.filter(e => e.event === selectedEvent && e.classYear === crClass).length;
-                baseData.teamNum = Math.ceil(currentlyEnrolled / cfg.count) + 1;
+                const sameEventEntries = all.filter(e => e.event === selectedEvent && e.classYear === crClass);
+                // For allowIndividual events (e.g. BOW), count distinct existing teamNums to avoid miscalc
+                const existingTeamNums = cfg.allowIndividual
+                    ? new Set(sameEventEntries.map(e => e.teamNum).filter(n => n != null)).size
+                    : Math.ceil(sameEventEntries.length / cfg.count);
+                baseData.teamNum = existingTeamNums + 1;
             }
 
             // Submit all members
@@ -9562,13 +9814,13 @@
             'Priyanka V'      : { role: '📊 Vlog Monitor + 📋 Event Incharge',   color: '#4a148c', bg: '#e1bee7', detail: 'Vlog Social Score Monitor & Incharge: Mime, Mad Ads, YouTube Advertisement, Case Analysis, Vlog' },
             'Roopa M.C'       : { role: '📺 YT Ad Monitor + 📋 Event Incharge',  color: '#b71c1c', bg: '#ffcdd2', detail: 'YouTube Ad Social Score Monitor & Incharge: Mime, Mad Ads, YouTube Advertisement, Case Analysis' },
             'Smitha'          : { role: '📺 YT Ad Monitor + 📋 Event Incharge',  color: '#b71c1c', bg: '#ffcdd2', detail: 'YouTube Ad Social Score Monitor & Incharge: Social Awareness Skit, YouTube Advertisement, Quiz' },
-            'Kotrappa K'      : { role: '📋 Event Incharge',                     color: '#1a237e', bg: '#c5cae9', detail: 'Mime, Nukkad Natak, Hand Writing' },
+            'Kotrappa K'      : { role: '🎭 Nukkad Natak Pre-event + 📋 Event Incharge', color: '#1a237e', bg: '#c5cae9', detail: 'Nukkad Natak — theme verification, clash detection & permission slip. Also Incharge: Nukkad Natak, Hand Writing' },
             'Anitha N'        : { role: '📋 Event Incharge',                     color: '#1a237e', bg: '#c5cae9', detail: 'Group Dance, Talent Hunt, Hand Writing' },
             'Pooja C'         : { role: '📋 Event Incharge',                     color: '#1a237e', bg: '#c5cae9', detail: 'Group Dance, Talent Hunt, Quiz' },
             'Dr. Shilpa R Y'  : { role: '📋 Event Incharge',                     color: '#1a237e', bg: '#c5cae9', detail: 'Mad Ads, Case Analysis' },
-            'Lalitha S K'     : { role: '📋 Event Incharge',                     color: '#1a237e', bg: '#c5cae9', detail: 'Interdisciplinary, Best Out of Waste' },
+            'Lalitha S K'     : { role: '✅ BOW Entry Verifier + 📋 Event Incharge', color: '#e65100', bg: '#ffe0b2', detail: 'Best Out of Waste — marks participant attendance on event day (Present/Absent) for jury forwarding. Also Incharge: Interdisciplinary, Best Out of Waste' },
             'Hemavathi Desai' : { role: '🎙️ Podcast Approval + 📋 Event Incharge', color: '#bf360c', bg: '#ffccbc', detail: 'Pod Casting Approval Incharge, Ramp Walk, Interdisciplinary' },
-            'Shankar B C'     : { role: '✅ BOW Entry Verifier + 📋 Event Incharge', color: '#e65100', bg: '#ffe0b2', detail: 'Best Out of Waste — marks participant attendance on event day (Present/Absent) for jury forwarding. Also Incharge: Social Awareness Skit, Nukkad Natak' },
+            'Shankar B C'     : { role: '✅ BOW Verifier + 🎭 Nukkad Post-event + 📋 Incharge', color: '#e65100', bg: '#ffe0b2', detail: 'BOW entry verification + Nukkad Natak post-event (YouTube & newspaper verify). Also Incharge: Social Awareness Skit, Nukkad Natak' },
         };
 
         // ── All events from Event Schedule mapped to faculty names ──
@@ -9798,6 +10050,8 @@
                 document.getElementById('chandanPodcastPanel').style.display = 'none';
                 document.getElementById('shankarBowPanel').style.display     = 'none';
                 document.getElementById('roopaSmitraYtAdPanel').style.display = 'none';
+                document.getElementById('nukkadPrePanel').style.display      = 'none';
+                document.getElementById('nukkadPostPanel').style.display     = 'none';
                 document.getElementById('facultyComingSoon').style.display   = 'none';
                 document.getElementById('facultyDashboard').style.display = 'block';
                 document.getElementById('facultyDashName').textContent  = faculty.name;
@@ -9806,23 +10060,32 @@
                 const isPriyanka  = faculty.name === 'Priyanka V';
                 const isHemavathi = faculty.name === 'Hemavathi Desai';
                 const isShankar   = faculty.name === 'Shankar B C';
+                const isLalitha   = faculty.name === 'Lalitha S K';
+                const isKotrappa  = faculty.name === 'Kotrappa K';
                 const isRoopa     = faculty.name === 'Roopa M.C';
                 const isSmitha    = faculty.name === 'Smitha';
                 const hasVlogAccess    = isChandan || isPriyanka;
                 const hasPodcastAccess = isChandan || isHemavathi;
                 const hasYtAdAccess    = isRoopa || isSmitha;
+                const hasBowAccess     = isShankar || isLalitha;
+                const hasNukkadPre     = isKotrappa;
+                const hasNukkadPost    = isShankar;
                 document.getElementById('chandanSocialPanel').style.display   = hasVlogAccess    ? 'block' : 'none';
                 document.getElementById('chandanPodcastPanel').style.display  = hasPodcastAccess ? 'block' : 'none';
-                document.getElementById('shankarBowPanel').style.display      = isShankar        ? 'block' : 'none';
+                document.getElementById('shankarBowPanel').style.display      = hasBowAccess     ? 'block' : 'none';
                 document.getElementById('roopaSmitraYtAdPanel').style.display = hasYtAdAccess    ? 'block' : 'none';
-                document.getElementById('facultyComingSoon').style.display    = (hasVlogAccess || hasPodcastAccess || isShankar || hasYtAdAccess) ? 'none' : 'block';
+                document.getElementById('nukkadPrePanel').style.display       = hasNukkadPre     ? 'block' : 'none';
+                document.getElementById('nukkadPostPanel').style.display      = hasNukkadPost    ? 'block' : 'none';
+                document.getElementById('facultyComingSoon').style.display    = (hasVlogAccess || hasPodcastAccess || hasBowAccess || hasYtAdAccess || hasNukkadPre || hasNukkadPost) ? 'none' : 'block';
                 const roleInfo = FACULTY_ROLES[faculty.name];
                 const roleLbl = document.getElementById('facultyDashRole');
                 if (roleLbl && roleInfo) roleLbl.textContent = roleInfo.role;
                 if (hasVlogAccess)    loadChandanPanel();
                 if (hasPodcastAccess) loadChandanPodcastPanel();
-                if (isShankar)        loadShankarBowPanel();
+                if (hasBowAccess)     loadShankarBowPanel();
                 if (hasYtAdAccess)    loadYtAdMonitorPanel();
+                if (hasNukkadPre)     loadNukkadPrePanel();
+                if (hasNukkadPost)    loadNukkadPostPanel();
                 return;
             }
 
@@ -9853,6 +10116,8 @@
                 document.getElementById('chandanPodcastPanel').style.display = 'none';
                 document.getElementById('shankarBowPanel').style.display     = 'none';
                 document.getElementById('roopaSmitraYtAdPanel').style.display = 'none';
+                document.getElementById('nukkadPrePanel').style.display      = 'none';
+                document.getElementById('nukkadPostPanel').style.display     = 'none';
                 document.getElementById('facultyComingSoon').style.display   = 'none';
                 document.getElementById('facultyDashboard').style.display = 'block';
                 document.getElementById('facultyDashName').textContent  = faculty.name;
@@ -9862,23 +10127,32 @@
                 const isPriyanka  = faculty.name === 'Priyanka V';
                 const isHemavathi = faculty.name === 'Hemavathi Desai';
                 const isShankar   = faculty.name === 'Shankar B C';
+                const isLalitha   = faculty.name === 'Lalitha S K';
+                const isKotrappa  = faculty.name === 'Kotrappa K';
                 const isRoopa     = faculty.name === 'Roopa M.C';
                 const isSmitha    = faculty.name === 'Smitha';
                 const hasVlogAccess    = isChandan || isPriyanka;
                 const hasPodcastAccess = isChandan || isHemavathi;
                 const hasYtAdAccess    = isRoopa || isSmitha;
+                const hasBowAccess     = isShankar || isLalitha;
+                const hasNukkadPre     = isKotrappa;
+                const hasNukkadPost    = isShankar;
                 document.getElementById('chandanSocialPanel').style.display   = hasVlogAccess    ? 'block' : 'none';
                 document.getElementById('chandanPodcastPanel').style.display  = hasPodcastAccess ? 'block' : 'none';
-                document.getElementById('shankarBowPanel').style.display      = isShankar        ? 'block' : 'none';
+                document.getElementById('shankarBowPanel').style.display      = hasBowAccess     ? 'block' : 'none';
                 document.getElementById('roopaSmitraYtAdPanel').style.display = hasYtAdAccess    ? 'block' : 'none';
-                document.getElementById('facultyComingSoon').style.display    = (hasVlogAccess || hasPodcastAccess || isShankar || hasYtAdAccess) ? 'none' : 'block';
+                document.getElementById('nukkadPrePanel').style.display       = hasNukkadPre     ? 'block' : 'none';
+                document.getElementById('nukkadPostPanel').style.display      = hasNukkadPost    ? 'block' : 'none';
+                document.getElementById('facultyComingSoon').style.display    = (hasVlogAccess || hasPodcastAccess || hasBowAccess || hasYtAdAccess || hasNukkadPre || hasNukkadPost) ? 'none' : 'block';
                 const roleInfoN = FACULTY_ROLES[faculty.name];
                 const roleLblN  = document.getElementById('facultyDashRole');
                 if (roleLblN && roleInfoN) roleLblN.textContent = roleInfoN.role;
                 if (hasVlogAccess)    loadChandanPanel();
                 if (hasPodcastAccess) loadChandanPodcastPanel();
-                if (isShankar)        loadShankarBowPanel();
+                if (hasBowAccess)     loadShankarBowPanel();
                 if (hasYtAdAccess)    loadYtAdMonitorPanel();
+                if (hasNukkadPre)     loadNukkadPrePanel();
+                if (hasNukkadPost)    loadNukkadPostPanel();
 
             } catch(err) {
                 showMsg('❌ Error: ' + err.message, false);
@@ -9897,7 +10171,7 @@
             const msg = document.getElementById('facultyLoginMsg');
             if (msg) msg.style.display = 'none';
             // Reset all functional panels
-            const resetIds = ['chandanSocialPanel','chandanPodcastPanel','shankarBowPanel','roopaSmitraYtAdPanel','facultyComingSoon'];
+            const resetIds = ['chandanSocialPanel','chandanPodcastPanel','shankarBowPanel','roopaSmitraYtAdPanel','nukkadPrePanel','nukkadPostPanel','facultyComingSoon'];
             resetIds.forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
         }
 
@@ -10794,68 +11068,133 @@
                     return;
                 }
 
+                // ── Helper: render one participant row ──
+                function bowMemberRow(e, roleLabel, bgColor) {
+                    const att       = e._attendance.status || 'pending';
+                    const markedAt  = e._attendance.markedAt
+                        ? new Date(e._attendance.markedAt).toLocaleString('en-IN',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'})
+                        : '';
+                    const attColor = att === 'present' ? '#2e7d32' : att === 'absent' ? '#c62828' : '#856404';
+                    const attBg    = att === 'present' ? '#e8f5e9' : att === 'absent' ? '#fce4ec' : '#fff8e1';
+                    const attLabel = att === 'present' ? '✅ Present' : att === 'absent' ? '❌ Absent' : '⏳ Not Marked';
+                    const reg = bowRegs[e.key] || {};
+                    const finalPhoto = reg.finalPhotoUrl;
+                    const photoThumb = finalPhoto
+                        ? `<a href="${finalPhoto}" target="_blank" rel="noopener" style="flex-shrink:0"><img src="${finalPhoto}" style="width:48px;height:48px;object-fit:cover;border-radius:8px;border:2px solid #4caf50" alt="craft"></a>`
+                        : '<span style="width:48px;height:48px;background:#fff3e0;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.2em;flex-shrink:0;border:2px dashed #ffe082">📦</span>';
+                    const sentToJury = reg.sentToJury === true;
+                    return `<div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:8px;padding:10px 12px;background:${bgColor};border-radius:7px">
+                        <div style="display:flex;align-items:flex-start;gap:10px;flex:1;min-width:180px">
+                            ${photoThumb}
+                            <div>
+                                <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+                                    <span style="font-weight:700;color:#222;font-size:0.9em">${e.name || '—'}</span>
+                                    <span style="background:#e3f2fd;color:#1565c0;padding:1px 7px;border-radius:8px;font-size:0.7em;font-weight:700">${roleLabel}</span>
+                                </div>
+                                <div style="font-size:0.76em;color:#e65100;margin-top:2px">${reg.theme ? '🎨 ' + reg.theme : '<em style="color:#aaa">No theme pre-registered</em>'}</div>
+                                <div style="font-size:0.72em;color:#777;margin-top:1px">${reg.materials ? '♻️ ' + reg.materials : ''}</div>
+                                <div style="font-size:0.7em;color:#aaa;margin-top:1px">${markedAt ? '⏰ ' + markedAt : ''}</div>
+                                <div style="margin-top:5px;display:flex;gap:5px;flex-wrap:wrap">
+                                    <span style="background:${reg.theme?'#e8f5e9':'#fce4ec'};color:${reg.theme?'#2e7d32':'#c62828'};padding:1px 7px;border-radius:7px;font-size:0.7em;font-weight:700">${reg.theme?'✅ Pre-Registered':'❌ Not Pre-Registered'}</span>
+                                    <span style="background:${finalPhoto?'#e3f2fd':'#fff3e0'};color:${finalPhoto?'#1565c0':'#e65100'};padding:1px 7px;border-radius:7px;font-size:0.7em;font-weight:700">${finalPhoto?'📸 Photo Submitted':'⏳ No Final Photo'}</span>
+                                    ${sentToJury ? '<span style="background:#f3e5f5;color:#6a1b9a;padding:1px 7px;border-radius:7px;font-size:0.7em;font-weight:700">📋 Sent to Jury</span>' : ''}
+                                </div>
+                            </div>
+                        </div>
+                        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px">
+                            <span style="background:${attBg};color:${attColor};padding:2px 9px;border-radius:10px;font-size:0.76em;font-weight:700">${attLabel}</span>
+                            <div style="display:flex;gap:5px;flex-wrap:wrap">
+                                <button onclick="shankarMarkBow('${e.key}','present')" style="background:#4caf50;color:white;border:none;border-radius:6px;padding:4px 10px;font-size:0.78em;font-weight:700;cursor:pointer;${att==='present'?'opacity:0.4;cursor:default':''}" ${att==='present'?'disabled':''}>✅ Present</button>
+                                <button onclick="shankarMarkBow('${e.key}','absent')" style="background:#f44336;color:white;border:none;border-radius:6px;padding:4px 10px;font-size:0.78em;font-weight:700;cursor:pointer;${att==='absent'?'opacity:0.4;cursor:default':''}" ${att==='absent'?'disabled':''}>❌ Absent</button>
+                                <button onclick="shankarMarkBow('${e.key}','pending')" style="background:#9e9e9e;color:white;border:none;border-radius:6px;padding:4px 7px;font-size:0.74em;cursor:pointer;${att==='pending'?'opacity:0.4;cursor:default':''}" ${att==='pending'?'disabled':''}>↩</button>
+                            </div>
+                            ${finalPhoto && att==='present' && !sentToJury ? `<button onclick="shankarSendToJury('${reg.regId || ''}')" style="background:linear-gradient(135deg,#6a1b9a,#9c27b0);color:white;border:none;border-radius:6px;padding:5px 12px;font-size:0.78em;font-weight:700;cursor:pointer;width:100%">📋 Send to Jury</button>` : ''}
+                            ${sentToJury ? '<span style="background:#f3e5f5;color:#6a1b9a;padding:3px 10px;border-radius:7px;font-size:0.76em;font-weight:700">📋 Sent to Jury ✅</span>' : ''}
+                        </div>
+                        <div id="bowMsg_${e.key}" style="display:none;width:100%;font-size:0.76em;font-weight:600;padding:4px 10px;border-radius:6px;margin-top:3px"></div>
+                    </div>`;
+                }
+
+                // ── Helper: group members into teams ──
+                function groupIntoTeams(members) {
+                    const teams = [];
+                    const hasTeamNum = members.some(m => m.teamNum != null);
+                    if (hasTeamNum) {
+                        // Group by teamNum (new enrollments)
+                        const byTeamNum = {};
+                        members.forEach(m => {
+                            const tn = m.teamNum != null ? m.teamNum : 'solo_' + m.key;
+                            if (!byTeamNum[tn]) byTeamNum[tn] = [];
+                            byTeamNum[tn].push(m);
+                        });
+                        Object.entries(byTeamNum).sort(([a],[b]) => {
+                            const na = parseFloat(a), nb = parseFloat(b);
+                            return isNaN(na) || isNaN(nb) ? String(a).localeCompare(String(b)) : na - nb;
+                        }).forEach(([tn, grp], idx) => {
+                            teams.push({ teamNum: idx + 1, members: grp, isSolo: grp.length === 1 });
+                        });
+                    } else {
+                        // Safe sequential pairing for old records (no teamNum)
+                        let i = 0;
+                        let teamIdx = 1;
+                        while (i < members.length) {
+                            const cur  = members[i];
+                            const next = members[i + 1];
+                            const curRole  = (cur.role  || '').toLowerCase();
+                            const nextRole = next ? (next.role || '').toLowerCase() : '';
+                            if (curRole === 'captain' && nextRole === 'member') {
+                                // Proper pair
+                                teams.push({ teamNum: teamIdx++, members: [cur, next], isSolo: false });
+                                i += 2;
+                            } else if (curRole === 'member' && (i === 0 || (members[i-1].role||'').toLowerCase() !== 'captain')) {
+                                // Orphan member — no preceding captain claimed them
+                                teams.push({ teamNum: null, members: [cur], isSolo: true, orphan: true });
+                                i += 1;
+                            } else {
+                                // Captain with no following member (individual or orphan captain)
+                                teams.push({ teamNum: teamIdx++, members: [cur], isSolo: true });
+                                i += 1;
+                            }
+                        }
+                    }
+                    return teams;
+                }
+
                 listEl.innerHTML = Object.entries(byClass).sort(([a],[b]) => a.localeCompare(b)).map(([cls, members]) => {
-                    const rows = members.map((e, i) => {
-                        const att    = e._attendance.status || 'pending';
-                        const markedBy  = e._attendance.markedBy  || '';
-                        const markedAt  = e._attendance.markedAt
-                            ? new Date(e._attendance.markedAt).toLocaleString('en-IN',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'})
-                            : '';
-                        const attColor = att === 'present' ? '#2e7d32' : att === 'absent' ? '#c62828' : '#856404';
-                        const attBg    = att === 'present' ? '#e8f5e9' : att === 'absent' ? '#fce4ec' : '#fff8e1';
-                        const attLabel = att === 'present' ? '✅ Present' : att === 'absent' ? '❌ Absent' : '⏳ Not Marked';
-                        const reg = bowRegs[e.key] || {};
-                        const finalPhoto = reg.finalPhotoUrl;
-                        const photoThumb = finalPhoto
-                            ? `<a href="${finalPhoto}" target="_blank" rel="noopener" style="flex-shrink:0"><img src="${finalPhoto}" style="width:56px;height:56px;object-fit:cover;border-radius:8px;border:2px solid #4caf50" alt="craft"></a>`
-                            : '<span style="width:56px;height:56px;background:#fff3e0;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.4em;flex-shrink:0;border:2px dashed #ffe082">📦</span>';
-                        const sentToJury = reg.sentToJury === true;
-                        return `<div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:10px;padding:12px 14px;background:${i%2===0?'#fafafa':'white'};border-radius:8px;border:1px solid #f5f5f5">
-                            <div style="display:flex;align-items:flex-start;gap:12px;flex:1;min-width:200px">
-                                ${photoThumb}
-                                <div>
-                                    <div style="font-weight:700;color:#222;font-size:0.92em">${e.name || '—'}</div>
-                                    <div style="font-size:0.78em;color:#e65100;margin-top:2px">${reg.theme ? '🎨 ' + reg.theme : '<em style="color:#aaa">No theme pre-registered</em>'}</div>
-                                    <div style="font-size:0.74em;color:#777;margin-top:2px">${reg.materials ? '♻️ ' + reg.materials : ''}</div>
-                                    <div style="font-size:0.72em;color:#aaa;margin-top:2px">${markedAt ? '⏰ Marked: ' + markedAt : ''}</div>
-                                    <div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap">
-                                        <span style="background:${reg.theme?'#e8f5e9':'#fce4ec'};color:${reg.theme?'#2e7d32':'#c62828'};padding:2px 8px;border-radius:8px;font-size:0.72em;font-weight:700">${reg.theme?'✅ Pre-Registered':'❌ Not Pre-Registered'}</span>
-                                        <span style="background:${finalPhoto?'#e3f2fd':'#fff3e0'};color:${finalPhoto?'#1565c0':'#e65100'};padding:2px 8px;border-radius:8px;font-size:0.72em;font-weight:700">${finalPhoto?'📸 Final Photo Submitted':'⏳ No Final Photo Yet'}</span>
-                                        ${sentToJury ? '<span style="background:#f3e5f5;color:#6a1b9a;padding:2px 8px;border-radius:8px;font-size:0.72em;font-weight:700">📋 Sent to Jury</span>' : ''}
-                                    </div>
-                                </div>
+                    const teams = groupIntoTeams(members);
+                    const clsPresent = members.filter(m => m._attendance.status === 'present').length;
+                    const clsTotal   = members.length;
+
+                    const teamBlocks = teams.map(team => {
+                        const headerLabel = team.orphan
+                            ? '⚠️ Unmatched Member'
+                            : team.isSolo
+                                ? `👤 Individual Entry`
+                                : `👥 Team ${team.teamNum}`;
+                        const headerBg = team.orphan ? '#fce4ec' : team.isSolo ? '#e8f5e9' : '#e3f2fd';
+                        const headerColor = team.orphan ? '#c62828' : team.isSolo ? '#2e7d32' : '#1565c0';
+
+                        const memberRows = team.members.map((e, idx) => {
+                            const roleLabel = e.role || (idx === 0 ? 'Captain' : 'Member');
+                            const bg = idx % 2 === 0 ? '#fafafa' : 'white';
+                            return bowMemberRow(e, roleLabel, bg);
+                        }).join('');
+
+                        return `<div style="border:1.5px solid #e0e0e0;border-radius:10px;overflow:hidden;margin-bottom:10px">
+                            <div style="background:${headerBg};padding:6px 12px;display:flex;align-items:center;justify-content:space-between">
+                                <span style="font-weight:700;color:${headerColor};font-size:0.82em">${headerLabel}</span>
+                                ${team.orphan ? '<span style="font-size:0.72em;color:#c62828;font-weight:600">Check enrollment data</span>' : ''}
                             </div>
-                            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-wrap:wrap">
-                                <div style="display:flex;gap:6px;flex-wrap:wrap">
-                                    <span style="background:${attBg};color:${attColor};padding:3px 10px;border-radius:12px;font-size:0.78em;font-weight:700">${attLabel}</span>
-                                </div>
-                                <div style="display:flex;gap:6px;flex-wrap:wrap">
-                                    <button onclick="shankarMarkBow('${e.key}','present')"
-                                        style="background:#4caf50;color:white;border:none;border-radius:7px;padding:5px 12px;font-size:0.8em;font-weight:700;cursor:pointer;${att==='present'?'opacity:0.4;cursor:default':''}"
-                                        ${att==='present'?'disabled':''}>✅ Present</button>
-                                    <button onclick="shankarMarkBow('${e.key}','absent')"
-                                        style="background:#f44336;color:white;border:none;border-radius:7px;padding:5px 12px;font-size:0.8em;font-weight:700;cursor:pointer;${att==='absent'?'opacity:0.4;cursor:default':''}"
-                                        ${att==='absent'?'disabled':''}>❌ Absent</button>
-                                    <button onclick="shankarMarkBow('${e.key}','pending')"
-                                        style="background:#9e9e9e;color:white;border:none;border-radius:7px;padding:5px 8px;font-size:0.76em;cursor:pointer;${att==='pending'?'opacity:0.4;cursor:default':''}"
-                                        ${att==='pending'?'disabled':''}>↩</button>
-                                </div>
-                                ${finalPhoto && att==='present' && !sentToJury ? `<button onclick="shankarSendToJury('${reg.regId || ''}')"
-                                    style="background:linear-gradient(135deg,#6a1b9a,#9c27b0);color:white;border:none;border-radius:7px;padding:6px 14px;font-size:0.8em;font-weight:700;cursor:pointer;width:100%">📋 Send to Jury</button>` : ''}
-                                ${sentToJury ? '<span style="background:#f3e5f5;color:#6a1b9a;padding:4px 12px;border-radius:8px;font-size:0.78em;font-weight:700;text-align:center">📋 Sent to Jury ✅</span>' : ''}
-                            </div>
-                            <div id="bowMsg_${e.key}" style="display:none;width:100%;font-size:0.78em;font-weight:600;padding:4px 10px;border-radius:6px;margin-top:4px"></div>
+                            <div style="padding:8px 10px;display:flex;flex-direction:column;gap:6px">${memberRows}</div>
                         </div>`;
                     }).join('');
 
-                    const clsPresent = members.filter(m => m._attendance.status === 'present').length;
-                    const clsTotal   = members.length;
                     return `<div style="background:white;border-radius:12px;border:2px solid #ffe082;margin-bottom:14px;overflow:hidden">
                         <div style="background:linear-gradient(135deg,#ff8f00,#f9a825);padding:10px 16px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
                             <span style="color:white;font-weight:700;font-size:0.95em">♻️ ${cls}</span>
                             <span style="background:rgba(255,255,255,0.25);color:white;padding:2px 12px;border-radius:12px;font-size:0.82em;font-weight:700">${clsPresent} / ${clsTotal} Present</span>
                         </div>
-                        <div style="padding:10px 12px;display:flex;flex-direction:column;gap:6px">${rows}</div>
+                        <div style="padding:10px 12px;display:flex;flex-direction:column;gap:4px">${teamBlocks}</div>
                     </div>`;
                 }).join('');
 
@@ -10867,9 +11206,10 @@
         async function shankarMarkBow(entryKey, status) {
             const msgEl = document.getElementById('bowMsg_' + entryKey);
             try {
+                const bowMarkedBy = document.getElementById('facultyDashName').textContent || 'Shankar B C';
                 await db.ref('bowAttendance/' + entryKey).set({
                     status    : status,
-                    markedBy  : 'Shankar B C',
+                    markedBy  : bowMarkedBy,
                     markedAt  : new Date().toISOString()
                 });
                 if (msgEl) {
@@ -10894,10 +11234,11 @@
         async function shankarSendToJury(regId) {
             if (!regId) { alert('❌ Registration ID missing.'); return; }
             try {
+                const bowJuryBy = document.getElementById('facultyDashName').textContent || 'Shankar B C';
                 await db.ref('bowRegistrations/' + regId).update({
                     sentToJury   : true,
                     sentToJuryAt : new Date().toISOString(),
-                    sentToJuryBy : 'Shankar B C'
+                    sentToJuryBy : bowJuryBy
                 });
                 loadShankarBowPanel();
             } catch(err) {
@@ -11305,6 +11646,876 @@
 
         // ══════════════════════════════════════════════════════════════
         // END BOW CR FUNCTIONS
+        // ══════════════════════════════════════════════════════════════
+
+
+        // ══════════════════════════════════════════════════════════════
+        // NUKKAD NATAK — CR FUNCTIONS
+        // ══════════════════════════════════════════════════════════════
+
+        async function loadCRNukkadPanel() {
+            const cls     = (window.currentCRClass || crClass || '').trim();
+            const statusEl = document.getElementById('crNukkadStatus');
+            if (!cls) { if (statusEl) statusEl.innerHTML = '❌ Class not set. Please log in as CR first.'; return; }
+
+            try {
+                // Load enrollment
+                const enrollSnap = await db.ref('youthfest-enrollments').orderByChild('event').equalTo('Nukkad Natak').once('value');
+                let enrolled = false;
+                if (enrollSnap.exists()) {
+                    enrollSnap.forEach(ch => { if ((ch.val().classYear || ch.val().class || '') === cls) enrolled = true; });
+                }
+
+                // Load post-event data
+                const postSnap = await db.ref('nukkadNatak/post/' + cls.replace(/[.#$/\[\]]/g,'_')).once('value');
+                const post = postSnap.val() || {};
+
+                if (!enrolled) {
+                    if (statusEl) statusEl.innerHTML = '<strong>⚠️ Not enrolled yet.</strong> Please enroll your class for Nukkad Natak first via the Enroll Students tab.';
+                    return;
+                }
+                if (statusEl) statusEl.innerHTML = `<strong>✅ Enrolled.</strong> Class: <strong>${cls}</strong>`;
+
+                // Pre-fill saved values
+                const ytEl   = document.getElementById('crNukkadYtLink');
+                const formEl = document.getElementById('crNukkadFormLink');
+                if (ytEl   && post.ytLink)   ytEl.value   = post.ytLink;
+                if (formEl && post.formLink) formEl.value = post.formLink;
+
+                // Pre-fill adviser details (from pre-event data)
+                const preSnap = await db.ref('nukkadNatak/pre/' + cls.replace(/[.#$/\[\]]/g,'_')).once('value');
+                const pre = preSnap.val() || {};
+                const advNameEl = document.getElementById('crAdviserName');
+                const advOrgEl  = document.getElementById('crAdviserOrg');
+                if (advNameEl && pre.adviserName) advNameEl.value = pre.adviserName;
+                if (advOrgEl  && pre.adviserOrg)  advOrgEl.value  = pre.adviserOrg;
+
+                // Show current newspaper photo
+                const newsDiv = document.getElementById('crNukkadNewspaperCurrent');
+                if (newsDiv) {
+                    newsDiv.innerHTML = post.newspaperUrl
+                        ? `<div style="margin-bottom:8px"><a href="${post.newspaperUrl}" target="_blank"><img src="${post.newspaperUrl}" style="max-width:180px;border-radius:8px;border:2px solid #4caf50"></a><br><span style="font-size:0.76em;color:#2e7d32;font-weight:700">✅ Photo uploaded</span></div>`
+                        : '<p style="font-size:0.8em;color:#aaa;margin:0">No photo uploaded yet.</p>';
+                }
+            } catch(err) {
+                if (statusEl) statusEl.innerHTML = '❌ Error: ' + err.message;
+            }
+        }
+
+        async function saveNukkadYtLink() {
+            const cls  = (window.currentCRClass || crClass || '').trim();
+            const link = (document.getElementById('crNukkadYtLink').value || '').trim();
+            const msg  = document.getElementById('crNukkadYtMsg');
+            function showM(txt, ok) { msg.style.display='block'; msg.style.background=ok?'#d4edda':'#f8d7da'; msg.style.color=ok?'#155724':'#721c24'; msg.textContent=txt; }
+            if (!cls)  { showM('❌ Class not set.', false); return; }
+            if (!link) { showM('❌ Please enter a YouTube link.', false); return; }
+            if (!link.startsWith('http')) { showM('❌ Please enter a valid URL starting with http.', false); return; }
+            try {
+                const key = cls.replace(/[.#$/\[\]]/g,'_');
+                await db.ref('nukkadNatak/post/' + key).update({ ytLink: link, ytSubmittedAt: new Date().toISOString(), ytSubmittedBy: cls });
+                showM('✅ YouTube link saved! Shankar sir will verify it.', true);
+            } catch(err) { showM('❌ Error: ' + err.message, false); }
+        }
+
+        async function saveNukkadNewspaper() {
+            const cls   = (window.currentCRClass || crClass || '').trim();
+            const file  = document.getElementById('crNukkadNewspaperFile').files[0];
+            const msg   = document.getElementById('crNukkadNewspaperMsg');
+            function showM(txt, ok) { msg.style.display='block'; msg.style.background=ok?'#d4edda':'#f8d7da'; msg.style.color=ok?'#155724':'#721c24'; msg.textContent=txt; }
+            if (!cls)  { showM('❌ Class not set.', false); return; }
+            if (!file) { showM('❌ Please select a photo to upload.', false); return; }
+            showM('⏳ Uploading…', true);
+            try {
+                const key      = cls.replace(/[.#$/\[\]]/g,'_');
+                const storRef  = firebase.storage().ref('nukkadNatak/newspaper/' + key + '_' + Date.now() + '_' + file.name);
+                await storRef.put(file);
+                const url = await storRef.getDownloadURL();
+                await db.ref('nukkadNatak/post/' + key).update({ newspaperUrl: url, newspaperSubmittedAt: new Date().toISOString() });
+                showM('✅ Newspaper photo uploaded! Shankar sir will verify it.', true);
+                loadCRNukkadPanel();
+            } catch(err) { showM('❌ Error: ' + err.message, false); }
+        }
+
+        async function saveNukkadFormLink() {
+            const cls  = (window.currentCRClass || crClass || '').trim();
+            const link = (document.getElementById('crNukkadFormLink').value || '').trim();
+            const msg  = document.getElementById('crNukkadFormMsg');
+            function showM(txt, ok) { msg.style.display='block'; msg.style.background=ok?'#d4edda':'#f8d7da'; msg.style.color=ok?'#155724':'#721c24'; msg.textContent=txt; }
+            if (!cls)  { showM('❌ Class not set.', false); return; }
+            if (!link) { showM('❌ Please enter the Google Form link.', false); return; }
+            if (!link.startsWith('http')) { showM('❌ Please enter a valid URL.', false); return; }
+            try {
+                const key = cls.replace(/[.#$/\[\]]/g,'_');
+                await db.ref('nukkadNatak/post/' + key).update({ formLink: link, formLinkSavedAt: new Date().toISOString() });
+                showM('✅ Feedback form link saved!', true);
+            } catch(err) { showM('❌ Error: ' + err.message, false); }
+        }
+
+        async function saveNukkadAdviser() {
+            const cls     = (window.currentCRClass || crClass || '').trim();
+            const advName = (document.getElementById('crAdviserName').value || '').trim();
+            const advOrg  = (document.getElementById('crAdviserOrg').value  || '').trim();
+            const msg     = document.getElementById('crAdviserMsg');
+            function showM(txt, ok) { msg.style.display='block'; msg.style.background=ok?'#d4edda':'#f8d7da'; msg.style.color=ok?'#155724':'#721c24'; msg.textContent=txt; }
+            if (!cls)    { showM('❌ Class not set.', false); return; }
+            if (!advName){ showM('❌ Please enter the Social Adviser name.', false); return; }
+            if (!advOrg) { showM('❌ Please enter the Media House / Organisation name.', false); return; }
+            try {
+                const key = cls.replace(/[.#$/\[\]]/g,'_');
+                await db.ref('nukkadNatak/pre/' + key).update({ adviserName: advName, adviserOrg: advOrg, savedAt: new Date().toISOString(), savedBy: cls });
+                showM('✅ Adviser details saved! Kotrappa sir will verify.', true);
+            } catch(err) { showM('❌ Error: ' + err.message, false); }
+        }
+
+        // ══════════════════════════════════════════════════════════════
+        // NUKKAD NATAK — KOTRAPPA PRE-EVENT PANEL
+        // ══════════════════════════════════════════════════════════════
+
+        async function loadNukkadPrePanel() {
+            const listEl  = document.getElementById('nukkadPreList');
+            const badge   = document.getElementById('nukkadPreBadge');
+            if (!listEl) return;
+            listEl.innerHTML = '<div style="text-align:center;color:#aaa;padding:30px">Loading…</div>';
+            try {
+                // Load all Nukkad Natak enrollments
+                const enrollSnap = await db.ref('youthfest-enrollments').orderByChild('event').equalTo('Nukkad Natak').once('value');
+                const byClass = {};
+                if (enrollSnap.exists()) {
+                    enrollSnap.forEach(ch => {
+                        const d = ch.val();
+                        const cls = d.classYear || d.class || 'Unknown';
+                        if (!byClass[cls]) byClass[cls] = { members:[], cause:'', adviserName:'', adviserOrg:'' };
+                        byClass[cls].members.push(d);
+                        if (d.cause)       byClass[cls].cause       = d.cause;
+                        if (d.adviserName) byClass[cls].adviserName = d.adviserName;
+                        if (d.adviserOrg)  byClass[cls].adviserOrg  = d.adviserOrg;
+                    });
+                }
+                // Load permissions
+                const permSnap = await db.ref('nukkadNatak/permissions').once('value');
+                const perms = permSnap.val() || {};
+
+                const classes = Object.keys(byClass);
+                if (badge) badge.textContent = classes.length + ' class' + (classes.length !== 1 ? 'es' : '') + ' enrolled';
+
+                // Build theme → classes map for duplicate detection
+                const themeMap = {};
+                classes.forEach(cls => {
+                    const theme = (byClass[cls].cause || '').toLowerCase().trim();
+                    if (theme) { if (!themeMap[theme]) themeMap[theme] = []; themeMap[theme].push(cls); }
+                });
+
+                if (!classes.length) {
+                    listEl.innerHTML = '<div style="text-align:center;color:#aaa;padding:30px">No Nukkad Natak enrollments yet.</div>';
+                    return;
+                }
+
+                listEl.innerHTML = classes.sort().map(cls => {
+                    const data  = byClass[cls];
+                    const perm  = perms[cls.replace(/[.#$/\[\]]/g,'_')] || {};
+                    const theme = (data.cause || '').trim();
+                    const themeKey = theme.toLowerCase().trim();
+                    const isDup = themeKey && themeMap[themeKey] && themeMap[themeKey].length > 1;
+                    const dupClasses = isDup ? themeMap[themeKey].filter(c => c !== cls).join(', ') : '';
+                    const hasPermission = perm.granted === true;
+                    const permDate = perm.date || '';
+                    const permTime = perm.time || '';
+                    const clsKey   = cls.replace(/[.#$/\[\]]/g,'_');
+
+                    return `<div style="background:white;border-radius:12px;border:2px solid ${isDup?'#ef9a9a':'#c5cae9'};padding:16px;margin-bottom:4px">
+                        <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px;margin-bottom:10px">
+                            <div>
+                                <div style="font-weight:700;color:#1a237e;font-size:0.95em">🏫 ${cls}</div>
+                                <div style="font-size:0.8em;color:#555;margin-top:3px">👥 ${data.members.length} members enrolled</div>
+                            </div>
+                            ${hasPermission ? `<span style="background:#e8f5e9;color:#2e7d32;padding:3px 12px;border-radius:12px;font-size:0.78em;font-weight:700">✅ Permission Granted</span>` : `<span style="background:#fff3e0;color:#e65100;padding:3px 12px;border-radius:12px;font-size:0.78em;font-weight:700">⏳ Pending Permission</span>`}
+                        </div>
+                        <div style="background:#f8f9fa;border-radius:8px;padding:10px;margin-bottom:10px;font-size:0.82em">
+                            <div style="margin-bottom:4px"><strong>🎯 Theme:</strong> ${theme || '<em style="color:#aaa">Not set</em>'}
+                                ${isDup ? `<span style="background:#fce4ec;color:#c62828;padding:1px 8px;border-radius:8px;font-size:0.78em;font-weight:700;margin-left:6px">⚠️ Duplicate — also used by: ${dupClasses}</span>` : (theme ? `<span style="background:#e8f5e9;color:#2e7d32;padding:1px 8px;border-radius:8px;font-size:0.78em;font-weight:700;margin-left:6px">✅ Unique</span>` : '')}
+                            </div>
+                            <div style="margin-bottom:2px"><strong>🎓 Social Adviser:</strong> ${data.adviserName || '<em style="color:#aaa">Not set</em>'}${data.adviserOrg ? ` <span style="color:#666">(${data.adviserOrg})</span>` : ''}</div>
+                            ${hasPermission ? `<div style="margin-top:4px;color:#2e7d32;font-weight:600">📅 Slot: ${permDate} at ${permTime}</div>` : ''}
+                        </div>
+                        ${!hasPermission ? `
+                        <div style="background:#e8eaf6;border-radius:8px;padding:10px;margin-bottom:10px">
+                            <div style="font-size:0.82em;font-weight:700;color:#1a237e;margin-bottom:8px">📅 Grant Permission — Select Date & Time:</div>
+                            <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+                                <input type="date" id="nukkadDate_${clsKey}" style="padding:7px 10px;border:2px solid #9fa8da;border-radius:8px;font-size:0.85em">
+                                <input type="time" id="nukkadTime_${clsKey}" style="padding:7px 10px;border:2px solid #9fa8da;border-radius:8px;font-size:0.85em">
+                                <button onclick="grantNukkadPermission('${cls}','${clsKey}')" style="background:#1a237e;color:white;border:none;border-radius:8px;padding:7px 14px;font-weight:700;cursor:pointer;font-size:0.82em">✅ Grant & Print Slip</button>
+                            </div>
+                            <div id="nukkadPermMsg_${clsKey}" style="display:none;margin-top:6px;font-size:0.78em;font-weight:600;padding:4px 10px;border-radius:6px"></div>
+                        </div>` : `
+                        <div style="display:flex;gap:8px;flex-wrap:wrap">
+                            <button onclick="printNukkadSlip('${cls}','${permDate}','${permTime}','${(data.adviserName||'').replace(/'/g,"\\'")}','${(data.cause||'').replace(/'/g,"\\'")}','${(data.adviserOrg||'').replace(/'/g,"\\'")}',${data.members.length})" style="background:#1565c0;color:white;border:none;border-radius:8px;padding:7px 14px;font-weight:700;cursor:pointer;font-size:0.82em">🖨️ Print Permission Slip</button>
+                            <button onclick="revokeNukkadPermission('${cls}','${clsKey}')" style="background:#c62828;color:white;border:none;border-radius:8px;padding:7px 14px;font-weight:700;cursor:pointer;font-size:0.82em">❌ Revoke</button>
+                        </div>`}
+                    </div>`;
+                }).join('');
+            } catch(err) {
+                if (listEl) listEl.innerHTML = `<div style="padding:20px;color:#c62828">❌ Error: ${err.message}</div>`;
+            }
+        }
+
+        async function grantNukkadPermission(cls, clsKey) {
+            const dateEl = document.getElementById('nukkadDate_' + clsKey);
+            const timeEl = document.getElementById('nukkadTime_' + clsKey);
+            const msgEl  = document.getElementById('nukkadPermMsg_' + clsKey);
+            function showM(txt, ok) { if(msgEl){msgEl.style.display='block';msgEl.style.background=ok?'#d4edda':'#f8d7da';msgEl.style.color=ok?'#155724':'#721c24';msgEl.textContent=txt;} }
+            const date = dateEl ? dateEl.value : '';
+            const time = timeEl ? timeEl.value : '';
+            if (!date) { showM('❌ Please select a date.', false); return; }
+            if (!time) { showM('❌ Please select a time.', false); return; }
+
+            // Clash detection — check if any other class has the same date+time
+            try {
+                const permSnap = await db.ref('nukkadNatak/permissions').once('value');
+                const perms = permSnap.val() || {};
+                const clash = Object.entries(perms).find(([k, v]) => k !== clsKey && v.granted && v.date === date && v.time === time);
+                if (clash) {
+                    // Find original class name from key
+                    const clashCls = clash[1].className || clash[0];
+                    showM(`❌ Slot clash! ${clashCls} already has permission for ${date} at ${time}. Choose a different slot.`, false);
+                    return;
+                }
+                const grantedBy = document.getElementById('facultyDashName').textContent || 'Kotrappa K';
+                await db.ref('nukkadNatak/permissions/' + clsKey).set({
+                    granted: true, date, time,
+                    className: cls,
+                    grantedBy, grantedAt: new Date().toISOString()
+                });
+                showM('✅ Permission granted! Loading print slip…', true);
+                setTimeout(() => {
+                    loadNukkadPrePanel();
+                }, 800);
+                // Auto-print after grant
+                const enrollSnap = await db.ref('youthfest-enrollments').orderByChild('event').equalTo('Nukkad Natak').once('value');
+                let adviserName='', adviserOrg='', theme='', memberCount=0;
+                if (enrollSnap.exists()) {
+                    enrollSnap.forEach(ch => {
+                        const d = ch.val();
+                        if ((d.classYear||d.class||'')===cls) {
+                            memberCount++;
+                            if (d.adviserName) adviserName = d.adviserName;
+                            if (d.adviserOrg)  adviserOrg  = d.adviserOrg;
+                            if (d.cause)       theme       = d.cause;
+                        }
+                    });
+                }
+                printNukkadSlip(cls, date, time, adviserName, theme, adviserOrg, memberCount);
+            } catch(err) { showM('❌ Error: ' + err.message, false); }
+        }
+
+        async function revokeNukkadPermission(cls, clsKey) {
+            if (!confirm('Revoke permission for ' + cls + '? They will need a new slot.')) return;
+            try {
+                await db.ref('nukkadNatak/permissions/' + clsKey).remove();
+                loadNukkadPrePanel();
+            } catch(err) { alert('❌ Error: ' + err.message); }
+        }
+
+        function printNukkadSlip(cls, date, time, adviserName, theme, adviserOrg, memberCount) {
+            const formattedDate = date ? new Date(date + 'T00:00:00').toLocaleDateString('en-IN',{day:'2-digit',month:'long',year:'numeric'}) : date;
+            const issuedBy = document.getElementById('facultyDashName') ? document.getElementById('facultyDashName').textContent : 'Kotrappa K';
+            const slipHtml = `<!DOCTYPE html><html><head><title>Nukkad Natak Permission Slip</title>
+            <style>
+                body { font-family: 'Times New Roman', serif; margin: 40px; color: #111; }
+                .header { text-align: center; border-bottom: 3px double #1a237e; padding-bottom: 14px; margin-bottom: 20px; }
+                .header h1 { font-size: 1.4em; color: #1a237e; margin: 0 0 4px; }
+                .header h2 { font-size: 1.1em; color: #c44569; margin: 0 0 4px; }
+                .header p  { font-size: 0.9em; margin: 0; color: #555; }
+                .slip-title { text-align: center; font-size: 1.2em; font-weight: bold; color: #1a237e; margin: 18px 0 16px; text-decoration: underline; letter-spacing: 1px; }
+                table { width: 100%; border-collapse: collapse; margin-bottom: 18px; }
+                td { padding: 9px 14px; border: 1px solid #ccc; font-size: 0.95em; }
+                td:first-child { font-weight: bold; width: 38%; background: #f5f5f5; color: #1a237e; }
+                .note { background: #fff8e1; border: 1px solid #ffe082; border-radius: 6px; padding: 12px 16px; font-size: 0.88em; margin-bottom: 18px; }
+                .sign { display: flex; justify-content: space-between; margin-top: 30px; }
+                .sign div { text-align: center; width: 44%; }
+                .sign .line { border-top: 2px solid #333; margin-bottom: 6px; }
+                .sign p { font-size: 0.85em; margin: 0; }
+                @media print { body { margin: 20px; } }
+            </style></head><body>
+            <div class="header">
+                <h1>Davan Institute of Advanced Management Studies</h1>
+                <h2>Spurthi Youth Festival 2026</h2>
+                <p>Permission Letter — Nukkad Natak</p>
+            </div>
+            <div class="slip-title">PERMISSION SLIP — NUKKAD NATAK</div>
+            <table>
+                <tr><td>Class</td><td>${cls}</td></tr>
+                <tr><td>Social Awareness Theme</td><td>${theme || '—'}</td></tr>
+                <tr><td>Social Adviser</td><td>${adviserName || '—'}${adviserOrg ? ' <em>(' + adviserOrg + ')</em>' : ''}</td></tr>
+                <tr><td>No. of Participants</td><td>${memberCount}</td></tr>
+                <tr><td>Permitted Date</td><td>${formattedDate}</td></tr>
+                <tr><td>Permitted Time</td><td>${time}</td></tr>
+                <tr><td>Issued By</td><td>${issuedBy} (Faculty Incharge — Nukkad Natak)</td></tr>
+                <tr><td>Date of Issue</td><td>${new Date().toLocaleDateString('en-IN',{day:'2-digit',month:'long',year:'numeric'})}</td></tr>
+            </table>
+            <div class="note">
+                <strong>📌 Conditions:</strong><br>
+                1. Team must be accompanied by the Social Adviser at all times during the performance.<br>
+                2. Date, time and location have been pre-approved. Any change requires fresh permission.<br>
+                3. Article must be published in local newspaper and clipping submitted to the organiser.<br>
+                4. Complete video recording must be uploaded to YouTube and link shared with the organiser.<br>
+                5. Feedback form (Flex) must be submitted to the organising team after the event.
+            </div>
+            <div class="sign">
+                <div><div class="line"></div><p>${issuedBy}</p><p>Faculty Incharge — Nukkad Natak</p></div>
+                <div><div class="line"></div><p>CR Signature</p><p>${cls}</p></div>
+            </div>
+            <script>window.onload=function(){window.print();}<\/script>
+            </body></html>`;
+            const w = window.open('','_blank','width=800,height=700');
+            if (w) { w.document.write(slipHtml); w.document.close(); }
+        }
+
+        // ══════════════════════════════════════════════════════════════
+        // NUKKAD NATAK — SHANKAR POST-EVENT PANEL
+        // ══════════════════════════════════════════════════════════════
+
+        async function loadNukkadPostPanel() {
+            const listEl = document.getElementById('nukkadPostList');
+            const badge  = document.getElementById('nukkadPostBadge');
+            if (!listEl) return;
+            listEl.innerHTML = '<div style="text-align:center;color:#aaa;padding:30px">Loading…</div>';
+            try {
+                // Load all enrolled classes
+                const enrollSnap = await db.ref('youthfest-enrollments').orderByChild('event').equalTo('Nukkad Natak').once('value');
+                const enrolledClasses = new Set();
+                if (enrollSnap.exists()) {
+                    enrollSnap.forEach(ch => {
+                        const d = ch.val();
+                        enrolledClasses.add(d.classYear || d.class || 'Unknown');
+                    });
+                }
+                // Load post-event submissions
+                const postSnap = await db.ref('nukkadNatak/post').once('value');
+                const postData = postSnap.val() || {};
+
+                const classes = [...enrolledClasses].sort();
+                if (badge) badge.textContent = classes.length + ' class' + (classes.length!==1?'es':'') + ' enrolled';
+
+                let ytVerified=0, newsVerified=0;
+                classes.forEach(cls => {
+                    const key = cls.replace(/[.#$/\[\]]/g,'_');
+                    const p = postData[key] || {};
+                    if (p.ytVerified)        ytVerified++;
+                    if (p.newspaperVerified) newsVerified++;
+                });
+                if (badge) badge.textContent = `${classes.length} classes | 📺 ${ytVerified} YT verified | 📰 ${newsVerified} newspaper verified`;
+
+                if (!classes.length) {
+                    listEl.innerHTML = '<div style="text-align:center;color:#aaa;padding:30px">No Nukkad Natak enrollments yet.</div>';
+                    return;
+                }
+
+                listEl.innerHTML = classes.map(cls => {
+                    const key = cls.replace(/[.#$/\[\]]/g,'_');
+                    const p   = postData[key] || {};
+                    const ytLink        = p.ytLink        || '';
+                    const newspaperUrl  = p.newspaperUrl  || '';
+                    const formLink      = p.formLink      || '';
+                    const ytVerified    = p.ytVerified    === true;
+                    const newsVerified  = p.newspaperVerified === true;
+                    const ytVerifiedBy  = p.ytVerifiedBy  || '';
+                    const newsVerifiedBy= p.newspaperVerifiedBy || '';
+
+                    return `<div style="background:white;border-radius:12px;border:2px solid #ffcc80;padding:16px;margin-bottom:4px">
+                        <div style="font-weight:700;color:#e65100;font-size:0.95em;margin-bottom:12px">🏫 ${cls}</div>
+
+                        <!-- YouTube -->
+                        <div style="background:#fff8e1;border-radius:8px;padding:10px;margin-bottom:10px">
+                            <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+                                <div>
+                                    <div style="font-size:0.82em;font-weight:700;color:#c62828;margin-bottom:4px">📺 YouTube Link</div>
+                                    ${ytLink
+                                        ? `<a href="${ytLink}" target="_blank" style="color:#1565c0;font-size:0.8em;word-break:break-all">${ytLink}</a>`
+                                        : '<span style="font-size:0.8em;color:#aaa">Not submitted yet</span>'}
+                                    ${ytVerified ? `<div style="font-size:0.72em;color:#2e7d32;margin-top:2px">✅ Verified by ${ytVerifiedBy}</div>` : ''}
+                                </div>
+                                ${ytLink && !ytVerified ? `<button onclick="verifyNukkadYt('${cls}','${key}')" style="background:#2e7d32;color:white;border:none;border-radius:8px;padding:6px 12px;font-weight:700;cursor:pointer;font-size:0.8em;white-space:nowrap">✅ Verify (+10 pts)</button>` : ''}
+                                ${ytVerified ? `<span style="background:#e8f5e9;color:#2e7d32;padding:3px 10px;border-radius:10px;font-size:0.78em;font-weight:700">✅ Verified</span>` : ''}
+                                ${!ytLink ? `<span style="background:#fff3e0;color:#e65100;padding:3px 10px;border-radius:10px;font-size:0.78em;font-weight:700">⏳ Pending</span>` : ''}
+                            </div>
+                        </div>
+
+                        <!-- Newspaper -->
+                        <div style="background:#f1f8e9;border-radius:8px;padding:10px;margin-bottom:10px">
+                            <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+                                <div>
+                                    <div style="font-size:0.82em;font-weight:700;color:#2e7d32;margin-bottom:4px">📰 Newspaper Photo</div>
+                                    ${newspaperUrl
+                                        ? `<a href="${newspaperUrl}" target="_blank"><img src="${newspaperUrl}" style="max-width:80px;border-radius:6px;border:2px solid #4caf50"></a>`
+                                        : '<span style="font-size:0.8em;color:#aaa">Not submitted yet</span>'}
+                                    ${newsVerified ? `<div style="font-size:0.72em;color:#2e7d32;margin-top:2px">✅ Verified by ${newsVerifiedBy}</div>` : ''}
+                                </div>
+                                ${newspaperUrl && !newsVerified ? `<button onclick="verifyNukkadNewspaper('${cls}','${key}')" style="background:#1b5e20;color:white;border:none;border-radius:8px;padding:6px 12px;font-weight:700;cursor:pointer;font-size:0.8em;white-space:nowrap">✅ Verify (+10 pts)</button>` : ''}
+                                ${newsVerified ? `<span style="background:#e8f5e9;color:#2e7d32;padding:3px 10px;border-radius:10px;font-size:0.78em;font-weight:700">✅ Verified</span>` : ''}
+                                ${!newspaperUrl ? `<span style="background:#fff3e0;color:#e65100;padding:3px 10px;border-radius:10px;font-size:0.78em;font-weight:700">⏳ Pending</span>` : ''}
+                            </div>
+                        </div>
+
+                        <!-- Google Form -->
+                        ${formLink ? `<div style="font-size:0.8em"><strong>📋 Feedback Form:</strong> <a href="${formLink}" target="_blank" style="color:#4a148c">${formLink}</a></div>` : '<div style="font-size:0.78em;color:#aaa">📋 Feedback form link not submitted yet.</div>'}
+                        <div id="nukkadPostMsg_${key}" style="display:none;margin-top:6px;font-size:0.78em;font-weight:600;padding:4px 10px;border-radius:6px"></div>
+                    </div>`;
+                }).join('');
+            } catch(err) {
+                if (listEl) listEl.innerHTML = `<div style="padding:20px;color:#c62828">❌ Error: ${err.message}</div>`;
+            }
+        }
+
+        async function verifyNukkadYt(cls, key) {
+            const verifiedBy = document.getElementById('facultyDashName').textContent || 'Shankar B C';
+            const msgEl = document.getElementById('nukkadPostMsg_' + key);
+            function showM(txt,ok){if(msgEl){msgEl.style.display='block';msgEl.style.background=ok?'#d4edda':'#f8d7da';msgEl.style.color=ok?'#155724':'#721c24';msgEl.textContent=txt;}}
+            try {
+                await db.ref('nukkadNatak/post/' + key).update({ ytVerified: true, ytVerifiedBy: verifiedBy, ytVerifiedAt: new Date().toISOString() });
+                // Add +10 pts to leaderboard via customCriteria
+                await addNukkadBonusPoints(cls, 'youtube', 10);
+                showM('✅ YouTube verified! +10 pts added to ' + cls, true);
+                setTimeout(() => loadNukkadPostPanel(), 1000);
+            } catch(err) { showM('❌ Error: ' + err.message, false); }
+        }
+
+        async function verifyNukkadNewspaper(cls, key) {
+            const verifiedBy = document.getElementById('facultyDashName').textContent || 'Shankar B C';
+            const msgEl = document.getElementById('nukkadPostMsg_' + key);
+            function showM(txt,ok){if(msgEl){msgEl.style.display='block';msgEl.style.background=ok?'#d4edda':'#f8d7da';msgEl.style.color=ok?'#155724':'#721c24';msgEl.textContent=txt;}}
+            try {
+                await db.ref('nukkadNatak/post/' + key).update({ newspaperVerified: true, newspaperVerifiedBy: verifiedBy, newspaperVerifiedAt: new Date().toISOString() });
+                // Add +10 pts to leaderboard via customCriteria
+                await addNukkadBonusPoints(cls, 'newspaper', 10);
+                showM('✅ Newspaper verified! +10 pts added to ' + cls, true);
+                setTimeout(() => loadNukkadPostPanel(), 1000);
+            } catch(err) { showM('❌ Error: ' + err.message, false); }
+        }
+
+        async function addNukkadBonusPoints(cls, type, pts) {
+            // Store under leaderboardConfig/customCriteria/nukkad_{type}_{clsKey}
+            const clsKey   = cls.replace(/[.#$/\[\]]/g,'_');
+            const critKey  = 'nukkad_' + type + '_' + clsKey;
+            await db.ref('leaderboardConfig/customCriteria/' + critKey).set({
+                label:  'Nukkad Natak — ' + (type === 'youtube' ? 'YouTube Verified' : 'Newspaper Verified'),
+                points: { [clsKey]: pts }
+            });
+        }
+
+        // ══════════════════════════════════════════════════════════════
+        // NUKKAD NATAK — SETTINGS (Event Active / Leaderboard)
+        // ══════════════════════════════════════════════════════════════
+        const NUKKAD_SETTINGS_KEYS = ['eventActive', 'leaderboardPublished'];
+        const NUKKAD_SETTINGS_LABELS = {
+            eventActive:          { on: '✅ ACTIVE — CR submissions open', off: '🔒 INACTIVE — submissions locked' },
+            leaderboardPublished: { on: '🚀 PUBLISHED — Visible in leaderboard', off: '📦 NOT PUBLISHED — Hidden from leaderboard' }
+        };
+
+        async function loadNukkadSettings() {
+            for (const key of NUKKAD_SETTINGS_KEYS) {
+                const elId = 'nukkadStatus' + key.charAt(0).toUpperCase() + key.slice(1);
+                const el = document.getElementById(elId);
+                if (!el) continue;
+                try {
+                    const snap = await db.ref('nukkadNatak/settings/' + key).once('value');
+                    const val = snap.val() === true;
+                    const lbl = NUKKAD_SETTINGS_LABELS[key];
+                    el.textContent = val ? lbl.on : lbl.off;
+                    el.style.color = val ? '#155724' : '#856404';
+                } catch(e) { el.textContent = '⚠️ Error'; }
+            }
+        }
+
+        async function setNukkadSetting(key, value) {
+            try {
+                await db.ref('nukkadNatak/settings/' + key).set(value);
+                // If publishing leaderboard, push jury scores to leaderboard
+                if (key === 'leaderboardPublished' && value === true) {
+                    await pushNukkadJuryScoresToLeaderboard();
+                }
+                loadNukkadSettings();
+                loadNukkadAdminPanel();
+            } catch(e) { alert('Error: ' + e.message); }
+        }
+
+        async function pushNukkadJuryScoresToLeaderboard() {
+            // Load all jury scores and push final avg to leaderboardConfig/customCriteria
+            const snap = await db.ref('nukkadNatak/juryScores').once('value');
+            if (!snap.exists()) return;
+            const allScores = snap.val();
+            for (const [clsKey, scores] of Object.entries(allScores)) {
+                const j1 = scores.juryTotal_j1 !== undefined ? +scores.juryTotal_j1 : null;
+                const j2 = scores.juryTotal_j2 !== undefined ? +scores.juryTotal_j2 : null;
+                const avg = (j1 !== null && j2 !== null) ? (j1+j2)/2 : (j1 !== null ? j1 : (j2 !== null ? j2 : null));
+                if (avg === null) continue;
+                const finalPts = Math.round(avg); // out of 50 → use as leaderboard pts
+                await db.ref('leaderboardConfig/customCriteria/nukkad_jury_' + clsKey).set({
+                    label: 'Nukkad Natak — Jury Score',
+                    points: { [clsKey]: finalPts }
+                });
+            }
+        }
+
+        // ══════════════════════════════════════════════════════════════
+        // NUKKAD NATAK — JURY SCORING
+        // ══════════════════════════════════════════════════════════════
+        let nukkadJuryNum = null;
+        const NUKKAD_JURY_CRITERIA = [
+            'Script & Story',
+            'Stage Presence',
+            'Message Delivery',
+            'Teamwork & Coordination',
+            'Overall Impact'
+        ];
+
+        async function nukkadJuryLogin() {
+            const num   = document.getElementById('nukkadJuryLoginNum').value;
+            const pwd   = (document.getElementById('nukkadJuryLoginPwd').value || '').trim();
+            const msgEl = document.getElementById('nukkadJuryLoginMsg');
+            function showJMsg(text, ok) {
+                msgEl.style.display = 'block';
+                msgEl.style.background = ok ? '#d4edda' : '#f8d7da';
+                msgEl.style.color      = ok ? '#155724' : '#721c24';
+                msgEl.textContent = text;
+            }
+            if (!pwd) { showJMsg('❌ Please enter the jury password.', false); return; }
+            try {
+                const snap  = await db.ref('jurySetup/Nukkad Natak').once('value');
+                const setup = snap.val();
+                if (!setup) { showJMsg('❌ Jury not configured. Super Admin must set up "Nukkad Natak" in Jury Setup tab.', false); return; }
+                const correctPwd = setup['jury' + num + 'Password'];
+                const juryName   = setup['jury' + num + 'Name'] || ('Jury ' + num);
+                if (!correctPwd || pwd !== correctPwd) { showJMsg('❌ Incorrect password.', false); return; }
+                nukkadJuryNum = num;
+                showJMsg('✅ Logged in as ' + juryName, true);
+                const panel = document.getElementById('nukkadJuryScoringPanel');
+                const lbl   = document.getElementById('nukkadJuryWhoLabel');
+                if (panel) panel.style.display = 'block';
+                if (lbl)   lbl.textContent = juryName + ' (Jury ' + num + ')';
+                loadNukkadJuryScoringPanel();
+            } catch(e) { showJMsg('❌ Error: ' + e.message, false); }
+        }
+
+        async function loadNukkadJuryScoringPanel() {
+            if (!nukkadJuryNum) return;
+            const cont = document.getElementById('nukkadJuryScoringList');
+            if (!cont) return;
+            cont.innerHTML = '<p style="color:#999;text-align:center;padding:20px">Loading enrolled classes…</p>';
+            try {
+                const enrollSnap = await db.ref('youthfest-enrollments').orderByChild('event').equalTo('Nukkad Natak').once('value');
+                const byClass = {};
+                if (enrollSnap.exists()) {
+                    enrollSnap.forEach(ch => {
+                        const d = ch.val();
+                        const cls = d.classYear || d.class || 'Unknown';
+                        if (!byClass[cls]) byClass[cls] = { cause: d.cause || '' };
+                    });
+                }
+                const classes = Object.keys(byClass).sort();
+                if (!classes.length) { cont.innerHTML = '<p style="color:#999;text-align:center;padding:20px">No Nukkad Natak enrollments yet.</p>'; return; }
+
+                // Load existing scores
+                const scoresSnap = await db.ref('nukkadNatak/juryScores').once('value');
+                const allJuryScores = scoresSnap.val() || {};
+
+                cont.innerHTML = classes.map(cls => {
+                    const key = cls.replace(/[.#$/\[\]]/g,'_');
+                    const existing = (allJuryScores[key] && allJuryScores[key]['j' + nukkadJuryNum]) || {};
+                    const total = NUKKAD_JURY_CRITERIA.reduce((s,c) => s + (+existing[c.replace(/[^a-zA-Z0-9]/g,'_')] || 0), 0);
+
+                    const criteriaRows = NUKKAD_JURY_CRITERIA.map(c => {
+                        const cKey = c.replace(/[^a-zA-Z0-9]/g,'_');
+                        return `<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f0f0f0">
+                            <span style="font-size:0.88em;color:#333;font-weight:600;flex:1">${c}</span>
+                            <div style="display:flex;align-items:center;gap:6px">
+                                <input type="number" min="0" max="10" value="${existing[cKey]||''}" id="nkj_${key}_${cKey}" placeholder="0"
+                                       style="width:60px;padding:6px 8px;border:2px solid #ddd;border-radius:6px;font-size:0.9em;text-align:center;outline:none"
+                                       oninput="updateNukkadJuryTotal('${key}')">
+                                <span style="color:#1a237e;font-size:0.82em;font-weight:700">/10</span>
+                            </div>
+                        </div>`;
+                    }).join('');
+
+                    return `<div style="background:white;border-radius:12px;border:2px solid #c5cae9;margin-bottom:16px;overflow:hidden">
+                        <div style="background:linear-gradient(135deg,#1a237e,#4a148c);padding:12px 16px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
+                            <div>
+                                <div style="color:white;font-weight:700;font-size:0.95em">${cls}</div>
+                                <div style="color:rgba(255,255,255,0.8);font-size:0.8em">Theme: ${byClass[cls].cause || '—'}</div>
+                            </div>
+                        </div>
+                        <div style="padding:14px 16px">
+                            ${criteriaRows}
+                            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;padding-top:10px;border-top:2px solid #c5cae9">
+                                <div>
+                                    <span style="font-size:0.88em;color:#666">Total: </span>
+                                    <span id="nkjTotal_${key}" style="font-size:1.2em;font-weight:800;color:#1a237e">${total}</span>
+                                    <span style="font-size:0.85em;color:#3949ab"> / 50</span>
+                                </div>
+                                <button onclick="saveNukkadJuryScore('${key}','${cls}')" style="background:linear-gradient(135deg,#4a148c,#1a237e);color:white;border:none;border-radius:8px;padding:8px 18px;cursor:pointer;font-size:0.88em;font-weight:700">💾 Save Score</button>
+                            </div>
+                            <div id="nkjSaveMsg_${key}" style="display:none;margin-top:8px;font-size:0.82em;font-weight:600;padding:6px 10px;border-radius:6px"></div>
+                        </div>
+                    </div>`;
+                }).join('');
+            } catch(e) {
+                cont.innerHTML = `<p style="color:#c62828;padding:20px;text-align:center">❌ Error: ${e.message}</p>`;
+            }
+        }
+
+        function updateNukkadJuryTotal(key) {
+            let total = 0;
+            NUKKAD_JURY_CRITERIA.forEach(c => {
+                const cKey = c.replace(/[^a-zA-Z0-9]/g,'_');
+                const inp = document.getElementById('nkj_' + key + '_' + cKey);
+                if (inp) total += Math.min(10, Math.max(0, +inp.value || 0));
+            });
+            const totEl = document.getElementById('nkjTotal_' + key);
+            if (totEl) totEl.textContent = total;
+        }
+
+        async function saveNukkadJuryScore(key, cls) {
+            const scores = {};
+            let total = 0, valid = true;
+            NUKKAD_JURY_CRITERIA.forEach(c => {
+                const cKey = c.replace(/[^a-zA-Z0-9]/g,'_');
+                const inp = document.getElementById('nkj_' + key + '_' + cKey);
+                const val = inp ? Math.min(10, Math.max(0, +inp.value || 0)) : 0;
+                if (inp && inp.value === '') valid = false;
+                scores[cKey] = val;
+                total += val;
+            });
+            if (!valid) { alert('Please enter scores for all 5 criteria (0–10 each)'); return; }
+
+            const updates = {};
+            updates['j' + nukkadJuryNum] = scores;
+            updates['juryTotal_j' + nukkadJuryNum] = total;
+
+            // Load other jury's score to compute final avg
+            const snap = await db.ref('nukkadNatak/juryScores/' + key).once('value').catch(() => null);
+            const existing = snap ? (snap.val() || {}) : {};
+            const otherTotal = nukkadJuryNum === '1' ? existing.juryTotal_j2 : existing.juryTotal_j1;
+            if (otherTotal !== null && otherTotal !== undefined) {
+                const avg = (total + (+otherTotal)) / 2;
+                updates['finalAvg'] = +avg.toFixed(1);
+                updates['finalPts'] = Math.round(avg);
+            }
+
+            const msgEl = document.getElementById('nkjSaveMsg_' + key);
+            db.ref('nukkadNatak/juryScores/' + key).update(updates).then(() => {
+                msgEl.style.display = 'block';
+                msgEl.style.background = '#d4edda'; msgEl.style.color = '#155724';
+                msgEl.textContent = '✅ Score saved! ' + total + '/50';
+                setTimeout(() => msgEl.style.display = 'none', 4000);
+                loadNukkadAdminPanel();
+            }).catch(e => {
+                msgEl.style.display = 'block';
+                msgEl.style.background = '#f8d7da'; msgEl.style.color = '#721c24';
+                msgEl.textContent = '❌ Error: ' + e.message;
+            });
+        }
+
+        // ══════════════════════════════════════════════════════════════
+        // NUKKAD NATAK — SUPER ADMIN PANEL (with jury columns)
+        // ══════════════════════════════════════════════════════════════
+
+        async function loadNukkadAdminPanel() {
+            if (!isSuperAdmin && !isAdmin) return;
+            loadNukkadSettings();
+            const empty     = document.getElementById('nukkadAdminEmpty');
+            const container = document.getElementById('nukkadAdminTableContainer');
+            const tbody     = document.getElementById('nukkadAdminTableBody');
+            if (!tbody) return;
+            if (empty)     { empty.textContent = 'Loading…'; empty.style.display = 'block'; }
+            if (container) container.style.display = 'none';
+
+            try {
+                const classFilter = (document.getElementById('nukkadAdminClassFilter') || {}).value || '';
+
+                const [enrollSnap, permSnap, postSnap, preSnap, jurySnap] = await Promise.all([
+                    db.ref('youthfest-enrollments').orderByChild('event').equalTo('Nukkad Natak').once('value'),
+                    db.ref('nukkadNatak/permissions').once('value'),
+                    db.ref('nukkadNatak/post').once('value'),
+                    db.ref('nukkadNatak/pre').once('value'),
+                    db.ref('nukkadNatak/juryScores').once('value')
+                ]);
+
+                const byClass = {};
+                if (enrollSnap.exists()) {
+                    enrollSnap.forEach(ch => {
+                        const d = ch.val();
+                        const cls = d.classYear || d.class || 'Unknown';
+                        if (!byClass[cls]) byClass[cls] = { members:[], cause:'' };
+                        byClass[cls].members.push(d);
+                        if (d.cause) byClass[cls].cause = d.cause;
+                    });
+                }
+
+                const perms      = permSnap.val()  || {};
+                const postData   = postSnap.val()   || {};
+                const preData    = preSnap.val()    || {};
+                const juryData   = jurySnap.val()   || {};
+                let classes      = Object.keys(byClass).sort();
+
+                // Populate class filter dropdown
+                const clsSel = document.getElementById('nukkadAdminClassFilter');
+                if (clsSel && clsSel.options.length <= 1) {
+                    classes.forEach(c => {
+                        const opt = document.createElement('option'); opt.value = c; opt.textContent = c; clsSel.appendChild(opt);
+                    });
+                }
+                if (classFilter) classes = classes.filter(c => c === classFilter);
+
+                // Stats
+                let adviserCount=0, permCount=0, ytCount=0, newsCount=0;
+                Object.keys(byClass).forEach(cls => {
+                    const key = cls.replace(/[.#$/\[\]]/g,'_');
+                    if (preData[key]  && preData[key].adviserName)        adviserCount++;
+                    if (perms[key]    && perms[key].granted)               permCount++;
+                    if (postData[key] && postData[key].ytVerified)         ytCount++;
+                    if (postData[key] && postData[key].newspaperVerified)  newsCount++;
+                });
+                const setStat = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+                setStat('nukkadAdminStatClasses', Object.keys(byClass).length);
+                setStat('nukkadAdminStatAdviser', adviserCount);
+                setStat('nukkadAdminStatPerm',    permCount);
+                setStat('nukkadAdminStatYt',      ytCount);
+                setStat('nukkadAdminStatNews',     newsCount);
+
+                if (!classes.length) {
+                    if (empty)     { empty.textContent = 'No Nukkad Natak enrollments yet.'; empty.style.display = 'block'; }
+                    if (container) container.style.display = 'none';
+                    return;
+                }
+
+                let rows = '';
+                classes.forEach((cls, i) => {
+                    const data  = byClass[cls];
+                    const key   = cls.replace(/[.#$/\[\]]/g,'_');
+                    const perm  = perms[key]    || {};
+                    const post  = postData[key] || {};
+                    const pre   = preData[key]  || {};
+                    const jury  = juryData[key] || {};
+                    const hasPerm   = perm.granted === true;
+                    const ytVerif   = post.ytVerified === true;
+                    const newsVerif = post.newspaperVerified === true;
+                    const hasAdviser = !!(pre.adviserName);
+
+                    // Jury
+                    const j1 = jury.juryTotal_j1 !== undefined ? +jury.juryTotal_j1 : null;
+                    const j2 = jury.juryTotal_j2 !== undefined ? +jury.juryTotal_j2 : null;
+                    const avg = (j1 !== null && j2 !== null) ? (j1+j2)/2 : (j1 !== null ? j1 : (j2 !== null ? j2 : null));
+                    const gap = (j1 !== null && j2 !== null) ? Math.abs(j1-j2) : null;
+                    const dispute = gap !== null && gap >= 10;
+
+                    // Status
+                    let allDone = hasPerm && ytVerif && newsVerif && !!post.formLink && avg !== null;
+                    let statusLabel = allDone ? 'Complete' : (hasPerm ? 'In Progress' : 'Pending');
+                    let statusBg    = allDone ? '#d4edda' : (hasPerm ? '#fff3cd' : '#f3e5f5');
+                    let statusColor = allDone ? '#155724' : (hasPerm ? '#856404' : '#6a1b9a');
+
+                    // Cells
+                    const adviserCell = hasAdviser ? `<span style="font-weight:700;color:#4a148c;font-size:0.82em">${pre.adviserName}</span>` : `<span style="color:#aaa;font-size:0.8em">—</span>`;
+                    const orgCell     = hasAdviser ? `<span style="font-size:0.8em;color:#555">${pre.adviserOrg||'—'}</span>` : `<span style="color:#aaa;font-size:0.8em">—</span>`;
+                    const permCell    = hasPerm ? `<span style="background:#e8f5e9;color:#2e7d32;padding:2px 8px;border-radius:8px;font-size:0.72em;font-weight:700">✅ Granted</span>` : `<span style="background:#fce4ec;color:#c62828;padding:2px 8px;border-radius:8px;font-size:0.72em;font-weight:700">❌ Not Yet</span>`;
+                    const slotCell    = hasPerm ? `<span style="font-size:0.78em;color:#1a237e">${perm.date||''} ${perm.time||''}</span>` : `<span style="color:#aaa;font-size:0.8em">—</span>`;
+
+                    const ytCell = post.ytLink
+                        ? `<div style="display:flex;flex-direction:column;align-items:center;gap:3px">
+                               <a href="${post.ytLink}" target="_blank" style="color:#c62828;font-weight:700;font-size:0.82em">▶️ View</a>
+                               ${ytVerif ? '<span style="background:#e8f5e9;color:#2e7d32;padding:1px 7px;border-radius:8px;font-size:0.7em;font-weight:700">✅ Verified</span>' : `<button onclick="verifyNukkadYt('${cls}','${key}')" style="background:#2e7d32;color:white;border:none;border-radius:6px;padding:2px 8px;cursor:pointer;font-size:0.7em;font-weight:700">✅ Verify</button>`}
+                           </div>`
+                        : `<span style="color:#aaa;font-size:0.8em">Not submitted</span>`;
+
+                    const newsCell = post.newspaperUrl
+                        ? `<div style="display:flex;flex-direction:column;align-items:center;gap:3px">
+                               <a href="${post.newspaperUrl}" target="_blank"><img src="${post.newspaperUrl}" style="max-width:50px;max-height:40px;border-radius:4px;border:1px solid #ccc"></a>
+                               ${newsVerif ? '<span style="background:#e8f5e9;color:#2e7d32;padding:1px 7px;border-radius:8px;font-size:0.7em;font-weight:700">✅ Verified</span>' : `<button onclick="verifyNukkadNewspaper('${cls}','${key}')" style="background:#1b5e20;color:white;border:none;border-radius:6px;padding:2px 8px;cursor:pointer;font-size:0.7em;font-weight:700">✅ Verify</button>`}
+                           </div>`
+                        : `<span style="color:#aaa;font-size:0.8em">Not uploaded</span>`;
+
+                    const formCell = post.formLink ? `<a href="${post.formLink}" target="_blank" style="color:#4a148c;font-weight:700;font-size:0.82em">🔗 Open</a>` : `<span style="color:#aaa;font-size:0.8em">—</span>`;
+
+                    const j1Cell = j1 !== null ? `<span style="font-weight:700;color:#1565c0">${j1}/50</span>` : `<span style="color:#aaa">—</span>`;
+                    const j2Cell = j2 !== null ? `<span style="font-weight:700;color:#1565c0">${j2}/50</span>` : `<span style="color:#aaa">—</span>`;
+                    const finalCell = avg !== null
+                        ? `<div style="font-weight:800;font-size:0.95em;color:${dispute?'#e65100':'#1b5e20'}">${avg.toFixed(1)}/50${dispute?'<br><span style="font-size:0.7em;background:#fff3e0;color:#e65100;padding:1px 5px;border-radius:6px">⚠️ Dispute</span>':''}</div>`
+                        : `<span style="color:#aaa">—</span>`;
+
+                    rows += `<tr>
+                        <td style="text-align:center;font-weight:700;color:#1a237e">${i+1}</td>
+                        <td style="font-weight:700;color:#1565c0;font-size:0.85em">${cls}</td>
+                        <td style="font-size:0.82em;color:#4a148c">${data.cause||'<em style="color:#aaa">Not set</em>'}</td>
+                        <td style="text-align:center;font-weight:700">${data.members.length}</td>
+                        <td style="background:#f9f0ff">${adviserCell}</td>
+                        <td style="background:#f9f0ff">${orgCell}</td>
+                        <td style="text-align:center;background:#f0f4ff">${permCell}</td>
+                        <td style="text-align:center;background:#f0f4ff">${slotCell}</td>
+                        <td style="text-align:center;background:#fff5f5">${ytCell}</td>
+                        <td style="text-align:center;background:#f5fff7">${newsCell}</td>
+                        <td style="text-align:center;background:#f8f0ff">${formCell}</td>
+                        <td style="text-align:center;background:#e3f2fd">${j1Cell}</td>
+                        <td style="text-align:center;background:#e3f2fd">${j2Cell}</td>
+                        <td style="text-align:center;background:#e8f5e9">${finalCell}</td>
+                        <td style="text-align:center"><span style="background:${statusBg};color:${statusColor};padding:3px 10px;border-radius:12px;font-size:0.75em;font-weight:700">${statusLabel}</span></td>
+                        <td style="text-align:center">
+                            ${!hasPerm ? `<button onclick="grantNukkadPermissionAdmin('${cls}','${key}')" style="background:#1a237e;color:white;border:none;border-radius:6px;padding:4px 8px;cursor:pointer;font-size:0.72em;font-weight:700;margin:2px">🔓 Perm</button>` : `<button onclick="revokeNukkadPermission('${cls}','${key}')" style="background:#c62828;color:white;border:none;border-radius:6px;padding:4px 8px;cursor:pointer;font-size:0.72em;font-weight:700;margin:2px">❌ Revoke</button>`}
+                        </td>
+                    </tr>
+                    <tr id="nukkadAdminMsgRow_${key}" style="display:none">
+                        <td colspan="16"><div id="nukkadPostMsg_${key}" style="font-size:0.78em;font-weight:600;padding:4px 10px;border-radius:6px"></div></td>
+                    </tr>`;
+                });
+
+                if (empty)     empty.style.display = 'none';
+                if (container) container.style.display = 'block';
+                if (tbody)     tbody.innerHTML = rows;
+
+            } catch(err) {
+                if (empty) { empty.textContent = '❌ Error: ' + err.message; empty.style.display = 'block'; }
+                if (container) container.style.display = 'none';
+            }
+        }
+
+        async function grantNukkadPermissionAdmin(cls, key) {
+            const date = prompt('Enter performance date (e.g. 12-03-2026):');
+            if (!date) return;
+            const time = prompt('Enter time slot (e.g. 10:00–10:30 AM):');
+            if (!time) return;
+            await db.ref('nukkadNatak/permissions/' + key).set({ granted: true, date, time, issuedBy: 'Super Admin', issuedAt: new Date().toISOString() });
+            const msgEl = document.getElementById('nukkadPostMsg_' + key);
+            const msgRow = document.getElementById('nukkadAdminMsgRow_' + key);
+            if (msgEl)  { msgEl.style.background='#d4edda'; msgEl.style.color='#155724'; msgEl.textContent='✅ Permission granted!'; }
+            if (msgRow) msgRow.style.display = '';
+            loadNukkadAdminPanel();
+        }
+
+        // ══════════════════════════════════════════════════════════════
+        // BOW — Leaderboard Published toggle
+        // ══════════════════════════════════════════════════════════════
+        async function loadBowLeaderboardStatus() {
+            const el = document.getElementById('bowLeaderboardStatusDisplay');
+            if (!el) return;
+            try {
+                const snap = await db.ref('jurySetup/Best out of Waste/leaderboardPublished').once('value');
+                const val = snap.val() === true;
+                el.textContent  = val ? '🚀 PUBLISHED — Visible in leaderboard' : '📦 Not Published';
+                el.style.background = val ? '#d4edda' : '#f5f5f5';
+                el.style.color      = val ? '#155724' : '#666';
+            } catch(e) { el.textContent = '⚠️ Error'; }
+        }
+
+        async function bowSetLeaderboard(value) {
+            const msgEl = document.getElementById('bowLeaderboardMsg');
+            function showM(txt, ok) { msgEl.style.display='block'; msgEl.style.background=ok?'#d4edda':'#f8d7da'; msgEl.style.color=ok?'#155724':'#721c24'; msgEl.textContent=txt; }
+            try {
+                await db.ref('jurySetup/Best out of Waste/leaderboardPublished').set(value);
+                showM(value ? '✅ BOW results published to leaderboard!' : '📦 BOW results unpublished.', true);
+                loadBowLeaderboardStatus();
+            } catch(e) { showM('❌ Error: ' + e.message, false); }
+        }
+
+        // ══════════════════════════════════════════════════════════════
+        // END NUKKAD NATAK
         // ══════════════════════════════════════════════════════════════
 
 
@@ -26043,7 +27254,7 @@ Proceed?`)) return;
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;" id="devTriggerVersion">
-                <strong>Version:</strong> 3.87 — Built on v383 (stable connection). Links added to all summaries. CR View Enrollments: Class Summary Report (Generate + Copy) showing all events + Vlog/Podcast/YT Ad status   | <strong>Last Updated:</strong> February 25, 2026 — 18:30
+                <strong>Version:</strong> 3.94 — Built on v393. Nukkad Natak: Added Event Activation toggle, Leaderboard Publish toggle, and full Jury Scoring Panel (J1+J2, 5 criteria: Script &amp; Story / Stage Presence / Message Delivery / Teamwork / Overall Impact, each 0–10 = 50 total). Table now shows Jury J1, Jury J2, Final avg columns. Publish pushes jury avg to leaderboardConfig. BOW Results panel: Added Leaderboard Published toggle (🚀 Publish / 📦 Unpublish). Firebase paths: nukkadNatak/juryScores/, nukkadNatak/settings/.   | <strong>Last Updated:</strong> February 25, 2026 — 23:20
             </p>
             <!-- ============================================ -->
             
