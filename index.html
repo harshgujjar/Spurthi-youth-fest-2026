@@ -1198,12 +1198,11 @@
         </div>
 
         <!-- ============================================================ -->
-        <!-- ANNOUNCEMENT BANNER                                          -->
-        <!-- TO EDIT: Change the text inside the <span> tag below        -->
-        <!-- TO HIDE: Change display:block to display:none on the div    -->
+        <!-- ANNOUNCEMENT BANNER (Dynamic - controlled via Firebase)      -->
+        <!-- Super Admin can edit text, color, visibility in Site Settings -->
         <!-- ============================================================ -->
-        <div style="display:block;width:100%;max-width:1200px;margin:0 auto 22px;border-radius:14px;background:linear-gradient(90deg,#e8722a 0%,#f0a05a 40%,#f0a05a 60%,#e8722a 100%);box-shadow:0 4px 18px rgba(232,114,42,0.35);padding:16px 30px;text-align:center;animation:shimmer 3s linear infinite;background-size:2000px 100%">
-            <!-- EDIT BANNER TEXT BELOW -->
+        <div id="announcementBannerDiv" style="display:block;width:100%;max-width:1200px;margin:0 auto 22px;border-radius:14px;background:linear-gradient(90deg,#e8722a 0%,#f0a05a 40%,#f0a05a 60%,#e8722a 100%);box-shadow:0 4px 18px rgba(232,114,42,0.35);padding:16px 30px;text-align:center;animation:shimmer 3s linear infinite;background-size:2000px 100%">
+            <!-- EDIT BANNER TEXT BELOW OR VIA SUPER ADMIN SITE SETTINGS TAB -->
             <span id="announcementBannerText" style="color:white;font-size:1.1em;font-weight:700;letter-spacing:0.5px;text-shadow:0 1px 4px rgba(0,0,0,0.18)">
                 🎯🧩 Speed Slide Challenge is LIVE now 🧩🎯
             </span>
@@ -2662,6 +2661,8 @@
                 <button class="tab super-admin-only" onclick="showTab('paymentApprovalAdmin');paLoadPending()" id="paymentApprovalAdminTab">💳 Payment Approval</button>
                 <button class="tab super-admin-only" onclick="showTab('eventScheduleAdmin');esLoadEvents()" id="eventScheduleAdminTab">📅 Event Schedule</button>
                 <button class="tab super-admin-only" onclick="showTab('allEventsOverview');loadAllEventsOverview()" id="allEventsOverviewTab">📊 All Events Overview</button>
+                <button class="tab super-admin-only" onclick="showTab('siteSettingsPanel');loadSiteSettings()" id="siteSettingsPanelTab">⚙️ Site Settings</button>
+                <button class="tab super-admin-only" onclick="showTab('feedbackAdminPanel');loadFeedbackAdmin()" id="feedbackAdminPanelTab">📋 Feedback Admin</button>
             </div><!-- end .tabs -->
 
             <div class="content" id="adminContentBox">
@@ -4082,6 +4083,217 @@
             </div>
             <!-- ================================================ -->
             <!-- END ALL EVENTS OVERVIEW PANEL                    -->
+            <!-- ================================================ -->
+
+            <!-- ================================================ -->
+            <!-- SITE SETTINGS PANEL                              -->
+            <!-- ================================================ -->
+            <div id="siteSettingsPanel" class="form-section super-admin-only" style="margin-top:20px">
+                <div style="background:linear-gradient(135deg,#1a237e,#283593);border-radius:14px;padding:20px 24px;margin-bottom:24px;color:white;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
+                    <div>
+                        <h2 style="margin:0 0 4px;font-size:1.25em">⚙️ Site Settings — Dynamic Controls</h2>
+                        <p style="margin:0;opacity:0.85;font-size:0.85em">Control the announcement banner and WhatsApp share text live — no code edits needed</p>
+                    </div>
+                    <button onclick="loadSiteSettings()" style="background:rgba(255,255,255,0.15);color:white;border:2px solid rgba(255,255,255,0.4);border-radius:8px;padding:9px 18px;font-size:0.88em;font-weight:700;cursor:pointer">🔄 Reload</button>
+                </div>
+                <div id="siteSettingsMsg" style="margin-bottom:16px"></div>
+
+                <!-- ── ANNOUNCEMENT BANNER SECTION ── -->
+                <div style="background:white;border-radius:14px;padding:22px 24px;margin-bottom:20px;box-shadow:0 2px 10px rgba(0,0,0,0.08);border-top:4px solid #e8722a">
+                    <h3 style="color:#e8722a;margin:0 0 6px;font-size:1.1em">📢 Announcement Banner</h3>
+                    <p style="color:#888;font-size:0.85em;margin:0 0 18px">This is the orange banner at the top of the public page. Edit and save to update it instantly for all visitors.</p>
+
+                    <!-- Visibility -->
+                    <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;background:#fff8f0;padding:12px 16px;border-radius:10px;border:2px solid #ffd0a0">
+                        <label style="font-weight:700;color:#555;white-space:nowrap;font-size:0.9em">Banner Visibility:</label>
+                        <label style="display:flex;align-items:center;gap:7px;cursor:pointer;background:white;padding:8px 18px;border-radius:20px;border:2px solid #4caf50;font-weight:700;color:#2e7d32">
+                            <input type="radio" name="bannerVisible" value="show" id="bannerShow" style="accent-color:#4caf50"> ✅ Show Banner
+                        </label>
+                        <label style="display:flex;align-items:center;gap:7px;cursor:pointer;background:white;padding:8px 18px;border-radius:20px;border:2px solid #f44336;font-weight:700;color:#c62828">
+                            <input type="radio" name="bannerVisible" value="hide" id="bannerHide" style="accent-color:#f44336"> ❌ Hide Banner
+                        </label>
+                    </div>
+
+                    <!-- Banner Text -->
+                    <div style="margin-bottom:14px">
+                        <label style="font-weight:700;color:#555;font-size:0.9em;display:block;margin-bottom:6px">Banner Text:</label>
+                        <input type="text" id="ssBannerText" placeholder="e.g. 🎯 Speed Slide Challenge is LIVE now! 🎯" style="width:100%;padding:12px 14px;border:2px solid #ffb74d;border-radius:10px;font-size:1em;box-sizing:border-box;outline:none;font-weight:600">
+                        <small style="color:#888;margin-top:4px;display:block">Tip: Use emojis to make it more eye-catching! ✨</small>
+                    </div>
+
+                    <!-- Font Style & Size -->
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px">
+                        <div>
+                            <label style="font-weight:700;color:#555;font-size:0.9em;display:block;margin-bottom:8px">🔤 Font Style:</label>
+                            <select id="ssBannerFont" style="width:100%;padding:10px 12px;border:2px solid #ffb74d;border-radius:10px;font-size:0.95em;outline:none;background:white;cursor:pointer">
+                                <option value="'Segoe UI',sans-serif">Segoe UI (Default)</option>
+                                <option value="Arial,sans-serif">Arial</option>
+                                <option value="'Times New Roman',serif">Times New Roman</option>
+                                <option value="Georgia,serif">Georgia</option>
+                                <option value="'Courier New',monospace">Courier New</option>
+                                <option value="Verdana,sans-serif">Verdana</option>
+                                <option value="Impact,sans-serif">Impact (Bold)</option>
+                                <option value="'Comic Sans MS',cursive">Comic Sans</option>
+                                <option value="Tahoma,sans-serif">Tahoma</option>
+                                <option value="'Trebuchet MS',sans-serif">Trebuchet MS</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label style="font-weight:700;color:#555;font-size:0.9em;display:block;margin-bottom:8px">📏 Font Size:</label>
+                            <div style="display:flex;align-items:center;gap:10px">
+                                <input type="range" id="ssBannerFontSize" min="12" max="36" value="18" oninput="document.getElementById('ssBannerFontSizeVal').textContent=this.value+'px'" style="flex:1;accent-color:#e8722a">
+                                <span id="ssBannerFontSizeVal" style="background:#fff3e0;color:#e8722a;padding:4px 10px;border-radius:8px;font-weight:700;font-size:0.9em;min-width:42px;text-align:center">18px</span>
+                            </div>
+                            <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap">
+                                <button onclick="document.getElementById('ssBannerFontSize').value=14;document.getElementById('ssBannerFontSizeVal').textContent='14px'" style="background:#f5f5f5;border:1px solid #ddd;border-radius:6px;padding:3px 10px;cursor:pointer;font-size:0.8em;font-weight:600">S</button>
+                                <button onclick="document.getElementById('ssBannerFontSize').value=18;document.getElementById('ssBannerFontSizeVal').textContent='18px'" style="background:#f5f5f5;border:1px solid #ddd;border-radius:6px;padding:3px 10px;cursor:pointer;font-size:0.85em;font-weight:600">M</button>
+                                <button onclick="document.getElementById('ssBannerFontSize').value=22;document.getElementById('ssBannerFontSizeVal').textContent='22px'" style="background:#f5f5f5;border:1px solid #ddd;border-radius:6px;padding:3px 10px;cursor:pointer;font-size:0.9em;font-weight:600">L</button>
+                                <button onclick="document.getElementById('ssBannerFontSize').value=28;document.getElementById('ssBannerFontSizeVal').textContent='28px'" style="background:#f5f5f5;border:1px solid #ddd;border-radius:6px;padding:3px 10px;cursor:pointer;font-size:1em;font-weight:700">XL</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Color Theme -->
+                    <div style="margin-bottom:18px">
+                        <label style="font-weight:700;color:#555;font-size:0.9em;display:block;margin-bottom:8px">Banner Color Theme:</label>
+                        <div style="display:flex;gap:10px;flex-wrap:wrap">
+                            <label style="cursor:pointer;display:flex;align-items:center;gap:6px"><input type="radio" name="bannerColor" value="orange" id="bColorOrange" style="accent-color:#e8722a"> <span style="background:linear-gradient(90deg,#e8722a,#f0a05a);color:white;padding:5px 14px;border-radius:20px;font-weight:700;font-size:0.85em">🟠 Orange</span></label>
+                            <label style="cursor:pointer;display:flex;align-items:center;gap:6px"><input type="radio" name="bannerColor" value="purple" id="bColorPurple" style="accent-color:#6a1b9a"> <span style="background:linear-gradient(90deg,#6a1b9a,#c44569);color:white;padding:5px 14px;border-radius:20px;font-weight:700;font-size:0.85em">🟣 Purple</span></label>
+                            <label style="cursor:pointer;display:flex;align-items:center;gap:6px"><input type="radio" name="bannerColor" value="green" id="bColorGreen" style="accent-color:#2e7d32"> <span style="background:linear-gradient(90deg,#2e7d32,#66bb6a);color:white;padding:5px 14px;border-radius:20px;font-weight:700;font-size:0.85em">🟢 Green</span></label>
+                            <label style="cursor:pointer;display:flex;align-items:center;gap:6px"><input type="radio" name="bannerColor" value="red" id="bColorRed" style="accent-color:#c62828"> <span style="background:linear-gradient(90deg,#c62828,#ef5350);color:white;padding:5px 14px;border-radius:20px;font-weight:700;font-size:0.85em">🔴 Red</span></label>
+                            <label style="cursor:pointer;display:flex;align-items:center;gap:6px"><input type="radio" name="bannerColor" value="blue" id="bColorBlue" style="accent-color:#1565c0"> <span style="background:linear-gradient(90deg,#1565c0,#42a5f5);color:white;padding:5px 14px;border-radius:20px;font-weight:700;font-size:0.85em">🔵 Blue</span></label>
+                            <label style="cursor:pointer;display:flex;align-items:center;gap:6px"><input type="radio" name="bannerColor" value="gold" id="bColorGold" style="accent-color:#f9a825"> <span style="background:linear-gradient(90deg,#f9a825,#ffd54f);color:#5d4037;padding:5px 14px;border-radius:20px;font-weight:700;font-size:0.85em">🟡 Gold</span></label>
+                        </div>
+                    </div>
+
+                    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+                        <button onclick="saveBannerSettings()" style="background:linear-gradient(135deg,#e8722a,#f0a05a);color:white;border:none;border-radius:10px;padding:12px 28px;font-size:1em;font-weight:700;cursor:pointer;box-shadow:0 3px 10px rgba(232,114,42,0.4)">💾 Save Banner Settings</button>
+                        <button onclick="previewBanner()" style="background:white;color:#e8722a;border:2px solid #e8722a;border-radius:10px;padding:12px 20px;font-size:1em;font-weight:700;cursor:pointer">👁️ Preview Live</button>
+                        <span id="bannerSaveToast" style="display:none;background:#d4edda;color:#155724;padding:10px 18px;border-radius:10px;font-weight:700;font-size:0.9em;border:2px solid #c3e6cb;animation:slideInUp 0.3s ease">✅ Saved successfully!</span>
+                    </div>
+                </div>
+
+                <!-- ── WHATSAPP SHARE TEXT SECTION ── -->
+                <div style="background:white;border-radius:14px;padding:22px 24px;margin-bottom:20px;box-shadow:0 2px 10px rgba(0,0,0,0.08);border-top:4px solid #25d366">
+                    <h3 style="color:#1b5e20;margin:0 0 6px;font-size:1.1em">📱 WhatsApp Share Text</h3>
+                    <div style="background:#e8f5e9;border-radius:8px;padding:10px 14px;margin-bottom:14px;border-left:4px solid #25d366">
+                        <p style="margin:0;color:#2e7d32;font-size:0.85em"><strong>⚠️ Note:</strong> WhatsApp <strong>caches</strong> link previews for hours. New shares will show updated text immediately, but old cached previews may take time to refresh. This text is also shown as a visible info box on the public page.</p>
+                    </div>
+                    <div style="margin-bottom:14px">
+                        <label style="font-weight:700;color:#555;font-size:0.9em;display:block;margin-bottom:6px">Share Description Text:</label>
+                        <textarea id="ssWhatsappText" rows="3" placeholder="e.g. 🎓 Join our exciting Daily Quiz Competition! Answer 2 questions daily and win prizes. Register now!" style="width:100%;padding:12px 14px;border:2px solid #a5d6a7;border-radius:10px;font-size:0.95em;box-sizing:border-box;outline:none;resize:vertical"></textarea>
+                        <small style="color:#888;margin-top:4px;display:block">This text appears in WhatsApp link previews and on the public page info banner.</small>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+                        <button onclick="saveWhatsappText()" style="background:linear-gradient(135deg,#25d366,#128c7e);color:white;border:none;border-radius:10px;padding:12px 28px;font-size:1em;font-weight:700;cursor:pointer;box-shadow:0 3px 10px rgba(37,211,102,0.4)">💾 Save WhatsApp Text</button>
+                        <button onclick="copyWhatsappShareLink()" style="background:white;color:#25d366;border:2px solid #25d366;border-radius:10px;padding:12px 20px;font-size:1em;font-weight:700;cursor:pointer">📋 Copy Share Link</button>
+                        <span id="waSaveToast" style="display:none;background:#d4edda;color:#155724;padding:10px 18px;border-radius:10px;font-weight:700;font-size:0.9em;border:2px solid #c3e6cb;animation:slideInUp 0.3s ease">✅ Saved successfully!</span>
+                    </div>
+                </div>
+            </div>
+            <!-- ================================================ -->
+            <!-- END SITE SETTINGS PANEL                          -->
+            <!-- ================================================ -->
+
+            <!-- ================================================ -->
+            <!-- FEEDBACK ADMIN PANEL                             -->
+            <!-- ================================================ -->
+            <div id="feedbackAdminPanel" class="form-section super-admin-only" style="margin-top:20px">
+                <div style="background:linear-gradient(135deg,#880e4f,#c2185b);border-radius:14px;padding:20px 24px;margin-bottom:24px;color:white;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
+                    <div>
+                        <h2 style="margin:0 0 4px;font-size:1.25em">📋 Feedback Form — Admin Control</h2>
+                        <p style="margin:0;opacity:0.85;font-size:0.85em">Trigger the feedback popup for all visitors · Select events to rate · View all responses</p>
+                    </div>
+                    <button onclick="loadFeedbackAdmin()" style="background:rgba(255,255,255,0.15);color:white;border:2px solid rgba(255,255,255,0.4);border-radius:8px;padding:9px 18px;font-size:0.88em;font-weight:700;cursor:pointer">🔄 Refresh</button>
+                </div>
+                <div id="feedbackAdminMsg" style="margin-bottom:16px"></div>
+
+                <!-- Stats -->
+                <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;margin-bottom:20px">
+                    <div style="background:white;border-radius:12px;padding:16px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,0.07);border-top:3px solid #c2185b">
+                        <div id="fbStatTotal" style="font-size:2em;font-weight:900;color:#c2185b">—</div>
+                        <div style="color:#888;font-size:0.76em;font-weight:600">Total Responses</div>
+                    </div>
+                    <div style="background:white;border-radius:12px;padding:16px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,0.07);border-top:3px solid #6a1b9a">
+                        <div id="fbStatActive" style="font-size:2em;font-weight:900;color:#6a1b9a">—</div>
+                        <div style="color:#888;font-size:0.76em;font-weight:600">Feedback Active</div>
+                    </div>
+                    <div style="background:white;border-radius:12px;padding:16px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,0.07);border-top:3px solid #1565c0">
+                        <div id="fbStatAvgScore" style="font-size:2em;font-weight:900;color:#1565c0">—</div>
+                        <div style="color:#888;font-size:0.76em;font-weight:600">Avg Fest Score</div>
+                    </div>
+                    <div style="background:white;border-radius:12px;padding:16px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,0.07);border-top:3px solid #2e7d32">
+                        <div id="fbStatRecommend" style="font-size:2em;font-weight:900;color:#2e7d32">—</div>
+                        <div style="color:#888;font-size:0.76em;font-weight:600">Would Recommend</div>
+                    </div>
+                </div>
+
+                <!-- ── TRIGGER CONTROL ── -->
+                <div style="background:white;border-radius:14px;padding:22px 24px;margin-bottom:20px;box-shadow:0 2px 10px rgba(0,0,0,0.08);border-top:4px solid #c2185b">
+                    <h3 style="color:#880e4f;margin:0 0 6px;font-size:1.1em">🎯 Feedback Trigger Control</h3>
+                    <p style="color:#888;font-size:0.85em;margin:0 0 16px">When active, every visitor sees a feedback popup. First time: dismissible. Second time: must fill before closing.</p>
+                    <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-bottom:16px">
+                        <div id="fbTriggerStatus" style="padding:10px 20px;border-radius:20px;font-weight:700;font-size:0.95em;background:#f5f5f5;color:#888">⏳ Loading...</div>
+                        <button onclick="activateFeedback()" id="btnActivateFeedback" style="background:linear-gradient(135deg,#c2185b,#880e4f);color:white;border:none;border-radius:10px;padding:12px 24px;font-size:1em;font-weight:700;cursor:pointer;box-shadow:0 3px 10px rgba(194,24,91,0.4)">🚀 Activate Feedback (Make Live)</button>
+                        <button onclick="deactivateFeedback()" id="btnDeactivateFeedback" style="background:white;color:#c62828;border:2px solid #f44336;border-radius:10px;padding:12px 24px;font-size:1em;font-weight:700;cursor:pointer">⛔ Deactivate Feedback</button>
+                    </div>
+                </div>
+
+                <!-- ── EVENT SELECTION ── -->
+                <div style="background:white;border-radius:14px;padding:22px 24px;margin-bottom:20px;box-shadow:0 2px 10px rgba(0,0,0,0.08);border-top:4px solid #6a1b9a">
+                    <h3 style="color:#4a148c;margin:0 0 6px;font-size:1.1em">🗂️ Select Events for Rating</h3>
+                    <p style="color:#888;font-size:0.85em;margin:0 0 14px">Choose which events students will rate in the feedback form. Students will see star ratings for each selected event.</p>
+                    <div style="background:#f3e5f5;border-radius:10px;padding:14px;margin-bottom:14px">
+                        <div style="display:flex;gap:10px;margin-bottom:10px;flex-wrap:wrap">
+                            <button onclick="fbSelectAllEvents()" style="background:#6a1b9a;color:white;border:none;border-radius:8px;padding:6px 16px;font-size:0.85em;font-weight:700;cursor:pointer">✅ Select All</button>
+                            <button onclick="fbClearAllEvents()" style="background:white;color:#6a1b9a;border:2px solid #6a1b9a;border-radius:8px;padding:6px 16px;font-size:0.85em;font-weight:700;cursor:pointer">❌ Clear All</button>
+                            <button onclick="fbAddCustomEvent()" style="background:linear-gradient(135deg,#1565c0,#42a5f5);color:white;border:none;border-radius:8px;padding:6px 16px;font-size:0.85em;font-weight:700;cursor:pointer">➕ Add Custom Event</button>
+                        </div>
+                        <div id="fbEventCheckboxes" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px">
+                            <!-- Populated by JS -->
+                        </div>
+                        <div id="fbCustomEventsContainer" style="margin-top:10px"></div>
+                    </div>
+                    <button onclick="saveFeedbackEventList()" style="background:linear-gradient(135deg,#6a1b9a,#c44569);color:white;border:none;border-radius:10px;padding:12px 24px;font-size:1em;font-weight:700;cursor:pointer;box-shadow:0 3px 10px rgba(106,27,154,0.4)">💾 Save Event List</button>
+                </div>
+
+                <!-- ── FEEDBACK QUESTIONS PREVIEW & EDIT ── -->
+                <div style="background:white;border-radius:14px;padding:22px 24px;margin-bottom:20px;box-shadow:0 2px 10px rgba(0,0,0,0.08);border-top:4px solid #ff6f00">
+                    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:16px">
+                        <div>
+                            <h3 style="color:#e65100;margin:0 0 4px;font-size:1.1em">👁️ Feedback Form — Questions Preview & Edit</h3>
+                            <p style="color:#888;font-size:0.83em;margin:0">This is exactly what visitors will see in the feedback popup. Edit any question label below.</p>
+                        </div>
+                        <button onclick="saveFeedbackQuestions()" style="background:linear-gradient(135deg,#ff6f00,#ffa000);color:white;border:none;border-radius:10px;padding:10px 22px;font-size:0.92em;font-weight:700;cursor:pointer;box-shadow:0 3px 10px rgba(255,111,0,0.4)">💾 Save Question Labels</button>
+                    </div>
+                    <div id="fbQuestionsPreview" style="background:#fff8e1;border-radius:12px;padding:16px;border:2px solid #ffe082">
+                        <!-- Populated by JS — shows live preview + editable labels -->
+                        <p style="color:#aaa;text-align:center;font-style:italic">Load Feedback Admin to see questions preview.</p>
+                    </div>
+                    <div style="margin-top:12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+                        <button onclick="saveFeedbackQuestions()" style="background:linear-gradient(135deg,#ff6f00,#ffa000);color:white;border:none;border-radius:10px;padding:11px 24px;font-size:0.95em;font-weight:700;cursor:pointer">💾 Save Question Labels</button>
+                        <button onclick="resetFeedbackQuestions()" style="background:white;color:#ff6f00;border:2px solid #ff6f00;border-radius:10px;padding:11px 20px;font-size:0.95em;font-weight:700;cursor:pointer">🔄 Reset to Defaults</button>
+                        <span id="fbQSaveToast" style="display:none;background:#d4edda;color:#155724;padding:10px 18px;border-radius:10px;font-weight:700;font-size:0.9em;border:2px solid #c3e6cb;animation:slideInUp 0.3s ease">✅ Question labels saved!</span>
+                    </div>
+                </div>
+
+                <!-- ── RESPONSES VIEWER ── -->
+                <div style="background:white;border-radius:14px;padding:22px 24px;box-shadow:0 2px 10px rgba(0,0,0,0.08);border-top:4px solid #1565c0">
+                    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:16px">
+                        <h3 style="color:#0d47a1;margin:0;font-size:1.1em">📊 Feedback Responses</h3>
+                        <div style="display:flex;gap:8px;flex-wrap:wrap">
+                            <button onclick="loadFeedbackResponses()" style="background:#1565c0;color:white;border:none;border-radius:8px;padding:8px 16px;font-size:0.85em;font-weight:700;cursor:pointer">🔄 Load Responses</button>
+                            <button onclick="downloadFeedbackCSV()" style="background:white;color:#1565c0;border:2px solid #1565c0;border-radius:8px;padding:8px 16px;font-size:0.85em;font-weight:700;cursor:pointer">📥 Download CSV</button>
+                            <button onclick="clearAllFeedback()" style="background:white;color:#c62828;border:2px solid #f44336;border-radius:8px;padding:8px 16px;font-size:0.85em;font-weight:700;cursor:pointer">🗑️ Clear All</button>
+                        </div>
+                    </div>
+                    <div id="fbResponsesContainer">
+                        <p style="color:#aaa;text-align:center;padding:20px">Click "Load Responses" to see all feedback submissions.</p>
+                    </div>
+                </div>
+            </div>
+            <!-- ================================================ -->
+            <!-- END FEEDBACK ADMIN PANEL                         -->
             <!-- ================================================ -->
             <div id="dbInspector" class="form-section super-admin-only" style="margin-top:20px">
                 <h2 style="color:#c44569;margin-bottom:6px">🔍 Database Inspector</h2>
@@ -22730,7 +22942,11 @@ Davan Institute Team`;
     // ── Auto-init after Firebase is ready ────────────────────────
     (function waitForDbThenBanners() {
         function tryBanners() {
-            if (typeof db !== 'undefined' && db) { initActivityBanners(); }
+            if (typeof db !== 'undefined' && db) {
+                initActivityBanners();
+                initDynamicBanner();
+                initFeedbackSystem();
+            }
             else { setTimeout(tryBanners, 600); }
         }
         tryBanners();
@@ -26130,6 +26346,710 @@ Proceed?`)) return;
         setTimeout(()=>msg.style.display='none', 3000);
     }
 
+    // ══════════════════════════════════════════════════════════════════
+    // SITE SETTINGS — Dynamic Banner + WhatsApp Text
+    // ══════════════════════════════════════════════════════════════════
+
+    const BANNER_COLORS = {
+        orange: 'linear-gradient(90deg,#e8722a 0%,#f0a05a 40%,#f0a05a 60%,#e8722a 100%)',
+        purple: 'linear-gradient(90deg,#6a1b9a 0%,#c44569 40%,#c44569 60%,#6a1b9a 100%)',
+        green:  'linear-gradient(90deg,#2e7d32 0%,#66bb6a 40%,#66bb6a 60%,#2e7d32 100%)',
+        red:    'linear-gradient(90deg,#c62828 0%,#ef5350 40%,#ef5350 60%,#c62828 100%)',
+        blue:   'linear-gradient(90deg,#1565c0 0%,#42a5f5 40%,#42a5f5 60%,#1565c0 100%)',
+        gold:   'linear-gradient(90deg,#f9a825 0%,#ffd54f 40%,#ffd54f 60%,#f9a825 100%)'
+    };
+
+    // Apply banner from Firebase on page load
+    async function initDynamicBanner() {
+        try {
+            const snap = await db.ref('siteSettings/banner').once('value');
+            const data = snap.val();
+            if (!data) return;
+            const bannerDiv = document.getElementById('announcementBannerDiv');
+            const bannerText = document.getElementById('announcementBannerText');
+            if (!bannerDiv || !bannerText) return;
+            bannerDiv.style.display = data.visible === false ? 'none' : 'block';
+            if (data.text) bannerText.textContent = data.text;
+            if (data.color && BANNER_COLORS[data.color]) {
+                bannerDiv.style.background = BANNER_COLORS[data.color];
+                bannerText.style.color = data.color === 'gold' ? '#5d4037' : 'white';
+            }
+            if (data.font) bannerText.style.fontFamily = data.font;
+            if (data.fontSize) bannerText.style.fontSize = data.fontSize + 'px';
+        } catch(e) { console.warn('initDynamicBanner error:', e); }
+    }
+
+    async function loadSiteSettings() {
+        const msg = document.getElementById('siteSettingsMsg');
+        if (msg) msg.innerHTML = '<p style="color:#666;text-align:center">⏳ Loading settings...</p>';
+        try {
+            const snap = await db.ref('siteSettings').once('value');
+            const data = snap.val() || {};
+            // Banner
+            const banner = data.banner || {};
+            const bannerText = document.getElementById('ssBannerText');
+            if (bannerText) bannerText.value = banner.text || '🎯🧩 Speed Slide Challenge is LIVE now 🧩🎯';
+            const showRadio = document.getElementById('bannerShow');
+            const hideRadio = document.getElementById('bannerHide');
+            if (showRadio && hideRadio) {
+                if (banner.visible === false) { hideRadio.checked = true; } else { showRadio.checked = true; }
+            }
+            // Font
+            const fontSelect = document.getElementById('ssBannerFont');
+            if (fontSelect && banner.font) fontSelect.value = banner.font;
+            // Font size
+            const fontSizeEl = document.getElementById('ssBannerFontSize');
+            const fontSizeVal = document.getElementById('ssBannerFontSizeVal');
+            if (fontSizeEl && banner.fontSize) { fontSizeEl.value = banner.fontSize; if (fontSizeVal) fontSizeVal.textContent = banner.fontSize + 'px'; }
+            // Color
+            const color = banner.color || 'orange';
+            const colorRadio = document.getElementById('bColor' + color.charAt(0).toUpperCase() + color.slice(1));
+            if (colorRadio) colorRadio.checked = true;
+            else { const fallback = document.getElementById('bColorOrange'); if(fallback) fallback.checked = true; }
+            // WhatsApp
+            const waText = document.getElementById('ssWhatsappText');
+            if (waText) waText.value = data.whatsappText || '🎓 Join our exciting Daily Quiz Competition! Answer 2 questions daily and win prizes. Register now and compete for glory!';
+            if (msg) msg.innerHTML = '<p style="color:#28a745;background:#d4edda;padding:10px 14px;border-radius:8px;font-weight:600">✅ Settings loaded successfully.</p>';
+            setTimeout(() => { if(msg) msg.innerHTML = ''; }, 3000);
+        } catch(e) {
+            if (msg) msg.innerHTML = '<p style="color:#c62828;background:#fde8e8;padding:10px 14px;border-radius:8px">❌ Error loading settings: ' + e.message + '</p>';
+        }
+    }
+
+    async function saveBannerSettings() {
+        const text = (document.getElementById('ssBannerText')?.value || '').trim();
+        if (!text) { alert('⚠️ Please enter banner text!'); return; }
+        const visible = !document.getElementById('bannerHide')?.checked;
+        const colorChecked = document.querySelector('input[name="bannerColor"]:checked');
+        const color = colorChecked ? colorChecked.value : 'orange';
+        const fontSelect = document.getElementById('ssBannerFont');
+        const font = fontSelect ? fontSelect.value : "'Segoe UI',sans-serif";
+        const fontSizeEl = document.getElementById('ssBannerFontSize');
+        const fontSize = fontSizeEl ? parseInt(fontSizeEl.value) : 18;
+        try {
+            await db.ref('siteSettings/banner').set({ text, visible, color, font, fontSize, updatedAt: new Date().toISOString(), updatedBy: 'Super Admin' });
+            // Apply immediately on this page
+            const bannerDiv = document.getElementById('announcementBannerDiv');
+            const bannerSpan = document.getElementById('announcementBannerText');
+            if (bannerDiv) { bannerDiv.style.display = visible ? 'block' : 'none'; bannerDiv.style.background = BANNER_COLORS[color] || BANNER_COLORS.orange; }
+            if (bannerSpan) {
+                bannerSpan.textContent = text;
+                bannerSpan.style.color = color === 'gold' ? '#5d4037' : 'white';
+                bannerSpan.style.fontFamily = font;
+                bannerSpan.style.fontSize = fontSize + 'px';
+            }
+            // Show toast
+            const toast = document.getElementById('bannerSaveToast');
+            if (toast) { toast.style.display = 'inline-block'; setTimeout(() => { toast.style.display = 'none'; }, 3500); }
+        } catch(e) {
+            alert('❌ Error saving banner: ' + e.message);
+        }
+    }
+
+    function previewBanner() {
+        const text = document.getElementById('ssBannerText')?.value || '';
+        const colorChecked = document.querySelector('input[name="bannerColor"]:checked');
+        const color = colorChecked ? colorChecked.value : 'orange';
+        const visible = !document.getElementById('bannerHide')?.checked;
+        const font = document.getElementById('ssBannerFont')?.value || "'Segoe UI',sans-serif";
+        const fontSize = document.getElementById('ssBannerFontSize')?.value || 18;
+        const bannerDiv = document.getElementById('announcementBannerDiv');
+        const bannerSpan = document.getElementById('announcementBannerText');
+        if (bannerDiv) { bannerDiv.style.display = visible ? 'block' : 'none'; bannerDiv.style.background = BANNER_COLORS[color] || BANNER_COLORS.orange; }
+        if (bannerSpan) {
+            bannerSpan.textContent = text || '(empty)';
+            bannerSpan.style.color = color === 'gold' ? '#5d4037' : 'white';
+            bannerSpan.style.fontFamily = font;
+            bannerSpan.style.fontSize = fontSize + 'px';
+        }
+        alert('👁️ Preview applied! Scroll up to see the banner. Click Save to make it permanent.');
+    }
+
+    async function saveWhatsappText() {
+        const text = (document.getElementById('ssWhatsappText')?.value || '').trim();
+        if (!text) { alert('⚠️ Please enter WhatsApp share text!'); return; }
+        try {
+            await db.ref('siteSettings/whatsappText').set(text);
+            // Update og:description meta tag (best-effort for new shares)
+            const ogDesc = document.querySelector('meta[property="og:description"]');
+            if (ogDesc) ogDesc.setAttribute('content', text);
+            const twitterDesc = document.querySelector('meta[name="twitter:description"]');
+            if (twitterDesc) twitterDesc.setAttribute('content', text);
+            // Show toast
+            const toast = document.getElementById('waSaveToast');
+            if (toast) { toast.style.display = 'inline-block'; setTimeout(() => { toast.style.display = 'none'; }, 3500); }
+        } catch(e) {
+            alert('❌ Error saving WhatsApp text: ' + e.message);
+        }
+    }
+
+    function copyWhatsappShareLink() {
+        const url = 'https://harshgujjar.github.io/Spurthi-youth-fest-2026/';
+        const text = document.getElementById('ssWhatsappText')?.value || '';
+        const fullText = (text ? text + '\n\n' : '') + url;
+        navigator.clipboard.writeText(fullText).then(() => { alert('✅ Link + text copied to clipboard! Paste in WhatsApp.'); }).catch(() => { prompt('Copy this link:', fullText); });
+    }
+
+    // ══════════════════════════════════════════════════════════════════
+    // FEEDBACK SYSTEM
+    // ══════════════════════════════════════════════════════════════════
+
+    let fbDismissCount = 0;
+    let fbAlreadySubmitted = false;
+    let fbCurrentRecommend = '';
+    let fbEventRatings = {};
+    let fbListenerAttached = false;
+
+    // Default events list
+    const FB_DEFAULT_EVENTS = [
+        'Social Awareness Skit','Mad Ads','YouTube Advertisement','Case Analysis',
+        'Vlog','Podcast','Hand Writing','Talent Hunt','Best Out of Waste',
+        'Interdisciplinary','Quiz','Speed Slide Challenge','Nukkad Natak'
+    ];
+
+    // On page load — listen for feedback trigger from Firebase
+    async function initFeedbackSystem() {
+        try {
+            // Check if user already submitted
+            const subKey = localStorage.getItem('spurthi_fb_submitted');
+            if (subKey === 'yes') { fbAlreadySubmitted = true; return; }
+            fbDismissCount = parseInt(localStorage.getItem('spurthi_fb_dismiss') || '0');
+            // Listen for live changes to feedbackSettings
+            if (!fbListenerAttached) {
+                fbListenerAttached = true;
+                db.ref('feedbackSettings').on('value', snap => {
+                    const data = snap.val();
+                    if (!data || !data.active) return;
+                    if (fbAlreadySubmitted) return;
+                    // Show popup if not submitted
+                    showFeedbackPopup(data);
+                });
+            }
+        } catch(e) { console.warn('initFeedbackSystem error:', e); }
+    }
+
+    async function showFeedbackPopup(settings) {
+        if (fbAlreadySubmitted) return;
+        const overlay = document.getElementById('feedbackPopupOverlay');
+        if (!overlay || overlay.style.display === 'flex') return;
+        // Set close button behavior based on dismiss count
+        const closeBtn = document.getElementById('fbPopupCloseBtn');
+        if (fbDismissCount >= 1) {
+            // 2nd time — must fill
+            if (closeBtn) { closeBtn.style.display = 'none'; }
+            // Add warning
+            const header = overlay.querySelector('div > div > div');
+        } else {
+            if (closeBtn) { closeBtn.style.display = 'block'; }
+        }
+        // Build overall score buttons
+        const scoreRow = document.getElementById('fbOverallScoreRow');
+        if (scoreRow && !scoreRow.innerHTML.trim()) {
+            let html = '';
+            for (let i = 1; i <= 10; i++) {
+                const color = i <= 3 ? '#f44336' : i <= 6 ? '#ff9800' : i <= 8 ? '#66bb6a' : '#2e7d32';
+                html += `<button type="button" onclick="fbSetScore(${i},this)" style="width:40px;height:40px;border-radius:50%;border:2px solid ${color};background:white;color:${color};font-weight:800;font-size:0.95em;cursor:pointer;transition:all 0.2s">${i}</button>`;
+            }
+            scoreRow.innerHTML = html;
+        }
+        // Load event list for ratings
+        await loadFeedbackEventRatings();
+        // Auto-fill name/class if quiz student logged in
+        if (quizCurrentUser) {
+            const nameEl = document.getElementById('fbName');
+            const classEl = document.getElementById('fbClass');
+            if (nameEl && !nameEl.value) nameEl.value = quizCurrentUser.name || '';
+            if (classEl && !classEl.value) classEl.value = quizCurrentUser.class || '';
+        }
+        overlay.style.display = 'flex';
+        overlay.style.alignItems = 'flex-start';
+        document.body.style.overflow = 'hidden';
+    }
+
+    async function loadFeedbackEventRatings() {
+        const list = document.getElementById('fbEventRatingsList');
+        if (!list) return;
+        let events = FB_DEFAULT_EVENTS;
+        try {
+            const snap = await db.ref('feedbackSettings/events').once('value');
+            if (snap.exists()) events = snap.val();
+        } catch(e) {}
+        if (!events || !events.length) { list.innerHTML = '<p style="color:#888;font-style:italic">No events selected for rating.</p>'; return; }
+        let html = '';
+        events.forEach((ev, idx) => {
+            html += `<div style="background:#f8f9fa;border-radius:10px;padding:12px 14px;margin-bottom:10px;border:1px solid #e0e0e0">
+                <div style="font-weight:700;color:#333;margin-bottom:8px;font-size:0.93em">📌 ${ev}</div>
+                <div style="display:flex;gap:6px" id="fbStars_${idx}">
+                    ${[1,2,3,4,5].map(s => `<button type="button" onclick="fbSetStar(${idx},'${ev.replace(/'/g,"\\'")}',${s},this)" style="width:36px;height:36px;font-size:1.3em;background:none;border:none;cursor:pointer;transition:transform 0.1s" title="${s} star${s>1?'s':''}">☆</button>`).join('')}
+                </div>
+            </div>`;
+        });
+        list.innerHTML = html;
+        fbEventRatings = {};
+    }
+
+    function fbSetStar(idx, eventName, stars, btn) {
+        fbEventRatings[eventName] = stars;
+        const row = document.getElementById('fbStars_' + idx);
+        if (!row) return;
+        const btns = row.querySelectorAll('button');
+        btns.forEach((b, i) => { b.textContent = (i < stars) ? '⭐' : '☆'; b.style.transform = (i < stars) ? 'scale(1.1)' : 'scale(1)'; });
+    }
+
+    function fbSetScore(score, btn) {
+        document.getElementById('fbOverallScore').value = score;
+        const row = document.getElementById('fbOverallScoreRow');
+        if (!row) return;
+        row.querySelectorAll('button').forEach(b => {
+            const n = parseInt(b.textContent);
+            const color = n <= 3 ? '#f44336' : n <= 6 ? '#ff9800' : n <= 8 ? '#66bb6a' : '#2e7d32';
+            b.style.background = (n <= score) ? color : 'white';
+            b.style.color = (n <= score) ? 'white' : color;
+            b.style.transform = (n === score) ? 'scale(1.15)' : 'scale(1)';
+        });
+    }
+
+    function fbSetRecommend(val, btn) {
+        fbCurrentRecommend = val;
+        document.getElementById('fbRecommend').value = val;
+        document.querySelectorAll('.fb-recommend-btn').forEach(b => {
+            b.style.background = 'white';
+            b.style.transform = 'scale(1)';
+        });
+        const colors = { yes:'#43a047', maybe:'#ff9800', no:'#f44336' };
+        btn.style.background = colors[val];
+        btn.style.color = 'white';
+        btn.style.transform = 'scale(1.05)';
+    }
+
+    function closeFeedbackPopup() {
+        if (fbDismissCount >= 1) return; // Block close on 2nd show
+        fbDismissCount++;
+        localStorage.setItem('spurthi_fb_dismiss', fbDismissCount);
+        const overlay = document.getElementById('feedbackPopupOverlay');
+        if (overlay) overlay.style.display = 'none';
+        document.body.style.overflow = '';
+        // Schedule re-show after 5 minutes
+        setTimeout(() => {
+            if (!fbAlreadySubmitted) {
+                db.ref('feedbackSettings').once('value').then(snap => {
+                    const data = snap.val();
+                    if (data && data.active) showFeedbackPopup(data);
+                });
+            }
+        }, 5 * 60 * 1000);
+    }
+
+    async function submitFeedback() {
+        const name = (document.getElementById('fbName')?.value || '').trim();
+        const cls = (document.getElementById('fbClass')?.value || '').trim();
+        const overallScore = document.getElementById('fbOverallScore')?.value;
+        const recommend = document.getElementById('fbRecommend')?.value;
+        const suggestions = (document.getElementById('fbSuggestions')?.value || '').trim();
+        const msgEl = document.getElementById('fbPopupMsg');
+        if (!name) { if(msgEl) msgEl.innerHTML = '<p style="color:#c62828;background:#fde8e8;padding:8px 12px;border-radius:8px;font-weight:600">⚠️ Please enter your name.</p>'; return; }
+        if (!overallScore) { if(msgEl) msgEl.innerHTML = '<p style="color:#c62828;background:#fde8e8;padding:8px 12px;border-radius:8px;font-weight:600">⚠️ Please rate the overall fest experience (1–10).</p>'; return; }
+        if (!recommend) { if(msgEl) msgEl.innerHTML = '<p style="color:#c62828;background:#fde8e8;padding:8px 12px;border-radius:8px;font-weight:600">⚠️ Please answer the recommendation question.</p>'; return; }
+        if(msgEl) msgEl.innerHTML = '<p style="color:#666">⏳ Submitting...</p>';
+        try {
+            await db.ref('feedbackResponses').push({
+                name, class: cls,
+                overallScore: parseInt(overallScore),
+                eventRatings: fbEventRatings,
+                recommend,
+                suggestions,
+                submittedAt: new Date().toISOString(),
+                userAgent: navigator.userAgent.substring(0,80)
+            });
+            fbAlreadySubmitted = true;
+            localStorage.setItem('spurthi_fb_submitted', 'yes');
+            // Show thank you
+            const body = document.getElementById('feedbackFormBody');
+            if (body) body.innerHTML = `<div style="text-align:center;padding:40px 20px">
+                <div style="font-size:4em;margin-bottom:16px">🎉</div>
+                <h3 style="color:#2e7d32;font-size:1.4em;margin-bottom:8px">Thank You, ${name}!</h3>
+                <p style="color:#555;font-size:1em;margin-bottom:20px">Your feedback has been recorded. We truly appreciate your time! 💪</p>
+                <button onclick="document.getElementById('feedbackPopupOverlay').style.display='none';document.body.style.overflow=''" style="background:linear-gradient(135deg,#880e4f,#c2185b);color:white;border:none;border-radius:10px;padding:12px 28px;font-size:1em;font-weight:700;cursor:pointer">✅ Close</button>
+            </div>`;
+            setTimeout(() => {
+                const overlay = document.getElementById('feedbackPopupOverlay');
+                if (overlay) overlay.style.display = 'none';
+                document.body.style.overflow = '';
+            }, 4000);
+        } catch(e) {
+            if(msgEl) msgEl.innerHTML = '<p style="color:#c62828;background:#fde8e8;padding:8px 12px;border-radius:8px">❌ Error submitting: ' + e.message + '</p>';
+        }
+    }
+
+    // ── Feedback Questions Preview + Edit ──────────────────────────
+    const FB_DEFAULT_QUESTION_LABELS = {
+        name:         'Your Name',
+        classField:   'Class / Designation',
+        overallScore: 'Overall Fest Experience (1 = Poor, 10 = Excellent)',
+        eventRating:  'Rate Each Event (1–5 Stars)',
+        recommend:    'Would you recommend Spurthi Youth Fest to others?',
+        suggestions:  'Suggestions / Comments (Optional)'
+    };
+
+    let fbCurrentLabels = { ...FB_DEFAULT_QUESTION_LABELS };
+
+    async function loadFeedbackQuestionLabels() {
+        try {
+            const snap = await db.ref('feedbackSettings/questionLabels').once('value');
+            if (snap.exists()) fbCurrentLabels = { ...FB_DEFAULT_QUESTION_LABELS, ...snap.val() };
+            else fbCurrentLabels = { ...FB_DEFAULT_QUESTION_LABELS };
+        } catch(e) { fbCurrentLabels = { ...FB_DEFAULT_QUESTION_LABELS }; }
+        renderFeedbackQuestionsPreview();
+    }
+
+    function renderFeedbackQuestionsPreview() {
+        const container = document.getElementById('fbQuestionsPreview');
+        if (!container) return;
+        const lbl = fbCurrentLabels;
+        container.innerHTML = `
+        <p style="color:#e65100;font-weight:700;font-size:0.88em;margin:0 0 14px">📝 Edit the question label text below. What visitors see in the popup is shown here.</p>
+        <div style="display:grid;gap:14px">
+
+            <!-- Q1: Name -->
+            <div style="background:white;border-radius:10px;padding:14px 16px;border:2px solid #ffe082">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+                    <span style="background:#ff6f00;color:white;padding:2px 10px;border-radius:20px;font-size:0.75em;font-weight:700">Q1</span>
+                    <span style="color:#888;font-size:0.82em">Text input — always shown</span>
+                </div>
+                <label style="font-weight:700;color:#555;font-size:0.85em;display:block;margin-bottom:5px">Question Label:</label>
+                <input type="text" id="fbLblName" value="${lbl.name}" style="width:100%;padding:8px 12px;border:1.5px solid #ffcc02;border-radius:8px;font-size:0.92em;box-sizing:border-box;outline:none">
+                <div style="margin-top:8px;background:#f9f9f9;border-radius:6px;padding:8px 12px;border-left:3px solid #ff6f00">
+                    <span style="color:#555;font-size:0.82em">👤 <strong id="fbPreviewName">${lbl.name}</strong> <span style="color:#c2185b">*</span></span>
+                    <div style="margin-top:5px;background:#f0f0f0;border-radius:5px;height:22px;width:100%"></div>
+                </div>
+            </div>
+
+            <!-- Q2: Class -->
+            <div style="background:white;border-radius:10px;padding:14px 16px;border:2px solid #ffe082">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+                    <span style="background:#ff6f00;color:white;padding:2px 10px;border-radius:20px;font-size:0.75em;font-weight:700">Q2</span>
+                    <span style="color:#888;font-size:0.82em">Text input — always shown</span>
+                </div>
+                <label style="font-weight:700;color:#555;font-size:0.85em;display:block;margin-bottom:5px">Question Label:</label>
+                <input type="text" id="fbLblClass" value="${lbl.classField}" style="width:100%;padding:8px 12px;border:1.5px solid #ffcc02;border-radius:8px;font-size:0.92em;box-sizing:border-box;outline:none">
+                <div style="margin-top:8px;background:#f9f9f9;border-radius:6px;padding:8px 12px;border-left:3px solid #ff6f00">
+                    <span style="color:#555;font-size:0.82em">🏫 <strong id="fbPreviewClass">${lbl.classField}</strong></span>
+                    <div style="margin-top:5px;background:#f0f0f0;border-radius:5px;height:22px;width:100%"></div>
+                </div>
+            </div>
+
+            <!-- Q3: Overall Score -->
+            <div style="background:white;border-radius:10px;padding:14px 16px;border:2px solid #ffe082">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+                    <span style="background:#c2185b;color:white;padding:2px 10px;border-radius:20px;font-size:0.75em;font-weight:700">Q3</span>
+                    <span style="color:#888;font-size:0.82em">1–10 score buttons — always shown — required</span>
+                </div>
+                <label style="font-weight:700;color:#555;font-size:0.85em;display:block;margin-bottom:5px">Question Label:</label>
+                <input type="text" id="fbLblOverall" value="${lbl.overallScore}" style="width:100%;padding:8px 12px;border:1.5px solid #ffcc02;border-radius:8px;font-size:0.92em;box-sizing:border-box;outline:none">
+                <div style="margin-top:8px;background:#fce4ec;border-radius:6px;padding:8px 12px;border-left:3px solid #c2185b">
+                    <span style="color:#880e4f;font-size:0.82em;font-weight:600">📝 <strong id="fbPreviewOverall">${lbl.overallScore}</strong> <span style="color:#c2185b">*</span></span>
+                    <div style="margin-top:6px;display:flex;gap:4px">${[1,2,3,4,5,6,7,8,9,10].map(n=>`<div style="width:24px;height:24px;border-radius:50%;border:2px solid #ccc;background:white;font-size:0.7em;font-weight:700;display:flex;align-items:center;justify-content:center;color:#888">${n}</div>`).join('')}</div>
+                </div>
+            </div>
+
+            <!-- Q4: Event Ratings -->
+            <div style="background:white;border-radius:10px;padding:14px 16px;border:2px solid #ffe082">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+                    <span style="background:#6a1b9a;color:white;padding:2px 10px;border-radius:20px;font-size:0.75em;font-weight:700">Q4</span>
+                    <span style="color:#888;font-size:0.82em">⭐ Star ratings — shown for each selected event</span>
+                </div>
+                <label style="font-weight:700;color:#555;font-size:0.85em;display:block;margin-bottom:5px">Section Heading:</label>
+                <input type="text" id="fbLblEvents" value="${lbl.eventRating}" style="width:100%;padding:8px 12px;border:1.5px solid #ffcc02;border-radius:8px;font-size:0.92em;box-sizing:border-box;outline:none">
+                <div style="margin-top:8px;background:#f3e5f5;border-radius:6px;padding:8px 12px;border-left:3px solid #6a1b9a">
+                    <span style="color:#4a148c;font-size:0.82em;font-weight:600">⭐ <strong id="fbPreviewEvents">${lbl.eventRating}</strong></span>
+                    <div style="margin-top:5px;font-size:0.75em;color:#888;font-style:italic">[ Event 1: ☆☆☆☆☆ ] [ Event 2: ☆☆☆☆☆ ] ...</div>
+                </div>
+            </div>
+
+            <!-- Q5: Recommend -->
+            <div style="background:white;border-radius:10px;padding:14px 16px;border:2px solid #ffe082">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+                    <span style="background:#2e7d32;color:white;padding:2px 10px;border-radius:20px;font-size:0.75em;font-weight:700">Q5</span>
+                    <span style="color:#888;font-size:0.82em">Yes / Maybe / No buttons — required</span>
+                </div>
+                <label style="font-weight:700;color:#555;font-size:0.85em;display:block;margin-bottom:5px">Question Label:</label>
+                <input type="text" id="fbLblRecommend" value="${lbl.recommend}" style="width:100%;padding:8px 12px;border:1.5px solid #ffcc02;border-radius:8px;font-size:0.92em;box-sizing:border-box;outline:none">
+                <div style="margin-top:8px;background:#e8f5e9;border-radius:6px;padding:8px 12px;border-left:3px solid #2e7d32">
+                    <span style="color:#2e7d32;font-size:0.82em;font-weight:600">🎯 <strong id="fbPreviewRecommend">${lbl.recommend}</strong> <span style="color:#c2185b">*</span></span>
+                    <div style="margin-top:6px;display:flex;gap:6px"><span style="border:1.5px solid #43a047;padding:3px 10px;border-radius:12px;font-size:0.75em;font-weight:700;color:#2e7d32">👍 Yes!</span><span style="border:1.5px solid #ff9800;padding:3px 10px;border-radius:12px;font-size:0.75em;font-weight:700;color:#e65100">🤔 Maybe</span><span style="border:1.5px solid #f44336;padding:3px 10px;border-radius:12px;font-size:0.75em;font-weight:700;color:#c62828">👎 No</span></div>
+                </div>
+            </div>
+
+            <!-- Q6: Suggestions -->
+            <div style="background:white;border-radius:10px;padding:14px 16px;border:2px solid #ffe082">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+                    <span style="background:#1565c0;color:white;padding:2px 10px;border-radius:20px;font-size:0.75em;font-weight:700">Q6</span>
+                    <span style="color:#888;font-size:0.82em">Text area — optional</span>
+                </div>
+                <label style="font-weight:700;color:#555;font-size:0.85em;display:block;margin-bottom:5px">Question Label:</label>
+                <input type="text" id="fbLblSuggestions" value="${lbl.suggestions}" style="width:100%;padding:8px 12px;border:1.5px solid #ffcc02;border-radius:8px;font-size:0.92em;box-sizing:border-box;outline:none">
+                <div style="margin-top:8px;background:#e3f2fd;border-radius:6px;padding:8px 12px;border-left:3px solid #1565c0">
+                    <span style="color:#0d47a1;font-size:0.82em;font-weight:600">💬 <strong id="fbPreviewSuggestions">${lbl.suggestions}</strong></span>
+                    <div style="margin-top:5px;background:#f0f0f0;border-radius:5px;height:40px;width:100%"></div>
+                </div>
+            </div>
+
+        </div>`;
+        // Live update preview text as user types
+        ['Name','Class','Overall','Events','Recommend','Suggestions'].forEach(key => {
+            const input = document.getElementById('fbLbl' + key);
+            const preview = document.getElementById('fbPreview' + key);
+            if (input && preview) {
+                input.oninput = () => { preview.textContent = input.value || '(empty)'; };
+            }
+        });
+    }
+
+    async function saveFeedbackQuestions() {
+        const labels = {
+            name:         document.getElementById('fbLblName')?.value.trim() || FB_DEFAULT_QUESTION_LABELS.name,
+            classField:   document.getElementById('fbLblClass')?.value.trim() || FB_DEFAULT_QUESTION_LABELS.classField,
+            overallScore: document.getElementById('fbLblOverall')?.value.trim() || FB_DEFAULT_QUESTION_LABELS.overallScore,
+            eventRating:  document.getElementById('fbLblEvents')?.value.trim() || FB_DEFAULT_QUESTION_LABELS.eventRating,
+            recommend:    document.getElementById('fbLblRecommend')?.value.trim() || FB_DEFAULT_QUESTION_LABELS.recommend,
+            suggestions:  document.getElementById('fbLblSuggestions')?.value.trim() || FB_DEFAULT_QUESTION_LABELS.suggestions
+        };
+        try {
+            await db.ref('feedbackSettings/questionLabels').set(labels);
+            fbCurrentLabels = labels;
+            // Update popup labels live
+            applyFeedbackLabelsToPopup(labels);
+            const toast = document.getElementById('fbQSaveToast');
+            if (toast) { toast.style.display = 'inline-block'; setTimeout(() => { toast.style.display = 'none'; }, 3500); }
+        } catch(e) { alert('❌ Error saving question labels: ' + e.message); }
+    }
+
+    function applyFeedbackLabelsToPopup(lbl) {
+        // Update the live popup labels if it's visible
+        const map = {
+            'fbName': lbl.name,
+            'fbClass': lbl.classField,
+            'fbOverallScoreRow': lbl.overallScore,
+            'fbEventRatingsSection': lbl.eventRating,
+            'fbRecommend': lbl.recommend,
+            'fbSuggestions': lbl.suggestions
+        };
+        // Update label elements in the popup
+        const nameLabel = document.querySelector('label[for="fbName"], #feedbackFormBody label');
+        // Simpler: just store labels for next popup open
+        window._fbCustomLabels = lbl;
+    }
+
+    async function resetFeedbackQuestions() {
+        if (!confirm('Reset all question labels back to defaults?')) return;
+        try {
+            await db.ref('feedbackSettings/questionLabels').remove();
+            fbCurrentLabels = { ...FB_DEFAULT_QUESTION_LABELS };
+            renderFeedbackQuestionsPreview();
+            const toast = document.getElementById('fbQSaveToast');
+            if (toast) { toast.textContent = '✅ Reset to defaults!'; toast.style.display = 'inline-block'; setTimeout(() => { toast.style.display = 'none'; toast.textContent = '✅ Question labels saved!'; }, 3000); }
+        } catch(e) { alert('❌ Error: ' + e.message); }
+    }
+
+    // ── Feedback Admin Functions ────────────────────────────────────
+    async function loadFeedbackAdmin() {
+        const msg = document.getElementById('feedbackAdminMsg');
+        if (msg) msg.innerHTML = '<p style="color:#666;text-align:center">⏳ Loading...</p>';
+        try {
+            const [settingsSnap, responsesSnap] = await Promise.all([
+                db.ref('feedbackSettings').once('value'),
+                db.ref('feedbackResponses').once('value')
+            ]);
+            const settings = settingsSnap.val() || {};
+            const responses = responsesSnap.val() || {};
+            // Stats
+            const total = Object.keys(responses).length;
+            document.getElementById('fbStatTotal').textContent = total;
+            document.getElementById('fbStatActive').textContent = settings.active ? '✅ ON' : '❌ OFF';
+            if (total > 0) {
+                const vals = Object.values(responses);
+                const avgScore = (vals.reduce((s,r) => s + (r.overallScore||0), 0) / total).toFixed(1);
+                document.getElementById('fbStatAvgScore').textContent = avgScore + '/10';
+                const yesCount = vals.filter(r => r.recommend === 'yes').length;
+                document.getElementById('fbStatRecommend').textContent = yesCount + '/' + total;
+            } else {
+                document.getElementById('fbStatAvgScore').textContent = '—';
+                document.getElementById('fbStatRecommend').textContent = '—';
+            }
+            // Trigger status
+            const statusEl = document.getElementById('fbTriggerStatus');
+            if (statusEl) {
+                if (settings.active) {
+                    statusEl.innerHTML = '🟢 <strong>ACTIVE</strong> — Feedback popup is live for all visitors';
+                    statusEl.style.cssText = 'padding:10px 20px;border-radius:20px;font-weight:700;font-size:0.95em;background:#d4edda;color:#155724';
+                } else {
+                    statusEl.innerHTML = '🔴 <strong>INACTIVE</strong> — Feedback popup is off';
+                    statusEl.style.cssText = 'padding:10px 20px;border-radius:20px;font-weight:700;font-size:0.95em;background:#f8d7da;color:#721c24';
+                }
+            }
+            // Build event checkboxes
+            const savedEvents = settings.events || FB_DEFAULT_EVENTS;
+            const checkboxContainer = document.getElementById('fbEventCheckboxes');
+            if (checkboxContainer) {
+                checkboxContainer.innerHTML = FB_DEFAULT_EVENTS.map(ev => `
+                    <label style="display:flex;align-items:center;gap:8px;cursor:pointer;background:white;padding:8px 12px;border-radius:8px;border:2px solid ${savedEvents.includes(ev)?'#9c27b0':'#e0e0e0'};font-size:0.88em;font-weight:600;color:#333;transition:all 0.2s" onclick="this.style.borderColor=this.querySelector('input').checked?'#e0e0e0':'#9c27b0'">
+                        <input type="checkbox" value="${ev}" ${savedEvents.includes(ev)?'checked':''} style="accent-color:#9c27b0;width:16px;height:16px"> ${ev}
+                    </label>`).join('');
+            }
+            // Load questions preview
+            await loadFeedbackQuestionLabels();
+            if (msg) msg.innerHTML = '<p style="color:#28a745;background:#d4edda;padding:10px 14px;border-radius:8px;font-weight:600">✅ Feedback admin loaded.</p>';
+            setTimeout(() => { if(msg) msg.innerHTML = ''; }, 3000);
+        } catch(e) {
+            if (msg) msg.innerHTML = '<p style="color:#c62828;background:#fde8e8;padding:10px 14px;border-radius:8px">❌ Error: ' + e.message + '</p>';
+        }
+    }
+
+    function fbSelectAllEvents() {
+        document.querySelectorAll('#fbEventCheckboxes input[type="checkbox"]').forEach(cb => {
+            cb.checked = true;
+            cb.closest('label').style.borderColor = '#9c27b0';
+        });
+    }
+
+    function fbClearAllEvents() {
+        document.querySelectorAll('#fbEventCheckboxes input[type="checkbox"]').forEach(cb => {
+            cb.checked = false;
+            cb.closest('label').style.borderColor = '#e0e0e0';
+        });
+    }
+
+    function fbAddCustomEvent() {
+        const name = prompt('Enter custom event name:');
+        if (!name || !name.trim()) return;
+        const container = document.getElementById('fbCustomEventsContainer');
+        const div = document.createElement('div');
+        div.style.cssText = 'display:flex;align-items:center;gap:8px;margin-top:8px';
+        div.innerHTML = `<label style="display:flex;align-items:center;gap:8px;cursor:pointer;background:white;padding:8px 12px;border-radius:8px;border:2px solid #9c27b0;font-size:0.88em;font-weight:600;color:#333"><input type="checkbox" value="${name.trim()}" checked class="fb-custom-event-cb" style="accent-color:#9c27b0;width:16px;height:16px"> ✨ ${name.trim()} <span style="color:#888;font-size:0.8em">(custom)</span></label><button onclick="this.parentNode.remove()" style="background:#f44336;color:white;border:none;border-radius:6px;padding:4px 10px;cursor:pointer;font-size:0.8em">✕</button>`;
+        container.appendChild(div);
+    }
+
+    async function saveFeedbackEventList() {
+        const checked = [...document.querySelectorAll('#fbEventCheckboxes input[type="checkbox"]:checked')].map(cb => cb.value);
+        const custom = [...document.querySelectorAll('.fb-custom-event-cb:checked')].map(cb => cb.value);
+        const allEvents = [...new Set([...checked, ...custom])];
+        if (!allEvents.length) { alert('⚠️ Please select at least one event!'); return; }
+        const msg = document.getElementById('feedbackAdminMsg');
+        if (msg) msg.innerHTML = '<p style="color:#666">⏳ Saving event list...</p>';
+        try {
+            await db.ref('feedbackSettings/events').set(allEvents);
+            if (msg) msg.innerHTML = '<p style="color:#28a745;background:#d4edda;padding:10px 14px;border-radius:8px;font-weight:600">✅ Event list saved! ' + allEvents.length + ' events selected.</p>';
+            setTimeout(() => { if(msg) msg.innerHTML = ''; }, 3000);
+        } catch(e) {
+            if (msg) msg.innerHTML = '<p style="color:#c62828;background:#fde8e8;padding:10px 14px;border-radius:8px">❌ Error: ' + e.message + '</p>';
+        }
+    }
+
+    async function activateFeedback() {
+        if (!confirm('🚀 Activate feedback popup for ALL visitors now?\n\nEveryone on the page will see it.')) return;
+        const msg = document.getElementById('feedbackAdminMsg');
+        if (msg) msg.innerHTML = '<p style="color:#666">⏳ Activating...</p>';
+        try {
+            const eventsSnap = await db.ref('feedbackSettings/events').once('value');
+            const events = eventsSnap.val() || FB_DEFAULT_EVENTS;
+            await db.ref('feedbackSettings').update({ active: true, activatedAt: new Date().toISOString(), activatedBy: 'Super Admin', events });
+            if (msg) msg.innerHTML = '<p style="color:#28a745;background:#d4edda;padding:10px 14px;border-radius:8px;font-weight:600">🚀 Feedback is now LIVE for all visitors!</p>';
+            await loadFeedbackAdmin();
+        } catch(e) {
+            if (msg) msg.innerHTML = '<p style="color:#c62828;background:#fde8e8;padding:10px 14px;border-radius:8px">❌ Error: ' + e.message + '</p>';
+        }
+    }
+
+    async function deactivateFeedback() {
+        if (!confirm('⛔ Deactivate feedback popup?\n\nVisitors will no longer see the popup.')) return;
+        const msg = document.getElementById('feedbackAdminMsg');
+        if (msg) msg.innerHTML = '<p style="color:#666">⏳ Deactivating...</p>';
+        try {
+            await db.ref('feedbackSettings/active').set(false);
+            if (msg) msg.innerHTML = '<p style="color:#ff9800;background:#fff3e0;padding:10px 14px;border-radius:8px;font-weight:600">⛔ Feedback deactivated. Popup hidden for all visitors.</p>';
+            await loadFeedbackAdmin();
+        } catch(e) {
+            if (msg) msg.innerHTML = '<p style="color:#c62828;background:#fde8e8;padding:10px 14px;border-radius:8px">❌ Error: ' + e.message + '</p>';
+        }
+    }
+
+    async function loadFeedbackResponses() {
+        const container = document.getElementById('fbResponsesContainer');
+        if (!container) return;
+        container.innerHTML = '<p style="color:#666;text-align:center;padding:20px">⏳ Loading responses...</p>';
+        try {
+            const snap = await db.ref('feedbackResponses').once('value');
+            const data = snap.val();
+            if (!data) { container.innerHTML = '<p style="color:#aaa;text-align:center;padding:20px">No feedback responses yet.</p>'; return; }
+            const responses = Object.values(data).sort((a,b) => new Date(b.submittedAt) - new Date(a.submittedAt));
+            let html = `<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:0.85em">
+                <thead><tr style="background:linear-gradient(135deg,#880e4f,#c2185b);color:white">
+                    <th style="padding:10px 12px;text-align:left">#</th>
+                    <th style="padding:10px 12px;text-align:left">Name</th>
+                    <th style="padding:10px 12px;text-align:left">Class</th>
+                    <th style="padding:10px 12px;text-align:center">Score</th>
+                    <th style="padding:10px 12px;text-align:center">Recommend</th>
+                    <th style="padding:10px 12px;text-align:left">Event Ratings</th>
+                    <th style="padding:10px 12px;text-align:left">Suggestions</th>
+                    <th style="padding:10px 12px;text-align:left">Time</th>
+                </tr></thead><tbody>`;
+            responses.forEach((r, i) => {
+                const evRatings = r.eventRatings ? Object.entries(r.eventRatings).map(([ev,s]) => `${ev}: ${'⭐'.repeat(s)}`).join(', ') : '—';
+                const recColors = {yes:'#d4edda;color:#155724', maybe:'#fff3cd;color:#856404', no:'#f8d7da;color:#721c24'};
+                const recBg = recColors[r.recommend] || '#f5f5f5;color:#333';
+                const time = r.submittedAt ? new Date(r.submittedAt).toLocaleString('en-IN',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}) : '—';
+                html += `<tr style="background:${i%2===0?'white':'#fafafa'};border-bottom:1px solid #eee">
+                    <td style="padding:9px 12px;color:#888">${i+1}</td>
+                    <td style="padding:9px 12px;font-weight:600">${r.name||'—'}</td>
+                    <td style="padding:9px 12px">${r.class||'—'}</td>
+                    <td style="padding:9px 12px;text-align:center"><span style="background:#e3f2fd;color:#1565c0;padding:3px 10px;border-radius:20px;font-weight:700">${r.overallScore||'—'}/10</span></td>
+                    <td style="padding:9px 12px;text-align:center"><span style="background:${recBg};padding:3px 10px;border-radius:20px;font-weight:700;font-size:0.85em">${r.recommend||'—'}</span></td>
+                    <td style="padding:9px 12px;font-size:0.82em;max-width:200px">${evRatings}</td>
+                    <td style="padding:9px 12px;font-size:0.82em;max-width:160px;color:#555;font-style:italic">${r.suggestions||'—'}</td>
+                    <td style="padding:9px 12px;font-size:0.8em;color:#888;white-space:nowrap">${time}</td>
+                </tr>`;
+            });
+            html += '</tbody></table></div>';
+            html += `<p style="color:#888;font-size:0.8em;margin-top:8px;text-align:right">${responses.length} response(s) total</p>`;
+            container.innerHTML = html;
+        } catch(e) {
+            container.innerHTML = '<p style="color:#c62828;background:#fde8e8;padding:10px 14px;border-radius:8px">❌ Error: ' + e.message + '</p>';
+        }
+    }
+
+    async function downloadFeedbackCSV() {
+        try {
+            const snap = await db.ref('feedbackResponses').once('value');
+            const data = snap.val();
+            if (!data) { alert('No responses to download!'); return; }
+            const rows = Object.values(data);
+            const evKeys = [...new Set(rows.flatMap(r => r.eventRatings ? Object.keys(r.eventRatings) : []))];
+            const headers = ['Name','Class','Overall Score (1-10)','Recommend',...evKeys,'Suggestions','Submitted At'];
+            const csv = [headers.join(','), ...rows.map(r => [
+                `"${(r.name||'').replace(/"/g,'""')}"`,
+                `"${(r.class||'').replace(/"/g,'""')}"`,
+                r.overallScore||'',
+                r.recommend||'',
+                ...evKeys.map(k => (r.eventRatings&&r.eventRatings[k])||''),
+                `"${(r.suggestions||'').replace(/"/g,'""')}"`,
+                r.submittedAt||''
+            ].join(','))].join('\n');
+            const blob = new Blob([csv], {type:'text/csv'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a'); a.href=url; a.download='spurthi_feedback_' + new Date().toISOString().split('T')[0] + '.csv'; a.click();
+            URL.revokeObjectURL(url);
+        } catch(e) { alert('Error: ' + e.message); }
+    }
+
+    async function clearAllFeedback() {
+        if (!confirm('⚠️ Delete ALL feedback responses? This cannot be undone!')) return;
+        try {
+            await db.ref('feedbackResponses').remove();
+            alert('✅ All feedback responses cleared.');
+            await loadFeedbackAdmin();
+        } catch(e) { alert('Error: ' + e.message); }
+    }
+
     // ── Speed Slide Admin ──────────────────────────────────────────────
     let ssaAllSubs = [];
     let ssaLbDiff  = 'easy';
@@ -29276,6 +30196,74 @@ Proceed?`)) return;
     <!-- ============================================ -->
     
     <!-- Footer -->
+    <!-- ============================================================ -->
+    <!-- FEEDBACK POPUP MODAL                                         -->
+    <!-- Triggered by Super Admin via Firebase feedbackSettings       -->
+    <!-- ============================================================ -->
+    <div id="feedbackPopupOverlay" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:99990;overflow-y:auto;padding:20px;box-sizing:border-box">
+        <div style="background:white;border-radius:20px;max-width:600px;margin:20px auto;box-shadow:0 12px 50px rgba(0,0,0,0.4);overflow:hidden;position:relative">
+            <!-- Header -->
+            <div style="background:linear-gradient(135deg,#880e4f,#c2185b,#e91e63);padding:24px 28px;color:white;position:relative">
+                <h2 style="margin:0 0 4px;font-size:1.4em">📋 Spurthi Youth Fest 2026 — Feedback</h2>
+                <p style="margin:0;opacity:0.9;font-size:0.9em">Your feedback helps us make next year even better! 🎉</p>
+                <button id="fbPopupCloseBtn" onclick="closeFeedbackPopup()" style="position:absolute;top:16px;right:16px;background:rgba(255,255,255,0.2);color:white;border:none;border-radius:50%;width:32px;height:32px;font-size:1.1em;cursor:pointer;font-weight:700;line-height:1">✕</button>
+            </div>
+
+            <div style="padding:24px 28px" id="feedbackFormBody">
+                <!-- Name field (auto-filled if logged in) -->
+                <div style="margin-bottom:18px">
+                    <label style="font-weight:700;color:#555;font-size:0.95em;display:block;margin-bottom:6px">👤 Your Name <span style="color:#c2185b">*</span></label>
+                    <input type="text" id="fbName" placeholder="Enter your name..." style="width:100%;padding:11px 14px;border:2px solid #f48fb1;border-radius:10px;font-size:0.95em;box-sizing:border-box;outline:none">
+                </div>
+                <div style="margin-bottom:18px">
+                    <label style="font-weight:700;color:#555;font-size:0.95em;display:block;margin-bottom:6px">🏫 Class / Designation</label>
+                    <input type="text" id="fbClass" placeholder="e.g. III BCA A / Faculty / Visitor" style="width:100%;padding:11px 14px;border:2px solid #f48fb1;border-radius:10px;font-size:0.95em;box-sizing:border-box;outline:none">
+                </div>
+
+                <!-- Overall Fest Score 1-10 -->
+                <div style="margin-bottom:22px;background:#fce4ec;padding:16px;border-radius:12px;border-left:4px solid #e91e63">
+                    <label style="font-weight:700;color:#880e4f;font-size:0.95em;display:block;margin-bottom:10px">📝 Overall Fest Experience (1 = Poor, 10 = Excellent) <span style="color:#c2185b">*</span></label>
+                    <div style="display:flex;gap:8px;flex-wrap:wrap" id="fbOverallScoreRow">
+                        <!-- 1-10 buttons generated by JS -->
+                    </div>
+                    <input type="hidden" id="fbOverallScore" value="">
+                </div>
+
+                <!-- Event Star Ratings -->
+                <div id="fbEventRatingsSection" style="margin-bottom:22px">
+                    <h4 style="color:#4a148c;margin:0 0 12px;font-size:1em">⭐ Rate Each Event (1–5 Stars)</h4>
+                    <div id="fbEventRatingsList">
+                        <!-- Populated dynamically from Firebase event list -->
+                    </div>
+                </div>
+
+                <!-- Recommend -->
+                <div style="margin-bottom:22px;background:#e8f5e9;padding:16px;border-radius:12px;border-left:4px solid #43a047">
+                    <label style="font-weight:700;color:#2e7d32;font-size:0.95em;display:block;margin-bottom:10px">🎯 Would you recommend Spurthi Youth Fest to others? <span style="color:#c2185b">*</span></label>
+                    <div style="display:flex;gap:10px;flex-wrap:wrap">
+                        <button type="button" onclick="fbSetRecommend('yes',this)" class="fb-recommend-btn" style="padding:10px 24px;border:2px solid #43a047;border-radius:20px;background:white;color:#2e7d32;font-weight:700;cursor:pointer;font-size:0.95em;transition:all 0.2s">👍 Yes!</button>
+                        <button type="button" onclick="fbSetRecommend('maybe',this)" class="fb-recommend-btn" style="padding:10px 24px;border:2px solid #ff9800;border-radius:20px;background:white;color:#e65100;font-weight:700;cursor:pointer;font-size:0.95em;transition:all 0.2s">🤔 Maybe</button>
+                        <button type="button" onclick="fbSetRecommend('no',this)" class="fb-recommend-btn" style="padding:10px 24px;border:2px solid #f44336;border-radius:20px;background:white;color:#c62828;font-weight:700;cursor:pointer;font-size:0.95em;transition:all 0.2s">👎 No</button>
+                    </div>
+                    <input type="hidden" id="fbRecommend" value="">
+                </div>
+
+                <!-- Suggestions -->
+                <div style="margin-bottom:22px">
+                    <label style="font-weight:700;color:#555;font-size:0.95em;display:block;margin-bottom:6px">💬 Suggestions / Comments (Optional)</label>
+                    <textarea id="fbSuggestions" rows="3" placeholder="Any suggestions to improve next year's fest? We'd love to hear from you!" style="width:100%;padding:11px 14px;border:2px solid #ce93d8;border-radius:10px;font-size:0.93em;box-sizing:border-box;outline:none;resize:vertical"></textarea>
+                </div>
+
+                <div id="fbPopupMsg" style="margin-bottom:12px"></div>
+                <button onclick="submitFeedback()" style="width:100%;background:linear-gradient(135deg,#880e4f,#c2185b,#e91e63);color:white;border:none;border-radius:12px;padding:15px;font-size:1.1em;font-weight:700;cursor:pointer;box-shadow:0 4px 15px rgba(194,24,91,0.4);letter-spacing:0.5px">🚀 Submit Feedback</button>
+                <p style="text-align:center;color:#aaa;font-size:0.8em;margin-top:10px">Your response is anonymous and helps us improve! 💪</p>
+            </div>
+        </div>
+    </div>
+    <!-- ============================================================ -->
+    <!-- END FEEDBACK POPUP MODAL                                     -->
+    <!-- ============================================================ -->
+
     <footer style="background: white; border-radius: 12px; padding: 25px; margin-top: 30px; box-shadow: 0 4px 20px rgba(0,0,0,0.1);">
         <div style="text-align: center;">
             
@@ -29294,7 +30282,7 @@ Proceed?`)) return;
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;" id="devTriggerVersion">
-                <strong>Version:</strong> 4.19 — Built on v4.16 (clean base). Fixed critical JS syntax error from v4.17/v4.18 (missing brace caused entire page to break). Re-applied all 4 login changes correctly: (1) Removed "Jury Setup" from Manager 2 label; (2) Login page redesigned with emoji role cards (CR/Admin/SuperAdmin/Manager/Manager2/Jury each have coloured styled cards); (3) Emojis added to all role dropdown options; (4) Faculty Login now has 💾 Remember Me with auto-restore on page load.   | <strong>Last Updated:</strong> February 26, 2026 — 19:00</p>
+                <strong>Version:</strong> 4.21 — Built on v4.20. Site Settings improvements: (1) Banner now has Font Style selector (10 fonts) and Font Size control (slider + S/M/L/XL quick buttons); (2) Save Banner and Save WhatsApp Text now show ✅ inline toast confirmation instead of only updating the message div — no more silent saves. Feedback Admin improvements: (3) New 👁️ Questions Preview & Edit section — shows all 6 questions exactly as visitors see them, with editable label text and live mini-preview per question; (4) Save / Reset to Defaults buttons with ✅ toast confirmation.   | <strong>Last Updated:</strong> February 26, 2026 — 23:00</p>
             <!-- ============================================ -->
             
             <p style="color: #c44569; font-size: 0.85em; font-weight: 600; margin-bottom: 8px;">
