@@ -1223,123 +1223,158 @@
 
         <!-- Login/Logout Section (Visible to all) -->
         <div class="content" id="loginSection">
-            <h2 id="devTriggerLogin" style="text-align:center;color:#c44569;margin-bottom:25px">Login</h2>
-            
+            <h2 id="devTriggerLogin" style="text-align:center;color:#c44569;margin-bottom:20px;font-size:1.5em;letter-spacing:1px">🔐 Login Portal</h2>
+
             <!-- Student Login at Top -->
-            <div id="studentLogin">
-                <div class="form-group">
-                    <label>Class:</label>
-                    <select id="studentClass"></select>
+            <div id="studentLogin" style="background:linear-gradient(135deg,#e8f5e9,#f3e5f5);border-radius:14px;padding:16px 18px;margin-bottom:16px;border:2px solid #ce93d8">
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+                    <span style="font-size:1.4em">🧑‍🎓</span>
+                    <div>
+                        <div style="font-weight:800;color:#6a1b9a;font-size:0.95em">Student Login</div>
+                        <div style="color:#888;font-size:0.78em">Select your class to view event registrations</div>
+                    </div>
                 </div>
-                <button class="btn" onclick="studentLogin()">Login as Student</button>
-            </div>
-            
-            <!-- Divider -->
-            <div style="margin: 30px 0; border-top: 2px solid #ddd;"></div>
-            
-            <!-- Youthfest Registration Dropdown -->
-            <div class="form-group">
-                <label>Youthfest Registration</label>
-                <select id="userType" onchange="handleUserTypeChange()">
-                    <option value="">-- Select --</option>
-                    <option value="cr">Class Representative (CR)</option>
-                    <option value="admin">Admin</option>
-                    <option value="superadmin">Super Admin</option>
-                    <option value="manager">Manager</option>
-                    <option value="manager2">Manager 2 (Jury Setup)</option>
-                    <option value="jury">Jury</option>
-                </select>
-            </div>
-            
-            <!-- CR Login -->
-            <div id="crLogin" style="display:none">
-                <div class="form-group">
-                    <label>Class:</label>
-                    <select id="crClass"></select>
+                <div class="form-group" style="margin-bottom:10px">
+                    <label style="font-weight:700;color:#555;font-size:0.85em">Select Your Class:</label>
+                    <select id="studentClass" style="background:white;border:2px solid #ce93d8;border-radius:8px;padding:8px 12px;font-size:0.9em;outline:none;width:100%"></select>
                 </div>
-                <div style="margin-bottom:12px">
-                    <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:0.9em;color:#555;font-weight:normal">
-                        <input type="checkbox" id="crRememberMe" style="width:auto;accent-color:#6a1b9a"> Remember my class on this device
-                    </label>
-                </div>
-                <button class="btn" onclick="crLogin()">Login as CR</button>
-            </div>
-            
-            <!-- Admin Login -->
-            <div id="adminLogin" style="display:none">
-                <div class="form-group">
-                    <label>Admin Password:</label>
-                    <input type="password" id="adminPassword" placeholder="Enter admin password" onkeydown="if(event.key==='Enter') adminLogin()">
-                </div>
-                <div style="margin-bottom:12px">
-                    <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:0.9em;color:#555;font-weight:normal">
-                        <input type="checkbox" id="adminRememberMe" style="width:auto;accent-color:#6a1b9a"> Remember password on this device
-                    </label>
-                </div>
-                <button class="btn" onclick="adminLogin()">Login as Admin</button>
-            </div>
-            
-            <!-- Super Admin Login -->
-            <div id="superAdminLogin" style="display:none">
-                <div class="form-group">
-                    <label>Super Admin Password:</label>
-                    <input type="password" id="superAdminPassword" placeholder="Enter super admin password" onkeydown="if(event.key==='Enter') superAdminLogin()">
-                </div>
-                <div style="margin-bottom:12px">
-                    <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:0.9em;color:#555;font-weight:normal">
-                        <input type="checkbox" id="superAdminRememberMe" style="width:auto;accent-color:#6a1b9a"> Remember password on this device
-                    </label>
-                </div>
-                <button class="btn" onclick="superAdminLogin()">Login as Super Admin</button>
-            </div>
-            
-            <!-- Manager Login -->
-            <div id="managerLogin" style="display:none">
-                <div class="form-group">
-                    <label>Manager Password:</label>
-                    <input type="password" id="managerPassword" placeholder="Enter manager password" onkeydown="if(event.key==='Enter') managerLogin()">
-                </div>
-                <div style="margin-bottom:12px">
-                    <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:0.9em;color:#555;font-weight:normal">
-                        <input type="checkbox" id="managerRememberMe" style="width:auto;accent-color:#2196F3"> Remember password on this device
-                    </label>
-                </div>
-                <button class="btn" style="background:#2196F3" onclick="managerLogin()">Login as Manager</button>
+                <button class="btn" onclick="studentLogin()" style="background:linear-gradient(135deg,#6a1b9a,#c44569);border:none;width:100%;font-size:0.9em;padding:10px">🧑‍🎓 View as Student</button>
             </div>
 
-            <!-- Manager 2 Login (Jury Setup only) -->
-            <div id="manager2Login" style="display:none">
+            <!-- Divider -->
+            <div style="margin:16px 0;display:flex;align-items:center;gap:10px">
+                <div style="flex:1;height:1px;background:linear-gradient(90deg,transparent,#ccc,transparent)"></div>
+                <span style="color:#aaa;font-size:0.75em;font-weight:700;white-space:nowrap;letter-spacing:1px">YOUTHFEST REGISTRATION &amp; ADMIN</span>
+                <div style="flex:1;height:1px;background:linear-gradient(90deg,transparent,#ccc,transparent)"></div>
+            </div>
+
+            <!-- Youthfest Registration Dropdown -->
+            <div class="form-group">
+                <label style="font-weight:700;color:#555;font-size:0.88em">🏫 Select Your Role:</label>
+                <select id="userType" onchange="handleUserTypeChange()" style="background:white;border:2px solid #c44569;border-radius:10px;padding:10px 14px;font-size:0.93em;outline:none;width:100%;font-weight:600;color:#333;cursor:pointer">
+                    <option value="">— Select your role —</option>
+                    <option value="cr">📋 Class Representative (CR)</option>
+                    <option value="admin">🛡️ Admin</option>
+                    <option value="superadmin">👑 Super Admin</option>
+                    <option value="manager">📊 Manager</option>
+                    <option value="manager2">🗂️ Manager 2</option>
+                    <option value="jury">⚖️ Jury</option>
+                </select>
+            </div>
+
+            <!-- CR Login -->
+            <div id="crLogin" style="display:none;background:linear-gradient(135deg,#f1f8e9,#e8f5e9);border-radius:12px;padding:16px;border:2px solid #a5d6a7;margin-top:10px">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+                    <span style="font-size:1.2em">📋</span>
+                    <div style="font-weight:800;color:#2e7d32;font-size:0.9em">Class Representative Login</div>
+                </div>
                 <div class="form-group">
-                    <label>Manager 2 Password:</label>
-                    <input type="password" id="manager2Password" placeholder="Enter Manager 2 password" onkeydown="if(event.key==='Enter') manager2Login()">
+                    <label style="font-weight:700;color:#555;font-size:0.85em">📚 Your Class:</label>
+                    <select id="crClass" style="background:white;border:2px solid #a5d6a7;border-radius:8px;padding:8px 12px;font-size:0.9em;outline:none;width:100%"></select>
                 </div>
                 <div style="margin-bottom:12px">
-                    <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:0.9em;color:#555;font-weight:normal">
-                        <input type="checkbox" id="manager2RememberMe" style="width:auto;accent-color:#9c27b0"> Remember password on this device
+                    <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:0.88em;color:#555;font-weight:normal">
+                        <input type="checkbox" id="crRememberMe" style="width:auto;accent-color:#6a1b9a"> 💾 Remember my class on this device
                     </label>
                 </div>
-                <button class="btn" style="background:#9c27b0" onclick="manager2Login()">Login as Manager 2</button>
+                <button class="btn" onclick="crLogin()" style="background:linear-gradient(135deg,#2e7d32,#66bb6a);border:none;width:100%;font-size:0.9em;padding:10px">📋 Login as CR</button>
+            </div>
+
+            <!-- Admin Login -->
+            <div id="adminLogin" style="display:none;background:linear-gradient(135deg,#fff3e0,#fce4ec);border-radius:12px;padding:16px;border:2px solid #ffab40;margin-top:10px">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+                    <span style="font-size:1.2em">🛡️</span>
+                    <div style="font-weight:800;color:#e65100;font-size:0.9em">Admin Login</div>
+                </div>
+                <div class="form-group">
+                    <label style="font-weight:700;color:#555;font-size:0.85em">🔑 Admin Password:</label>
+                    <input type="password" id="adminPassword" placeholder="Enter admin password" onkeydown="if(event.key==='Enter') adminLogin()" style="width:100%;padding:9px 12px;border:2px solid #ffab40;border-radius:8px;font-size:0.9em;outline:none;box-sizing:border-box">
+                </div>
+                <div style="margin-bottom:12px">
+                    <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:0.88em;color:#555;font-weight:normal">
+                        <input type="checkbox" id="adminRememberMe" style="width:auto;accent-color:#e65100"> 💾 Remember password on this device
+                    </label>
+                </div>
+                <button class="btn" onclick="adminLogin()" style="background:linear-gradient(135deg,#e65100,#ff7043);border:none;width:100%;font-size:0.9em;padding:10px">🛡️ Login as Admin</button>
+            </div>
+
+            <!-- Super Admin Login -->
+            <div id="superAdminLogin" style="display:none;background:linear-gradient(135deg,#fff8e1,#f3e5f5);border-radius:12px;padding:16px;border:2px solid #ffd54f;margin-top:10px">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+                    <span style="font-size:1.2em">👑</span>
+                    <div style="font-weight:800;color:#6a1b9a;font-size:0.9em">Super Admin Login</div>
+                </div>
+                <div class="form-group">
+                    <label style="font-weight:700;color:#555;font-size:0.85em">🔑 Super Admin Password:</label>
+                    <input type="password" id="superAdminPassword" placeholder="Enter super admin password" onkeydown="if(event.key==='Enter') superAdminLogin()" style="width:100%;padding:9px 12px;border:2px solid #ffd54f;border-radius:8px;font-size:0.9em;outline:none;box-sizing:border-box">
+                </div>
+                <div style="margin-bottom:12px">
+                    <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:0.88em;color:#555;font-weight:normal">
+                        <input type="checkbox" id="superAdminRememberMe" style="width:auto;accent-color:#6a1b9a"> 💾 Remember password on this device
+                    </label>
+                </div>
+                <button class="btn" onclick="superAdminLogin()" style="background:linear-gradient(135deg,#6a1b9a,#c44569);border:none;width:100%;font-size:0.9em;padding:10px">👑 Login as Super Admin</button>
+            </div>
+
+            <!-- Manager Login -->
+            <div id="managerLogin" style="display:none;background:linear-gradient(135deg,#e3f2fd,#e8f5e9);border-radius:12px;padding:16px;border:2px solid #90caf9;margin-top:10px">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+                    <span style="font-size:1.2em">📊</span>
+                    <div style="font-weight:800;color:#1565c0;font-size:0.9em">Manager Login</div>
+                </div>
+                <div class="form-group">
+                    <label style="font-weight:700;color:#555;font-size:0.85em">🔑 Manager Password:</label>
+                    <input type="password" id="managerPassword" placeholder="Enter manager password" onkeydown="if(event.key==='Enter') managerLogin()" style="width:100%;padding:9px 12px;border:2px solid #90caf9;border-radius:8px;font-size:0.9em;outline:none;box-sizing:border-box">
+                </div>
+                <div style="margin-bottom:12px">
+                    <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:0.88em;color:#555;font-weight:normal">
+                        <input type="checkbox" id="managerRememberMe" style="width:auto;accent-color:#2196F3"> 💾 Remember password on this device
+                    </label>
+                </div>
+                <button class="btn" onclick="managerLogin()" style="background:linear-gradient(135deg,#1565c0,#42a5f5);border:none;width:100%;font-size:0.9em;padding:10px">📊 Login as Manager</button>
+            </div>
+
+            <!-- Manager 2 Login -->
+            <div id="manager2Login" style="display:none;background:linear-gradient(135deg,#f3e5f5,#ede7f6);border-radius:12px;padding:16px;border:2px solid #ce93d8;margin-top:10px">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+                    <span style="font-size:1.2em">🗂️</span>
+                    <div style="font-weight:800;color:#7b1fa2;font-size:0.9em">Manager 2 Login</div>
+                </div>
+                <div class="form-group">
+                    <label style="font-weight:700;color:#555;font-size:0.85em">🔑 Manager 2 Password:</label>
+                    <input type="password" id="manager2Password" placeholder="Enter Manager 2 password" onkeydown="if(event.key==='Enter') manager2Login()" style="width:100%;padding:9px 12px;border:2px solid #ce93d8;border-radius:8px;font-size:0.9em;outline:none;box-sizing:border-box">
+                </div>
+                <div style="margin-bottom:12px">
+                    <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:0.88em;color:#555;font-weight:normal">
+                        <input type="checkbox" id="manager2RememberMe" style="width:auto;accent-color:#9c27b0"> 💾 Remember password on this device
+                    </label>
+                </div>
+                <button class="btn" onclick="manager2Login()" style="background:linear-gradient(135deg,#7b1fa2,#ab47bc);border:none;width:100%;font-size:0.9em;padding:10px">🗂️ Login as Manager 2</button>
             </div>
 
             <!-- Jury Login -->
-            <div id="juryLogin" style="display:none">
-                <div class="form-group">
-                    <label>Select Event:</label>
-                    <select id="juryEvent"></select>
+            <div id="juryLogin" style="display:none;background:linear-gradient(135deg,#e8f5e9,#e0f7fa);border-radius:12px;padding:16px;border:2px solid #80cbc4;margin-top:10px">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+                    <span style="font-size:1.2em">⚖️</span>
+                    <div style="font-weight:800;color:#00695c;font-size:0.9em">Jury Login</div>
                 </div>
                 <div class="form-group">
-                    <label>Jury Password:</label>
-                    <input type="password" id="juryPassword" placeholder="Enter jury password for this event" onkeydown="if(event.key==='Enter') juryLogin()">
+                    <label style="font-weight:700;color:#555;font-size:0.85em">🎭 Select Event:</label>
+                    <select id="juryEvent" style="background:white;border:2px solid #80cbc4;border-radius:8px;padding:8px 12px;font-size:0.9em;outline:none;width:100%"></select>
                 </div>
                 <div class="form-group">
-                    <label>Jury Number (1 or 2):</label>
-                    <select id="juryNumber">
-                        <option value="">-- Select --</option>
-                        <option value="1">Jury 1</option>
-                        <option value="2">Jury 2</option>
+                    <label style="font-weight:700;color:#555;font-size:0.85em">🔑 Jury Password:</label>
+                    <input type="password" id="juryPassword" placeholder="Enter jury password for this event" onkeydown="if(event.key==='Enter') juryLogin()" style="width:100%;padding:9px 12px;border:2px solid #80cbc4;border-radius:8px;font-size:0.9em;outline:none;box-sizing:border-box">
+                </div>
+                <div class="form-group">
+                    <label style="font-weight:700;color:#555;font-size:0.85em">👤 Jury Number:</label>
+                    <select id="juryNumber" style="background:white;border:2px solid #80cbc4;border-radius:8px;padding:8px 12px;font-size:0.9em;outline:none;width:100%">
+                        <option value="">— Select —</option>
+                        <option value="1">⚖️ Jury 1</option>
+                        <option value="2">⚖️ Jury 2</option>
                     </select>
                 </div>
-                <button class="btn" onclick="juryLogin()">Login as Jury</button>
+                <button class="btn" onclick="juryLogin()" style="background:linear-gradient(135deg,#00695c,#26a69a);border:none;width:100%;font-size:0.9em;padding:10px">⚖️ Login as Jury</button>
             </div>
             
             <div style="margin: 30px 0; border-top: 2px solid #ddd;"></div>
@@ -2626,6 +2661,7 @@
                 <button class="tab super-admin-only" onclick="showTab('pdfHandoutsAdmin')" id="pdfHandoutsAdminTab">📄 PDF Handouts</button>
                 <button class="tab super-admin-only" onclick="showTab('paymentApprovalAdmin');paLoadPending()" id="paymentApprovalAdminTab">💳 Payment Approval</button>
                 <button class="tab super-admin-only" onclick="showTab('eventScheduleAdmin');esLoadEvents()" id="eventScheduleAdminTab">📅 Event Schedule</button>
+                <button class="tab super-admin-only" onclick="showTab('allEventsOverview');loadAllEventsOverview()" id="allEventsOverviewTab">📊 All Events Overview</button>
             </div><!-- end .tabs -->
 
             <div class="content" id="adminContentBox">
@@ -2733,8 +2769,8 @@
                             </div>
                         </div>
                         
-                        <h3 style="color:#6a1b9a;margin:20px 0 15px">🎭 Class Code Names (shown to jury instead of real names)</h3>
-                        <p style="color:#666;font-size:13px;margin-bottom:12px">Assign anonymous code names to each participating class. Jury will only see these names — real class names are revealed after they mark as completed.</p>
+                        <h3 style="color:#6a1b9a;margin:20px 0 5px">🎭 Class Code Names (shown to jury instead of real names)</h3>
+                        <p id="classAliasEventLabel" style="font-size:13px;color:#888;margin-bottom:12px">Select an event above to load participants.</p>
                         <div id="classAliasContainer" style="background:#f9f0ff;border-radius:10px;padding:15px;margin-bottom:15px">
                             <p style="color:#999;font-size:13px">Save jury passwords and select event to load enrolled classes here.</p>
                         </div>
@@ -3983,7 +4019,69 @@
             <!-- ================================================ -->
 
             <!-- ================================================ -->
-            <!-- DB INSPECTOR PANEL (Super Admin Only)             -->
+            <!-- ALL EVENTS OVERVIEW PANEL (Super Admin Only)     -->
+            <!-- ================================================ -->
+            <div id="allEventsOverview" class="form-section super-admin-only" style="margin-top:20px">
+                <!-- Header -->
+                <div style="background:linear-gradient(135deg,#4a148c,#7b1fa2);border-radius:14px;padding:20px 24px;margin-bottom:20px;color:white;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
+                    <div>
+                        <h2 style="margin:0 0 4px;font-size:1.25em">📊 All Events Submissions — Overview</h2>
+                        <p style="margin:0;opacity:0.85;font-size:0.85em">Live enrollment &amp; submission status for every event · Filter by event or class · Spot missing classes instantly</p>
+                    </div>
+                    <button onclick="loadAllEventsOverview()" style="background:rgba(255,255,255,0.15);color:white;border:2px solid rgba(255,255,255,0.4);border-radius:8px;padding:9px 18px;font-size:0.88em;font-weight:700;cursor:pointer">🔄 Refresh</button>
+                </div>
+
+                <!-- Summary Stats -->
+                <div id="aeoStats" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:12px;margin-bottom:12px">
+                    <div style="background:white;border-radius:10px;padding:14px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,0.07);border-top:3px solid #7b1fa2">
+                        <div id="aeoStatEvents" style="font-size:1.8em;font-weight:900;color:#7b1fa2">—</div>
+                        <div style="color:#888;font-size:0.76em;font-weight:600">Total Events</div>
+                    </div>
+                    <div style="background:white;border-radius:10px;padding:14px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,0.07);border-top:3px solid #1565c0">
+                        <div id="aeoStatEnrolled" style="font-size:1.8em;font-weight:900;color:#1565c0">—</div>
+                        <div style="color:#888;font-size:0.76em;font-weight:600">Total Registrations</div>
+                    </div>
+                    <div style="background:white;border-radius:10px;padding:14px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,0.07);border-top:3px solid #2e7d32">
+                        <div id="aeoStatDone" style="font-size:1.8em;font-weight:900;color:#2e7d32">—</div>
+                        <div style="color:#888;font-size:0.76em;font-weight:600">Events w/ Enrollments</div>
+                    </div>
+                    <div style="background:white;border-radius:10px;padding:14px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,0.07);border-top:3px solid #f44336">
+                        <div id="aeoStatPending" style="font-size:1.8em;font-weight:900;color:#f44336">—</div>
+                        <div style="color:#888;font-size:0.76em;font-weight:600">Not Yet Enrolled</div>
+                    </div>
+                </div>
+
+                <!-- Diagnostic Strip (shown after load) -->
+                <div id="aeoDiagStrip" style="display:none;background:#f8f9fa;border:1px solid #dee2e6;border-radius:8px;padding:8px 14px;margin-bottom:14px;font-size:0.82em;color:#555;flex-wrap:wrap;line-height:2"></div>
+
+                <!-- Filters -->
+                <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:16px;background:white;border-radius:10px;padding:12px 16px;box-shadow:0 2px 8px rgba(0,0,0,0.06)">
+                    <span style="font-size:0.85em;font-weight:700;color:#555">🔍 Filter:</span>
+                    <select id="aeoEventFilter" onchange="aeoApplyFilter()" style="padding:7px 12px;border:2px solid #ce93d8;border-radius:8px;font-size:0.85em;outline:none;background:white;font-weight:600;color:#333;cursor:pointer;min-width:180px">
+                        <option value="">All Events</option>
+                    </select>
+                    <select id="aeoClassFilter" onchange="aeoApplyFilter()" style="padding:7px 12px;border:2px solid #90caf9;border-radius:8px;font-size:0.85em;outline:none;background:white;font-weight:600;color:#333;cursor:pointer;min-width:160px">
+                        <option value="">All Classes</option>
+                    </select>
+                    <select id="aeoStatusFilter" onchange="aeoApplyFilter()" style="padding:7px 12px;border:2px solid #a5d6a7;border-radius:8px;font-size:0.85em;outline:none;background:white;font-weight:600;color:#333;cursor:pointer">
+                        <option value="">All Statuses</option>
+                        <option value="enrolled">✅ Enrolled Only</option>
+                        <option value="not_enrolled">⚠️ Not Enrolled</option>
+                    </select>
+                    <button onclick="document.getElementById('aeoEventFilter').value='';document.getElementById('aeoClassFilter').value='';document.getElementById('aeoStatusFilter').value='';aeoApplyFilter()"
+                            style="background:#eee;border:none;border-radius:8px;padding:7px 14px;font-size:0.82em;font-weight:700;cursor:pointer;color:#555">✕ Clear</button>
+                    <span id="aeoFilterBadge" style="margin-left:auto;background:#e8eaf6;color:#4a148c;padding:4px 14px;border-radius:20px;font-size:0.8em;font-weight:700"></span>
+                </div>
+
+                <!-- Main Table -->
+                <div style="background:white;border-radius:12px;box-shadow:0 2px 10px rgba(0,0,0,0.08);overflow:hidden">
+                    <div id="aeoTableWrap" style="overflow-x:auto">
+                        <div style="padding:40px;text-align:center;color:#aaa">Click Refresh to load all event submissions.</div>
+                    </div>
+                </div>
+            </div>
+            <!-- ================================================ -->
+            <!-- END ALL EVENTS OVERVIEW PANEL                    -->
             <!-- ================================================ -->
             <div id="dbInspector" class="form-section super-admin-only" style="margin-top:20px">
                 <h2 style="color:#c44569;margin-bottom:6px">🔍 Database Inspector</h2>
@@ -4648,6 +4746,34 @@
                     </div>
                 </div>
 
+                <!-- BOW Enrollment Breakdown -->
+                <div id="bowRpEnrollSection" style="display:none;background:white;border-radius:12px;box-shadow:0 2px 10px rgba(0,0,0,0.08);margin-bottom:20px;overflow:hidden">
+                    <div style="background:linear-gradient(135deg,#e8f5e9,#f1f8e9);padding:12px 18px;border-bottom:2px solid #a5d6a7;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+                        <h3 style="color:#2e7d32;margin:0;font-size:0.93em">📋 Total Enrollments — Class-wise Breakdown</h3>
+                        <div style="display:flex;align-items:center;gap:8px">
+                            <select id="bowRpEnrollFilter" onchange="bowRpFilterEnroll()" style="padding:5px 10px;border:1.5px solid #a5d6a7;border-radius:7px;font-size:0.82em;outline:none;background:white;font-weight:600;cursor:pointer">
+                                <option value="">All Classes</option>
+                            </select>
+                            <button onclick="document.getElementById('bowRpEnrollFilter').value='';bowRpFilterEnroll()" style="background:#eee;border:none;border-radius:7px;padding:5px 11px;font-size:0.78em;font-weight:700;cursor:pointer;color:#555">✕ Clear</button>
+                        </div>
+                    </div>
+                    <div id="bowRpEnrollStats" style="display:grid;grid-template-columns:repeat(3,1fr);gap:0;border-bottom:1px solid #eee">
+                        <div style="padding:12px;text-align:center;border-right:1px solid #eee">
+                            <div id="bowRpEnrollTotal" style="font-size:1.6em;font-weight:900;color:#2e7d32">—</div>
+                            <div style="font-size:0.72em;color:#888;font-weight:600">Total Enrolled</div>
+                        </div>
+                        <div style="padding:12px;text-align:center;border-right:1px solid #eee">
+                            <div id="bowRpEnrollClasses" style="font-size:1.6em;font-weight:900;color:#6a1b9a">—</div>
+                            <div style="font-size:0.72em;color:#888;font-weight:600">Classes Enrolled</div>
+                        </div>
+                        <div style="padding:12px;text-align:center">
+                            <div id="bowRpEnrollAvg" style="font-size:1.6em;font-weight:900;color:#1565c0">—</div>
+                            <div style="font-size:0.72em;color:#888;font-weight:600">Avg / Class</div>
+                        </div>
+                    </div>
+                    <div id="bowRpEnrollList"></div>
+                </div>
+
                 <!-- Main Scores Table -->
                 <div style="background:white;border-radius:12px;box-shadow:0 2px 10px rgba(0,0,0,0.08);margin-bottom:20px;overflow:hidden">
                     <div style="background:linear-gradient(135deg,#e8f5e9,#f1f8e9);padding:14px 20px;border-bottom:2px solid #a5d6a7;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
@@ -4779,32 +4905,25 @@
                 <div style="background:white;border-radius:14px;border:2px solid #c5cae9;overflow:hidden;margin-bottom:20px">
                     <div style="background:linear-gradient(135deg,#1a237e,#4a148c);padding:14px 18px">
                         <h4 style="color:white;margin:0;font-size:0.95em">👨‍⚖️ Nukkad Natak Jury Scoring Panel</h4>
-                        <p style="color:rgba(255,255,255,0.8);margin:4px 0 0;font-size:0.82em">Jury 1 and Jury 2 log in here to score each class's performance. 5 criteria × 10 marks = 50 each. Super Admin can also enter scores directly.</p>
+                        <p style="color:rgba(255,255,255,0.8);margin:4px 0 0;font-size:0.82em">5 criteria × 10 marks = 50 each. Super Admin can enter scores directly below.</p>
                     </div>
                     <div style="padding:18px">
-                        <!-- Jury Login Row -->
-                        <div style="background:#ede7f6;border-radius:10px;padding:14px;margin-bottom:16px;display:grid;grid-template-columns:1fr 1fr auto;gap:12px;align-items:end" class="vlog-admin-grid">
+                        <!-- Unified jury notice -->
+                        <div style="background:#e8f5e9;border:2px solid #a5d6a7;border-radius:10px;padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+                            <span style="font-size:1.4em">ℹ️</span>
                             <div>
-                                <label style="font-size:0.82em;font-weight:700;color:#444;display:block;margin-bottom:5px">Jury Number</label>
-                                <select id="nukkadJuryLoginNum" style="width:100%;padding:8px 10px;border:2px solid #b39ddb;border-radius:8px;font-size:0.9em;outline:none">
-                                    <option value="1">Jury 1</option>
-                                    <option value="2">Jury 2</option>
-                                </select>
+                                <div style="font-weight:700;color:#1b5e20;font-size:0.88em">Jury members use the Common Jury Login</div>
+                                <div style="color:#2e7d32;font-size:0.82em;margin-top:2px">Jury 1 &amp; Jury 2 should log in from the <strong>main login screen → select "Nukkad Natak"</strong> as the event. No separate login needed here.</div>
                             </div>
-                            <div>
-                                <label style="font-size:0.82em;font-weight:700;color:#444;display:block;margin-bottom:5px">Jury Password</label>
-                                <input type="password" id="nukkadJuryLoginPwd" placeholder="Enter jury password" style="width:100%;padding:8px 10px;border:2px solid #b39ddb;border-radius:8px;font-size:0.9em;outline:none" onkeydown="if(event.key==='Enter') nukkadJuryLogin()">
-                            </div>
-                            <button class="btn" onclick="nukkadJuryLogin()" style="background:linear-gradient(135deg,#1a237e,#4a148c);border:none;white-space:nowrap;padding:8px 16px;font-size:0.88em">🔑 Login as Jury</button>
                         </div>
-                        <div id="nukkadJuryLoginMsg" style="display:none;padding:9px 12px;border-radius:8px;font-size:0.85em;font-weight:600;margin-bottom:12px"></div>
-                        <!-- Jury Scoring Panel (shown after login) -->
-                        <div id="nukkadJuryScoringPanel" style="display:none">
+                        <!-- Super Admin direct scoring (always visible to super admin) -->
+                        <div id="nukkadJuryScoringPanel" style="display:block">
                             <div style="background:#ede7f6;border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:0.88em;font-weight:700;color:#4a148c">
-                                Scoring as: <span id="nukkadJuryWhoLabel">—</span>
+                                🔐 Super Admin — Direct Score Entry for Nukkad Natak
                             </div>
                             <p style="font-size:0.82em;color:#666;margin-bottom:14px">Score each class's Nukkad Natak performance on 5 criteria (0–10 each = 50 total). Score is saved per class.</p>
                             <div id="nukkadJuryScoringList"></div>
+                            <button onclick="loadNukkadJuryScoringPanel()" style="background:#4a148c;color:white;border:none;border-radius:8px;padding:8px 18px;font-size:0.82em;font-weight:700;cursor:pointer;margin-top:8px">🔄 Load / Refresh Scoring</button>
                         </div>
                     </div>
                 </div>
@@ -5143,33 +5262,26 @@
                 <div style="background:white;border-radius:14px;border:2px solid #c5cae9;overflow:hidden;margin-top:20px">
                     <div style="background:linear-gradient(135deg,#1a237e,#3949ab);padding:14px 18px">
                         <h4 style="color:white;margin:0;font-size:0.95em">👨‍⚖️ YT Ad Jury Scoring Panel</h4>
-                        <p style="color:rgba(255,255,255,0.8);margin:4px 0 0;font-size:0.82em">Jury 1 and Jury 2 log in here to score each class's ad. Super Admin can also enter scores manually.</p>
+                        <p style="color:rgba(255,255,255,0.8);margin:4px 0 0;font-size:0.82em">Super Admin can enter scores directly below. 5 criteria = 50 marks total.</p>
                     </div>
                     <div style="padding:18px">
-                        <!-- Jury Login Row -->
-                        <div style="background:#e8eaf6;border-radius:10px;padding:14px;margin-bottom:16px;display:grid;grid-template-columns:1fr 1fr auto;gap:12px;align-items:end" class="vlog-admin-grid">
+                        <!-- Unified jury notice -->
+                        <div style="background:#e8f5e9;border:2px solid #a5d6a7;border-radius:10px;padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+                            <span style="font-size:1.4em">ℹ️</span>
                             <div>
-                                <label style="font-size:0.82em;font-weight:700;color:#444;display:block;margin-bottom:5px">Jury Number</label>
-                                <select id="ytAdJuryLoginNum" style="width:100%;padding:8px 10px;border:2px solid #c5cae9;border-radius:8px;font-size:0.9em;outline:none">
-                                    <option value="1">Jury 1</option>
-                                    <option value="2">Jury 2</option>
-                                </select>
+                                <div style="font-weight:700;color:#1b5e20;font-size:0.88em">Jury members use the Common Jury Login</div>
+                                <div style="color:#2e7d32;font-size:0.82em;margin-top:2px">Jury 1 &amp; Jury 2 should log in from the <strong>main login screen → select "YouTube Advertisement"</strong> as the event. No separate login needed here.</div>
                             </div>
-                            <div>
-                                <label style="font-size:0.82em;font-weight:700;color:#444;display:block;margin-bottom:5px">Jury Password</label>
-                                <input type="password" id="ytAdJuryLoginPwd" placeholder="Enter jury password" style="width:100%;padding:8px 10px;border:2px solid #c5cae9;border-radius:8px;font-size:0.9em;outline:none" onkeydown="if(event.key==='Enter') ytAdJuryLogin()">
-                            </div>
-                            <button class="btn" onclick="ytAdJuryLogin()" style="background:linear-gradient(135deg,#1a237e,#3949ab);border:none;white-space:nowrap;padding:8px 16px;font-size:0.88em">🔑 Login as Jury</button>
                         </div>
-                        <div id="ytAdJuryLoginMsg" style="display:none;padding:9px 12px;border-radius:8px;font-size:0.85em;font-weight:600;margin-bottom:12px"></div>
 
-                        <!-- Jury Scoring Panel (shown after login) -->
-                        <div id="ytAdJuryScoringPanel" style="display:none">
+                        <!-- Jury Scoring Panel (always visible to super admin) -->
+                        <div id="ytAdJuryScoringPanel" style="display:block">
                             <div style="background:#e8eaf6;border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:0.88em;font-weight:700;color:#1a237e">
-                                Scoring as: <span id="ytAdJuryWhoLabel">—</span>
+                                🔐 Super Admin — Direct Score Entry for YouTube Advertisement
                             </div>
                             <p style="font-size:0.82em;color:#666;margin-bottom:14px">Score each class's YouTube ad on the criteria below (0–10 per criterion, 5 criteria = 50 total). Score is saved automatically per class.</p>
                             <div id="ytAdJuryScoringList"></div>
+                            <button onclick="loadYtAdJuryScoringPanel()" style="background:#1a237e;color:white;border:none;border-radius:8px;padding:8px 18px;font-size:0.82em;font-weight:700;cursor:pointer;margin-top:8px">🔄 Load / Refresh Scoring</button>
                         </div>
                     </div>
                 </div>
@@ -5241,6 +5353,11 @@
                         </div>
                     </div>
                     <button class="btn" onclick="facultyLogin()" style="background:linear-gradient(135deg,#1565c0,#42a5f5);border:none;min-width:180px">👩‍🏫 Login as Faculty</button>
+                    <div style="margin-top:10px">
+                        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:0.88em;color:#555;font-weight:normal">
+                            <input type="checkbox" id="facultyRememberMe" style="width:auto;accent-color:#1565c0"> 💾 Remember my login on this device
+                        </label>
+                    </div>
                     <div id="facultyLoginMsg" style="display:none;margin-top:10px;padding:9px 12px;border-radius:8px;font-size:0.85em;font-weight:600"></div>
                 </div>
 
@@ -5466,7 +5583,18 @@
                         </div>
                     </div>
 
-                    <!-- Default coming-soon for other faculty -->
+                    <!-- ── Generic Event Incharge Panel — shown for every faculty who has assigned events ── -->
+                    <div id="genericInchargePanel" style="display:none;margin-top:24px">
+                        <div style="background:linear-gradient(135deg,#e8f5e9,#e3f2fd);border-radius:14px;padding:18px;border:2px solid #a5d6a7;margin-bottom:16px">
+                            <h3 id="genericInchargePanelTitle" style="color:#1565c0;margin:0 0 6px;font-size:1.05em">📋 Event Incharge Panel</h3>
+                            <p style="color:#555;font-size:0.82em;margin:0">Your assigned events are listed below. Each card shows enrolled participants per class with real-time counts from the database.</p>
+                        </div>
+                        <div id="genericInchargeEventList" style="display:flex;flex-direction:column;gap:16px">
+                            <div style="text-align:center;color:#aaa;padding:30px">Loading your events…</div>
+                        </div>
+                    </div>
+
+                    <!-- Default coming-soon: only shown if faculty truly has NO assigned events/panels at all -->
                     <div id="facultyComingSoon" style="background:#fffde7;border-left:4px solid #ffc107;border-radius:10px;padding:14px 16px;font-size:0.87em;color:#856404">
                         <strong>ℹ️ Coming Soon:</strong> Your specific role and permissions will be assigned by the Super Admin shortly. Once assigned, you will see your class's relevant data and controls here.
                     </div>
@@ -7311,11 +7439,323 @@
                 setEl('bowRpTopClass',     topEntry ? topEntry.displayName : '—');
                 if (statsBox) statsBox.style.display = 'grid';
 
+                // ── BOW Enrollment Breakdown (from youthfest-enrollments) ──
+                try {
+                    const enrollSnap = await db.ref('youthfest-enrollments').once('value');
+                    const bowEnrollments = [];
+                    if (enrollSnap.exists()) enrollSnap.forEach(ch => {
+                        const d = ch.val();
+                        if ((d.event||'').toLowerCase().trim() === 'best out of waste') bowEnrollments.push({ id: ch.key, ...d });
+                    });
+                    const bowByClass = {};
+                    bowEnrollments.forEach(e => {
+                        const cls = e.classYear || e.class || 'Unknown';
+                        if (!bowByClass[cls]) bowByClass[cls] = [];
+                        bowByClass[cls].push(e);
+                    });
+                    window._bowEnrollByClass = bowByClass; // store for filter
+                    const clsKeys = Object.keys(bowByClass).sort();
+                    setEl('bowRpEnrollTotal',   bowEnrollments.length);
+                    setEl('bowRpEnrollClasses', clsKeys.length);
+                    setEl('bowRpEnrollAvg',     clsKeys.length ? (bowEnrollments.length / clsKeys.length).toFixed(1) : '—');
+                    // Populate class filter dropdown
+                    const filterSel = document.getElementById('bowRpEnrollFilter');
+                    if (filterSel) {
+                        filterSel.innerHTML = '<option value="">All Classes (' + clsKeys.length + ')</option>';
+                        clsKeys.forEach(c => { const o = document.createElement('option'); o.value = c; o.textContent = c + ' (' + bowByClass[c].length + ')'; filterSel.appendChild(o); });
+                    }
+                    bowRpRenderEnrollList(bowByClass, clsKeys);
+                    const enrollSec = document.getElementById('bowRpEnrollSection');
+                    if (enrollSec) enrollSec.style.display = 'block';
+                } catch(enrollErr) {
+                    console.warn('BOW enrollment load failed:', enrollErr.message);
+                }
+
                 bowRpRenderTable();
 
             } catch(e) {
                 if (tableWrap) tableWrap.innerHTML = '<p style="color:#c62828;padding:20px;text-align:center">❌ Error loading data: ' + e.message + '</p>';
             }
+        }
+
+        // ══════════════════════════════════════════════════════════════
+        // ALL EVENTS OVERVIEW — Super Admin comprehensive view
+        // Shows every event with enrollment count, class breakdown,
+        // and submission status. Filter by event, class, or status.
+        // ══════════════════════════════════════════════════════════════
+        let _aeoData = []; // cached rows for filter without re-fetch
+
+        async function loadAllEventsOverview() {
+            if (!isSuperAdmin && !isAdmin) return;
+            const wrap = document.getElementById('aeoTableWrap');
+            if (wrap) wrap.innerHTML = '<div style="padding:40px;text-align:center;color:#aaa">⏳ Loading all events data from Firebase…</div>';
+
+            // All event names from the events config object
+            const EVENT_NAMES = Object.keys(events);
+
+            // Path fetch counts for diagnostics
+            const pathCounts = {};
+
+            try {
+                // Fetch enrollments from primary path
+                const snap = await db.ref('youthfest-enrollments').once('value');
+                const allEnrollments = [];
+                let mainCount = 0;
+                if (snap.exists()) snap.forEach(ch => { allEnrollments.push({ id: ch.key, ...ch.val() }); mainCount++; });
+                pathCounts['youthfest-enrollments'] = mainCount;
+
+                // Also fetch from Vlog, Podcast, and BOW separate paths and normalize
+                let vlogCount = 0;
+                try {
+                    const vlogSnap = await db.ref('vlogChallenge').once('value');
+                    if (vlogSnap.exists()) vlogSnap.forEach(ch => {
+                        const d = ch.val();
+                        allEnrollments.push({ id: ch.key, event: 'Vlog', classYear: d.classYear || d.class || 'Unknown', name: d.members || d.member1 || '', ...d });
+                        vlogCount++;
+                    });
+                } catch(e2) { console.warn('vlogChallenge fetch failed', e2); }
+                pathCounts['vlogChallenge (Vlog)'] = vlogCount;
+
+                let podCount = 0;
+                try {
+                    const podSnap = await db.ref('podcastChallenge').once('value');
+                    if (podSnap.exists()) podSnap.forEach(ch => {
+                        const d = ch.val();
+                        allEnrollments.push({ id: ch.key, event: 'Pod Casting', classYear: d.classYear || d.class || 'Unknown', name: d.memberName || '', ...d });
+                        podCount++;
+                    });
+                } catch(e3) { console.warn('podcastChallenge fetch failed', e3); }
+                pathCounts['podcastChallenge (Pod Casting)'] = podCount;
+
+                let bowCount = 0;
+                try {
+                    const bowSnap = await db.ref('bowRegistrations').once('value');
+                    if (bowSnap.exists()) bowSnap.forEach(ch => {
+                        const d = ch.val();
+                        allEnrollments.push({ id: ch.key, event: 'Best out of Waste', classYear: d.classYear || d.class || 'Unknown', name: d.memberName || '', ...d });
+                        bowCount++;
+                    });
+                } catch(e4) { console.warn('bowRegistrations fetch failed', e4); }
+                pathCounts['bowRegistrations (Best out of Waste)'] = bowCount;
+
+                // Show diagnostic strip
+                const diagEl = document.getElementById('aeoDiagStrip');
+                if (diagEl) {
+                    const total = mainCount + vlogCount + podCount + bowCount;
+                    diagEl.style.display = 'block';
+                    diagEl.innerHTML = '<strong>🔍 Firebase Fetch Breakdown:</strong> &nbsp;'
+                        + Object.entries(pathCounts).map(([k,v]) =>
+                            `<span style="background:${v>0?'#e8f5e9':'#fff3cd'};color:${v>0?'#1b5e20':'#856404'};padding:2px 10px;border-radius:12px;margin:2px;display:inline-block;font-size:0.82em;font-weight:700">${k}: <strong>${v}</strong></span>`
+                        ).join(' ')
+                        + ` &nbsp;<span style="background:#e3f2fd;color:#0d47a1;padding:2px 10px;border-radius:12px;font-size:0.82em;font-weight:700">Total: ${total}</span>`;
+                }
+
+                // Group enrollments by event → by class
+                const byEvent = {};
+                EVENT_NAMES.forEach(en => { byEvent[en] = {}; });
+                allEnrollments.forEach(e => {
+                    const evName = (e.event || '').trim();
+                    const cls    = (e.classYear || e.class || 'Unknown').trim();
+                    // Match case-insensitively
+                    const matched = EVENT_NAMES.find(n => n.toLowerCase() === evName.toLowerCase()) || evName;
+                    if (!byEvent[matched]) byEvent[matched] = {};
+                    if (!byEvent[matched][cls]) byEvent[matched][cls] = [];
+                    byEvent[matched][cls].push(e);
+                });
+
+                // All unique classes across all enrollments
+                const allClasses = [...new Set(allEnrollments.map(e => (e.classYear||e.class||'').trim()).filter(Boolean))].sort();
+
+                // Build rows data
+                _aeoData = [];
+                EVENT_NAMES.forEach(evName => {
+                    const clsByEvent = byEvent[evName] || {};
+                    const enrolledClasses = Object.keys(clsByEvent).sort();
+                    const totalEnrolled = enrolledClasses.reduce((s,c) => s + clsByEvent[c].length, 0);
+                    const hasSubmissions = totalEnrolled > 0;
+                    _aeoData.push({ evName, clsByEvent, enrolledClasses, totalEnrolled, hasSubmissions });
+                });
+
+                // Also include events found in enrollments but NOT in config (custom events)
+                Object.keys(byEvent).forEach(evName => {
+                    if (!EVENT_NAMES.includes(evName) && evName) {
+                        const clsByEvent = byEvent[evName] || {};
+                        const enrolledClasses = Object.keys(clsByEvent).sort();
+                        const totalEnrolled = enrolledClasses.reduce((s,c) => s + clsByEvent[c].length, 0);
+                        _aeoData.push({ evName, clsByEvent, enrolledClasses, totalEnrolled, hasSubmissions: totalEnrolled > 0 });
+                    }
+                });
+
+                // Summary stats
+                const totalEnrolledAll = _aeoData.reduce((s,r) => s + r.totalEnrolled, 0);
+                const withSub  = _aeoData.filter(r => r.hasSubmissions).length;
+                const noSub    = _aeoData.filter(r => !r.hasSubmissions).length;
+                const setEl = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+                setEl('aeoStatEvents',   _aeoData.length);
+                setEl('aeoStatEnrolled', totalEnrolledAll);
+                setEl('aeoStatDone',     withSub);
+                setEl('aeoStatPending',  noSub);
+
+                // Populate event filter dropdown — always refresh
+                const evSel = document.getElementById('aeoEventFilter');
+                if (evSel) {
+                    evSel.innerHTML = '<option value="">All Events</option>';
+                    _aeoData.forEach(r => {
+                        const o = document.createElement('option');
+                        o.value = r.evName;
+                        o.textContent = r.evName + ' (' + r.totalEnrolled + ')';
+                        evSel.appendChild(o);
+                    });
+                }
+
+                // Populate class filter dropdown — always refresh
+                const clsSel = document.getElementById('aeoClassFilter');
+                if (clsSel) {
+                    clsSel.innerHTML = '<option value="">All Classes</option>';
+                    allClasses.forEach(c => {
+                        const o = document.createElement('option');
+                        o.value = c; o.textContent = c; clsSel.appendChild(o);
+                    });
+                }
+
+                // Store all classes for filter use
+                window._aeoAllClasses = allClasses;
+                aeoRenderTable(_aeoData);
+
+            } catch(e) {
+                if (wrap) wrap.innerHTML = '<div style="padding:20px;text-align:center;color:#c62828">❌ Error: ' + e.message + '</div>';
+            }
+        }
+
+        function aeoApplyFilter() {
+            if (!_aeoData.length) return;
+            const evF  = (document.getElementById('aeoEventFilter')  || {}).value || '';
+            const clsF = (document.getElementById('aeoClassFilter')   || {}).value || '';
+            const stF  = (document.getElementById('aeoStatusFilter')  || {}).value || '';
+
+            let filtered = _aeoData.slice();
+            if (evF)  filtered = filtered.filter(r => r.evName === evF);
+            if (stF === 'enrolled')     filtered = filtered.filter(r => r.hasSubmissions);
+            if (stF === 'not_enrolled') filtered = filtered.filter(r => !r.hasSubmissions);
+
+            // For class filter: only show events where that class enrolled
+            if (clsF) filtered = filtered.filter(r => r.enrolledClasses.includes(clsF));
+
+            const badge = document.getElementById('aeoFilterBadge');
+            if (badge) badge.textContent = filtered.length + ' event' + (filtered.length !== 1 ? 's' : '') + ' shown';
+
+            aeoRenderTable(filtered, clsF);
+        }
+
+        function aeoRenderTable(data, highlightClass) {
+            const wrap = document.getElementById('aeoTableWrap');
+            if (!wrap) return;
+            if (!data.length) {
+                wrap.innerHTML = '<div style="padding:40px;text-align:center;color:#aaa;font-size:0.9em">No events match the selected filters.</div>';
+                return;
+            }
+
+            const allClasses = window._aeoAllClasses || [];
+
+            let html = `<table style="width:100%;border-collapse:collapse;font-size:0.84em">
+                <thead>
+                    <tr style="background:linear-gradient(135deg,#4a148c,#7b1fa2);color:white;position:sticky;top:0">
+                        <th style="padding:11px 14px;text-align:left;white-space:nowrap;min-width:160px">Event</th>
+                        <th style="padding:11px 10px;text-align:center;white-space:nowrap">Total<br>Enrolled</th>
+                        <th style="padding:11px 10px;text-align:center;white-space:nowrap">Classes<br>Enrolled</th>
+                        <th style="padding:11px 10px;text-align:center;white-space:nowrap">Status</th>
+                        <th style="padding:11px 14px;text-align:left;min-width:280px">Classes &amp; Count (click to expand)</th>
+                    </tr>
+                </thead><tbody>`;
+
+            data.forEach((row, idx) => {
+                const rowBg = idx % 2 === 0 ? 'white' : '#faf8ff';
+                const statusBg    = row.hasSubmissions ? '#d4edda' : '#fff3cd';
+                const statusColor = row.hasSubmissions ? '#155724' : '#856404';
+                const statusText  = row.hasSubmissions ? '✅ Enrolled' : '⚠️ No Enrolments';
+                const expandId    = 'aeo_exp_' + idx;
+
+                // Class pills — compact, highlighted if filter active
+                const classPills = row.enrolledClasses.length
+                    ? row.enrolledClasses.map(cls => {
+                        const count = row.clsByEvent[cls].length;
+                        const isHL  = highlightClass && cls === highlightClass;
+                        const bg    = isHL ? '#4a148c' : '#e8eaf6';
+                        const col   = isHL ? 'white'   : '#4a148c';
+                        return `<span style="display:inline-flex;align-items:center;gap:3px;background:${bg};color:${col};border-radius:20px;padding:2px 9px;font-size:0.78em;font-weight:700;margin:2px;white-space:nowrap;cursor:pointer"
+                                      onclick="document.getElementById('aeo_det_${idx}_${cls.replace(/[^a-zA-Z0-9]/g,'_')}').style.display='block';this.style.display='none'"
+                                      title="Click to see names">
+                            ${cls} <span style="background:white;color:#4a148c;border-radius:10px;padding:0 5px;font-size:0.85em;margin-left:2px">${count}</span>
+                        </span>
+                        <div id="aeo_det_${idx}_${cls.replace(/[^a-zA-Z0-9]/g,'_')}" style="display:none;background:#ede7f6;border-radius:8px;padding:5px 10px;margin:3px 0;font-size:0.78em;color:#4a148c">
+                            <strong>${cls}</strong>: ${row.clsByEvent[cls].map(m => m.name||m.memberName||m.studentName||'—').join(', ')}
+                        </div>`;
+                    }).join('')
+                    : `<span style="color:#aaa;font-size:0.82em">— No classes enrolled yet —</span>`;
+
+                html += `<tr style="background:${rowBg};border-bottom:2px solid #f0e6ff">
+                    <td style="padding:10px 14px;font-weight:800;color:#4a148c;font-size:0.92em">${row.evName}</td>
+                    <td style="padding:10px;text-align:center;font-size:1.1em;font-weight:900;color:${row.totalEnrolled > 0 ? '#1565c0' : '#bbb'}">${row.totalEnrolled || '—'}</td>
+                    <td style="padding:10px;text-align:center;font-size:1.1em;font-weight:900;color:${row.enrolledClasses.length > 0 ? '#6a1b9a' : '#bbb'}">${row.enrolledClasses.length || '—'}</td>
+                    <td style="padding:10px;text-align:center"><span style="background:${statusBg};color:${statusColor};padding:4px 10px;border-radius:20px;font-size:0.78em;font-weight:700;white-space:nowrap">${statusText}</span></td>
+                    <td style="padding:8px 14px;line-height:1.8">${classPills}</td>
+                </tr>`;
+            });
+
+            html += '</tbody></table>';
+            wrap.innerHTML = html;
+
+            // Update filter badge
+            const badge = document.getElementById('aeoFilterBadge');
+            if (badge && !badge.textContent) badge.textContent = data.length + ' events shown';
+        }
+
+        function bowRpRenderEnrollList(byClass, clsKeys) {
+            const listEl = document.getElementById('bowRpEnrollList');
+            if (!listEl) return;
+            if (!clsKeys || !clsKeys.length) {
+                listEl.innerHTML = '<div style="padding:20px;text-align:center;color:#aaa;font-size:0.85em">⏳ No BOW enrollments found yet.</div>';
+                return;
+            }
+            const setEl = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+            const total  = clsKeys.reduce((s, c) => s + byClass[c].length, 0);
+            setEl('bowRpEnrollTotal',   total);
+            setEl('bowRpEnrollClasses', clsKeys.length);
+            setEl('bowRpEnrollAvg',     clsKeys.length ? (total / clsKeys.length).toFixed(1) : '—');
+
+            listEl.innerHTML = clsKeys.map((cls, idx) => {
+                const members = byClass[cls];
+                const rowBg = idx % 2 === 0 ? 'white' : '#fafafa';
+                const memberRows = members.map((m, i) => {
+                    const name  = m.name || m.memberName || m.studentName || '—';
+                    const role  = m.role || '';
+                    const extra = m.topic || m.waste || '';
+                    return `<div style="display:flex;align-items:center;gap:8px;padding:5px 20px;border-bottom:1px solid #f5f5f5;font-size:0.8em">
+                        <span style="min-width:22px;color:#bbb;font-weight:700">${i+1}.</span>
+                        <span style="flex:1;font-weight:600;color:#333">${name}</span>
+                        ${role  ? `<span style="background:#e8f5e9;color:#2e7d32;padding:1px 7px;border-radius:8px;font-size:0.82em;font-weight:600">${role}</span>` : ''}
+                        ${extra ? `<span style="color:#999;font-size:0.82em">${extra}</span>` : ''}
+                    </div>`;
+                }).join('');
+                return `<div class="bow_enroll_row" data-cls="${cls}" style="border-bottom:1px solid #eee">
+                    <div style="display:flex;align-items:center;justify-content:space-between;padding:9px 14px;background:${rowBg};cursor:pointer;user-select:none"
+                         onclick="var b=this.nextElementSibling;b.style.display=b.style.display==='none'?'block':'none';this.querySelector('.bow_arr').textContent=b.style.display==='none'?'▶':'▼'">
+                        <span style="font-weight:700;color:#2e7d32;font-size:0.85em">📚 ${cls}</span>
+                        <div style="display:flex;align-items:center;gap:10px">
+                            <span style="background:#e8f5e9;color:#1b5e20;border:1.5px solid #a5d6a7;border-radius:20px;padding:2px 10px;font-size:0.78em;font-weight:700">${members.length} enrolled</span>
+                            <span class="bow_arr" style="color:#888;font-size:0.8em;font-weight:700">▶</span>
+                        </div>
+                    </div>
+                    <div style="display:none">${memberRows}</div>
+                </div>`;
+            }).join('');
+        }
+
+        function bowRpFilterEnroll() {
+            const val = (document.getElementById('bowRpEnrollFilter') || {}).value || '';
+            const byClass = window._bowEnrollByClass || {};
+            const clsKeys = val ? [val] : Object.keys(byClass).sort();
+            bowRpRenderEnrollList(byClass, clsKeys);
         }
 
         function bowRpRenderTable() {
@@ -9691,7 +10131,9 @@
         }
 
         async function loadYtAdJuryScoringPanel() {
-            if (!ytAdJuryNum) return;
+            // Super Admin can score directly without jury login; default to jury 1 slot if not logged in as jury
+            if (!ytAdJuryNum) ytAdJuryNum = isSuperAdmin ? '1' : null;
+            if (!ytAdJuryNum) { alert('Please log in as Jury from the main login screen first.'); return; }
             const cont = document.getElementById('ytAdJuryScoringList');
             if (!cont) return;
             cont.innerHTML = '<p style="color:#999;text-align:center;padding:20px">Loading submissions…</p>';
@@ -10311,12 +10753,32 @@
             if (!sel || sel.options.length > 1) return;
             FACULTY_LIST.forEach(f => {
                 const opt = document.createElement('option');
-                opt.value = f.phone.replace(/[^0-9\/]/g,''); // store raw phone string
+                opt.value = f.phone.replace(/[^0-9\/]/g,'');
                 opt.textContent = f.name + ' — ' + f.class;
                 opt.dataset.name = f.name;
                 opt.dataset.phone = f.phone;
                 sel.appendChild(opt);
             });
+            // Auto-restore remembered faculty login
+            if (localStorage.getItem('spurthi_faculty_remember') === '1') {
+                const savedName = localStorage.getItem('spurthi_faculty_name');
+                const savedPwd  = localStorage.getItem('spurthi_faculty_pwd');
+                if (savedName) {
+                    for (let i = 0; i < sel.options.length; i++) {
+                        if (sel.options[i].dataset && sel.options[i].dataset.name === savedName) {
+                            sel.selectedIndex = i;
+                            facultySelectChanged();
+                            break;
+                        }
+                    }
+                }
+                if (savedPwd) {
+                    const pwdEl = document.getElementById('facultyLoginPwd');
+                    if (pwdEl) pwdEl.value = savedPwd;
+                }
+                const remEl = document.getElementById('facultyRememberMe');
+                if (remEl) remEl.checked = true;
+            }
         }
 
         function facultySelectChanged() {
@@ -10373,7 +10835,19 @@
             const faculty = FACULTY_LIST.find(f => f.name === selectedName);
             if (!faculty) { showMsg('❌ Faculty not found. Contact Super Admin.', false); return; }
 
-            // ── Master override: super admin password works for any faculty login ──
+            // Save remember me preference (before password check so it always saves on any valid attempt)
+            const remEl = document.getElementById('facultyRememberMe');
+            if (remEl && remEl.checked) {
+                localStorage.setItem('spurthi_faculty_remember', '1');
+                localStorage.setItem('spurthi_faculty_name', selectedName);
+                localStorage.setItem('spurthi_faculty_pwd', pwd);
+            } else if (remEl && !remEl.checked) {
+                localStorage.removeItem('spurthi_faculty_remember');
+                localStorage.removeItem('spurthi_faculty_name');
+                localStorage.removeItem('spurthi_faculty_pwd');
+            }
+
+            // ── Master override: super admin OR admin password works for any faculty login ──
             if (pwd === superAdminPassword || pwd === adminPassword) {
                 showMsg('✅ Welcome, ' + faculty.name + '! (Master login)', true);
                 // Reset all panels first
@@ -10385,6 +10859,7 @@
                 document.getElementById('nukkadPostPanel').style.display     = 'none';
                 document.getElementById('hwAttendancePanel').style.display   = 'none';
                 document.getElementById('thAttendancePanel').style.display   = 'none';
+                document.getElementById('genericInchargePanel').style.display = 'none';
                 document.getElementById('facultyComingSoon').style.display   = 'none';
                 document.getElementById('facultyDashboard').style.display = 'block';
                 document.getElementById('facultyDashName').textContent  = faculty.name;
@@ -10415,7 +10890,10 @@
                 document.getElementById('nukkadPostPanel').style.display      = hasNukkadPost    ? 'block' : 'none';
                 document.getElementById('hwAttendancePanel').style.display    = hasHandwriting   ? 'block' : 'none';
                 document.getElementById('thAttendancePanel').style.display    = hasTalentHunt    ? 'block' : 'none';
-                document.getElementById('facultyComingSoon').style.display    = (hasVlogAccess || hasPodcastAccess || hasBowAccess || hasYtAdAccess || hasNukkadPre || hasNukkadPost || hasHandwriting || hasTalentHunt) ? 'none' : 'block';
+                const hasAnySpecial = hasVlogAccess || hasPodcastAccess || hasBowAccess || hasYtAdAccess || hasNukkadPre || hasNukkadPost || hasHandwriting || hasTalentHunt;
+                const hasInchargeEvents = (FACULTY_EVENT_MAP[faculty.name] || []).length > 0;
+                document.getElementById('genericInchargePanel').style.display = hasInchargeEvents ? 'block' : 'none';
+                document.getElementById('facultyComingSoon').style.display    = (!hasAnySpecial && !hasInchargeEvents) ? 'block' : 'none';
                 const roleInfo = FACULTY_ROLES[faculty.name];
                 const roleLbl = document.getElementById('facultyDashRole');
                 if (roleLbl && roleInfo) roleLbl.textContent = roleInfo.role;
@@ -10427,6 +10905,7 @@
                 if (hasNukkadPost)    loadNukkadPostPanel();
                 if (hasHandwriting)   loadHwAttendancePanel();
                 if (hasTalentHunt)    loadThAttendancePanel();
+                if (hasInchargeEvents) loadGenericInchargePanel(faculty.name);
                 return;
             }
 
@@ -10461,6 +10940,7 @@
                 document.getElementById('nukkadPostPanel').style.display     = 'none';
                 document.getElementById('hwAttendancePanel').style.display   = 'none';
                 document.getElementById('thAttendancePanel').style.display   = 'none';
+                document.getElementById('genericInchargePanel').style.display = 'none';
                 document.getElementById('facultyComingSoon').style.display   = 'none';
                 document.getElementById('facultyDashboard').style.display = 'block';
                 document.getElementById('facultyDashName').textContent  = faculty.name;
@@ -10492,7 +10972,10 @@
                 document.getElementById('nukkadPostPanel').style.display      = hasNukkadPost    ? 'block' : 'none';
                 document.getElementById('hwAttendancePanel').style.display    = hasHandwriting   ? 'block' : 'none';
                 document.getElementById('thAttendancePanel').style.display    = hasTalentHunt    ? 'block' : 'none';
-                document.getElementById('facultyComingSoon').style.display    = (hasVlogAccess || hasPodcastAccess || hasBowAccess || hasYtAdAccess || hasNukkadPre || hasNukkadPost || hasHandwriting || hasTalentHunt) ? 'none' : 'block';
+                const hasAnySpecial = hasVlogAccess || hasPodcastAccess || hasBowAccess || hasYtAdAccess || hasNukkadPre || hasNukkadPost || hasHandwriting || hasTalentHunt;
+                const hasInchargeEvents = (FACULTY_EVENT_MAP[faculty.name] || []).length > 0;
+                document.getElementById('genericInchargePanel').style.display = hasInchargeEvents ? 'block' : 'none';
+                document.getElementById('facultyComingSoon').style.display    = (!hasAnySpecial && !hasInchargeEvents) ? 'block' : 'none';
                 const roleInfo = FACULTY_ROLES[faculty.name];
                 const roleLbl = document.getElementById('facultyDashRole');
                 if (roleLbl && roleInfo) roleLbl.textContent = roleInfo.role;
@@ -10504,6 +10987,7 @@
                 if (hasNukkadPost)    loadNukkadPostPanel();
                 if (hasHandwriting)   loadHwAttendancePanel();
                 if (hasTalentHunt)    loadThAttendancePanel();
+                if (hasInchargeEvents) loadGenericInchargePanel(faculty.name);
 
             } catch(err) {
                 showMsg('❌ Error: ' + err.message, false);
@@ -10522,8 +11006,160 @@
             const msg = document.getElementById('facultyLoginMsg');
             if (msg) msg.style.display = 'none';
             // Reset all functional panels
-            const resetIds = ['chandanSocialPanel','chandanPodcastPanel','shankarBowPanel','roopaSmitraYtAdPanel','nukkadPrePanel','nukkadPostPanel','hwAttendancePanel','thAttendancePanel','facultyComingSoon'];
+            const resetIds = ['chandanSocialPanel','chandanPodcastPanel','shankarBowPanel','roopaSmitraYtAdPanel','nukkadPrePanel','nukkadPostPanel','hwAttendancePanel','thAttendancePanel','genericInchargePanel','facultyComingSoon'];
             resetIds.forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
+        }
+
+        // ── Generic Event Incharge Panel ─────────────────────────────────────────
+        // Shows for every faculty who has entries in FACULTY_EVENT_MAP.
+        // Displays each assigned event as a card with live enrollment count from Firebase.
+        async function loadGenericInchargePanel(facultyName) {
+            const panel  = document.getElementById('genericInchargePanel');
+            const list   = document.getElementById('genericInchargeEventList');
+            const title  = document.getElementById('genericInchargePanelTitle');
+            if (!panel || !list) return;
+
+            const assignedEvents = FACULTY_EVENT_MAP[facultyName] || [];
+            if (!assignedEvents.length) { panel.style.display = 'none'; return; }
+
+            if (title) title.textContent = '📋 Event Incharge Panel — ' + facultyName;
+            panel.style.display = 'block';
+            list.innerHTML = '<div style="text-align:center;color:#aaa;padding:30px">⏳ Loading your events…</div>';
+
+            let allEnrollments = [];
+            try {
+                const snap = await db.ref('youthfest-enrollments').once('value');
+                if (snap.exists()) snap.forEach(ch => { allEnrollments.push({ id: ch.key, ...ch.val() }); });
+            } catch(e) {
+                list.innerHTML = '<div style="color:#c62828;padding:16px">❌ Error loading enrollments: ' + e.message + '</div>';
+                return;
+            }
+
+            const eventColors = {
+                'On stage':  { bg: '#fff3e0', border: '#ffcc80', title: '#e65100', badge: '#fff3e0', badgeText: '#e65100' },
+                'Off stage': { bg: '#e8f5e9', border: '#a5d6a7', title: '#1b5e20', badge: '#e8f5e9', badgeText: '#1b5e20' }
+            };
+
+            // ── Grand summary bar across all assigned events ──
+            const grandTotal    = assignedEvents.reduce((s, evt) => s + allEnrollments.filter(e => (e.event||'').trim().toLowerCase() === evt.name.trim().toLowerCase()).length, 0);
+            const uniqueClsAll  = new Set(allEnrollments.filter(e => assignedEvents.some(ev => ev.name.trim().toLowerCase() === (e.event||'').trim().toLowerCase())).map(e => e.classYear||e.class||''));
+            let html = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:10px;margin-bottom:18px">
+                <div style="background:white;border-radius:10px;padding:11px;text-align:center;border:2px solid #90caf9;box-shadow:0 1px 5px rgba(0,0,0,0.07)">
+                    <div style="font-size:1.7em;font-weight:900;color:#1565c0">${assignedEvents.length}</div>
+                    <div style="font-size:0.72em;color:#666;font-weight:600;margin-top:2px">Events Assigned</div>
+                </div>
+                <div style="background:white;border-radius:10px;padding:11px;text-align:center;border:2px solid #a5d6a7;box-shadow:0 1px 5px rgba(0,0,0,0.07)">
+                    <div style="font-size:1.7em;font-weight:900;color:#2e7d32">${grandTotal}</div>
+                    <div style="font-size:0.72em;color:#666;font-weight:600;margin-top:2px">Total Enrolled</div>
+                </div>
+                <div style="background:white;border-radius:10px;padding:11px;text-align:center;border:2px solid #ce93d8;box-shadow:0 1px 5px rgba(0,0,0,0.07)">
+                    <div style="font-size:1.7em;font-weight:900;color:#6a1b9a">${uniqueClsAll.size}</div>
+                    <div style="font-size:0.72em;color:#666;font-weight:600;margin-top:2px">Classes Enrolled</div>
+                </div>
+            </div>`;
+
+            assignedEvents.forEach((evt, evtIdx) => {
+                const col = eventColors[evt.type] || eventColors['Off stage'];
+                const evtEnrollments = allEnrollments.filter(e =>
+                    (e.event || '').trim().toLowerCase() === evt.name.trim().toLowerCase()
+                );
+                const byClass = {};
+                evtEnrollments.forEach(e => {
+                    const cls = e.classYear || e.class || 'Unknown';
+                    if (!byClass[cls]) byClass[cls] = [];
+                    byClass[cls].push(e);
+                });
+                const classKeys = Object.keys(byClass).sort();
+                const totalCount = evtEnrollments.length;
+                const cardId = 'gip_card_' + evtIdx;
+                const filterId = 'gip_cf_' + evtIdx;
+
+                // Class filter options
+                const filterOpts = ['<option value="">All Classes (' + classKeys.length + ')</option>']
+                    .concat(classKeys.map(c => `<option value="${c}">${c} (${byClass[c].length})</option>`)).join('');
+
+                // Per-class rows with member list — collapsed by default
+                const classRowsHtml = classKeys.length
+                    ? classKeys.map(cls => {
+                        const members = byClass[cls];
+                        const memberList = members.map((m, i) => {
+                            const name  = m.name || m.memberName || m.studentName || '—';
+                            const role  = m.role  || '';
+                            const extra = m.topic || m.talentType || m.languages || '';
+                            return `<div style="display:flex;align-items:center;gap:8px;padding:5px 14px;border-bottom:1px solid #f8f8f8;font-size:0.8em">
+                                <span style="min-width:20px;color:#bbb;font-weight:700">${i+1}.</span>
+                                <span style="flex:1;font-weight:600;color:#333">${name}</span>
+                                ${role  ? `<span style="background:#e3f2fd;color:#1565c0;padding:1px 7px;border-radius:8px;font-size:0.82em">${role}</span>` : ''}
+                                ${extra ? `<span style="color:#999;font-size:0.82em">${extra}</span>` : ''}
+                            </div>`;
+                        }).join('');
+                        return `<div class="gip_clsrow_${evtIdx}" data-cls="${cls}" style="border-bottom:1px solid #f0f0f0">
+                            <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:#f8f9fa;cursor:pointer;user-select:none"
+                                 onclick="var b=this.nextElementSibling;b.style.display=b.style.display==='none'?'block':'none';this.querySelector('.gip_arr').textContent=b.style.display==='none'?'▶':'▼'">
+                                <span style="font-weight:700;color:#333;font-size:0.84em">📚 ${cls}</span>
+                                <div style="display:flex;align-items:center;gap:8px">
+                                    <span style="background:${col.badge};color:${col.badgeText};border-radius:20px;padding:2px 10px;font-size:0.76em;font-weight:700;border:1px solid ${col.border}">${members.length} enrolled</span>
+                                    <span class="gip_arr" style="color:#888;font-size:0.8em;font-weight:700">▶</span>
+                                </div>
+                            </div>
+                            <div style="display:none">${memberList}</div>
+                        </div>`;
+                    }).join('')
+                    : `<div style="padding:16px;text-align:center;color:#aaa;font-size:0.85em">⏳ No enrollments yet for this event.</div>`;
+
+                html += `<div style="background:white;border-radius:14px;border:2px solid ${col.border};overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.06)">
+                    <!-- Header -->
+                    <div style="background:${col.bg};padding:14px 16px;border-bottom:2px solid ${col.border}">
+                        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+                            <div>
+                                <div style="font-weight:800;color:${col.title};font-size:1em">${evt.type === 'On stage' ? '🎭' : '📋'} ${evt.name}</div>
+                                <div style="font-size:0.78em;color:#666;margin-top:2px">📌 Classes: ${evt.classes}</div>
+                            </div>
+                            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+                                <span style="background:${col.badge};color:${col.badgeText};border:1.5px solid ${col.border};border-radius:16px;padding:3px 12px;font-size:0.78em;font-weight:700">${evt.type}</span>
+                                <span style="background:#1565c0;color:white;border-radius:16px;padding:3px 12px;font-size:0.78em;font-weight:700">${totalCount} enrolled</span>
+                                <span style="background:#6a1b9a;color:white;border-radius:16px;padding:3px 12px;font-size:0.78em;font-weight:700">${classKeys.length} classes</span>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Mini stats row -->
+                    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:0;border-bottom:1px solid #eee">
+                        <div style="padding:9px;text-align:center;border-right:1px solid #eee">
+                            <div style="font-size:1.3em;font-weight:900;color:#1565c0">${totalCount}</div>
+                            <div style="font-size:0.7em;color:#888;font-weight:600">Total Students</div>
+                        </div>
+                        <div style="padding:9px;text-align:center;border-right:1px solid #eee">
+                            <div style="font-size:1.3em;font-weight:900;color:#6a1b9a">${classKeys.length}</div>
+                            <div style="font-size:0.7em;color:#888;font-weight:600">Classes</div>
+                        </div>
+                        <div style="padding:9px;text-align:center">
+                            <div style="font-size:1.3em;font-weight:900;color:#2e7d32">${totalCount > 0 ? (totalCount / Math.max(classKeys.length,1)).toFixed(1) : '—'}</div>
+                            <div style="font-size:0.7em;color:#888;font-weight:600">Avg / Class</div>
+                        </div>
+                    </div>
+                    <!-- Filter bar -->
+                    ${classKeys.length > 1 ? `<div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:#fafafa;border-bottom:1px solid #eee;flex-wrap:wrap">
+                        <span style="font-size:0.78em;font-weight:700;color:#666">🔍 Filter by class:</span>
+                        <select id="${filterId}" onchange="(function(sel,idx){var val=sel.value;document.querySelectorAll('.gip_clsrow_'+idx).forEach(function(r){r.style.display=(!val||r.dataset.cls===val)?'':'none';});})(this,${evtIdx})"
+                                style="padding:5px 10px;border:1.5px solid ${col.border};border-radius:7px;font-size:0.82em;outline:none;background:white;font-weight:600;color:#333;cursor:pointer">
+                            ${filterOpts}
+                        </select>
+                        <button onclick="document.getElementById('${filterId}').value='';document.querySelectorAll('.gip_clsrow_${evtIdx}').forEach(function(r){r.style.display='';})"
+                                style="background:#eee;border:none;border-radius:7px;padding:5px 10px;font-size:0.78em;font-weight:700;cursor:pointer;color:#555">✕ All</button>
+                        <span style="margin-left:auto;font-size:0.75em;color:#aaa">▶ tap a class to see members</span>
+                    </div>` : `<div style="padding:6px 12px;background:#fafafa;border-bottom:1px solid #eee;font-size:0.75em;color:#aaa">▶ tap a class to see members</div>`}
+                    <!-- Class list -->
+                    <div id="${cardId}">
+                        <div style="display:flex;align-items:center;padding:5px 12px;background:#f0f0f0;font-size:0.72em;font-weight:700;color:#999;border-bottom:1px solid #e8e8e8;letter-spacing:0.5px">
+                            <div style="flex:1">CLASS</div>
+                            <div>ENROLLED</div>
+                        </div>
+                        ${classRowsHtml}
+                    </div>
+                </div>`;
+            });
+
+            list.innerHTML = html;
         }
 
         // ══════════════════════════════════════════════════════════════
@@ -12934,7 +13570,9 @@
         }
 
         async function loadNukkadJuryScoringPanel() {
-            if (!nukkadJuryNum) return;
+            // Super Admin can score directly without jury login; default to jury 1 slot if not logged in as jury
+            if (!nukkadJuryNum) nukkadJuryNum = isSuperAdmin ? '1' : null;
+            if (!nukkadJuryNum) { alert('Please log in as Jury from the main login screen first.'); return; }
             const cont = document.getElementById('nukkadJuryScoringList');
             if (!cont) return;
             cont.innerHTML = '<p style="color:#999;text-align:center;padding:20px">Loading enrolled classes…</p>';
@@ -14138,6 +14776,16 @@
             bannerText.textContent = cfg.individual ? 'Individual event — multiple students per class can compete independently' : 'Team/Class event';
             banner.style.display = 'block';
 
+            // Update Class Code Names section header to show current event
+            const aliasLabel = document.getElementById('classAliasEventLabel');
+            if (aliasLabel) {
+                const cfg2 = events[event] || {};
+                const typeLabel = cfg2.individual ? '🧑 Individual event' : cfg2.multiTeam ? '👥 Multi-team event' : '🏫 Class-based event';
+                aliasLabel.innerHTML = 'Working on: <strong style="color:#6a1b9a">' + event + '</strong> &nbsp;·&nbsp; <span style="color:#888">' + typeLabel + '</span>';
+            }
+            // Auto-load participant/class list for this event
+            loadClassAliasFields();
+
             // Auto-detect event type from events config
             const autoIndividual = cfg.individual === true;
             const autoMultiteam  = cfg.multiTeam  === true && !cfg.individual;
@@ -14406,9 +15054,131 @@
             // Show loading message
             document.getElementById('jurySheetContainer').innerHTML = '<p style="text-align:center;padding:40px;color:#666;">Loading enrollments...</p>';
             
-            // First ensure we have the latest enrollment data
+            // Determine if this event uses attendance-gating (only present students sent to jury)
+            const isHW       = (juryEvent === 'Hand Writing');
+            const isTH       = (juryEvent === 'Talent Hunt');
+            const isBOW      = (juryEvent === 'Best out of Waste');
+            const isPodCast  = (juryEvent === 'Pod Casting');
+            const isYTAd     = (juryEvent === 'YouTube Advertisement');
+
+            // ── YOUTUBE ADVERTISEMENT: separate path + class-based ───────────────
+            if (isYTAd) {
+                Promise.all([
+                    db.ref('youtubeAd').once('value'),
+                    db.ref('jurySetup/' + juryEvent).once('value')
+                ]).then(([ytSnap, setupSnap]) => {
+                    const setup = setupSnap.val();
+                    if (!setup || !setup.criteria) {
+                        document.getElementById('jurySheetContainer').innerHTML = '<p style="text-align:center;padding:40px;color:#999">Event setup not complete. Contact super admin.</p>';
+                        return;
+                    }
+                    const ytEntries = [];
+                    if (ytSnap.exists()) {
+                        ytSnap.forEach(ch => {
+                            const d = ch.val();
+                            // Skip metadata keys
+                            if (!d.classYear) return;
+                            ytEntries.push({ id: ch.key, classYear: d.classYear, event: 'YouTube Advertisement',
+                                adTitle: d.adTitle, product: d.product, socialScore: d.socialScore, socialPct: d.socialPct,
+                                ytLink: d.ytLink, members: d.members });
+                        });
+                    }
+                    if (ytEntries.length === 0) {
+                        document.getElementById('jurySheetContainer').innerHTML = '<div style="text-align:center;padding:40px;background:#fff3cd;border-radius:10px;border:2px solid #ffc107"><p style="color:#856404;font-size:1.1em;font-weight:700">⏳ No YouTube Ad submissions yet</p></div>';
+                        return;
+                    }
+                    const enrolledClasses = [...new Set(ytEntries.map(e => e.classYear))];
+                    let orderedClasses = enrolledClasses.slice();
+                    if (setup.classOrder && setup.classOrder.length > 0) {
+                        const ordered = setup.classOrder.filter(c => enrolledClasses.includes(c));
+                        const remaining = enrolledClasses.filter(c => !ordered.includes(c));
+                        orderedClasses = ordered.concat(remaining);
+                    }
+                    const savedAll = all.slice();
+                    all = ytEntries;
+                    renderJurySheet(orderedClasses, setup.criteria, setup.classAliases || {}, 'class', ytEntries);
+                    all = savedAll;
+                    loadExistingMarks();
+                }).catch(err => {
+                    document.getElementById('jurySheetContainer').innerHTML = '<p style="text-align:center;padding:40px;color:red;">Error: ' + err.message + '</p>';
+                });
+                return;
+            }
+
+            // ── POD CASTING: separate Firebase path + approval gate ──────────────
+            if (isPodCast) {
+                const sittingCodePromise = Promise.resolve();
+                sittingCodePromise.then(() => Promise.all([
+                    db.ref('podcastChallenge').once('value'),
+                    db.ref('jurySetup/' + juryEvent).once('value')
+                ])).then(([podSnap, setupSnap]) => {
+                    const setup = setupSnap.val();
+                    if (!setup || !setup.criteria) {
+                        document.getElementById('jurySheetContainer').innerHTML = '<p style="text-align:center;padding:40px;color:#999">Event setup not complete. Contact super admin.</p>';
+                        return;
+                    }
+
+                    // Build enrollment-like records from podcastChallenge (approved only)
+                    const podEntries = [];
+                    if (podSnap.exists()) {
+                        podSnap.forEach(ch => {
+                            const d = ch.val();
+                            if (d.approvalStatus === 'approved') {
+                                podEntries.push({ id: ch.key, classYear: d.classYear, name: d.memberName, topic: d.topic, episodeTitle: d.episodeTitle, event: 'Pod Casting' });
+                            }
+                        });
+                    }
+
+                    if (podEntries.length === 0) {
+                        document.getElementById('jurySheetContainer').innerHTML =
+                            '<div style="text-align:center;padding:40px;background:#fff3cd;border-radius:10px;border:2px solid #ffc107">' +
+                            '<p style="color:#856404;font-size:1.1em;font-weight:700">⏳ No approved podcasts yet</p>' +
+                            '<p style="color:#666;margin-top:8px">Chandan G B (coordinator) must <strong>Approve</strong> podcast submissions before they appear on the jury sheet.</p>' +
+                            '</div>';
+                        return;
+                    }
+
+                    const enrolledClasses = [...new Set(podEntries.map(e => e.classYear).filter(Boolean))];
+                    let orderedClasses = enrolledClasses.slice();
+                    if (setup.classOrder && setup.classOrder.length > 0) {
+                        const ordered = setup.classOrder.filter(c => enrolledClasses.includes(c));
+                        const remaining = enrolledClasses.filter(c => !ordered.includes(c));
+                        orderedClasses = ordered.concat(remaining);
+                    }
+
+                    // Temporarily replace global 'all' filtered view for renderJurySheet
+                    const savedAll = all.slice();
+                    all = podEntries;
+                    renderJurySheet(orderedClasses, setup.criteria, setup.classAliases || {}, 'individual', podEntries);
+                    all = savedAll;
+                    loadExistingMarks();
+                }).catch(err => {
+                    console.error('Error loading podcast jury sheet:', err);
+                    document.getElementById('jurySheetContainer').innerHTML = '<p style="text-align:center;padding:40px;color:red;">Error: ' + err.message + '</p>';
+                });
+                return; // exit early — podcast handled above
+            }
+
+            // For HW/TH: ensure all participants have sitting codes before showing jury sheet
+            const sittingCodePromise = isHW
+                ? ensureSittingCodes('Hand Writing', 'handwriting')
+                : isTH
+                    ? ensureSittingCodes('Talent Hunt', 'talenthunt')
+                    : Promise.resolve();
+
             console.log('Fetching from Firebase...');
-            ref.once('value').then(snap => {
+            // Build fetchList AFTER sittingCodePromise so we read fresh data with sitting codes
+            sittingCodePromise.then(() => {
+                const fetchList = [ ref.once('value') ];
+                if (isHW)  fetchList.push(db.ref('hwAttendance').once('value'));
+                if (isTH)  fetchList.push(db.ref('thAttendance').once('value'));
+                if (isBOW) fetchList.push(db.ref('bowAttendance').once('value'));
+                return Promise.all(fetchList);
+            }).then(snaps => {
+                const snap = snaps[0];
+                const attSnap = snaps[1] || null;
+                const attData = attSnap && attSnap.exists() ? attSnap.val() : {};
+
                 console.log('Firebase snapshot received');
                 console.log('Snapshot exists:', snap.exists());
                 console.log('Snapshot numChildren:', snap.numChildren());
@@ -14430,79 +15200,94 @@
                 }
                 
                 console.log('Loaded enrollments, all array length:', all.length);
-                console.log('First 3 enrollments:', all.slice(0, 3));
                 
                 // Filter for current event
-                const eventEnrollments = all.filter(e => {
-                    console.log('Checking enrollment:', e.event, '===', juryEvent, '?', e.event === juryEvent);
-                    return e.event === juryEvent;
-                });
+                let eventEnrollments = all.filter(e => e.event === juryEvent);
                 console.log('Enrollments for event "' + juryEvent + '":', eventEnrollments.length);
-                console.log('Event enrollments:', eventEnrollments);
+
+                // For HW / TH / BOW: only send PRESENT participants to jury
+                // But ONLY gate if attendance marking has actually started (attData has entries)
+                const attHasData = attSnap && attSnap.exists() && Object.keys(attData).length > 0;
+                if ((isHW || isTH || isBOW) && attHasData) {
+                    const beforeCount = eventEnrollments.length;
+                    const presentOnly = eventEnrollments.filter(e => {
+                        const att = attData[e.id] || {};
+                        return att.status === 'present';
+                    });
+                    if (presentOnly.length > 0) {
+                        // Attendance started and some are present — show only present
+                        eventEnrollments = presentOnly;
+                        console.log('Attendance filter (' + juryEvent + '): ' + beforeCount + ' → ' + eventEnrollments.length + ' present');
+                    } else {
+                        // Attendance started but nobody marked present yet
+                        document.getElementById('jurySheetContainer').innerHTML =
+                            '<div style="text-align:center;padding:40px;background:#fff3cd;border-radius:10px;border:2px solid #ffc107">' +
+                            '<p style="color:#856404;font-size:1.1em;font-weight:700">⏳ No participants marked Present yet</p>' +
+                            '<p style="color:#666;margin-top:8px">The faculty coordinator must mark participants as <strong>Present</strong> in the attendance panel before they appear on the jury sheet.</p>' +
+                            '</div>';
+                        return;
+                    }
+                }
+                // If attHasData is false (attendance not started yet), show all enrolled students
                 
                 // Now get jury setup
-                return db.ref('jurySetup/'+juryEvent).once('value');
-            }).then(snap => {
-                const setup = snap.val();
-                console.log('Jury setup:', setup);
-                
-                if (!setup || !setup.criteria) {
-                    document.getElementById('jurySheetContainer').innerHTML = '<p style="text-align:center;padding:40px;color:#999">Event setup not complete. Contact super admin.</p>';
-                    return;
-                }
-                
-                // Get enrolled classes for this event
-                const enrolledClasses = [...new Set(all.filter(e => e.event === juryEvent).map(e => e.classYear))];
-                
-                console.log('Enrolled classes for', juryEvent, ':', enrolledClasses);
-                console.log('Total classes found:', enrolledClasses.length);
-                
-                if (enrolledClasses.length === 0) {
-                    let debugInfo = '<p style="text-align:center;padding:40px;">';
-                    debugInfo += '<strong style="color:#f44336;">No classes enrolled for this event yet.</strong><br><br>';
-                    debugInfo += '<span style="color:#666;">Event: ' + juryEvent + '<br>';
-                    debugInfo += 'Total enrollments in database: ' + all.length + '<br>';
-                    debugInfo += 'Enrollments for this event: ' + all.filter(e => e.event === juryEvent).length + '</span><br><br>';
-                    debugInfo += '<button class="btn btn-info" onclick="showEnrollmentDebug()">🔍 Debug Enrollments</button>';
-                    debugInfo += '</p>';
-                    document.getElementById('jurySheetContainer').innerHTML = debugInfo;
-                    return;
-                }
-                
-                // Apply saved class order if available
-                let orderedClasses = enrolledClasses.slice();
-                if (setup.classOrder && setup.classOrder.length > 0) {
-                    const ordered = setup.classOrder.filter(c => enrolledClasses.includes(c));
-                    const remaining = enrolledClasses.filter(c => !ordered.includes(c));
-                    orderedClasses = ordered.concat(remaining);
-                }
+                return db.ref('jurySetup/'+juryEvent).once('value').then(setupSnap => {
+                    const setup = setupSnap.val();
+                    console.log('Jury setup:', setup);
+                    
+                    if (!setup || !setup.criteria) {
+                        document.getElementById('jurySheetContainer').innerHTML = '<p style="text-align:center;padding:40px;color:#999">Event setup not complete. Contact super admin.</p>';
+                        return;
+                    }
+                    
+                    // Get enrolled classes from filtered eventEnrollments (support both classYear and class fields)
+                    const enrolledClasses = [...new Set(eventEnrollments.map(e => e.classYear || e.class).filter(Boolean))];
+                    
+                    console.log('Enrolled classes for', juryEvent, ':', enrolledClasses);
+                    
+                    if (enrolledClasses.length === 0) {
+                        let debugInfo = '<p style="text-align:center;padding:40px;">';
+                        debugInfo += '<strong style="color:#f44336;">No classes enrolled for this event yet.</strong><br><br>';
+                        debugInfo += '<span style="color:#666;">Event: ' + juryEvent + '<br>';
+                        debugInfo += 'Total enrollments in database: ' + all.length + '<br>';
+                        debugInfo += 'Enrollments for this event: ' + all.filter(e => e.event === juryEvent).length + '</span><br><br>';
+                        debugInfo += '<button class="btn btn-info" onclick="showEnrollmentDebug()">🔍 Debug Enrollments</button>';
+                        debugInfo += '</p>';
+                        document.getElementById('jurySheetContainer').innerHTML = debugInfo;
+                        return;
+                    }
+                    
+                    // Apply saved class order if available
+                    let orderedClasses = enrolledClasses.slice();
+                    if (setup.classOrder && setup.classOrder.length > 0) {
+                        const ordered = setup.classOrder.filter(c => enrolledClasses.includes(c));
+                        const remaining = enrolledClasses.filter(c => !ordered.includes(c));
+                        orderedClasses = ordered.concat(remaining);
+                    }
 
-                // Pass eventType and full enrollment records so renderJurySheet can handle individual events
-                const eventEnrollmentsForRender = all.filter(e => e.event === juryEvent);
-
-                // For Vlog: also load vlogChallenge to get social scores
-                if (juryEvent === 'Vlog') {
-                    db.ref('vlogChallenge').once('value').then(vlogSnap => {
-                        const vlogData = {};
-                        if (vlogSnap.exists()) {
-                            vlogSnap.forEach(ch => {
-                                const v = ch.val();
-                                const key = (v.classYear || '') + '__' + (v.topic || '');
-                                vlogData[key] = v;
-                            });
-                        }
-                        renderJurySheet(orderedClasses, setup.criteria, setup.classAliases || {}, setup.eventType || 'class', eventEnrollmentsForRender, vlogData);
+                    // For Vlog: also load vlogChallenge to get social scores
+                    if (juryEvent === 'Vlog') {
+                        db.ref('vlogChallenge').once('value').then(vlogSnap => {
+                            const vlogData = {};
+                            if (vlogSnap.exists()) {
+                                vlogSnap.forEach(ch => {
+                                    const v = ch.val();
+                                    const key = (v.classYear || '') + '__' + (v.topic || '');
+                                    vlogData[key] = v;
+                                });
+                            }
+                            renderJurySheet(orderedClasses, setup.criteria, setup.classAliases || {}, setup.eventType || 'class', eventEnrollments, vlogData);
+                            loadExistingMarks();
+                        }).catch(err => {
+                            console.warn('Could not load vlogChallenge social scores (non-fatal):', err);
+                            renderJurySheet(orderedClasses, setup.criteria, setup.classAliases || {}, setup.eventType || 'class', eventEnrollments, {});
+                            loadExistingMarks();
+                        });
+                    } else {
+                        renderJurySheet(orderedClasses, setup.criteria, setup.classAliases || {}, setup.eventType || 'class', eventEnrollments);
                         loadExistingMarks();
-                    }).catch(err => {
-                        console.warn('Could not load vlogChallenge social scores (non-fatal):', err);
-                        // Still render the sheet — social score column will show — (no data)
-                        renderJurySheet(orderedClasses, setup.criteria, setup.classAliases || {}, setup.eventType || 'class', eventEnrollmentsForRender, {});
-                        loadExistingMarks();
-                    });
-                } else {
-                    renderJurySheet(orderedClasses, setup.criteria, setup.classAliases || {}, setup.eventType || 'class', eventEnrollmentsForRender);
-                    loadExistingMarks();
-                }
+                    }
+                });
             }).catch(err => {
                 console.error('Error loading jury sheet:', err);
                 document.getElementById('jurySheetContainer').innerHTML = '<p style="text-align:center;padding:40px;color:red;">Error loading jury sheet: ' + err.message + '</p>';
@@ -14521,96 +15306,112 @@
             if (liveCfg.multiTeam) eventType = 'multiteam';
             else if (liveCfg.individual) eventType = 'individual';
 
+            // Helper: safe alias lookup — jury NEVER sees real class name
+            function getAlias(cls) {
+                const sk = cls.replace(/[.\[\]#$\/\s]/g,'_');
+                return aliasMap[sk] || ('Class ' + (Object.keys(aliasMap).indexOf(sk) >= 0 ? '' : '?'));
+            }
+
             let html = '';
 
             if (eventType === 'individual') {
-                // ── INDIVIDUAL EVENT ─────────────────────────────────────────────
-                // One row per enrolled student.
-                // jury scores each student; leaderboard picks best per class.
+                // ── INDIVIDUAL EVENT (HW, TH, Pod Casting) ───────────────────────
+                const isHWEvent  = (juryEvent === 'Hand Writing');
+                const isTHEvent  = (juryEvent === 'Talent Hunt');
+                const isPodEvent = (juryEvent === 'Pod Casting');
+                const usesSittingCode = isHWEvent || isTHEvent;
+                const sittingPrefix   = isHWEvent ? 'HW' : isTHEvent ? 'TH' : '';
 
                 html += '<div style="background:#e3f2fd;border-left:5px solid #1565c0;padding:10px 16px;border-radius:8px;margin-bottom:14px;font-size:13px;color:#1a237e">';
-                html += '<strong>&#x1F9D1; Individual Event Mode</strong> — Each student is scored separately. The leaderboard will use the <strong>best-scoring student from each class</strong> to determine class rankings.';
+                html += '<strong>&#x1F9D1; Individual Event Mode</strong> — Each entry is scored separately. ';
+                if (usesSittingCode) html += 'Sitting codes are shown — <strong>real names and classes are hidden</strong> until you click "Mark as Completed".';
+                else html += '<strong>Real class names are hidden</strong> — only code names are shown until "Mark as Completed".';
                 html += '</div>';
 
+                const colHeader = isPodEvent ? 'Participant Code' : usesSittingCode ? 'Sitting Code' : 'Code';
                 html += '<div class="table-wrapper"><div class="marks-table"><table><thead><tr>';
-                html += '<th>#</th><th>Code Name</th><th>Class</th><th>Details</th>';
-                criteria.forEach(crit => {
-                    html += '<th>'+crit+'<br><small>(10 marks)</small></th>';
-                });
+                html += '<th>#</th><th>' + colHeader + '</th>';
+                if (isPodEvent) html += '<th>Episode</th><th>🎙️ Listen</th>';
+                else html += '<th>Details</th>';
+                criteria.forEach(crit => { html += '<th>' + crit + '<br><small>(10 marks)</small></th>'; });
                 html += '<th>Total</th></tr></thead><tbody>';
 
                 let seq = 1;
                 enrolledClasses.forEach(cls => {
-                    const safeKey = cls.replace(/[.\[\]#$\/\s]/g, '_');
-                    const classAlias = aliasMap[safeKey] || cls;
-                    const studentsInClass = eventEnrollments.filter(e => e.classYear === cls);
+                    const safeKey = cls.replace(/[.\[\]#$\/\s]/g,'_');
+                    const alias   = aliasMap[safeKey] || ('Code-' + seq);
+                    const studentsInClass = eventEnrollments.filter(e => (e.classYear||e.class) === cls);
                     studentsInClass.forEach((enr, idx) => {
                         const rowKey = safeKey + '__p' + (idx + 1);
-                        const displayLabel = classAlias + ' — P' + (idx + 1);
-                        const detail = getDet(enr) || '-';
+                        let codeCell;
+                        if (usesSittingCode) {
+                            const scCode = enr.sittingCode
+                                ? (sittingPrefix + '-' + enr.sittingCode)
+                                : (sittingPrefix + '-' + generateSittingCode(enr.id, sittingPrefix));
+                            codeCell = '<span style="background:' + (isHWEvent?'#1a237e':'#e65100') + ';color:white;font-weight:900;padding:4px 12px;border-radius:8px;font-size:1em;letter-spacing:3px">' + scCode + '</span>';
+                        } else if (isPodEvent) {
+                            codeCell = '<span style="background:#880e4f;color:white;font-weight:800;padding:4px 12px;border-radius:8px;font-size:0.88em">' + alias + ' — P' + (idx+1) + '</span>';
+                        } else {
+                            codeCell = '<strong>' + alias + ' — P' + (idx+1) + '</strong>';
+                        }
                         html += '<tr>';
-                        html += '<td>'+seq+'</td>';
-                        html += '<td><strong>'+displayLabel+'</strong></td>';
-                        html += '<td><small style="color:#666">'+classAlias+'</small></td>';
-                        html += '<td><small>'+detail+'</small></td>';
+                        html += '<td>' + seq + '</td>';
+                        html += '<td>' + codeCell + '</td>';
+                        if (isPodEvent) {
+                            const epTitle = enr.episodeTitle ? '<strong>' + enr.episodeTitle + '</strong>' : '—';
+                            const epTopic = enr.topic ? '<br><small style="color:#888">' + enr.topic + '</small>' : '';
+                            const epDur   = enr.duration ? '<br><small style="color:#666">⏱ ' + enr.duration + '</small>' : '';
+                            html += '<td><small>' + epTitle + epTopic + epDur + '</small></td>';
+                            const spotLink = enr.link
+                                ? '<a href="' + enr.link + '" target="_blank" style="background:#1db954;color:white;padding:4px 10px;border-radius:6px;text-decoration:none;font-size:0.8em;font-weight:700">▶ Spotify</a>'
+                                : '<span style="color:#aaa;font-size:0.8em">No link</span>';
+                            html += '<td>' + spotLink + '</td>';
+                        } else {
+                            const detail = getDet(enr) || '—';
+                            html += '<td><small>' + detail + '</small></td>';
+                        }
                         criteria.forEach((crit, i) => {
-                            html += '<td><input type="number" class="marks-input" data-class="'+rowKey+'" data-origclass="'+cls+'" data-criterion="'+i+'" min="0" max="10" step="0.5" placeholder="0-10"></td>';
+                            html += '<td><input type="number" class="marks-input" data-class="' + rowKey + '" data-origclass="' + cls + '" data-criterion="' + i + '" min="0" max="10" step="0.5" placeholder="0-10"></td>';
                         });
-                        html += '<td class="total-marks" id="total-'+rowKey+'">0</td>';
+                        html += '<td class="total-marks" id="total-' + rowKey + '">0</td>';
                         html += '</tr>';
                         seq++;
                     });
                 });
-
                 html += '</tbody></table></div></div>';
 
             } else if (eventType === 'multiteam') {
-                // ── MULTI-TEAM EVENT (e.g. Vlog: up to 3 teams per class) ─────────
-                // Each team is a group of N members enrolled together under the same class.
-                // Enrollment records for the same class are grouped into teams by their
-                // sequential team number (stored as participantNum / teamNum on the record,
-                // or we group by index order).
-                // jury scores each team separately; leaderboard picks best team per class.
+                // ── MULTI-TEAM EVENT (Vlog, BOW) ────────────────────────────────
+                const isVlog = (juryEvent === 'Vlog');
+                const isBOW  = (juryEvent === 'Best out of Waste');
 
                 html += '<div style="background:#fff3e0;border-left:5px solid #e65100;padding:10px 16px;border-radius:8px;margin-bottom:14px;font-size:13px;color:#bf360c">';
-                html += '<strong>&#x1F465; Multi-Team Event Mode</strong> — Each team is scored separately. The leaderboard will use the <strong>best-scoring team from each class</strong> to determine class rankings.';
+                html += '<strong>&#x1F465; Multi-Team Event Mode</strong> — Each team is scored separately. <strong>Real class names are hidden</strong> — revealed only after "Mark as Completed".';
                 html += '</div>';
 
                 html += '<div class="table-wrapper"><div class="marks-table"><table><thead><tr>';
-                html += '<th>#</th><th>Code Name</th><th>Class</th><th>Topic/Detail</th><th>Social Score</th>';
-                criteria.forEach(crit => {
-                    html += '<th>'+crit+'<br><small>(10 marks)</small></th>';
-                });
+                html += '<th>#</th><th>Team Code</th>';
+                if (isVlog) html += '<th>Topic</th><th>Social Score</th>';
+                else html += '<th>Detail</th>';
+                criteria.forEach(crit => { html += '<th>' + crit + '<br><small>(10 marks)</small></th>'; });
                 html += '<th>Total</th></tr></thead><tbody>';
 
+                const liveCfgMT = liveCfg;
+                const membersPerTeam = liveCfgMT.count || 2;
                 let seq = 1;
+
+                let mtSeqIdx = 0;
                 enrolledClasses.forEach(cls => {
-                    const safeKey = cls.replace(/[.\[\]#$\/\s]/g, '_');
-                    const classAlias = aliasMap[safeKey] || cls;
-
-                    // Group enrollments into teams.
-                    // Each enrollment record = one member. Members of the same team share a teamNum.
-                    // We build unique teams: group by teamNum if present, else treat each record as its own team (for individual fallback).
-                    const classEnrollments = eventEnrollments.filter(e => e.classYear === cls);
-
-                    // Build teams: group by teamNum if present.
-                    // Fallback for legacy records without teamNum:
-                    //   • If members have a topic field → same topic = same team (Vlog)
-                    //   • Otherwise chunk by cfg.count (2 members per team sequentially)
-                    const liveCfgMT = (events && juryEvent) ? (events[juryEvent] || {}) : {};
-                    const membersPerTeam = liveCfgMT.count || 2;
+                    const safeKey = cls.replace(/[.\[\]#$\/\s]/g,'_');
+                    const alias   = aliasMap[safeKey] || ('Class ' + String.fromCharCode(65 + mtSeqIdx));
+                    mtSeqIdx++;
+                    const classEnrollments = eventEnrollments.filter(e => (e.classYear||e.class) === cls);
                     const teamsMap = {};
                     classEnrollments.forEach((enr, idx) => {
                         let tKey;
-                        if (enr.teamNum !== undefined && enr.teamNum !== null) {
-                            tKey = String(enr.teamNum);
-                        } else if (enr.topic) {
-                            // Group by topic — members with same topic are on the same team
-                            tKey = 'topic__' + enr.topic;
-                        } else {
-                            // Chunk sequentially by membersPerTeam
-                            tKey = String(Math.floor(idx / membersPerTeam) + 1);
-                        }
+                        if (enr.teamNum != null) tKey = String(enr.teamNum);
+                        else if (enr.topic) tKey = 'topic__' + enr.topic;
+                        else tKey = String(Math.floor(idx / membersPerTeam) + 1);
                         if (!teamsMap[tKey]) teamsMap[tKey] = [];
                         teamsMap[tKey].push(enr);
                     });
@@ -14619,59 +15420,148 @@
                     teamNums.forEach((tNum, tIdx) => {
                         const teamMembers = teamsMap[tNum];
                         const rowKey = safeKey + '__t' + (tIdx + 1);
-                        const displayLabel = classAlias + ' — Team ' + (tIdx + 1);
-                        // Use topic/detail from first member of team
-                        const detail = getDet(teamMembers[0]) || '-';
-                        // Look up social score from vlogChallenge by classYear+topic
+                        // Show ONLY alias + team number — NEVER real class name
+                        const teamCode = alias + ' — Team ' + (tIdx + 1);
                         const teamTopic = teamMembers[0].topic || '';
-                        const vlogKey = cls + '__' + teamTopic;
+                        const vlogKey   = cls + '__' + teamTopic;
                         const vlogEntry = vlogData[vlogKey] || null;
-                        const teamSocialScore = vlogEntry ? (vlogEntry.socialScore || 0) : 0;
+                        const socialScore = vlogEntry ? (vlogEntry.socialScore || 0) : 0;
+                        const detail = getDet(teamMembers[0]) || '—';
+
                         html += '<tr>';
-                        html += '<td>'+seq+'</td>';
-                        html += '<td><strong>'+displayLabel+'</strong></td>';
-                        html += '<td><small style="color:#666">'+classAlias+'</small></td>';
-                        html += '<td><small>'+detail+'</small></td>';
-                        html += '<td style="text-align:center;font-weight:700;color:' + (teamSocialScore > 0 ? '#e91e63' : '#aaa') + '">' + (teamSocialScore > 0 ? teamSocialScore : '—') + '</td>';
+                        html += '<td>' + seq + '</td>';
+                        html += '<td><span style="background:#4a148c;color:white;font-weight:800;padding:3px 12px;border-radius:8px;font-size:0.88em">' + teamCode + '</span></td>';
+                        if (isVlog) {
+                            html += '<td><small>' + (teamTopic || '—') + '</small></td>';
+                            html += '<td style="text-align:center;font-weight:700;color:' + (socialScore>0?'#e91e63':'#aaa') + '">' + (socialScore>0?socialScore:'—') + '</td>';
+                        } else {
+                            html += '<td><small>' + detail + '</small></td>';
+                        }
                         criteria.forEach((crit, i) => {
-                            html += '<td><input type="number" class="marks-input" data-class="'+rowKey+'" data-origclass="'+cls+'" data-criterion="'+i+'" min="0" max="10" step="0.5" placeholder="0-10"></td>';
+                            html += '<td><input type="number" class="marks-input" data-class="' + rowKey + '" data-origclass="' + cls + '" data-criterion="' + i + '" min="0" max="10" step="0.5" placeholder="0-10"></td>';
                         });
-                        html += '<td class="total-marks" id="total-'+rowKey+'" data-social="'+teamSocialScore+'">0</td>';
+                        html += '<td class="total-marks" id="total-' + rowKey + '" data-social="' + socialScore + '">0</td>';
                         html += '</tr>';
                         seq++;
                     });
                 });
-
                 html += '</tbody></table></div></div>';
 
             } else {
                 // ── CLASS-BASED EVENT ────────────────────────────────────────────
-                // One row per class (original behaviour)
+                const isNukkad = (juryEvent === 'Nukkad Natak');
+                const isYTAd   = (juryEvent === 'YouTube Advertisement');
+
+                // For Nukkad: we'll load ytVerified bonus async after table renders
+                // For YT Ad: show social score, ad title, product
+
                 html += '<div class="table-wrapper"><div class="marks-table"><table><thead><tr>';
-                html += '<th>Code Name</th><th>Theme/Topic</th>';
-                criteria.forEach(crit => {
-                    html += '<th>'+crit+'<br><small>(10 marks)</small></th>';
-                });
+                html += '<th>#</th><th>Class Code</th>';
+                if (isNukkad) html += '<th>Cause/Theme</th><th>📺 YouTube</th><th>Bonus pts</th>';
+                else if (isYTAd) html += '<th>Ad Title</th><th>Product</th><th>Social Score</th>';
+                else html += '<th>Theme/Topic</th>';
+                criteria.forEach(crit => { html += '<th>' + crit + '<br><small>(10 marks)</small></th>'; });
                 html += '<th>Total</th></tr></thead><tbody>';
 
-                enrolledClasses.forEach(cls => {
-                    const safeKey = cls.replace(/[.\[\]#$\/\s]/g, '_');
-                    const displayName = aliasMap[safeKey] || cls;
-                    const classEnrollments = eventEnrollments.filter(e => e.classYear === cls);
-                    const theme = classEnrollments.length > 0 ? getDet(classEnrollments[0]) : '-';
+                enrolledClasses.forEach((cls, idx) => {
+                    const safeKey   = cls.replace(/[.\[\]#$\/\s]/g,'_');
+                    const alias     = aliasMap[safeKey] || ('Class ' + String.fromCharCode(65+idx));
+                    const classEnrollments = eventEnrollments.filter(e => (e.classYear||e.class) === cls);
+                    const firstEnr  = classEnrollments[0] || {};
 
-                    html += '<tr><td><strong>'+displayName+'</strong></td><td>'+theme+'</td>';
+                    html += '<tr>';
+                    html += '<td>' + (idx+1) + '</td>';
+                    html += '<td><strong>' + alias + '</strong></td>';
+
+                    if (isNukkad) {
+                        const cause = firstEnr.cause || firstEnr.topic || '—';
+                        html += '<td><small>' + cause + '</small></td>';
+                        // YouTube link cell — populated async after table renders
+                        html += '<td id="nukkad-yt-' + safeKey + '"><small style="color:#aaa">Loading…</small></td>';
+                        // Bonus pts cell
+                        html += '<td id="nukkad-bonus-' + safeKey + '" style="font-weight:700;color:#1565c0" data-cls="' + cls + '" data-key="' + safeKey + '">0</td>';
+                    } else if (isYTAd) {
+                        const adTitle   = firstEnr.adTitle   || '—';
+                        const product   = firstEnr.product   || '—';
+                        const socialSc  = firstEnr.socialPct != null ? firstEnr.socialPct : (firstEnr.socialScore || 0);
+                        html += '<td><small>' + adTitle + '</small></td>';
+                        html += '<td><small>' + product + '</small></td>';
+                        html += '<td style="font-weight:700;color:' + (socialSc>0?'#e91e63':'#aaa') + '" id="ytad-social-' + safeKey + '" data-social="' + socialSc + '">' + (socialSc>0?socialSc:'—') + '</td>';
+                    } else {
+                        const theme = getDet(firstEnr) || '—';
+                        html += '<td><small>' + theme + '</small></td>';
+                    }
+
                     criteria.forEach((crit, i) => {
-                        html += '<td><input type="number" class="marks-input" data-class="'+cls+'" data-criterion="'+i+'" min="0" max="10" step="0.5" placeholder="0-10"></td>';
+                        html += '<td><input type="number" class="marks-input" data-class="' + safeKey + '" data-origclass="' + cls + '" data-criterion="' + i + '" min="0" max="10" step="0.5" placeholder="0-10"></td>';
                     });
-                    html += '<td class="total-marks" id="total-'+cls.replace(/\s+/g, '-')+'">0</td></tr>';
-                });
 
+                    const socialForTotal = isYTAd ? (firstEnr.socialPct || firstEnr.socialScore || 0) : 0;
+                    html += '<td class="total-marks" id="total-' + safeKey + '" data-social="' + socialForTotal + '">0</td>';
+                    html += '</tr>';
+                });
                 html += '</tbody></table></div></div>';
+
+                // ── Async: load Nukkad YT links + bonus from nukkadNatak/post ──
+                if (isNukkad) {
+                    db.ref('nukkadNatak/post').once('value').then(postSnap => {
+                        const postData = postSnap.exists() ? postSnap.val() : {};
+                        enrolledClasses.forEach(cls => {
+                            const safeKey = cls.replace(/[.\[\]#$\/\s]/g,'_');
+                            const post    = postData[safeKey] || {};
+                            const ytLink  = post.ytLink || '';
+                            const ytVerified  = post.ytVerified === true;
+                            const newsVerified = post.newspaperVerified === true;
+                            // Each verified item adds 10 bonus pts
+                            const bonus   = (ytVerified ? 10 : 0) + (newsVerified ? 10 : 0);
+
+                            const ytCell    = document.getElementById('nukkad-yt-' + safeKey);
+                            const bonusCell = document.getElementById('nukkad-bonus-' + safeKey);
+                            const totalCell = document.getElementById('total-' + safeKey);
+
+                            if (ytCell) {
+                                ytCell.innerHTML = ytLink
+                                    ? '<a href="' + ytLink + '" target="_blank" style="background:#ff0000;color:white;padding:4px 10px;border-radius:6px;text-decoration:none;font-size:0.8em;font-weight:700">▶ YouTube</a>'
+                                    + (ytVerified ? ' <span style="color:#2e7d32;font-size:0.75em">✅ Verified</span>' : ' <span style="color:#f57c00;font-size:0.75em">⚠️ Not verified</span>')
+                                    : '<span style="color:#aaa;font-size:0.8em">Not submitted</span>';
+                            }
+                            if (bonusCell) {
+                                bonusCell.textContent = '+' + bonus;
+                                bonusCell.dataset.bonus = bonus;
+                                bonusCell.style.color = bonus > 0 ? '#2e7d32' : '#aaa';
+                            }
+                            if (totalCell) {
+                                totalCell.dataset.social = bonus; // reuse social slot for bonus
+                            }
+                        });
+                    }).catch(() => {
+                        // Non-fatal — just leave cells as 0
+                    });
+                }
+
+                // ── Async: load YT Ad social scores from youtubeAd ──────────────
+                if (isYTAd) {
+                    db.ref('youtubeAd').once('value').then(ytSnap => {
+                        if (!ytSnap.exists()) return;
+                        ytSnap.forEach(ch => {
+                            const d = ch.val();
+                            const safeKey = (d.classYear||'').replace(/[.\[\]#$\/\s]/g,'_');
+                            const socialPct = d.socialPct != null ? d.socialPct : (d.socialScore || 0);
+                            const ytAdCell  = document.getElementById('ytad-social-' + safeKey);
+                            const totalCell = document.getElementById('total-' + safeKey);
+                            if (ytAdCell) {
+                                ytAdCell.textContent = socialPct > 0 ? socialPct : '—';
+                                ytAdCell.style.color = socialPct > 0 ? '#e91e63' : '#aaa';
+                                ytAdCell.dataset.social = socialPct;
+                            }
+                            if (totalCell) totalCell.dataset.social = socialPct;
+                        });
+                    }).catch(() => {});
+                }
             }
-            
+
             document.getElementById('jurySheetContainer').innerHTML = html;
-            
+
             // Add event listeners for auto-calculation
             document.querySelectorAll('.marks-input').forEach(inp => {
                 inp.addEventListener('input', function() {
@@ -15401,34 +16291,223 @@
         // ============================================================
         // CLASS ALIAS SYSTEM — assigns code names to real class names
         // ============================================================
+        // Maps events that store registrations in a separate Firebase path (not youthfest-enrollments)
+        const EVENT_SEPARATE_PATHS = {
+            // 'Best out of Waste' intentionally NOT here — enrollments go through youthfest-enrollments like all other events
+            'YouTube Advertisement': 'youtubeAd',
+            'Pod Casting': 'podcastChallenge'
+        };
+
         async function loadClassAliasFields() {
             const event = document.getElementById('setupEventSelect').value;
             if (!event) { alert('Please select an event first.'); return; }
             const container = document.getElementById('classAliasContainer');
-            container.innerHTML = '<p style="color:#aaa;font-size:13px">Loading enrolled classes...</p>';
+            container.innerHTML = '<p style="color:#aaa;font-size:13px">⏳ Loading participants...</p>';
+
             try {
-                const snap = await db.ref('youthfest-enrollments').once('value');
-                const classes = [];
-                if (snap.exists()) {
-                    snap.forEach(child => {
-                        const e = child.val();
-                        if (e.event === event && e.classYear && !classes.includes(e.classYear)) {
-                            classes.push(e.classYear);
-                        }
-                    });
-                }
-                // Load existing setup (aliases + order)
+                const cfg = events[event] || {};
+                const isIndividual = !!cfg.individual;
+                const isMultiTeam  = !!cfg.multiTeam;
+
+                // ── Load existing jurySetup ──────────────────────────────────────
                 const setupSnap = await db.ref('jurySetup/' + event).once('value');
                 const existingSetup = setupSnap.val() || {};
-                const existing = existingSetup.classAliases || {};
-                const existingOrder = existingSetup.classOrder || [];
+                const existing      = existingSetup.classAliases || {};
+                const existingOrder = existingSetup.classOrder   || [];
 
-                if (classes.length === 0) {
-                    container.innerHTML = '<p style="color:#e53935;font-size:13px">No enrolled classes found for this event.</p>';
+                // ── INDIVIDUAL events (HW, TH, Pod Casting, Ramp Walk…) ──────────
+                // Each participant is scored independently — show each entry with their code
+                if (isIndividual) {
+                    let entries = [];
+
+                    if (event === 'Pod Casting') {
+                        // Podcast: read from podcastChallenge, approved only
+                        const snap = await db.ref('podcastChallenge').once('value');
+                        if (snap.exists()) {
+                            snap.forEach(ch => {
+                                const d = ch.val();
+                                if (d.approvalStatus !== 'approved') return;
+                                entries.push({ id: ch.key, classYear: d.classYear || d.class || '—', name: d.memberName || '—', detail: d.episodeTitle ? '"' + d.episodeTitle + '"' : (d.topic || '') });
+                            });
+                        }
+                    } else {
+                        // HW / TH / Ramp Walk etc: ensure sitting codes then read youthfest-enrollments
+                        await ensureSittingCodes(event, event.toLowerCase().replace(/\s/g,''));
+                        const snap = await db.ref('youthfest-enrollments').once('value');
+                        const isHWEvent = event === 'Hand Writing';
+                        const isTHEvent = event === 'Talent Hunt';
+                        const prefix = isHWEvent ? 'HW' : isTHEvent ? 'TH' : event.substring(0,2).toUpperCase();
+                        if (snap.exists()) {
+                            snap.forEach(ch => {
+                                const d = ch.val();
+                                if (d.event !== event) return;
+                                const cls = d.classYear || d.class || '—';
+                                const code = d.sittingCode ? (prefix + '-' + d.sittingCode) : generateSittingCode(ch.key, prefix);
+                                const detail = d.talentType || d.languages || d.topic || '';
+                                entries.push({ id: ch.key, classYear: cls, name: d.name || d.studentName || d.participantName || '—', code, detail });
+                            });
+                        }
+                        // Sort by sitting code
+                        entries.sort((a,b) => (a.code||'').localeCompare(b.code||''));
+                    }
+
+                    if (entries.length === 0) {
+                        container.innerHTML = '<p style="color:#e53935;font-size:13px">⚠️ No enrolled participants found for <strong>' + event + '</strong>.' + (event === 'Pod Casting' ? ' Make sure Chandan has approved at least one podcast submission.' : '') + '</p>';
+                        return;
+                    }
+
+                    // For individual events: show a READ-ONLY info table (sitting codes are auto-assigned, not manually editable)
+                    // The classAliases saved will be the sitting code → sitting code mapping (identity) for jury sheet lookup
+                    const autoAliases = {};
+                    let infoHTML = '<div style="background:#e3f2fd;border-left:4px solid #1565c0;padding:10px 14px;border-radius:8px;margin-bottom:12px;font-size:13px;color:#1a237e">';
+                    if (event === 'Pod Casting') {
+                        infoHTML += '<strong>🎙️ Individual Event</strong> — Each participant is scored separately by the jury. Sitting codes are their names (anonymous to jury).';
+                    } else {
+                        infoHTML += '<strong>🧑 Individual Event (Sitting Codes)</strong> — Each participant has a unique sitting code. The jury sees ONLY the code — real names are hidden until marks are completed.';
+                    }
+                    infoHTML += ' <em>(' + entries.length + ' participants enrolled)</em></div>';
+
+                    infoHTML += '<div style="max-height:320px;overflow-y:auto"><table style="width:100%;border-collapse:collapse" id="aliasTable"><thead><tr style="background:linear-gradient(135deg,#1a237e,#1565c0);color:white;position:sticky;top:0">';
+                    infoHTML += '<th style="padding:8px 10px;text-align:left">#</th>';
+                    infoHTML += '<th style="padding:8px 10px;text-align:left">Sitting Code</th>';
+                    infoHTML += '<th style="padding:8px 10px;text-align:left">Class</th>';
+                    infoHTML += '<th style="padding:8px 10px;text-align:left">Name (hidden from jury)</th>';
+                    infoHTML += '<th style="padding:8px 10px;text-align:left">Detail</th>';
+                    infoHTML += '</tr></thead><tbody id="aliasTableBody">';
+
+                    entries.forEach((e, i) => {
+                        const safeKey = (e.classYear || '').replace(/[.\[\]#$\/\s]/g,'_') + '__p' + (i+1);
+                        autoAliases[safeKey] = e.code || ('P' + (i+1));
+                        const bg = i%2===0 ? '#f8fbff' : '#fff';
+                        infoHTML += '<tr style="background:' + bg + ';border-bottom:1px solid #dce8ff">';
+                        infoHTML += '<td style="padding:7px 10px;color:#666;font-size:13px">' + (i+1) + '</td>';
+                        if (event === 'Pod Casting') {
+                            infoHTML += '<td style="padding:7px 10px"><span style="background:#880e4f;color:white;font-weight:800;padding:3px 10px;border-radius:6px;font-size:0.85em">' + (e.name || '—') + '</span></td>';
+                        } else {
+                            infoHTML += '<td style="padding:7px 10px"><span style="background:#1a237e;color:white;font-weight:900;padding:3px 10px;border-radius:6px;font-size:0.88em;letter-spacing:2px">' + (e.code||'—') + '</span></td>';
+                        }
+                        infoHTML += '<td style="padding:7px 10px;font-size:13px;color:#555">' + e.classYear + '</td>';
+                        infoHTML += '<td style="padding:7px 10px;font-size:13px;font-weight:600;color:#333">' + e.name + '</td>';
+                        infoHTML += '<td style="padding:7px 10px;font-size:12px;color:#777">' + (e.detail||'—') + '</td>';
+                        infoHTML += '</tr>';
+                    });
+
+                    infoHTML += '</tbody></table></div>';
+                    container.innerHTML = infoHTML;
+                    // Store auto-aliases so saveEventSetup can pick them up
+                    container.dataset.autoAliases = JSON.stringify(autoAliases);
+                    container.dataset.classes = JSON.stringify([...new Set(entries.map(e=>e.classYear))]);
                     return;
                 }
 
-                // Apply saved order if available, else default order
+                // ── MULTI-TEAM events (Vlog: 2 members/team, BOW: 1-2 members/team) ──
+                if (isMultiTeam) {
+                    let rawEntries = [];
+                    const snap = await db.ref('youthfest-enrollments').once('value');
+                    if (snap.exists()) {
+                        snap.forEach(ch => {
+                            const d = ch.val();
+                            if (d.event !== event) return;
+                            rawEntries.push({ id: ch.key, classYear: d.classYear || d.class || '—', name: d.name || d.studentName || '—', teamNum: d.teamNum, role: d.role || '' });
+                        });
+                    }
+
+                    if (rawEntries.length === 0) {
+                        container.innerHTML = '<p style="color:#e53935;font-size:13px">⚠️ No enrolled teams found for <strong>' + event + '</strong>.</p>';
+                        return;
+                    }
+
+                    // Group by class → then by teamNum
+                    const byClass = {};
+                    rawEntries.forEach(e => {
+                        const cls = e.classYear;
+                        if (!byClass[cls]) byClass[cls] = {};
+                        const tKey = e.teamNum != null ? String(e.teamNum) : 'solo_' + e.id;
+                        if (!byClass[cls][tKey]) byClass[cls][tKey] = [];
+                        byClass[cls][tKey].push(e);
+                    });
+
+                    // Build ordered class list
+                    const classes = Object.keys(byClass).sort();
+                    let orderedClasses = classes.slice();
+                    if (existingOrder.length > 0) {
+                        const ordered = existingOrder.filter(c => classes.includes(c));
+                        const remaining = classes.filter(c => !ordered.includes(c));
+                        orderedClasses = ordered.concat(remaining);
+                    }
+
+                    const autoAliases = {};
+                    let totalTeams = 0;
+                    orderedClasses.forEach(cls => { totalTeams += Object.keys(byClass[cls]).length; });
+
+                    let infoHTML = '<div style="background:#fff3e0;border-left:4px solid #e65100;padding:10px 14px;border-radius:8px;margin-bottom:12px;font-size:13px;color:#bf360c">';
+                    infoHTML += '<strong>👥 Multi-Team Event</strong> — Each team is scored separately. Jury sees team labels (e.g. "3rd B.Com — Team 1"). ';
+                    infoHTML += '<em>(' + orderedClasses.length + ' classes, ' + totalTeams + ' teams total)</em></div>';
+
+                    infoHTML += '<div style="max-height:350px;overflow-y:auto"><table style="width:100%;border-collapse:collapse" id="aliasTable"><thead><tr style="background:linear-gradient(135deg,#4a148c,#e65100);color:white;position:sticky;top:0">';
+                    infoHTML += '<th style="padding:8px 10px;text-align:left">#</th>';
+                    infoHTML += '<th style="padding:8px 10px;text-align:left">Class</th>';
+                    infoHTML += '<th style="padding:8px 10px;text-align:left">Team</th>';
+                    infoHTML += '<th style="padding:8px 10px;text-align:left">Members</th>';
+                    infoHTML += '<th style="padding:8px 10px;text-align:left">Class Code Name (editable)</th>';
+                    infoHTML += '</tr></thead><tbody id="aliasTableBody">';
+
+                    let rowNum = 0;
+                    orderedClasses.forEach((cls, clsIdx) => {
+                        const safeKey = cls.replace(/[.\[\]#$\/\s]/g,'_');
+                        const savedAlias = existing[safeKey] || ('Class ' + String.fromCharCode(65 + clsIdx));
+                        autoAliases[safeKey] = savedAlias;
+                        const teams = byClass[cls];
+                        const teamKeys = Object.keys(teams).sort((a,b)=>Number(a)-Number(b));
+                        teamKeys.forEach((tKey, tIdx) => {
+                            const members = teams[tKey];
+                            const memberNames = members.map(m=>m.name).join(', ');
+                            const bg = rowNum%2===0 ? '#fdf8ff' : '#fff';
+                            infoHTML += '<tr style="background:' + bg + ';border-bottom:1px solid #e8d5ff">';
+                            infoHTML += '<td style="padding:7px 10px;color:#666;font-size:13px">' + (++rowNum) + '</td>';
+                            infoHTML += '<td style="padding:7px 10px;font-size:13px;font-weight:600;color:#333">' + cls + '</td>';
+                            infoHTML += '<td style="padding:7px 10px"><span style="background:#4a148c;color:white;font-weight:800;padding:3px 10px;border-radius:6px;font-size:0.83em">Team ' + (tIdx+1) + '</span></td>';
+                            infoHTML += '<td style="padding:7px 10px;font-size:12px;color:#555">' + memberNames + '</td>';
+                            if (tIdx === 0) {
+                                // Only show alias input on first team row for this class; spans all teams
+                                infoHTML += '<td style="padding:7px 10px"><input type="text" data-safekey="' + safeKey + '" value="' + savedAlias + '" style="padding:5px 10px;border:1.5px solid #9c27b0;border-radius:6px;width:140px;font-size:13px" placeholder="Class A"></td>';
+                            } else {
+                                infoHTML += '<td style="padding:7px 10px;font-size:12px;color:#aaa;font-style:italic">↑ same class</td>';
+                            }
+                            infoHTML += '</tr>';
+                        });
+                    });
+
+                    infoHTML += '</tbody></table></div>';
+                    container.innerHTML = infoHTML;
+                    container.dataset.autoAliases = JSON.stringify(autoAliases);
+                    container.dataset.classes = JSON.stringify(orderedClasses);
+                    return;
+                }
+
+                // ── CLASS-BASED events (default) ─────────────────────────────────
+                // One alias per class. Load classes from correct path.
+                const classes = [];
+                const separatePath = EVENT_SEPARATE_PATHS[event];
+                if (separatePath) {
+                    const snap = await db.ref(separatePath).once('value');
+                    if (snap.exists()) snap.forEach(ch => {
+                        const e = ch.val();
+                        if (e.classYear && !classes.includes(e.classYear)) classes.push(e.classYear);
+                    });
+                } else {
+                    const snap = await db.ref('youthfest-enrollments').once('value');
+                    if (snap.exists()) snap.forEach(ch => {
+                        const e = ch.val();
+                        if (e.event === event && (e.classYear||e.class) && !classes.includes(e.classYear||e.class)) classes.push(e.classYear||e.class);
+                    });
+                }
+
+                if (classes.length === 0) {
+                    container.innerHTML = '<p style="color:#e53935;font-size:13px">⚠️ No enrolled classes found for <strong>' + event + '</strong>.</p>';
+                    return;
+                }
+
                 let orderedClasses = classes.slice();
                 if (existingOrder.length > 0) {
                     const ordered = existingOrder.filter(c => classes.includes(c));
@@ -15436,35 +16515,16 @@
                     orderedClasses = ordered.concat(remaining);
                 }
 
-                function rebuildTable() {
-                    const rows = container.querySelectorAll('tr[data-cls]');
-                    const currentOrder = Array.from(rows).map(r => r.dataset.cls);
-                    let html = '';
-                    currentOrder.forEach((cls, i) => {
-                        const safeKey = cls.replace(/[.\[\]#$\/\s]/g, '_');
-                        const currentAlias = (container.querySelector('input[data-safekey="' + safeKey + '"]') || {}).value
-                            || existing[safeKey] || ('Class ' + String.fromCharCode(65 + i));
-                        html += buildRow(cls, safeKey, currentAlias, i, currentOrder.length);
-                    });
-                    tbody.innerHTML = html;
-                    attachDragEvents();
-                }
-
                 function buildRow(cls, safeKey, alias, i, total) {
                     return '<tr data-cls="' + cls + '" style="background:' + (i%2===0?'#fff':'#f9f0ff') + ';border-bottom:1px solid #e8d5ff">'
                         + '<td style="padding:8px 6px;cursor:grab;text-align:center;color:#9c27b0;font-size:16px" title="Drag to reorder">&#9776;</td>'
                         + '<td style="padding:8px 10px;color:#6c757d;font-weight:700;font-size:13px">' + (i+1) + '</td>'
                         + '<td style="padding:8px 10px;font-size:13px;font-weight:600;color:#333">' + cls + '</td>'
-                        + '<td style="padding:8px 10px">'
-                        +   '<input type="text" data-safekey="' + safeKey + '" value="' + alias + '" '
-                        +   'style="padding:5px 10px;border:1.5px solid #9c27b0;border-radius:6px;width:160px;font-size:13px" '
-                        +   'placeholder="e.g. Class A">'
-                        + '</td>'
+                        + '<td style="padding:8px 10px"><input type="text" data-safekey="' + safeKey + '" value="' + alias + '" style="padding:5px 10px;border:1.5px solid #9c27b0;border-radius:6px;width:160px;font-size:13px" placeholder="e.g. Class A"></td>'
                         + '<td style="padding:8px 6px;text-align:center">'
                         +   (i > 0 ? '<button onclick="moveClassRow(this,-1)" style="background:#e3d5f7;border:none;border-radius:4px;padding:2px 7px;cursor:pointer;margin-right:2px">&#9650;</button>' : '')
                         +   (i < total-1 ? '<button onclick="moveClassRow(this,1)" style="background:#e3d5f7;border:none;border-radius:4px;padding:2px 7px;cursor:pointer">&#9660;</button>' : '')
-                        + '</td>'
-                        + '</tr>';
+                        + '</td></tr>';
                 }
 
                 let tableHTML = '<table style="width:100%;border-collapse:collapse" id="aliasTable">'
@@ -15474,24 +16534,20 @@
                     + '<th style="padding:8px 10px;text-align:left">Real Class Name</th>'
                     + '<th style="padding:8px 10px;text-align:left">Code Name shown to Jury</th>'
                     + '<th style="padding:8px 6px;width:70px">Order</th>'
-                    + '</tr></thead>'
-                    + '<tbody id="aliasTableBody"></tbody>'
-                    + '</table>';
+                    + '</tr></thead><tbody id="aliasTableBody"></tbody></table>';
 
                 container.innerHTML = tableHTML;
                 container.dataset.classes = JSON.stringify(orderedClasses);
                 const tbody = container.querySelector('#aliasTableBody');
-
                 orderedClasses.forEach((cls, i) => {
                     const safeKey = cls.replace(/[.\[\]#$\/\s]/g, '_');
                     const alias = existing[safeKey] || ('Class ' + String.fromCharCode(65 + i));
                     tbody.innerHTML += buildRow(cls, safeKey, alias, i, orderedClasses.length);
                 });
-
                 attachDragEvents();
 
             } catch(e) {
-                container.innerHTML = '<p style="color:red;font-size:13px">Error: ' + e.message + '</p>';
+                container.innerHTML = '<p style="color:red;font-size:13px">❌ Error: ' + e.message + '</p>';
             }
         }
 
@@ -15539,17 +16595,29 @@
         }
 
         function getClassAliasesFromFields() {
+            const container = document.getElementById('classAliasContainer');
+            // For individual/multi-team events: aliases are stored in dataset.autoAliases
+            // plus any editable inputs in the table
+            const autoAliases = container && container.dataset.autoAliases
+                ? JSON.parse(container.dataset.autoAliases) : {};
+
             const tbody = document.getElementById('aliasTableBody');
-            if (!tbody) return {};
-            const aliases = {};
-            tbody.querySelectorAll('tr[data-cls]').forEach(row => {
-                const inp = row.querySelector('input[data-safekey]');
-                if (inp) aliases[inp.dataset.safekey] = inp.value.trim() || inp.dataset.safekey;
-            });
-            return aliases;
+            const manualAliases = {};
+            if (tbody) {
+                tbody.querySelectorAll('input[data-safekey]').forEach(inp => {
+                    manualAliases[inp.dataset.safekey] = inp.value.trim() || inp.dataset.safekey;
+                });
+            }
+            // Manual inputs (editable) override auto-aliases
+            return Object.assign({}, autoAliases, manualAliases);
         }
 
         function getClassOrderFromFields() {
+            const container = document.getElementById('classAliasContainer');
+            // For individual/multi-team events, use stored classes list
+            if (container && container.dataset.classes) {
+                try { return JSON.parse(container.dataset.classes); } catch(e) {}
+            }
             const tbody = document.getElementById('aliasTableBody');
             if (!tbody) return [];
             return Array.from(tbody.querySelectorAll('tr[data-cls]')).map(r => r.dataset.cls);
@@ -27781,6 +28849,8 @@ Proceed?`)) return;
                 devLogin('admin');
             } else if (id === 'managerPassword') {
                 devLogin('manager');
+            } else if (id === 'manager2Password') {
+                devLogin('manager2');
             } else if (id === 'facultyLoginPwd') {
                 devLogin('faculty');
             } else {
@@ -27795,6 +28865,8 @@ Proceed?`)) return;
                 else if (utVal === 'superadmin')    devLogin('superadmin');
                 else if (utVal === 'admin')          devLogin('admin');
                 else if (utVal === 'manager')        devLogin('manager');
+                else if (utVal === 'manager2')       devLogin('manager2');
+                else if (utVal === 'jury')           devLogin('jury');
                 else devLogin('ssc'); // last resort default
             }
         });
@@ -27885,6 +28957,18 @@ Proceed?`)) return;
                     if (pw) pw.value = DEV_PASS;
                     await sscLogin();
                 }, 120);
+
+            } else if (role === 'manager2') {
+                const ut = document.getElementById('userType');
+                if (ut) { ut.value = 'manager2'; handleUserTypeChange(); }
+                setTimeout(() => {
+                    const el = document.getElementById('manager2Password');
+                    if (el) { el.value = manager2Password; manager2Login(); }
+                }, 80);
+
+            } else if (role === 'jury') {
+                const ut = document.getElementById('userType');
+                if (ut) { ut.value = 'jury'; handleUserTypeChange(); }
 
             } else if (role === 'faculty') {
                 // Scroll to / show the faculty section — do NOT auto-select anyone
@@ -28210,8 +29294,7 @@ Proceed?`)) return;
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;" id="devTriggerVersion">
-                <strong>Version:</strong> 4.01 — Built on v400. Added Manager 2 login (Jury Setup only role). Super Admin Event Results now shows all events in dropdown (including unscored/not-set-up events) with progress details on selection.   | <strong>Last Updated:</strong> February 25, 2026 — 19:30
-            </p>
+                <strong>Version:</strong> 4.19 — Built on v4.16 (clean base). Fixed critical JS syntax error from v4.17/v4.18 (missing brace caused entire page to break). Re-applied all 4 login changes correctly: (1) Removed "Jury Setup" from Manager 2 label; (2) Login page redesigned with emoji role cards (CR/Admin/SuperAdmin/Manager/Manager2/Jury each have coloured styled cards); (3) Emojis added to all role dropdown options; (4) Faculty Login now has 💾 Remember Me with auto-restore on page load.   | <strong>Last Updated:</strong> February 26, 2026 — 19:00</p>
             <!-- ============================================ -->
             
             <p style="color: #c44569; font-size: 0.85em; font-weight: 600; margin-bottom: 8px;">
