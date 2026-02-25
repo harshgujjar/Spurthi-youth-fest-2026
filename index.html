@@ -1558,6 +1558,7 @@
                 <button class="tab" onclick="showCRTab('crVlogChallenge');checkVlogEventActive();loadVlogSubmissions();initVlogDailyScreenshots()">📹 Vlog Challenge</button>
                 <button class="tab" onclick="showCRTab('crPodCasting');checkPodcastEventActive();loadPodcastSubmissions()">🎙️ Pod Casting</button>
                 <button class="tab" onclick="showCRTab('crBestOutWaste');loadBOWSubmissions()">♻️ Best Out of Waste</button>
+                <button class="tab" id="crYtAdTab" onclick="showCRTab('crYtAd');checkYtAdEventActive();loadYtAdSubmissions()">📺 YT Advertisement</button>
             </div>
 
             <div id="crEnroll" class="form-section active">
@@ -1591,6 +1592,20 @@
                     <button class="btn btn-small btn-success" onclick="downloadCREnrollments()">📥 Download Enrollments</button>
                 </div>
                 <div id="crSummary" style="margin-bottom:20px"></div>
+
+                <!-- CR Summary Report — Copyable -->
+                <div style="background:#fffde7;border-radius:12px;border:2px solid #ffc107;padding:16px 18px;margin-bottom:18px">
+                    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px">
+                        <h4 style="color:#856404;margin:0;font-size:0.95em">📋 Class Summary Report — Share with Students</h4>
+                        <div style="display:flex;gap:8px">
+                            <button onclick="generateCRSummaryReport()" style="background:#ffc107;color:#1a0030;border:none;border-radius:7px;padding:6px 14px;font-size:0.82em;font-weight:700;cursor:pointer">🔄 Generate</button>
+                            <button onclick="copyCRSummaryReport()" style="background:#2e7d32;color:white;border:none;border-radius:7px;padding:6px 14px;font-size:0.82em;font-weight:700;cursor:pointer">📋 Copy</button>
+                        </div>
+                    </div>
+                    <textarea id="crSummaryReportText" readonly style="width:100%;min-height:130px;border:1px solid #ffe082;border-radius:8px;padding:9px 12px;font-family:monospace;font-size:0.8em;color:#333;background:#fffef5;resize:vertical;outline:none" placeholder="Click 'Generate' to build a shareable summary for your class…"></textarea>
+                    <div id="crSummaryReportCopied" style="display:none;margin-top:5px;color:#2e7d32;font-size:0.78em;font-weight:700">✅ Copied! Paste directly into WhatsApp.</div>
+                </div>
+
                 <div id="crEnrollmentsContainer"></div>
             </div>
 
@@ -1886,9 +1901,15 @@
                             <input type="text" id="vlogTitle" placeholder="E.g. A Day Exploring Davangere 🏙️" style="width:100%;padding:10px 12px;border:2px solid #ddd;border-radius:8px;font-size:0.9em;outline:none;transition:border 0.2s" onfocus="this.style.borderColor='#6a1b9a'" onblur="this.style.borderColor='#ddd'">
                         </div>
                     </div>
+                    <!-- Submission date/time info -->
+                    <div id="vlogSubmittedInfo" style="display:none;margin-top:10px;padding:8px 14px;border-radius:8px;font-size:0.82em;font-weight:600;background:#f3e5f5;color:#4a148c;border:1px solid #ce93d8">
+                        🕒 Submitted on: <span id="vlogSubmittedDateTime">—</span>
+                    </div>
+
                     <div id="vlogSubmitMsg" style="display:none;margin-top:12px;padding:10px 14px;border-radius:8px;font-size:0.88em;font-weight:600"></div>
                     <div style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap">
                         <button class="btn" id="vlogSubmitBtn" onclick="submitVlogEntry()" style="background:linear-gradient(135deg,#833ab4,#fd1d1d,#fcb045);border:none;flex:1;min-width:160px">📤 Submit Instagram Reel Link</button>
+                        <button class="btn" id="vlogEditBtn" onclick="enableVlogEdit()" style="background:linear-gradient(135deg,#1565c0,#1976d2);border:none;flex:0;min-width:120px">✏️ Edit</button>
                         <button class="btn btn-secondary" onclick="clearVlogForm()" style="flex:0">🗑️ Clear</button>
                     </div>
                 </div>
@@ -2060,9 +2081,15 @@
                         </div>
                     </div>
 
+                    <!-- Submission date/time info -->
+                    <div id="podcastSubmittedInfo" style="display:none;margin-top:10px;padding:8px 14px;border-radius:8px;font-size:0.82em;font-weight:600;background:#e8f5e9;color:#1b5e20;border:1px solid #a5d6a7">
+                        🕒 Submitted on: <span id="podcastSubmittedDateTime">—</span>
+                    </div>
+
                     <div id="podcastSubmitMsg" style="display:none;margin-top:12px;padding:10px 14px;border-radius:8px;font-size:0.88em;font-weight:600"></div>
                     <div style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap">
                         <button class="btn" id="podcastSubmitBtn" onclick="submitPodcastEntry()" style="background:linear-gradient(135deg,#1db954,#191414);border:none;flex:1;min-width:160px">🎙️ Submit Podcast Link</button>
+                        <button class="btn" id="podcastEditBtn" onclick="enablePodcastEdit()" style="background:linear-gradient(135deg,#1565c0,#1976d2);border:none;flex:0;min-width:120px">✏️ Edit</button>
                         <button class="btn btn-secondary" onclick="clearPodcastForm()" style="flex:0">🗑️ Clear</button>
                     </div>
                 </div>
@@ -2258,7 +2285,189 @@
 
             </div>
             <!-- ── END BEST OUT OF WASTE TAB ──────────────────────────────────── -->
+
+            <!-- ══════════════════════════════════════════════════════════════════ -->
+            <!-- CR: YOUTUBE ADVERTISEMENT TAB                                     -->
+            <!-- ══════════════════════════════════════════════════════════════════ -->
+            <div id="crYtAd" class="form-section">
+
+                <!-- Hero Banner -->
+                <div style="background:linear-gradient(135deg,#ff0000,#cc0000,#ff6600);background-size:300% 300%;animation:vlogGradient 6s ease infinite;border-radius:16px;padding:24px;margin-bottom:20px;text-align:center;position:relative;overflow:hidden">
+                    <div style="position:absolute;top:-20px;right:-20px;font-size:5em;opacity:0.12;transform:rotate(15deg)">📺</div>
+                    <div style="font-size:2.2em;margin-bottom:6px">📺🎬✨</div>
+                    <h2 style="color:white;margin:0 0 5px;font-size:1.5em;text-shadow:0 2px 8px rgba(0,0,0,0.35)">YouTube Advertisement Challenge</h2>
+                    <p style="color:rgba(255,255,255,0.92);margin:0 0 10px;font-size:0.9em">Create a class advertisement, upload to <strong>YouTube</strong> &amp; win!</p>
+                    <div style="display:flex;justify-content:center;gap:8px;flex-wrap:wrap">
+                        <div style="background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.5);border-radius:20px;padding:4px 14px;color:white;font-size:0.78em;font-weight:700;backdrop-filter:blur(4px)">▶️ YouTube Only</div>
+                        <div style="background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.5);border-radius:20px;padding:4px 14px;color:white;font-size:0.78em;font-weight:700;backdrop-filter:blur(4px)">🏫 Class Event — 1 Team Per Class</div>
+                        <div style="background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.5);border-radius:20px;padding:4px 14px;color:white;font-size:0.78em;font-weight:700;backdrop-filter:blur(4px)">👥 8 Members</div>
+                        <div style="background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.5);border-radius:20px;padding:4px 14px;color:white;font-size:0.78em;font-weight:700;backdrop-filter:blur(4px)">🏆 All Classes Eligible</div>
+                    </div>
+                </div>
+
+                <!-- Rules + Scoring in 2-col -->
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px" class="vlog-rules-grid">
+                    <!-- Rules -->
+                    <div style="background:#fff8e1;border-left:5px solid #ffc107;border-radius:10px;padding:16px 18px">
+                        <h4 style="color:#856404;margin:0 0 10px;font-size:0.93em">📋 Rules &amp; Guidelines</h4>
+                        <ul style="margin:0;padding-left:16px;color:#555;font-size:0.85em;line-height:2.1">
+                            <li>Each class forms <strong>1 team of 8 members</strong></li>
+                            <li>Create an original advertisement video</li>
+                            <li>Upload to <strong>YouTube</strong> with a public/unlisted link</li>
+                            <li>Video must be <strong>original</strong> — no copied content</li>
+                            <li>Any product, service, or social cause allowed</li>
+                            <li>Submit your <strong>YouTube video link</strong> below by deadline</li>
+                            <li>The <strong>same link</strong> will be used for scoring</li>
+                        </ul>
+                    </div>
+                    <!-- Scoring -->
+                    <div style="background:#fce4ec;border-left:5px solid #e91e63;border-radius:10px;padding:16px 18px">
+                        <h4 style="color:#880e4f;margin:0 0 10px;font-size:0.93em">🏆 How Winners Are Decided</h4>
+                        <div style="display:flex;flex-direction:column;gap:10px">
+                            <div style="background:white;border-radius:8px;padding:10px 14px;border:1px solid #f8bbd0">
+                                <div style="font-size:1.4em;font-weight:900;color:#e91e63">50%</div>
+                                <div style="font-weight:700;color:#333;font-size:0.85em">📊 YouTube Engagement</div>
+                                <div style="color:#777;font-size:0.78em">Views + Likes + Original Comments</div>
+                            </div>
+                            <div style="background:white;border-radius:8px;padding:10px 14px;border:1px solid #f8bbd0">
+                                <div style="font-size:1.4em;font-weight:900;color:#3f51b5">50%</div>
+                                <div style="font-weight:700;color:#333;font-size:0.85em">👨‍⚖️ Jury Score</div>
+                                <div style="color:#777;font-size:0.78em">Jury 1 + Jury 2 averaged (combined)</div>
+                            </div>
+                        </div>
+                        <div style="background:rgba(136,14,79,0.07);border-radius:8px;padding:8px 12px;margin-top:10px;font-size:0.8em;color:#880e4f">
+                            🏅 <strong>Final = (Social×50%) + (Jury×50%)</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Locked message -->
+                <div id="ytAdLockedMsg" style="display:none;background:linear-gradient(135deg,#fff3e0,#fce4ec);border-radius:12px;padding:24px;text-align:center;border:2px dashed #ffab40;margin-bottom:20px">
+                    <div style="font-size:2.5em;margin-bottom:8px">🔒</div>
+                    <h3 style="color:#e65100;margin:0 0 8px">Event Not Yet Started</h3>
+                    <p style="color:#666;font-size:0.9em;margin:0">The YouTube Advertisement event has not been activated by the Super Admin yet. Please check back soon!</p>
+                </div>
+
+                <!-- (All classes eligible — no restriction message needed) -->
+
+                <!-- Submit Form Wrapper -->
+                <div id="ytAdSubmitFormWrapper">
+                <div style="background:white;border-radius:14px;border:2px solid #ffcdd2;padding:22px;margin-bottom:20px">
+                    <h3 style="color:#c62828;margin:0 0 6px;font-size:1.05em">📤 Submit YouTube Ad Link — <span id="ytAdCRClass" style="color:#e91e63"></span></h3>
+                    <p style="color:#888;font-size:0.82em;margin:0 0 16px">Class event · 1 team of 8 members · YouTube only</p>
+
+                    <!-- Slot info -->
+                    <div id="ytAdSlotInfo" style="background:#fce4ec;border-radius:8px;padding:10px 14px;margin-bottom:16px;font-size:0.85em;color:#c62828;border-left:4px solid #e91e63">
+                        ✅ Loading submission status for your class…
+                    </div>
+
+                    <!-- Auto-filled members list -->
+                    <div style="margin-bottom:16px">
+                        <label style="font-size:0.88em;font-weight:700;color:#444;display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+                            <span>👥 Team Members (from enrollment) <span style="color:red">*</span></span>
+                            <button type="button" onclick="autoFillYtAdMembers()" style="background:#e91e63;color:white;border:none;border-radius:6px;padding:4px 12px;font-size:0.78em;cursor:pointer;font-weight:600">🔄 Load Members</button>
+                        </label>
+                        <div id="ytAdEnrolledList" style="background:#fff8f8;border-radius:10px;border:2px solid #ffcdd2;padding:12px;margin-bottom:8px;font-size:0.85em;color:#555">
+                            Click "Load Members" to populate from enrollment data.
+                        </div>
+                        <!-- Hidden inputs for member names (filled by autoFillYtAdMembers) -->
+                        <input type="hidden" id="ytAdMember1">
+                        <input type="hidden" id="ytAdMember2">
+                        <input type="hidden" id="ytAdMember3">
+                        <input type="hidden" id="ytAdMember4">
+                        <input type="hidden" id="ytAdMember5">
+                        <input type="hidden" id="ytAdMember6">
+                        <input type="hidden" id="ytAdMember7">
+                        <input type="hidden" id="ytAdMember8">
+                    </div>
+
+                    <!-- Fields -->
+                    <div style="display:flex;flex-direction:column;gap:14px">
+                        <div>
+                            <label style="font-size:0.88em;font-weight:700;color:#444;display:block;margin-bottom:5px">▶️ YouTube Video Link <span style="color:red">*</span></label>
+                            <input type="url" id="ytAdLink" placeholder="https://www.youtube.com/watch?v=..." style="width:100%;padding:10px 12px;border:2px solid #ddd;border-radius:8px;font-size:0.9em;outline:none;transition:border 0.2s" onfocus="this.style.borderColor='#e91e63'" onblur="this.style.borderColor='#ddd'">
+                            <p style="font-size:0.78em;color:#999;margin:5px 0 0">Ensure the video is set to <strong>Public</strong> or <strong>Unlisted</strong> so jury can view it</p>
+                        </div>
+                        <div>
+                            <label style="font-size:0.88em;font-weight:700;color:#444;display:block;margin-bottom:5px">📝 Advertisement Title <span style="color:red">*</span></label>
+                            <input type="text" id="ytAdTitle" placeholder="E.g. Save Water — A Message from I BCA A" style="width:100%;padding:10px 12px;border:2px solid #ddd;border-radius:8px;font-size:0.9em;outline:none;transition:border 0.2s" onfocus="this.style.borderColor='#e91e63'" onblur="this.style.borderColor='#ddd'">
+                        </div>
+                        <div>
+                            <label style="font-size:0.88em;font-weight:700;color:#444;display:block;margin-bottom:5px">🎯 Product / Topic Being Advertised <span style="color:red">*</span></label>
+                            <input type="text" id="ytAdProduct" placeholder="E.g. Eco-friendly water bottle, Road Safety, etc." style="width:100%;padding:10px 12px;border:2px solid #ddd;border-radius:8px;font-size:0.9em;outline:none;transition:border 0.2s" onfocus="this.style.borderColor='#e91e63'" onblur="this.style.borderColor='#ddd'">
+                        </div>
+                        <div>
+                            <label style="font-size:0.88em;font-weight:700;color:#444;display:block;margin-bottom:5px">📺 YouTube Channel Name</label>
+                            <input type="text" id="ytAdChannel" placeholder="E.g. Davan BCA 2026" style="width:100%;padding:10px 12px;border:2px solid #ddd;border-radius:8px;font-size:0.9em;outline:none;transition:border 0.2s" onfocus="this.style.borderColor='#e91e63'" onblur="this.style.borderColor='#ddd'">
+                        </div>
+                    </div>
+
+                    <!-- Submission date/time info -->
+                    <div id="ytAdSubmittedInfo" style="display:none;margin-top:10px;padding:8px 14px;border-radius:8px;font-size:0.82em;font-weight:600;background:#e8f5e9;color:#1b5e20;border:1px solid #a5d6a7">
+                        🕒 Submitted on: <span id="ytAdSubmittedDateTime">—</span>
+                    </div>
+
+                    <div id="ytAdSubmitMsg" style="display:none;margin-top:12px;padding:10px 14px;border-radius:8px;font-size:0.88em;font-weight:600"></div>
+                    <div style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap">
+                        <button class="btn" id="ytAdSubmitBtn" onclick="submitYtAdEntry()" style="background:linear-gradient(135deg,#cc0000,#ff6600);border:none;flex:1;min-width:160px">📺 Submit YouTube Link</button>
+                        <button class="btn" id="ytAdEditBtn" onclick="enableYtAdEdit()" style="background:linear-gradient(135deg,#1565c0,#1976d2);border:none;flex:0;min-width:120px">✏️ Edit</button>
+                        <button class="btn btn-secondary" onclick="clearYtAdForm()" style="flex:0">🗑️ Clear</button>
+                    </div>
+                </div>
+                </div><!-- end ytAdSubmitFormWrapper -->
+
+                <!-- Screenshot Upload Section (like Vlog) -->
+                <div id="ytAdScreenshotSection" style="background:white;border-radius:14px;border:2px solid #ce93d8;padding:22px;margin-bottom:20px">
+                    <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+                        <span style="font-size:1.5em">📊</span>
+                        <h3 style="color:#6a1b9a;margin:0;font-size:1.05em">YouTube Analytics Screenshot <span style="color:#888;font-weight:400;font-size:0.85em">(upload after submission)</span></h3>
+                    </div>
+                    <div style="background:#f3e5f5;border-left:4px solid #9c27b0;border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:0.83em;color:#4a148c;line-height:1.7">
+                        ℹ️ Go to your YouTube Studio → Analytics → screenshot showing <strong>Views, Likes, Comments</strong> → upload here.<br>
+                        <strong>Roopa M C / Smitha M</strong> will read this and enter the numbers to calculate your Social Score.
+                    </div>
+                    <div id="ytAdScreenshotSlots" style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px"></div>
+                    <div id="ytAdScreenshotMsg" style="display:none;margin-bottom:12px;padding:10px 14px;border-radius:8px;font-size:0.88em;font-weight:600"></div>
+                    <button class="btn" id="ytAdScreenshotBtn" onclick="submitYtAdScreenshots()" style="background:linear-gradient(135deg,#6a1b9a,#9c27b0);border:none;width:100%;font-size:0.95em">📸 Submit Analytics Screenshots</button>
+                </div>
+
+                <!-- Submissions Table -->
+                <div style="background:white;border-radius:14px;border:2px solid #ffcdd2;overflow:hidden">
+                    <div style="background:linear-gradient(135deg,#cc0000,#ff6600);padding:14px 18px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+                        <h4 style="color:white;margin:0;font-size:0.95em">📺 Your Class YouTube Ad Submission — <span id="ytAdCountBadge" style="background:rgba(255,255,255,0.25);padding:2px 10px;border-radius:12px;font-size:0.85em">0 / 1 slot used</span></h4>
+                        <button class="btn btn-small" onclick="loadYtAdSubmissions()" style="background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.5);color:white;font-size:0.8em">🔄 Refresh</button>
+                    </div>
+                    <div id="ytAdTableWrap" style="padding:16px">
+                        <div id="ytAdEmptyMsg" style="text-align:center;color:#aaa;padding:30px;font-size:0.9em">
+                            No submission yet for your class. Submit your YouTube link! 📺
+                        </div>
+                        <div class="table-wrapper" style="margin:0;display:none" id="ytAdTableContainer">
+                            <table id="ytAdTable">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Class</th>
+                                        <th>Ad Title</th>
+                                        <th>Product/Topic</th>
+                                        <th>YouTube Link</th>
+                                        <th>Channel</th>
+                                        <th>Social Score</th>
+                                        <th>Jury Score</th>
+                                        <th>Final %</th>
+                                        <th>Status</th>
+                                        <th>Submitted</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="ytAdTableBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <!-- ── END YOUTUBE ADVERTISEMENT TAB ──────────────────────────────── -->
         </div>
+        <!-- END CR SECTION -->
 
         <!-- Admin Section -->
         <div class="admin-only" id="adminSection">
@@ -2287,6 +2496,22 @@
                 </div>
             </div>
 
+            <!-- ═══════════════════════════════════════════════════════ -->
+            <!-- ENROLLMENT SUMMARY SEGMENT — Click Copy & Send via WhatsApp -->
+            <!-- ═══════════════════════════════════════════════════════ -->
+            <div id="enrollSummarySegment" style="background:white;border-radius:14px;border:2px solid #e3f2fd;padding:18px 20px;margin-bottom:18px;box-shadow:0 2px 10px rgba(0,0,0,0.07)">
+                <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:12px">
+                    <h3 style="color:#1565c0;margin:0;font-size:1em">📋 Enrollment Summary — Quick Copy</h3>
+                    <div style="display:flex;gap:8px;flex-wrap:wrap">
+                        <button onclick="generateEnrollSummary()" style="background:linear-gradient(135deg,#1565c0,#42a5f5);color:white;border:none;border-radius:8px;padding:7px 16px;font-size:0.82em;font-weight:700;cursor:pointer">🔄 Generate Summary</button>
+                        <button onclick="copyEnrollSummary()" style="background:linear-gradient(135deg,#2e7d32,#43a047);color:white;border:none;border-radius:8px;padding:7px 16px;font-size:0.82em;font-weight:700;cursor:pointer">📋 Copy</button>
+                    </div>
+                </div>
+                <textarea id="enrollSummaryText" readonly style="width:100%;min-height:120px;border:2px solid #e3f2fd;border-radius:8px;padding:10px 12px;font-family:monospace;font-size:0.82em;color:#333;background:#f8fbff;resize:vertical;outline:none" placeholder="Click 'Generate Summary' to build the shareable summary text…"></textarea>
+                <div id="enrollSummaryCopied" style="display:none;margin-top:6px;color:#2e7d32;font-size:0.8em;font-weight:700">✅ Copied to clipboard! Ready to paste and send.</div>
+            </div>
+            <!-- ═══════════════════════════════════════════════════════ -->
+
             <div class="tabs">
                 <button class="tab active" onclick="showTab('master')">Master List</button>
                 <button class="tab" onclick="showTab('events')">By Events</button>
@@ -2304,6 +2529,7 @@
                 <button class="tab super-admin-only" onclick="showTab('vlogAdminPanel');loadVlogAdminPanel()" id="vlogAdminPanelTab">📹 Vlog Admin</button>
                 <button class="tab super-admin-only" onclick="showTab('podcastAdminPanel');loadPodcastAdminPanel()" id="podcastAdminPanelTab">🎙️ Podcast Admin</button>
                 <button class="tab super-admin-only" onclick="showTab('bowResultsPublisher');bowRpLoad()" id="superJuryMgmtTab">♻️ BOW Results</button>
+                <button class="tab super-admin-only" onclick="showTab('ytAdAdminPanel');loadYtAdAdminPanel()" id="ytAdAdminPanelTab">📺 YT Ad Admin</button>
                 <button class="tab" onclick="showTab('facultyAdminPanel');loadFacultyAdminPanel()" id="facultyAdminPanelTab">👩‍🏫 Faculty</button>
                 <button class="tab" onclick="showTab('pdfHandoutsAdmin')" id="pdfHandoutsAdminTab" style="display:none">📄 PDF Handouts</button>
                 <button class="tab" onclick="showTab('paymentApprovalAdmin');paLoadPending()" id="paymentApprovalAdminTab" style="display:none">💳 Payment Approval</button>
@@ -2324,7 +2550,21 @@
                         <button class="btn btn-small" onclick="clearFilters()">Clear Filters</button>
                         <button class="btn btn-small btn-success" onclick="downloadMaster()">📥 Download CSV</button>
                     </div>
-                    <div id="summaryInfo" style="background:#e3f2fd;padding:15px;border-radius:8px;margin-bottom:20px"></div>
+                    <div id="summaryInfo" style="background:#e3f2fd;padding:15px;border-radius:8px;margin-bottom:12px"></div>
+
+                    <!-- Filter-aware Summary Report with Copy -->
+                    <div id="masterFilterSummaryBox" style="display:none;background:#fffde7;border-radius:10px;border:2px solid #ffc107;padding:14px 18px;margin-bottom:16px">
+                        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:8px">
+                            <h4 style="color:#856404;margin:0;font-size:0.92em">📋 Filter Summary — <span id="masterFilterSummaryLabel" style="color:#c44569"></span></h4>
+                            <div style="display:flex;gap:8px;flex-wrap:wrap">
+                                <button onclick="generateMasterFilterSummary()" style="background:#ffc107;color:#1a0030;border:none;border-radius:7px;padding:5px 14px;font-size:0.8em;font-weight:700;cursor:pointer">🔄 Refresh</button>
+                                <button onclick="copyMasterFilterSummary()" style="background:#2e7d32;color:white;border:none;border-radius:7px;padding:5px 14px;font-size:0.8em;font-weight:700;cursor:pointer">📋 Copy</button>
+                            </div>
+                        </div>
+                        <textarea id="masterFilterSummaryText" readonly style="width:100%;min-height:90px;border:1px solid #ffe082;border-radius:7px;padding:8px 10px;font-family:monospace;font-size:0.8em;color:#333;background:#fffef5;resize:vertical;outline:none"></textarea>
+                        <div id="masterFilterSummaryCopied" style="display:none;margin-top:5px;color:#2e7d32;font-size:0.78em;font-weight:700">✅ Copied!</div>
+                    </div>
+
                     <div id="masterContainer"></div>
                 </div>
 
@@ -4366,6 +4606,159 @@
             <!-- END BOW RESULTS PUBLISHER PANEL -->
 
             <!-- ══════════════════════════════════════════════════════════════════
+                 YOUTUBE ADVERTISEMENT ADMIN PANEL (Super Admin Only)
+            ══════════════════════════════════════════════════════════════════ -->
+            <div id="ytAdAdminPanel" class="form-section super-admin-only" style="margin-top:20px">
+                <h2 style="color:#cc0000;margin-bottom:6px">📺 YouTube Advertisement — Super Admin Control</h2>
+                <p style="color:#888;margin-bottom:20px;font-size:.9em">Activate the event, manage jury scoring, enter social scores (Views + Likes + Original Comments), flag disputes, and publish results. Eligible classes: I BCA 'A' (1ST BCA) and II BCA 'A' (2ND BCA A SEC).</p>
+
+                <!-- ── EVENT ACTIVATION ── -->
+                <div style="background:linear-gradient(135deg,#fff3e0,#fce4ec);border-radius:14px;padding:20px;margin-bottom:20px;border:2px solid #ffab40">
+                    <h3 style="color:#e65100;margin:0 0 12px;font-size:1.05em">🔐 Event Activation &amp; Visibility</h3>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px" class="vlog-admin-grid">
+                        <div style="background:white;border-radius:10px;padding:14px;border:1px solid #ffe0b2">
+                            <div style="font-weight:700;color:#333;font-size:0.9em;margin-bottom:8px">📺 YT Ad Event Active?</div>
+                            <div style="color:#666;font-size:0.8em;margin-bottom:10px">When OFF — CRs see "Event not yet started". When ON — submissions open.</div>
+                            <div style="display:flex;gap:10px">
+                                <button class="btn btn-success" onclick="setYtAdSetting('eventActive', true)" style="flex:1;font-size:0.85em">✅ Activate</button>
+                                <button class="btn btn-danger" onclick="setYtAdSetting('eventActive', false)" style="flex:1;font-size:0.85em">🔒 Deactivate</button>
+                            </div>
+                            <div id="ytAdStatusEventActive" style="margin-top:8px;font-size:0.82em;font-weight:700;color:#666">Loading…</div>
+                        </div>
+                        <div style="background:white;border-radius:10px;padding:14px;border:1px solid #ffe0b2">
+                            <div style="font-weight:700;color:#333;font-size:0.9em;margin-bottom:8px">🏆 Leaderboard Published?</div>
+                            <div style="color:#666;font-size:0.8em;margin-bottom:10px">When ON — YT Ad results appear in the main leaderboard.</div>
+                            <div style="display:flex;gap:10px">
+                                <button class="btn btn-success" onclick="setYtAdSetting('leaderboardPublished', true)" style="flex:1;font-size:0.85em">🚀 Publish</button>
+                                <button class="btn btn-secondary" onclick="setYtAdSetting('leaderboardPublished', false)" style="flex:1;font-size:0.85em">📦 Unpublish</button>
+                            </div>
+                            <div id="ytAdStatusLeaderboardPublished" style="margin-top:8px;font-size:0.82em;font-weight:700;color:#666">Loading…</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ── SOCIAL SCORE FORMULA ── -->
+                <div style="background:linear-gradient(135deg,#fce4ec,#fff3e0);border-radius:14px;padding:20px;margin-bottom:20px;border:2px solid #f48fb1">
+                    <h3 style="color:#880e4f;margin:0 0 10px;font-size:1.05em">📊 Social Score Formula — YouTube Engagement Weights</h3>
+                    <p style="color:#555;font-size:0.82em;margin:0 0 14px;line-height:1.6">
+                        Roopa M C and Smitha M manually enter <strong>Views, Likes, Original Comments</strong> from each class's YouTube video.<br>
+                        Formula: <code style="background:#fff;padding:2px 6px;border-radius:4px;font-size:0.9em">Social Score = (Views×W₁) + (Likes×W₂) + (Orig.Comments×W₃)</code> → normalised to 50 marks.<br>
+                        <strong>Note:</strong> Only count <em>original/genuine comments</em> — filter out spam and bot comments.
+                    </p>
+                    <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px" class="vlog-admin-grid">
+                        <div>
+                            <label style="font-size:0.82em;font-weight:700;color:#444;display:block;margin-bottom:5px">Views Weight (W₁)</label>
+                            <input type="number" id="ytAdWeightViews" min="0" max="10" step="0.1" value="1" style="width:100%;padding:8px 10px;border:2px solid #f48fb1;border-radius:8px;font-size:0.9em;outline:none;text-align:center">
+                        </div>
+                        <div>
+                            <label style="font-size:0.82em;font-weight:700;color:#444;display:block;margin-bottom:5px">Likes Weight (W₂)</label>
+                            <input type="number" id="ytAdWeightLikes" min="0" max="10" step="0.1" value="3" style="width:100%;padding:8px 10px;border:2px solid #f48fb1;border-radius:8px;font-size:0.9em;outline:none;text-align:center">
+                        </div>
+                        <div>
+                            <label style="font-size:0.82em;font-weight:700;color:#444;display:block;margin-bottom:5px">Comments Weight (W₃)</label>
+                            <input type="number" id="ytAdWeightComments" min="0" max="10" step="0.1" value="5" style="width:100%;padding:8px 10px;border:2px solid #f48fb1;border-radius:8px;font-size:0.9em;outline:none;text-align:center">
+                        </div>
+                        <div>
+                            <label style="font-size:0.82em;font-weight:700;color:#444;display:block;margin-bottom:5px">Max Raw Score (normalise)</label>
+                            <input type="number" id="ytAdMaxRaw" min="100" step="100" value="5000" style="width:100%;padding:8px 10px;border:2px solid #f48fb1;border-radius:8px;font-size:0.9em;outline:none;text-align:center">
+                            <p style="font-size:0.72em;color:#888;margin:4px 0 0">Raw÷Max×50 = Social %</p>
+                        </div>
+                    </div>
+                    <div style="margin-top:14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+                        <button class="btn btn-success" onclick="saveYtAdFormula()" style="font-size:0.88em">💾 Save Formula</button>
+                        <button class="btn btn-secondary" onclick="loadYtAdFormula()" style="font-size:0.88em">🔄 Reload</button>
+                        <span id="ytAdFormulaMsg" style="font-size:0.82em;font-weight:700;color:#155724;display:none"></span>
+                    </div>
+                </div>
+
+                <!-- ── JURY SETUP INFO ── -->
+                <div style="background:linear-gradient(135deg,#e8eaf6,#e3f2fd);border-radius:14px;padding:20px;margin-bottom:20px;border:2px solid #9fa8da">
+                    <h3 style="color:#1a237e;margin:0 0 10px;font-size:1.05em">👨‍⚖️ Jury Setup</h3>
+                    <p style="color:#555;font-size:0.82em;margin:0 0 12px">Set up Jury 1 and Jury 2 credentials here. They will use these to log in and score each class's advertisement. Go to <strong>Jury Setup tab</strong> → select "YouTube Advertisement" as the event to configure jury names and passwords.</p>
+                    <div style="background:white;border-radius:8px;padding:12px;border:1px solid #c5cae9;font-size:0.82em;color:#333">
+                        <div id="ytAdJurySetupStatus" style="color:#666">Loading jury setup status…</div>
+                    </div>
+                </div>
+
+                <!-- ── ALL SUBMISSIONS ── -->
+                <div style="background:white;border-radius:14px;border:2px solid #ffcdd2;overflow:hidden">
+                    <div style="background:linear-gradient(135deg,#cc0000,#ff6600);padding:14px 18px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+                        <h4 style="color:white;margin:0;font-size:0.95em">📋 All YT Ad Submissions — All Classes</h4>
+                        <div style="display:flex;gap:8px;flex-wrap:wrap">
+                            <select id="ytAdAdminClassFilter" onchange="loadYtAdAdminPanel()" style="padding:6px 10px;border-radius:8px;border:none;font-size:0.82em;color:#333">
+                                <option value="">All Classes</option>
+                            </select>
+                            <button class="btn btn-small" onclick="loadYtAdAdminPanel()" style="background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.5);color:white;font-size:0.8em">🔄 Refresh</button>
+                        </div>
+                    </div>
+                    <div style="padding:16px">
+                        <div id="ytAdAdminEmpty" style="text-align:center;color:#aaa;padding:30px;font-size:0.9em">No submissions yet.</div>
+                        <div class="table-wrapper" style="margin:0;display:none" id="ytAdAdminTableContainer">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Class</th>
+                                        <th>Ad Title</th>
+                                        <th>Product</th>
+                                        <th>YouTube</th>
+                                        <th>Views</th>
+                                        <th>Likes</th>
+                                        <th>Comments</th>
+                                        <th>Social Score</th>
+                                        <th>Jury J1</th>
+                                        <th>Jury J2</th>
+                                        <th>Final %</th>
+                                        <th>Dispute</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="ytAdAdminTableBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ── JURY SCORING PANEL (for J1/J2 via Super Admin) ── -->
+                <div style="background:white;border-radius:14px;border:2px solid #c5cae9;overflow:hidden;margin-top:20px">
+                    <div style="background:linear-gradient(135deg,#1a237e,#3949ab);padding:14px 18px">
+                        <h4 style="color:white;margin:0;font-size:0.95em">👨‍⚖️ YT Ad Jury Scoring Panel</h4>
+                        <p style="color:rgba(255,255,255,0.8);margin:4px 0 0;font-size:0.82em">Jury 1 and Jury 2 log in here to score each class's ad. Super Admin can also enter scores manually.</p>
+                    </div>
+                    <div style="padding:18px">
+                        <!-- Jury Login Row -->
+                        <div style="background:#e8eaf6;border-radius:10px;padding:14px;margin-bottom:16px;display:grid;grid-template-columns:1fr 1fr auto;gap:12px;align-items:end" class="vlog-admin-grid">
+                            <div>
+                                <label style="font-size:0.82em;font-weight:700;color:#444;display:block;margin-bottom:5px">Jury Number</label>
+                                <select id="ytAdJuryLoginNum" style="width:100%;padding:8px 10px;border:2px solid #c5cae9;border-radius:8px;font-size:0.9em;outline:none">
+                                    <option value="1">Jury 1</option>
+                                    <option value="2">Jury 2</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label style="font-size:0.82em;font-weight:700;color:#444;display:block;margin-bottom:5px">Jury Password</label>
+                                <input type="password" id="ytAdJuryLoginPwd" placeholder="Enter jury password" style="width:100%;padding:8px 10px;border:2px solid #c5cae9;border-radius:8px;font-size:0.9em;outline:none" onkeydown="if(event.key==='Enter') ytAdJuryLogin()">
+                            </div>
+                            <button class="btn" onclick="ytAdJuryLogin()" style="background:linear-gradient(135deg,#1a237e,#3949ab);border:none;white-space:nowrap;padding:8px 16px;font-size:0.88em">🔑 Login as Jury</button>
+                        </div>
+                        <div id="ytAdJuryLoginMsg" style="display:none;padding:9px 12px;border-radius:8px;font-size:0.85em;font-weight:600;margin-bottom:12px"></div>
+
+                        <!-- Jury Scoring Panel (shown after login) -->
+                        <div id="ytAdJuryScoringPanel" style="display:none">
+                            <div style="background:#e8eaf6;border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:0.88em;font-weight:700;color:#1a237e">
+                                Scoring as: <span id="ytAdJuryWhoLabel">—</span>
+                            </div>
+                            <p style="font-size:0.82em;color:#666;margin-bottom:14px">Score each class's YouTube ad on the criteria below (0–10 per criterion, 5 criteria = 50 total). Score is saved automatically per class.</p>
+                            <div id="ytAdJuryScoringList"></div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <!-- END YOUTUBE AD ADMIN PANEL -->
+
+            <!-- ══════════════════════════════════════════════════════════════════
                  FACULTY ADMIN PANEL
             ══════════════════════════════════════════════════════════════════ -->
             <div id="facultyAdminPanel" class="form-section" style="margin-top:20px">
@@ -4452,6 +4845,9 @@
                         </div>
 
                         <!-- Team cards with screenshot + metric entry -->
+                        <div style="display:flex;justify-content:flex-end;margin-bottom:10px">
+                            <button class="btn btn-secondary" onclick="loadChandanPanel()" style="font-size:0.85em">🔄 Refresh Teams</button>
+                        </div>
                         <div id="chandanTeamList" style="display:flex;flex-direction:column;gap:16px">
                             <div style="text-align:center;color:#aaa;padding:30px">Loading Vlog submissions…</div>
                         </div>
@@ -4468,6 +4864,9 @@
                             <p style="color:#555;font-size:0.82em;margin:0">Listen to each submitted Spotify episode and approve/reject. Approved entries are forwarded to Jury 1 and Jury 2 for scoring.</p>
                         </div>
                         <div id="chandanPodcastList" style="display:flex;flex-direction:column;gap:16px">
+                            <div style="display:flex;justify-content:flex-end;margin-bottom:10px">
+                                <button class="btn btn-secondary" onclick="loadChandanPodcastPanel()" style="font-size:0.85em">🔄 Refresh All</button>
+                            </div>
                             <div style="text-align:center;color:#aaa;padding:30px">Loading podcast submissions…</div>
                         </div>
                         <div style="margin-top:16px;text-align:center">
@@ -4519,6 +4918,23 @@
                         <!-- Entries list -->
                         <div id="shankarBowList" style="display:flex;flex-direction:column;gap:10px">
                             <div style="text-align:center;color:#aaa;padding:30px">Loading entries…</div>
+                        </div>
+                    </div>
+
+                    <!-- ── YouTube Advertisement — Social Score Monitor (Roopa M C & Smitha M) ── -->
+                    <div id="roopaSmitraYtAdPanel" style="display:none;margin-top:24px">
+                        <div style="background:linear-gradient(135deg,#fce4ec,#fff3e0);border-radius:14px;padding:18px;border:2px solid #ffcdd2;margin-bottom:16px">
+                            <h3 style="color:#c62828;margin:0 0 6px;font-size:1.05em">📺 YouTube Advertisement — Social Score Monitor</h3>
+                            <p style="color:#555;font-size:0.82em;margin:0 0 8px">Check each class's YouTube video and enter the <strong>Views, Likes, and Original Comments</strong> (verify manually — exclude spam/bots). The score is auto-calculated based on the formula set by Super Admin.</p>
+                            <div style="background:#fff3cd;border-radius:8px;padding:8px 12px;font-size:0.8em;color:#856404">
+                                ⚠️ <strong>Important:</strong> Only count <em>genuine original comments</em>. Ignore spam, bot comments, and repeated phrases. Quality over quantity.
+                            </div>
+                        </div>
+                        <div id="ytAdMonitorList" style="display:flex;flex-direction:column;gap:16px">
+                            <div style="text-align:center;color:#aaa;padding:30px">Loading YouTube Ad submissions…</div>
+                        </div>
+                        <div style="margin-top:16px;text-align:center">
+                            <button class="btn btn-secondary" onclick="loadYtAdMonitorPanel()" style="font-size:0.88em">🔄 Refresh All Classes</button>
                         </div>
                     </div>
 
@@ -6162,7 +6578,7 @@
                 `📱 Select: *Online Competition → Daily Quiz*\n\n` +
                 `⏰ Answer both questions before time runs out!\n` +
                 `🏆 Top scorers win prizes!\n\n` +
-                `— Spurthi Youth Fest 2026 🎉`;
+                `— Spurthi Youth Fest 2026 🎉\n🔗 https://harshgujjar.github.io/Spurthi-youth-fest-2026/`;
             navigator.clipboard.writeText(msg)
                 .then(() => alert('✅ Quiz WhatsApp message copied!\nPaste it directly into WhatsApp.'))
                 .catch(() => prompt('Copy this message manually:', msg));
@@ -6176,7 +6592,7 @@
                 `📱 Select: *Online Competition → Scavenger Hunt*\n\n` +
                 `📸 Complete tasks, upload proof & earn points!\n` +
                 `🏆 The fastest team *WINS!*\n\n` +
-                `— Spurthi Youth Fest 2026 🎉`;
+                `— Spurthi Youth Fest 2026 🎉\n🔗 https://harshgujjar.github.io/Spurthi-youth-fest-2026/`;
             navigator.clipboard.writeText(msg)
                 .then(() => alert('✅ Scavenger Hunt WhatsApp message copied!\nPaste it directly into WhatsApp.'))
                 .catch(() => prompt('Copy this message manually:', msg));
@@ -7705,6 +8121,13 @@
                 btnEl.textContent = '⏳ Saving…';
                 await db.ref('vlogChallenge').push(entry);
                 showMsg('✅ Team submitted! ' + member1 + ' & ' + member2 + ' — "' + topic + '" registered successfully. Now upload your daily Insight screenshots below ⬇️', true);
+                // Show submitted date/time
+                const now = new Date();
+                const fmted = now.toLocaleDateString('en-IN', {day:'2-digit',month:'short',year:'numeric'}) + ' at ' + now.toLocaleTimeString('en-IN', {hour:'2-digit',minute:'2-digit'});
+                const vlogInfoEl = document.getElementById('vlogSubmittedInfo');
+                const vlogDtEl = document.getElementById('vlogSubmittedDateTime');
+                if (vlogInfoEl) vlogInfoEl.style.display = 'block';
+                if (vlogDtEl) vlogDtEl.textContent = fmted;
                 clearVlogForm();
                 loadVlogSubmissions();
                 // Reveal the separate screenshot section and build its slots
@@ -7740,6 +8163,28 @@
             if (sel) sel.value = '';
             const disp = document.getElementById('vlogSelectedTeamDisplay');
             if (disp) disp.style.display = 'none';
+        }
+
+        function enableVlogEdit() {
+            ['vlogLink','vlogTitle','vlogHandle'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) { el.removeAttribute('readonly'); el.style.background=''; el.style.borderColor='#833ab4'; }
+            });
+            const submitBtn = document.getElementById('vlogSubmitBtn');
+            if (submitBtn) { submitBtn.textContent = '📤 Update Reel Link'; submitBtn.disabled = false; }
+            const msg = document.getElementById('vlogSubmitMsg');
+            if (msg) { msg.style.display='block'; msg.style.background='#f3e5f5'; msg.style.color='#4a148c'; msg.style.border='1px solid #ce93d8'; msg.textContent='✏️ You can now edit the fields. Click "Update Reel Link" when done.'; }
+        }
+
+        function enablePodcastEdit() {
+            ['podcastLink','podcastTitle','podcastDuration'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) { el.removeAttribute('readonly'); el.style.background=''; el.style.borderColor='#1db954'; }
+            });
+            const submitBtn = document.getElementById('podcastSubmitBtn');
+            if (submitBtn) { submitBtn.textContent = '🎙️ Update Podcast Link'; submitBtn.disabled = false; }
+            const msg = document.getElementById('podcastSubmitMsg');
+            if (msg) { msg.style.display='block'; msg.style.background='#e8f5e9'; msg.style.color='#1b5e20'; msg.style.border='1px solid #a5d6a7'; msg.textContent='✏️ You can now edit the fields. Click "Update Podcast Link" when done.'; }
         }
 
         function loadVlogSubmissions() {
@@ -8157,6 +8602,943 @@
         }
 
         // ══════════════════════════════════════════════════════════════
+        // ══════════════════════════════════════════════════════════════
+        // YOUTUBE ADVERTISEMENT — All Functions
+        // Firebase path: youtubeAd/
+        // Eligible classes: '1ST BCA' and '2ND BCA A SEC'
+        // Scoring: 50% Social (Views+Likes+OrigComments) + 50% Jury (J1+J2 avg)
+        // ══════════════════════════════════════════════════════════════
+
+        const YT_AD_ELIGIBLE = ['1ST BCA', '2ND BCA A SEC'];
+
+        // ── Settings ─────────────────────────────────────────────────
+        function setYtAdSetting(key, value) {
+            db.ref('youtubeAd/' + key).set(value).then(() => {
+                const el = document.getElementById('ytAdStatus' + key.charAt(0).toUpperCase() + key.slice(1));
+                if (el) el.textContent = '✅ ' + (value ? 'ON' : 'OFF') + ' — saved';
+                loadYtAdSettings();
+            }).catch(e => alert('Error: ' + e.message));
+        }
+
+        function loadYtAdSettings() {
+            Promise.all([
+                db.ref('youtubeAd/eventActive').once('value').catch(() => null),
+                db.ref('youtubeAd/leaderboardPublished').once('value').catch(() => null)
+            ]).then(([s1, s2]) => {
+                const setEl = (id, text) => { const el = document.getElementById(id); if (el) el.textContent = text; };
+                setEl('ytAdStatusEventActive',          (s1 && s1.val() === true) ? '✅ Active (submissions open)' : '🔒 Not Active');
+                setEl('ytAdStatusLeaderboardPublished', (s2 && s2.val() === true) ? '🚀 Published'               : '📦 Not Published');
+            }).catch(() => {});
+        }
+
+        // ── Social Formula Save/Load ──────────────────────────────────
+        async function saveYtAdFormula() {
+            const formula = {
+                weightViews:    parseFloat(document.getElementById('ytAdWeightViews').value)    || 1,
+                weightLikes:    parseFloat(document.getElementById('ytAdWeightLikes').value)    || 3,
+                weightComments: parseFloat(document.getElementById('ytAdWeightComments').value) || 5,
+                maxRaw:         parseInt(document.getElementById('ytAdMaxRaw').value)           || 5000
+            };
+            try {
+                await db.ref('youtubeAd/socialFormula').set(formula);
+                const msg = document.getElementById('ytAdFormulaMsg');
+                if (msg) { msg.style.display = 'inline'; msg.textContent = '✅ Formula saved!'; setTimeout(() => msg.style.display = 'none', 3000); }
+            } catch(e) { alert('Error saving formula: ' + e.message); }
+        }
+
+        async function loadYtAdFormula() {
+            try {
+                const snap = await db.ref('youtubeAd/socialFormula').once('value');
+                const f = snap.val() || {};
+                const setVal = (id, v) => { const el = document.getElementById(id); if (el && v !== undefined) el.value = v; };
+                setVal('ytAdWeightViews',    f.weightViews    !== undefined ? f.weightViews    : 1);
+                setVal('ytAdWeightLikes',    f.weightLikes    !== undefined ? f.weightLikes    : 3);
+                setVal('ytAdWeightComments', f.weightComments !== undefined ? f.weightComments : 5);
+                setVal('ytAdMaxRaw',         f.maxRaw         !== undefined ? f.maxRaw         : 5000);
+            } catch(e) {}
+        }
+
+        function calcYtAdSocialScore(views, likes, comments, formula) {
+            const w1 = formula.weightViews    || 1;
+            const w2 = formula.weightLikes    || 3;
+            const w3 = formula.weightComments || 5;
+            const max = formula.maxRaw        || 5000;
+            const raw = (views * w1) + (likes * w2) + (comments * w3);
+            return Math.min(50, +(raw / max * 50).toFixed(2));
+        }
+
+        // ── CR: Check event active ────────────────────────────────────
+        async function checkYtAdEventActive() {
+            const clsLabel = document.getElementById('ytAdCRClass');
+            if (clsLabel) clsLabel.textContent = (window.currentCRClass || crClass || '').trim();
+
+            const lockedEl = document.getElementById('ytAdLockedMsg');
+            const formEl   = document.getElementById('ytAdSubmitFormWrapper');
+
+            const showForm   = () => { if (lockedEl) lockedEl.style.display='none';  if (formEl) formEl.style.display='block'; autoFillYtAdMembers(); initYtAdScreenshots(); };
+            const showLocked = () => { if (lockedEl) lockedEl.style.display='block'; if (formEl) formEl.style.display='none'; };
+
+            try {
+                const snap = await db.ref('youtubeAd/eventActive').once('value');
+                const val  = snap.val();
+                // Only lock if explicitly set to false — null/missing means open by default
+                if (val === false) { showLocked(); } else { showForm(); }
+            } catch(e) {
+                showForm(); // on any error, don't block CRs
+            }
+        }
+
+        // ── CR: Load members from enrollment ─────────────────────────
+        async function autoFillYtAdMembers() {
+            const cls = (window.currentCRClass || crClass || '').trim();
+            if (!cls) return;
+            const listEl = document.getElementById('ytAdEnrolledList');
+            if (listEl) listEl.textContent = 'Loading enrolled members…';
+            try {
+                // Each CR enrollment saves one record per member with {name, classYear, event}
+                const snap = await db.ref('youthfest-enrollments').once('value');
+                const names = [];
+                if (snap.exists()) snap.forEach(ch => {
+                    const d = ch.val();
+                    if (d.classYear === cls && d.event === 'YouTube Advertisement') {
+                        const n = (d.name || '').trim();
+                        if (n && !names.includes(n)) names.push(n);
+                    }
+                });
+
+                // Fill hidden inputs
+                for (let i = 1; i <= 8; i++) {
+                    const inp = document.getElementById('ytAdMember' + i);
+                    if (inp) inp.value = names[i-1] || '';
+                }
+
+                if (listEl) {
+                    if (names.length === 0) {
+                        listEl.innerHTML = '<span style="color:#e65100">⚠️ No members enrolled yet for YouTube Advertisement. Please enroll via the "Enroll Students" tab first.</span>';
+                    } else {
+                        listEl.innerHTML = '<strong style="color:#155724">✅ ' + names.length + ' member(s) loaded:</strong> ' +
+                            names.map((n,i) => `<span style="background:#fce4ec;border-radius:12px;padding:2px 8px;font-size:0.88em;margin:2px;display:inline-block">${i+1}. ${n}</span>`).join('');
+                    }
+                }
+
+                // Check if already submitted — skip settings keys
+                const subSnap = await db.ref('youtubeAd').once('value');
+                let existingKey = null;
+                if (subSnap.exists()) subSnap.forEach(ch => {
+                    const d = ch.val();
+                    if (d.classYear === cls) existingKey = ch.key;
+                });
+
+                const slotEl = document.getElementById('ytAdSlotInfo');
+                const btnEl  = document.getElementById('ytAdSubmitBtn');
+                const editBtn = document.getElementById('ytAdEditBtn');
+                if (existingKey) {
+                    if (slotEl) slotEl.innerHTML = '⚠️ <strong>1 submission already exists</strong> for your class. You can update the link or upload screenshots below.';
+                    if (btnEl)  { btnEl.textContent = '📺 Update Submission'; btnEl.disabled = false; }
+                    if (editBtn) editBtn.style.display = 'inline-flex';
+                    // Show submitted date/time
+                    const subData = subSnap.exists() ? (() => { let d=null; subSnap.forEach(ch => { if(ch.val().classYear===cls) d=ch.val(); }); return d; })() : null;
+                    if (subData && subData.submittedAt) {
+                        const dt = new Date(subData.submittedAt);
+                        const fmted = dt.toLocaleDateString('en-IN', {day:'2-digit',month:'short',year:'numeric'}) + ' at ' + dt.toLocaleTimeString('en-IN', {hour:'2-digit',minute:'2-digit'});
+                        const infoEl = document.getElementById('ytAdSubmittedInfo');
+                        const dtEl = document.getElementById('ytAdSubmittedDateTime');
+                        if (infoEl) infoEl.style.display = 'block';
+                        if (dtEl) dtEl.textContent = fmted;
+                    }
+                } else {
+                    if (slotEl) slotEl.innerHTML = '✅ <strong>No submission yet</strong> — 1 slot available for your class. Fill in the details below and click Submit.';
+                    if (btnEl)  btnEl.textContent = '📺 Submit YouTube Link';
+                    if (editBtn) editBtn.style.display = 'inline-flex';
+                }
+
+                // Load existing screenshots if any
+                if (existingKey) loadYtAdExistingScreenshots(existingKey);
+            } catch(e) {
+                const isPermission = e && e.message && e.message.includes('permission_denied');
+                if (listEl) listEl.innerHTML = isPermission
+                    ? '<span style="color:#c62828">🔒 Firebase permission error. Contact Super Admin.</span>'
+                    : '<span style="color:#c62828">❌ Error loading members: ' + e.message + '</span>';
+            }
+        }
+
+        // ── CR: Submit ────────────────────────────────────────────────
+        async function submitYtAdEntry() {
+            const cls     = (window.currentCRClass || crClass || '').trim();
+            const link    = (document.getElementById('ytAdLink').value    || '').trim();
+            const title   = (document.getElementById('ytAdTitle').value   || '').trim();
+            const product = (document.getElementById('ytAdProduct').value || '').trim();
+            const channel = (document.getElementById('ytAdChannel').value || '').trim();
+            const msgEl   = document.getElementById('ytAdSubmitMsg');
+
+            function showMsg(text, ok) {
+                msgEl.style.display = 'block';
+                msgEl.style.background = ok ? '#d4edda' : '#f8d7da';
+                msgEl.style.color      = ok ? '#155724' : '#721c24';
+                msgEl.style.border     = ok ? '1px solid #c3e6cb' : '1px solid #f5c6cb';
+                msgEl.textContent = text;
+            }
+
+            if (!link)    { showMsg('❌ Please enter the YouTube video link.', false); return; }
+            if (!title)   { showMsg('❌ Please enter the advertisement title.', false); return; }
+            if (!product) { showMsg('❌ Please enter the product/topic being advertised.', false); return; }
+            if (!link.includes('youtube.com') && !link.includes('youtu.be')) {
+                showMsg('❌ Please enter a valid YouTube link (youtube.com or youtu.be).', false); return;
+            }
+
+            // Collect members
+            const members = [];
+            for (let i = 1; i <= 8; i++) {
+                const v = (document.getElementById('ytAdMember' + i).value || '').trim();
+                if (v) members.push(v);
+            }
+
+            showMsg('⏳ Submitting…', true);
+            try {
+                // Full read + client-side filter to avoid Firebase index requirement
+                const existingSnap = await db.ref('youtubeAd').once('value');
+                let existingKey = null;
+                if (existingSnap.exists()) {
+                    existingSnap.forEach(ch => { if (ch.val().classYear === cls) existingKey = ch.key; });
+                }
+
+                const entry = {
+                    classYear:   cls,
+                    ytLink:      link,
+                    adTitle:     title,
+                    product:     product,
+                    channel:     channel,
+                    members:     members,
+                    status:      existingKey ? 'Updated' : 'Pending',
+                    submittedAt: Date.now(),
+                    socialScore: existingKey ? null : 0,   // keep if updating
+                    views:       0,
+                    likes:       0,
+                    comments:    0,
+                    juryTotal_j1: null,
+                    juryTotal_j2: null,
+                    finalScore:   null
+                };
+
+                if (existingKey) {
+                    // Update only changeable fields, keep social/jury scores
+                    await db.ref('youtubeAd/' + existingKey).update({
+                        ytLink: link, adTitle: title, product: product, channel: channel,
+                        members: members, status: 'Updated', submittedAt: Date.now()
+                    });
+                    showMsg('✅ Submission updated successfully!', true);
+                } else {
+                    await db.ref('youtubeAd').push(entry);
+                    showMsg('✅ YouTube Ad link submitted successfully!', true);
+                }
+                // Show submitted date/time
+                const now = new Date();
+                const fmted = now.toLocaleDateString('en-IN', {day:'2-digit',month:'short',year:'numeric'}) + ' at ' + now.toLocaleTimeString('en-IN', {hour:'2-digit',minute:'2-digit'});
+                const infoEl = document.getElementById('ytAdSubmittedInfo');
+                const dtEl = document.getElementById('ytAdSubmittedDateTime');
+                if (infoEl) infoEl.style.display = 'block';
+                if (dtEl) dtEl.textContent = fmted;
+                // Show edit button always
+                const editBtn = document.getElementById('ytAdEditBtn');
+                if (editBtn) editBtn.style.display = 'inline-flex';
+                loadYtAdSubmissions();
+                autoFillYtAdMembers();
+            } catch(e) {
+                showMsg('❌ Error: ' + e.message, false);
+            }
+        }
+
+        function clearYtAdForm() {
+            ['ytAdLink','ytAdTitle','ytAdProduct','ytAdChannel'].forEach(id => {
+                const el = document.getElementById(id); if (el) el.value = '';
+            });
+            const msg = document.getElementById('ytAdSubmitMsg');
+            if (msg) msg.style.display = 'none';
+        }
+
+        function enableYtAdEdit() {
+            // Enable all form fields for editing
+            ['ytAdLink','ytAdTitle','ytAdProduct','ytAdChannel'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) { el.removeAttribute('readonly'); el.style.background = ''; el.style.borderColor = '#e91e63'; }
+            });
+            const submitBtn = document.getElementById('ytAdSubmitBtn');
+            if (submitBtn) { submitBtn.textContent = '📺 Update Submission'; submitBtn.disabled = false; }
+            const editBtn = document.getElementById('ytAdEditBtn');
+            if (editBtn) editBtn.style.display = 'inline-flex';
+            const msg = document.getElementById('ytAdSubmitMsg');
+            if (msg) { msg.style.display='block'; msg.style.background='#e3f2fd'; msg.style.color='#1565c0'; msg.style.border='1px solid #90caf9'; msg.textContent='✏️ You can now edit the fields. Click "Update Submission" when done.'; }
+        }
+
+        // ── CR: Load submissions table ────────────────────────────────
+        async function loadYtAdSubmissions() {
+            const cls = (window.currentCRClass || crClass || '').trim();
+            if (!cls) return;
+
+            const empty     = document.getElementById('ytAdEmptyMsg');
+            const container = document.getElementById('ytAdTableContainer');
+            const tbody     = document.getElementById('ytAdTableBody');
+            const badge     = document.getElementById('ytAdCountBadge');
+
+            try {
+                // Full read + client-side filter — avoids Firebase index/permission issues
+                const snap = await db.ref('youtubeAd').once('value');
+                const rows = [];
+                if (snap.exists()) snap.forEach(ch => { const d = ch.val(); if (d.classYear === cls) rows.push({ id: ch.key, ...d }); });
+
+                if (badge) badge.textContent = rows.length + ' / 1 slot used';
+
+                if (rows.length === 0) {
+                    if (empty)     empty.style.display = 'block';
+                    if (container) container.style.display = 'none';
+                    return;
+                }
+                if (empty)     empty.style.display = 'none';
+                if (container) container.style.display = 'block';
+
+                tbody.innerHTML = rows.map((e, i) => {
+                    const j1 = e.juryTotal_j1 !== null && e.juryTotal_j1 !== undefined ? e.juryTotal_j1 + '/50' : '—';
+                    const j2 = e.juryTotal_j2 !== null && e.juryTotal_j2 !== undefined ? e.juryTotal_j2 + '/50' : '—';
+                    const finalPct = e.finalScore !== null && e.finalScore !== undefined ? e.finalScore + '%' : '—';
+                    const socialDisp = e.socialScore > 0 ? e.socialScore : '—';
+                    const statusColor = e.status === 'Approved' ? '#155724' : e.status === 'Rejected' ? '#721c24' : '#856404';
+                    const statusBg    = e.status === 'Approved' ? '#d4edda'  : e.status === 'Rejected' ? '#f8d7da'  : '#fff3cd';
+                    const submittedDate = e.submittedAt ? new Date(e.submittedAt).toLocaleDateString('en-IN') : '—';
+                    return `<tr>
+                        <td style="text-align:center;font-weight:700;color:#cc0000">${i+1}</td>
+                        <td style="font-weight:700;font-size:0.85em">${e.classYear||'—'}</td>
+                        <td style="font-size:0.85em;font-weight:600;color:#4a148c">${e.adTitle||'—'}</td>
+                        <td style="font-size:0.82em">${e.product||'—'}</td>
+                        <td style="text-align:center"><a href="${e.ytLink||'#'}" target="_blank" rel="noopener" style="color:#cc0000;font-weight:700;font-size:0.85em">▶️ View</a></td>
+                        <td style="text-align:center;font-size:0.85em">${socialDisp}</td>
+                        <td style="text-align:center;font-size:0.85em">${j1}</td>
+                        <td style="text-align:center;font-size:0.85em">${j2}</td>
+                        <td style="text-align:center;font-weight:800;color:${finalPct !== '—' ? '#1b5e20' : '#aaa'}">${finalPct}</td>
+                        <td style="text-align:center"><span style="background:${statusBg};color:${statusColor};padding:3px 10px;border-radius:12px;font-size:0.75em;font-weight:700">${e.status||'Pending'}</span></td>
+                        <td style="font-size:0.8em;color:#777">${submittedDate}</td>
+                    </tr>`;
+                }).join('');
+            } catch(e) {
+                const isPermission = e && e.message && e.message.includes('permission_denied');
+                const errMsg = isPermission
+                    ? '🔒 Firebase permission denied on <code>/youtubeAd</code>. Super Admin must add <code>".read": true</code> for this path in Firebase Console → Realtime Database → Rules.'
+                    : '❌ Error loading: ' + e.message;
+                if (empty) { empty.innerHTML = errMsg; empty.style.display = 'block'; }
+                if (container) container.style.display = 'none';
+            }
+        }
+
+        // ── Super Admin: Load YT Ad Admin Panel ──────────────────────
+        async function loadYtAdAdminPanel() {
+            if (!isSuperAdmin && !isAdmin) return;
+            loadYtAdSettings();
+            loadYtAdFormula();
+
+            // Load jury setup status
+            const juryStatEl = document.getElementById('ytAdJurySetupStatus');
+            if (juryStatEl) {
+                const jSnap = await db.ref('jurySetup/YouTube Advertisement').once('value').catch(() => null);
+                const jd = jSnap && jSnap.val() ? jSnap.val() : null;
+                if (jd) {
+                    juryStatEl.innerHTML = `✅ Jury setup found. Jury 1: <strong>${jd.jury1Name||'—'}</strong> | Jury 2: <strong>${jd.jury2Name||'—'}</strong>`;
+                } else {
+                    juryStatEl.innerHTML = `⚠️ No jury setup found. Go to <strong>Jury Setup tab</strong> and set up "YouTube Advertisement".`;
+                }
+            }
+
+            const classFilter = (document.getElementById('ytAdAdminClassFilter') || {}).value || '';
+            const snap = await db.ref('youtubeAd').once('value');
+            const all = [];
+            if (snap.exists()) snap.forEach(ch => all.push({ id: ch.key, ...ch.val() }));
+
+            // Populate class filter
+            const clsSel = document.getElementById('ytAdAdminClassFilter');
+            if (clsSel && clsSel.options.length <= 1) {
+                const clsList = [...new Set(all.map(e => e.classYear).filter(Boolean))].sort();
+                clsList.forEach(c => {
+                    const opt = document.createElement('option'); opt.value = c; opt.textContent = c; clsSel.appendChild(opt);
+                });
+            }
+
+            const filtered = classFilter ? all.filter(e => e.classYear === classFilter) : all;
+            filtered.sort((a,b) => (a.classYear||'').localeCompare(b.classYear||''));
+
+            const empty     = document.getElementById('ytAdAdminEmpty');
+            const container = document.getElementById('ytAdAdminTableContainer');
+            const tbody     = document.getElementById('ytAdAdminTableBody');
+            if (filtered.length === 0) {
+                if (empty)     empty.style.display = 'block';
+                if (container) container.style.display = 'none';
+                return;
+            }
+            if (empty)     empty.style.display = 'none';
+            if (container) container.style.display = 'block';
+
+            let rows = '';
+            filtered.forEach((e, i) => {
+                const j1Total = e.juryTotal_j1 !== null && e.juryTotal_j1 !== undefined ? +e.juryTotal_j1 : null;
+                const j2Total = e.juryTotal_j2 !== null && e.juryTotal_j2 !== undefined ? +e.juryTotal_j2 : null;
+                const juryAvg = (j1Total !== null && j2Total !== null) ? (j1Total + j2Total) / 2 :
+                                (j1Total !== null ? j1Total : (j2Total !== null ? j2Total : null));
+                const juryPct = juryAvg !== null ? +((juryAvg / 50) * 50).toFixed(2) : null;
+                const socialPct = e.socialScore > 0 ? +Math.min(50, (e.socialScore / (e.maxRaw||5000) * 50)).toFixed(2) : 0;
+                const finalPct  = juryPct !== null ? (juryPct + socialPct).toFixed(1) : '—';
+                const gap       = (j1Total !== null && j2Total !== null) ? Math.abs(j1Total - j2Total) : null;
+                const dispute   = gap !== null && gap >= 15;
+                const statusColor = e.status === 'Approved' ? '#155724' : e.status === 'Rejected' ? '#721c24' : '#856404';
+                const statusBg    = e.status === 'Approved' ? '#d4edda'  : e.status === 'Rejected' ? '#f8d7da'  : '#fff3cd';
+
+                rows += `<tr>
+                    <td style="text-align:center;font-weight:700;color:#cc0000">${i+1}</td>
+                    <td style="font-weight:700;color:#1565c0;font-size:0.85em">${e.classYear||'—'}</td>
+                    <td style="font-size:0.82em;font-weight:600;color:#4a148c">${e.adTitle||'—'}</td>
+                    <td style="font-size:0.82em">${e.product||'—'}</td>
+                    <td style="text-align:center"><a href="${e.ytLink||'#'}" target="_blank" rel="noopener" style="color:#cc0000;font-weight:700;font-size:0.85em">▶️ View</a></td>
+                    <td style="text-align:center"><input type="number" min="0" id="ytAdViews_${e.id}" value="${e.views||''}" placeholder="0" style="width:65px;padding:4px 6px;border:2px solid #ffcdd2;border-radius:6px;font-size:0.85em;text-align:center;outline:none" oninput="recalcYtAdScore('${e.id}')"></td>
+                    <td style="text-align:center"><input type="number" min="0" id="ytAdLikes_${e.id}" value="${e.likes||''}" placeholder="0" style="width:65px;padding:4px 6px;border:2px solid #ffcdd2;border-radius:6px;font-size:0.85em;text-align:center;outline:none" oninput="recalcYtAdScore('${e.id}')"></td>
+                    <td style="text-align:center"><input type="number" min="0" id="ytAdComments_${e.id}" value="${e.comments||''}" placeholder="0" style="width:65px;padding:4px 6px;border:2px solid #ffcdd2;border-radius:6px;font-size:0.85em;text-align:center;outline:none" oninput="recalcYtAdScore('${e.id}')"></td>
+                    <td style="text-align:center">
+                        <div style="display:flex;flex-direction:column;align-items:center;gap:3px">
+                            <span id="ytAdSocialPct_${e.id}" style="font-weight:700;color:#e91e63;font-size:0.9em">${e.socialScore > 0 ? Math.min(50,(e.socialScore/(e.maxRaw||5000)*50)).toFixed(1)+'%' : '—'}</span>
+                            <button onclick="saveYtAdSocialScore('${e.id}')" style="background:#e91e63;color:white;border:none;border-radius:6px;padding:3px 8px;cursor:pointer;font-size:0.72em;font-weight:700">💾 Save</button>
+                        </div>
+                    </td>
+                    <td style="text-align:center;font-size:0.85em">${j1Total !== null ? j1Total+'/50' : '—'}</td>
+                    <td style="text-align:center;font-size:0.85em">${j2Total !== null ? j2Total+'/50' : '—'}</td>
+                    <td style="text-align:center;font-weight:800;font-size:0.95em;color:${finalPct !== '—' ? '#1b5e20' : '#aaa'}">${finalPct !== '—' ? finalPct+'%' : '—'}</td>
+                    <td style="text-align:center">${dispute ? '<span style="background:#fce4ec;color:#c62828;padding:3px 8px;border-radius:8px;font-size:0.75em;font-weight:700">⚠️ '+gap+'pts gap</span>' : '<span style="color:#aaa;font-size:0.75em">—</span>'}</td>
+                    <td style="text-align:center"><span style="background:${statusBg};color:${statusColor};padding:3px 10px;border-radius:12px;font-size:0.75em;font-weight:700">${e.status||'Pending'}</span></td>
+                    <td style="text-align:center">
+                        <button onclick="approveYtAdEntry('${e.id}')" style="background:#28a745;color:white;border:none;border-radius:6px;padding:4px 8px;cursor:pointer;font-size:0.75em;margin:2px">✅</button>
+                        <button onclick="rejectYtAdEntry('${e.id}')" style="background:#dc3545;color:white;border:none;border-radius:6px;padding:4px 8px;cursor:pointer;font-size:0.75em;margin:2px">❌</button>
+                    </td>
+                </tr>`;
+            });
+            if (tbody) tbody.innerHTML = rows;
+        }
+
+        function approveYtAdEntry(id) {
+            db.ref('youtubeAd/' + id + '/status').set('Approved').then(() => loadYtAdAdminPanel()).catch(e => alert(e.message));
+        }
+        function rejectYtAdEntry(id) {
+            db.ref('youtubeAd/' + id + '/status').set('Rejected').then(() => loadYtAdAdminPanel()).catch(e => alert(e.message));
+        }
+
+        async function recalcYtAdScore(id) {
+            // Live preview only — does not save
+        }
+
+        async function saveYtAdSocialScore(id) {
+            const views    = parseInt(document.getElementById('ytAdViews_'    + id).value)    || 0;
+            const likes    = parseInt(document.getElementById('ytAdLikes_'    + id).value)    || 0;
+            const comments = parseInt(document.getElementById('ytAdComments_' + id).value)    || 0;
+
+            // Load formula
+            const fSnap = await db.ref('youtubeAd/socialFormula').once('value').catch(() => null);
+            const formula = (fSnap && fSnap.val()) || { weightViews:1, weightLikes:3, weightComments:5, maxRaw:5000 };
+
+            const socialRaw = (views * (formula.weightViews||1)) + (likes * (formula.weightLikes||3)) + (comments * (formula.weightComments||5));
+            const socialPct  = Math.min(50, +(socialRaw / (formula.maxRaw||5000) * 50).toFixed(2));
+
+            // Get current jury scores to recalculate final
+            const eSnap = await db.ref('youtubeAd/' + id).once('value');
+            const eData = eSnap.val() || {};
+            const j1 = eData.juryTotal_j1 !== null && eData.juryTotal_j1 !== undefined ? +eData.juryTotal_j1 : null;
+            const j2 = eData.juryTotal_j2 !== null && eData.juryTotal_j2 !== undefined ? +eData.juryTotal_j2 : null;
+            const juryAvg = (j1 !== null && j2 !== null) ? (j1+j2)/2 : (j1 !== null ? j1 : (j2 !== null ? j2 : null));
+            const juryPct = juryAvg !== null ? +((juryAvg/50)*50).toFixed(2) : null;
+            const finalScore = juryPct !== null ? +(socialPct + juryPct).toFixed(1) : null;
+
+            const updates = { views, likes, comments, socialScore: socialRaw, socialPct, maxRaw: formula.maxRaw||5000 };
+            if (finalScore !== null) updates.finalScore = finalScore;
+
+            await db.ref('youtubeAd/' + id).update(updates).catch(e => { alert('Error saving: ' + e.message); return; });
+
+            const pctEl = document.getElementById('ytAdSocialPct_' + id);
+            if (pctEl) pctEl.textContent = socialPct.toFixed(1) + '%';
+            loadYtAdAdminPanel();
+        }
+
+        // ── YT Ad Jury Login (inside Admin Panel) ─────────────────────
+        let ytAdJuryNum = null;
+        const YT_AD_JURY_CRITERIA = [
+            'Creativity & Concept',
+            'Production Quality',
+            'Message Clarity',
+            'Persuasiveness',
+            'Originality'
+        ];
+
+        async function ytAdJuryLogin() {
+            const num = document.getElementById('ytAdJuryLoginNum').value;
+            const pwd = (document.getElementById('ytAdJuryLoginPwd').value || '').trim();
+            const msgEl = document.getElementById('ytAdJuryLoginMsg');
+
+            function showJMsg(text, ok) {
+                msgEl.style.display = 'block';
+                msgEl.style.background = ok ? '#d4edda' : '#f8d7da';
+                msgEl.style.color      = ok ? '#155724' : '#721c24';
+                msgEl.style.border     = ok ? '1px solid #c3e6cb' : '1px solid #f5c6cb';
+                msgEl.textContent = text;
+            }
+
+            if (!pwd) { showJMsg('❌ Please enter the jury password.', false); return; }
+
+            try {
+                const snap = await db.ref('jurySetup/YouTube Advertisement').once('value');
+                const setup = snap.val();
+                if (!setup) { showJMsg('❌ Jury setup not configured for YouTube Advertisement. Super Admin must set it up in Jury Setup tab.', false); return; }
+
+                const correctPwd = setup['jury' + num + 'Password'];
+                const juryName   = setup['jury' + num + 'Name'] || ('Jury ' + num);
+                if (!correctPwd || pwd !== correctPwd) { showJMsg('❌ Incorrect password.', false); return; }
+
+                ytAdJuryNum = num;
+                showJMsg('✅ Logged in as ' + juryName, true);
+
+                const panel = document.getElementById('ytAdJuryScoringPanel');
+                const lbl   = document.getElementById('ytAdJuryWhoLabel');
+                if (panel) panel.style.display = 'block';
+                if (lbl)   lbl.textContent = juryName + ' (Jury ' + num + ')';
+
+                loadYtAdJuryScoringPanel();
+            } catch(e) {
+                showJMsg('❌ Error: ' + e.message, false);
+            }
+        }
+
+        async function loadYtAdJuryScoringPanel() {
+            if (!ytAdJuryNum) return;
+            const cont = document.getElementById('ytAdJuryScoringList');
+            if (!cont) return;
+            cont.innerHTML = '<p style="color:#999;text-align:center;padding:20px">Loading submissions…</p>';
+
+            try {
+                const snap = await db.ref('youtubeAd').once('value');
+                const teams = [];
+                if (snap.exists()) snap.forEach(ch => teams.push({ id: ch.key, ...ch.val() }));
+                if (teams.length === 0) { cont.innerHTML = '<p style="color:#999;text-align:center;padding:20px">No submissions yet.</p>'; return; }
+
+                teams.sort((a,b) => (a.classYear||'').localeCompare(b.classYear||''));
+
+                cont.innerHTML = teams.map(team => {
+                    const existing = (team.juryScores && team.juryScores['j' + ytAdJuryNum]) || {};
+                    const total = YT_AD_JURY_CRITERIA.reduce((s,c) => s + (+existing[c.replace(/[^a-zA-Z0-9]/g,'_')] || 0), 0);
+
+                    const criteriaRows = YT_AD_JURY_CRITERIA.map(c => {
+                        const key = c.replace(/[^a-zA-Z0-9]/g,'_');
+                        return `<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f0f0f0">
+                            <span style="font-size:0.88em;color:#333;font-weight:600;flex:1">${c}</span>
+                            <div style="display:flex;align-items:center;gap:6px">
+                                <input type="number" min="0" max="10" value="${existing[key]||''}"
+                                       id="ytaj_${team.id}_${key}" placeholder="0"
+                                       style="width:60px;padding:6px 8px;border:2px solid #ddd;border-radius:6px;font-size:0.9em;text-align:center;outline:none"
+                                       oninput="updateYtAdJuryTotal('${team.id}')">
+                                <span style="color:#1a237e;font-size:0.82em;font-weight:700">/10</span>
+                            </div>
+                        </div>`;
+                    }).join('');
+
+                    return `<div style="background:white;border-radius:12px;border:2px solid #c5cae9;margin-bottom:16px;overflow:hidden">
+                        <div style="background:linear-gradient(135deg,#1a237e,#3949ab);padding:12px 16px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
+                            <div>
+                                <div style="color:white;font-weight:700;font-size:0.95em">${team.classYear||'—'}</div>
+                                <div style="color:rgba(255,255,255,0.8);font-size:0.8em">${team.adTitle||'—'} · ${team.product||'—'}</div>
+                            </div>
+                            <a href="${team.ytLink||'#'}" target="_blank" rel="noopener" style="background:rgba(255,255,255,0.2);color:white;padding:5px 12px;border-radius:20px;text-decoration:none;font-size:0.8em;font-weight:700">▶️ Watch Ad</a>
+                        </div>
+                        <div style="padding:14px 16px">
+                            ${criteriaRows}
+                            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;padding-top:10px;border-top:2px solid #c5cae9">
+                                <div>
+                                    <span style="font-size:0.88em;color:#666">Total: </span>
+                                    <span id="ytajTotal_${team.id}" style="font-size:1.2em;font-weight:800;color:#1a237e">${total}</span>
+                                    <span style="font-size:0.85em;color:#3949ab"> / 50 → </span>
+                                    <span id="ytajPct_${team.id}" style="font-size:1em;font-weight:800;color:#e91e63">${((total/50)*50).toFixed(1)}%</span>
+                                    <span style="font-size:0.78em;color:#aaa"> of final</span>
+                                </div>
+                                <button onclick="saveYtAdJuryScore('${team.id}')" style="background:linear-gradient(135deg,#4caf50,#2196f3);color:white;border:none;border-radius:8px;padding:8px 18px;cursor:pointer;font-size:0.88em;font-weight:700">💾 Save Score</button>
+                            </div>
+                            <div id="ytajSaveMsg_${team.id}" style="display:none;margin-top:8px;font-size:0.82em;font-weight:600;padding:6px 10px;border-radius:6px"></div>
+                        </div>
+                    </div>`;
+                }).join('');
+            } catch(e) {
+                const isPermission = e && e.message && e.message.includes('permission_denied');
+                cont.innerHTML = isPermission
+                    ? `<div style="padding:20px;background:#ffeef0;border-radius:10px;border:2px solid #f5c6cb">
+                        <p style="color:#c62828;font-weight:700;margin:0 0 8px">🔒 Firebase Permission Denied on <code>/youtubeAd</code></p>
+                        <p style="color:#555;font-size:0.88em;margin:0 0 12px">Super Admin needs to update Firebase Database Rules to allow reads on <code>youtubeAd</code> and <code>youtubeAd/settings</code> paths.</p>
+                        <div style="background:#fff8e1;border-radius:8px;padding:10px 14px;border-left:4px solid #ffc107;font-size:0.82em;color:#444">
+                            👉 Go to <strong>Firebase Console</strong> → Realtime Database → Rules → add:<br>
+                            <code style="background:#f5f5f5;padding:4px 8px;border-radius:4px;display:block;margin-top:6px">"youtubeAd": { ".read": true, ".write": true },<br>"youtubeAd/settings": { ".read": true, ".write": true }</code>
+                        </div>
+                        <button onclick="loadYtAdJuryScoringPanel()" style="margin-top:12px;background:#1a237e;color:white;border:none;border-radius:8px;padding:8px 18px;cursor:pointer;font-weight:700">🔄 Try Again</button>
+                    </div>`
+                    : `<p style="color:#c62828;padding:20px;text-align:center">❌ Error: ${e.message}</p>`;
+            }
+        }
+
+        function updateYtAdJuryTotal(teamId) {
+            let total = 0;
+            YT_AD_JURY_CRITERIA.forEach(c => {
+                const key = c.replace(/[^a-zA-Z0-9]/g,'_');
+                const inp = document.getElementById('ytaj_' + teamId + '_' + key);
+                if (inp) total += Math.min(10, Math.max(0, +inp.value || 0));
+            });
+            const totEl = document.getElementById('ytajTotal_' + teamId);
+            const pctEl = document.getElementById('ytajPct_'   + teamId);
+            if (totEl) totEl.textContent = total;
+            if (pctEl) pctEl.textContent = ((total/50)*50).toFixed(1) + '%';
+        }
+
+        async function saveYtAdJuryScore(teamId) {
+            const scores = {};
+            let total = 0;
+            let valid = true;
+            YT_AD_JURY_CRITERIA.forEach(c => {
+                const key = c.replace(/[^a-zA-Z0-9]/g,'_');
+                const inp = document.getElementById('ytaj_' + teamId + '_' + key);
+                const val = inp ? Math.min(10, Math.max(0, +inp.value || 0)) : 0;
+                if (inp && inp.value === '') valid = false;
+                scores[key] = val;
+                total += val;
+            });
+            if (!valid) { alert('Please enter scores for all criteria (0–10 each)'); return; }
+
+            const juryPct = +((total/50)*50).toFixed(2);
+            const updates = {};
+            updates['juryScores/j' + ytAdJuryNum] = scores;
+            updates['juryTotal_j' + ytAdJuryNum]  = total;
+            updates['juryPct_j'   + ytAdJuryNum]  = juryPct;
+
+            // Recalculate final
+            const snap = await db.ref('youtubeAd/' + teamId).once('value');
+            const team = snap.val() || {};
+            const otherJury = ytAdJuryNum === '1' ? team.juryTotal_j2 : team.juryTotal_j1;
+            if (otherJury !== null && otherJury !== undefined) {
+                const avgJury = (total + (+otherJury)) / 2;
+                const avgPct  = (avgJury / 50) * 50;
+                const socialPct = team.socialPct || 0;
+                updates['finalScore'] = +(avgPct + socialPct).toFixed(1);
+            }
+
+            const msgEl = document.getElementById('ytajSaveMsg_' + teamId);
+            db.ref('youtubeAd/' + teamId).update(updates).then(() => {
+                msgEl.style.display = 'block';
+                msgEl.style.background = '#d4edda'; msgEl.style.color = '#155724'; msgEl.style.border = '1px solid #c3e6cb';
+                msgEl.textContent = '✅ Score saved! Total: ' + total + '/50';
+                setTimeout(() => msgEl.style.display = 'none', 4000);
+            }).catch(e => {
+                msgEl.style.display = 'block';
+                msgEl.style.background = '#f8d7da'; msgEl.style.color = '#721c24'; msgEl.style.border = '1px solid #f5c6cb';
+                msgEl.textContent = '❌ Error: ' + e.message;
+            });
+        }
+
+        // ── CR: YT Ad Screenshot Upload Functions ─────────────────────
+        const YT_AD_SCREENSHOT_SLOTS = [
+            { key: 'start', label: '📅 Screenshot 1 — Start of Event (02 Mar 2026)', date: '2026-03-02' },
+            { key: 'end',   label: '📅 Screenshot 2 — End of Event (07 Mar 2026)',   date: '2026-03-07' }
+        ];
+
+        function initYtAdScreenshots() {
+            const container = document.getElementById('ytAdScreenshotSlots');
+            if (!container) return;
+            container.innerHTML = '';
+            YT_AD_SCREENSHOT_SLOTS.forEach(slot => {
+                const badge     = `<span style="background:#e3f2fd;color:#1565c0;padding:2px 8px;border-radius:10px;font-size:0.72em;margin-left:6px">OPENS ${slot.date}</span>`;
+                const disabled  = '';
+                const disStyle  = '';
+                const bgColor   = '#f1f8e9';
+                const border    = '#a5d6a7';
+                container.insertAdjacentHTML('beforeend', `
+                <div style="background:${bgColor};border:2px solid ${border};border-radius:10px;padding:14px 16px">
+                    <div style="font-size:0.87em;font-weight:700;color:#444;margin-bottom:10px">${slot.label}${badge}</div>
+                    <p style="font-size:0.76em;color:#777;margin:0 0 8px">
+                        📊 Open YouTube Studio → Analytics → screenshot showing <strong>Views, Likes, Comments</strong>.<br>
+                        Roopa M C / Smitha M will read this and enter numbers for your Social Score.
+                    </p>
+                    <div id="ytAdShotPrev_${slot.key}" style="display:none;margin-bottom:8px">
+                        <img id="ytAdShotImg_${slot.key}" src="" style="max-height:140px;max-width:100%;border-radius:8px;border:2px solid #a5d6a7;object-fit:contain">
+                        <button type="button" onclick="removeYtAdShot('${slot.key}')" style="display:inline-block;margin-top:5px;background:#f44336;color:white;border:none;border-radius:6px;padding:3px 12px;font-size:0.76em;cursor:pointer">✕ Remove</button>
+                    </div>
+                    <div id="ytAdShotAlready_${slot.key}" style="display:none;margin-bottom:8px;font-size:0.8em;color:#388e3c;background:#f1f8e9;border-radius:6px;padding:6px 10px;border:1px solid #a5d6a7">
+                        ✅ Screenshot already uploaded. You can replace it below.
+                    </div>
+                    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+                        <input type="file" id="ytAdShotFile_${slot.key}" accept="image/*" onchange="previewYtAdShot('${slot.key}',this)" style="display:none" ${disabled}>
+                        <button type="button" onclick="document.getElementById('ytAdShotFile_${slot.key}').click()"
+                            style="background:#9c27b0;color:white;border:none;border-radius:8px;padding:8px 16px;font-size:0.84em;font-weight:700;cursor:pointer;${disStyle}" ${disabled}>
+                            📷 Upload Screenshot
+                        </button>
+                        <span id="ytAdShotName_${slot.key}" style="font-size:0.8em;color:#888">No file chosen</span>
+                        <span id="ytAdShotStatus_${slot.key}" style="font-size:0.78em;font-weight:700;display:none;padding:3px 8px;border-radius:6px"></span>
+                    </div>
+                </div>`);
+            });
+        }
+
+        function previewYtAdShot(key, input) {
+            const file = input.files[0]; if (!file) return;
+            document.getElementById('ytAdShotName_' + key).textContent = file.name;
+            const reader = new FileReader();
+            reader.onload = e => {
+                document.getElementById('ytAdShotImg_'  + key).src = e.target.result;
+                document.getElementById('ytAdShotPrev_' + key).style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function removeYtAdShot(key) {
+            const f = document.getElementById('ytAdShotFile_' + key);
+            if (f) f.value = '';
+            document.getElementById('ytAdShotPrev_' + key).style.display = 'none';
+            document.getElementById('ytAdShotImg_'  + key).src = '';
+            document.getElementById('ytAdShotName_' + key).textContent = 'No file chosen';
+        }
+
+        async function loadYtAdExistingScreenshots(entryKey) {
+            try {
+                const snap = await db.ref('youtubeAd/' + entryKey + '/screenshots').once('value');
+                if (!snap.exists()) return;
+                const shots = snap.val();
+                YT_AD_SCREENSHOT_SLOTS.forEach(slot => {
+                    if (shots[slot.key]) {
+                        const el = document.getElementById('ytAdShotAlready_' + slot.key);
+                        if (el) el.style.display = 'block';
+                    }
+                });
+            } catch(e) {}
+        }
+
+        async function uploadYtAdShot(key) {
+            const fileEl   = document.getElementById('ytAdShotFile_'   + key);
+            const statusEl = document.getElementById('ytAdShotStatus_' + key);
+            if (!fileEl || !fileEl.files[0]) return null;
+            const setS = (msg, ok) => {
+                if (!statusEl) return;
+                statusEl.style.display    = 'block';
+                statusEl.style.background = ok ? '#d4edda' : ok === false ? '#f8d7da' : '#fff3cd';
+                statusEl.style.color      = ok ? '#155724' : ok === false ? '#721c24' : '#856404';
+                statusEl.textContent = msg;
+            };
+            setS('⏳ Uploading…', null);
+            const formData = new FormData();
+            formData.append('file', fileEl.files[0]);
+            formData.append('upload_preset', 'scavenger_hunt');
+            formData.append('folder', 'ytad_screenshots/' + key);
+            try {
+                const res  = await fetch('https://api.cloudinary.com/v1_1/dat0khbet/image/upload', { method:'POST', body:formData });
+                const data = await res.json();
+                if (data.secure_url) { setS('✅ Uploaded!', true); return data.secure_url; }
+                else { setS('⚠️ Failed.', null); return null; }
+            } catch(e) { setS('⚠️ Error.', null); return null; }
+        }
+
+        async function submitYtAdScreenshots() {
+            const cls   = (window.currentCRClass || crClass || '').trim();
+            const msgEl = document.getElementById('ytAdScreenshotMsg');
+            const btnEl = document.getElementById('ytAdScreenshotBtn');
+            const showMsg = (text, ok) => {
+                if (!msgEl) return;
+                msgEl.style.display    = 'block';
+                msgEl.style.background = ok ? '#d4edda' : '#f8d7da';
+                msgEl.style.color      = ok ? '#155724' : '#721c24';
+                msgEl.textContent = text;
+            };
+            if (!cls) { showMsg('❌ Class info missing. Please re-login.', false); return; }
+            btnEl.disabled = true; btnEl.textContent = '⏳ Uploading…';
+            try {
+                // Find submission entry for this class
+                const subSnap = await db.ref('youtubeAd').once('value');
+                let entryKey = null;
+                if (subSnap.exists()) subSnap.forEach(ch => { if (ch.val().classYear === cls) entryKey = ch.key; });
+                if (!entryKey) { showMsg('❌ No YouTube link submitted yet. Please submit the YouTube link first.', false); return; }
+
+                // Upload selected screenshots
+                const uploaded = {};
+                for (const slot of YT_AD_SCREENSHOT_SLOTS) {
+                    const fileEl = document.getElementById('ytAdShotFile_' + slot.key);
+                    if (fileEl && fileEl.files[0]) {
+                        const url = await uploadYtAdShot(slot.key);
+                        if (url) uploaded[slot.key] = url;
+                    }
+                }
+                if (!Object.keys(uploaded).length) { showMsg('⚠️ No screenshots selected. Please choose at least one.', false); return; }
+
+                // Save URLs under the submission entry
+                const existSnap = await db.ref('youtubeAd/' + entryKey + '/screenshots').once('value').catch(() => null);
+                const existing  = (existSnap && existSnap.val()) || {};
+                Object.assign(existing, uploaded);
+                await db.ref('youtubeAd/' + entryKey + '/screenshots').set(existing);
+                await db.ref('youtubeAd/' + entryKey + '/latestScreenshotUrl').set(Object.values(uploaded).pop());
+                showMsg('✅ Analytics screenshots uploaded! Roopa M C / Smitha M will enter your Views, Likes and Comments.', true);
+                loadYtAdExistingScreenshots(entryKey);
+            } catch(err) {
+                showMsg('❌ Error: ' + err.message, false);
+            } finally {
+                btnEl.disabled = false; btnEl.textContent = '📸 Submit Analytics Screenshots';
+            }
+        }
+
+        // ── Faculty Monitor: Roopa M C and Smitha M ──────────────────
+        async function loadYtAdMonitorPanel() {
+            const listEl = document.getElementById('ytAdMonitorList');
+            if (!listEl) return;
+            listEl.innerHTML = '<div style="text-align:center;color:#aaa;padding:30px">Loading YouTube Ad submissions…</div>';
+
+            try {
+                const [snap, fSnap] = await Promise.all([
+                    db.ref('youtubeAd').once('value'),
+                    db.ref('youtubeAd/socialFormula').once('value').catch(() => null)
+                ]);
+                const formula = (fSnap && fSnap.val()) || { weightViews:1, weightLikes:3, weightComments:5, maxRaw:5000 };
+
+                // Collect only submission entries (skip settings keys like eventActive, leaderboardPublished, socialFormula)
+                const teams = [];
+                if (snap.exists()) snap.forEach(ch => {
+                    const d = ch.val();
+                    if (d && d.classYear) teams.push({ id: ch.key, ...d });
+                });
+                teams.sort((a,b) => (a.classYear||'').localeCompare(b.classYear||''));
+
+                if (teams.length === 0) {
+                    listEl.innerHTML = '<p style="color:#999;text-align:center;padding:30px">No YouTube Ad submissions yet.</p>';
+                    return;
+                }
+
+                listEl.innerHTML = teams.map((t, i) => {
+                    const socialRaw = (t.views||0)*(formula.weightViews||1) + (t.likes||0)*(formula.weightLikes||3) + (t.comments||0)*(formula.weightComments||5);
+                    const socialPct = Math.min(50, +(socialRaw/(formula.maxRaw||5000)*50).toFixed(2));
+                    const today = new Date().toISOString().slice(0,10);
+
+                    // Build screenshot HTML
+                    const shots = t.screenshots || {};
+                    let screenshotHtml = '';
+                    const shotEntries = Object.entries(shots);
+                    if (shotEntries.length > 0) {
+                        screenshotHtml = '<div style="display:flex;flex-direction:column;gap:8px">';
+                        shotEntries.forEach(([key, url]) => {
+                            const label = key === 'start' ? '02-Mar (Start)' : key === 'end' ? '07-Mar (End)' : key;
+                            screenshotHtml += `<a href="${url}" target="_blank" rel="noopener" style="display:inline-block">
+                                <img src="${url}" style="max-height:120px;max-width:100%;border-radius:8px;border:2px solid #a5d6a7;object-fit:contain" alt="Analytics ${label}">
+                                <div style="font-size:0.72em;color:#4caf50;margin-top:2px">📊 ${label} — Click to enlarge</div>
+                            </a>`;
+                        });
+                        screenshotHtml += '</div>';
+                    } else if (t.latestScreenshotUrl) {
+                        screenshotHtml = `<a href="${t.latestScreenshotUrl}" target="_blank" rel="noopener">
+                            <img src="${t.latestScreenshotUrl}" style="max-height:130px;max-width:100%;border-radius:8px;border:2px solid #a5d6a7;object-fit:contain">
+                            <div style="font-size:0.75em;color:#4caf50;margin-top:3px">📊 Click to open full screenshot</div>
+                        </a>`;
+                    } else {
+                        screenshotHtml = '<div style="background:#f5f5f5;border-radius:8px;padding:16px;text-align:center;color:#bbb;font-size:0.82em;border:2px dashed #ddd">No screenshot uploaded by CR yet</div>';
+                    }
+
+                    return `<div style="background:white;border-radius:12px;border:2px solid #ffcdd2;padding:18px;box-shadow:0 2px 8px rgba(0,0,0,0.06)">
+                        <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px;margin-bottom:14px">
+                            <div>
+                                <span style="background:linear-gradient(135deg,#cc0000,#ff6600);color:white;border-radius:20px;padding:3px 12px;font-size:0.82em;font-weight:700">Class ${i+1}</span>
+                                <strong style="margin-left:8px;font-size:0.95em">${t.classYear||'—'}</strong>
+                                <span style="color:#c62828;font-size:0.82em;margin-left:8px">📌 ${t.adTitle||'—'}</span>
+                            </div>
+                            <a href="${t.ytLink||'#'}" target="_blank" rel="noopener" style="background:#cc0000;color:white;border-radius:16px;padding:4px 14px;text-decoration:none;font-size:0.8em;font-weight:700">▶️ Watch Video</a>
+                        </div>
+
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+                            <!-- Screenshots from CR -->
+                            <div>
+                                <div style="font-size:0.82em;font-weight:700;color:#444;margin-bottom:6px">📊 Analytics Screenshot (by CR):</div>
+                                ${screenshotHtml}
+                            </div>
+
+                            <!-- Entry form -->
+                            <div>
+                                <div style="font-size:0.82em;font-weight:700;color:#444;margin-bottom:8px">📝 Enter Metrics <span style="color:#888;font-weight:400">(${today})</span>:</div>
+                                <div style="display:flex;flex-direction:column;gap:8px">
+                                    <div style="display:flex;align-items:center;gap:8px">
+                                        <span style="width:80px;font-size:0.82em;color:#555;font-weight:600">👁 Views</span>
+                                        <input type="number" id="ytMon_views_${t.id}" min="0" placeholder="0" value="${t.views||''}"
+                                               style="flex:1;padding:7px 10px;border:2px solid #ffcdd2;border-radius:8px;font-size:0.88em;outline:none">
+                                    </div>
+                                    <div style="display:flex;align-items:center;gap:8px">
+                                        <span style="width:80px;font-size:0.82em;color:#555;font-weight:600">👍 Likes</span>
+                                        <input type="number" id="ytMon_likes_${t.id}" min="0" placeholder="0" value="${t.likes||''}"
+                                               style="flex:1;padding:7px 10px;border:2px solid #ffcdd2;border-radius:8px;font-size:0.88em;outline:none">
+                                    </div>
+                                    <div style="display:flex;align-items:center;gap:8px">
+                                        <span style="width:80px;font-size:0.82em;color:#555;font-weight:600">💬 Comments</span>
+                                        <input type="number" id="ytMon_comments_${t.id}" min="0" placeholder="0" value="${t.comments||''}"
+                                               style="flex:1;padding:7px 10px;border:2px solid #ffcdd2;border-radius:8px;font-size:0.88em;outline:none">
+                                    </div>
+                                    <div style="background:#fff8f0;border-radius:8px;padding:8px 12px;font-size:0.8em;color:#e65100;margin-top:2px">
+                                        Formula: (Views×${formula.weightViews||1}) + (Likes×${formula.weightLikes||3}) + (Comments×${formula.weightComments||5}) ÷ ${formula.maxRaw||5000} × 50
+                                    </div>
+                                    <div style="display:flex;gap:8px;align-items:center;margin-top:4px">
+                                        <button onclick="saveYtAdMonitorScore('${t.id}')"
+                                                style="background:linear-gradient(135deg,#cc0000,#ff6600);color:white;border:none;border-radius:8px;padding:9px 18px;font-size:0.88em;font-weight:700;cursor:pointer">
+                                            💾 Save Score
+                                        </button>
+                                        <span id="ytMonMsg_${t.id}" style="font-size:0.8em;font-weight:700;display:none"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Last saved score -->
+                        <div style="margin-top:12px;background:${t.views ? '#fff3e0' : '#f5f5f5'};border-radius:8px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
+                            <div style="font-size:0.82em;color:#555">
+                                Views: <strong>${t.views||0}</strong> &nbsp;·&nbsp;
+                                Likes: <strong>${t.likes||0}</strong> &nbsp;·&nbsp;
+                                Comments: <strong>${t.comments||0}</strong>
+                            </div>
+                            <div style="font-size:0.88em;font-weight:700;color:${t.views ? '#e65100' : '#aaa'}">
+                                Social Score: <strong>${socialPct} / 50</strong>
+                            </div>
+                        </div>
+                    </div>`;
+                }).join('');
+            } catch(e) {
+                const isPermission = e && e.message && e.message.includes('permission_denied');
+                listEl.innerHTML = `<div style="padding:24px;background:#ffeef0;border-radius:10px;border:2px solid #f5c6cb">
+                    <p style="color:#c62828;font-weight:700">${isPermission ? '🔒 Firebase permission denied on /youtubeAd' : '❌ Error: ' + e.message}</p>
+                    <button onclick="loadYtAdMonitorPanel()" style="background:#cc0000;color:white;border:none;border-radius:8px;padding:8px 18px;cursor:pointer;font-weight:700">🔄 Try Again</button>
+                </div>`;
+            }
+        }
+
+        async function saveYtAdMonitorScore(id) {
+            const views    = parseInt(document.getElementById('ytMon_views_'    + id).value) || 0;
+            const likes    = parseInt(document.getElementById('ytMon_likes_'    + id).value) || 0;
+            const comments = parseInt(document.getElementById('ytMon_comments_' + id).value) || 0;
+            const msgEl    = document.getElementById('ytMonMsg_' + id);
+
+            if (msgEl) { msgEl.style.display = 'inline'; msgEl.style.color = '#856404'; msgEl.textContent = '⏳ Saving…'; }
+
+            try {
+                const fSnap = await db.ref('youtubeAd/socialFormula').once('value').catch(() => null);
+                const formula = (fSnap && fSnap.val()) || { weightViews:1, weightLikes:3, weightComments:5, maxRaw:5000 };
+                const socialRaw = views*(formula.weightViews||1) + likes*(formula.weightLikes||3) + comments*(formula.weightComments||5);
+                const socialPct  = Math.min(50, +(socialRaw/(formula.maxRaw||5000)*50).toFixed(2));
+
+                const eSnap = await db.ref('youtubeAd/' + id).once('value');
+                const eData = eSnap.val() || {};
+                const j1 = eData.juryTotal_j1 !== null && eData.juryTotal_j1 !== undefined ? +eData.juryTotal_j1 : null;
+                const j2 = eData.juryTotal_j2 !== null && eData.juryTotal_j2 !== undefined ? +eData.juryTotal_j2 : null;
+                const juryAvg = (j1!==null&&j2!==null) ? (j1+j2)/2 : (j1!==null?j1:(j2!==null?j2:null));
+                const juryPct = juryAvg !== null ? +((juryAvg/50)*50).toFixed(2) : null;
+
+                const updates = { views, likes, comments, socialScore: socialRaw, socialPct, maxRaw: formula.maxRaw||5000 };
+                if (juryPct !== null) updates.finalScore = +(socialPct + juryPct).toFixed(1);
+
+                await db.ref('youtubeAd/' + id).update(updates);
+                if (msgEl) { msgEl.style.color = '#155724'; msgEl.textContent = '✅ Saved! Social: ' + socialPct.toFixed(1) + '%'; setTimeout(() => { if(msgEl) msgEl.style.display='none'; }, 3000); }
+            } catch(e) {
+                if (msgEl) { msgEl.style.color = '#c62828'; msgEl.textContent = '❌ Error: ' + e.message; }
+            }
+        }
+
         // FACULTY ADMIN PANEL
         // ══════════════════════════════════════════════════════════════
         const FACULTY_LIST = [
@@ -8178,8 +9560,8 @@
         const FACULTY_ROLES = {
             'Chandan G B'     : { role: '📊 Vlog Monitor + 🎙️ Podcast Approval', color: '#1b5e20', bg: '#c8e6c9', detail: 'Vlog Social Score Monitor & Pod Casting Approval Incharge' },
             'Priyanka V'      : { role: '📊 Vlog Monitor + 📋 Event Incharge',   color: '#4a148c', bg: '#e1bee7', detail: 'Vlog Social Score Monitor & Incharge: Mime, Mad Ads, YouTube Advertisement, Case Analysis, Vlog' },
-            'Roopa M.C'       : { role: '📋 Event Incharge',                     color: '#1a237e', bg: '#c5cae9', detail: 'Mime, Mad Ads, YouTube Advertisement, Case Analysis' },
-            'Smitha'          : { role: '📋 Event Incharge',                     color: '#1a237e', bg: '#c5cae9', detail: 'Social Awareness Skit, YouTube Advertisement, Quiz' },
+            'Roopa M.C'       : { role: '📺 YT Ad Monitor + 📋 Event Incharge',  color: '#b71c1c', bg: '#ffcdd2', detail: 'YouTube Ad Social Score Monitor & Incharge: Mime, Mad Ads, YouTube Advertisement, Case Analysis' },
+            'Smitha'          : { role: '📺 YT Ad Monitor + 📋 Event Incharge',  color: '#b71c1c', bg: '#ffcdd2', detail: 'YouTube Ad Social Score Monitor & Incharge: Social Awareness Skit, YouTube Advertisement, Quiz' },
             'Kotrappa K'      : { role: '📋 Event Incharge',                     color: '#1a237e', bg: '#c5cae9', detail: 'Mime, Nukkad Natak, Hand Writing' },
             'Anitha N'        : { role: '📋 Event Incharge',                     color: '#1a237e', bg: '#c5cae9', detail: 'Group Dance, Talent Hunt, Hand Writing' },
             'Pooja C'         : { role: '📋 Event Incharge',                     color: '#1a237e', bg: '#c5cae9', detail: 'Group Dance, Talent Hunt, Quiz' },
@@ -8415,6 +9797,7 @@
                 document.getElementById('chandanSocialPanel').style.display  = 'none';
                 document.getElementById('chandanPodcastPanel').style.display = 'none';
                 document.getElementById('shankarBowPanel').style.display     = 'none';
+                document.getElementById('roopaSmitraYtAdPanel').style.display = 'none';
                 document.getElementById('facultyComingSoon').style.display   = 'none';
                 document.getElementById('facultyDashboard').style.display = 'block';
                 document.getElementById('facultyDashName').textContent  = faculty.name;
@@ -8423,15 +9806,23 @@
                 const isPriyanka  = faculty.name === 'Priyanka V';
                 const isHemavathi = faculty.name === 'Hemavathi Desai';
                 const isShankar   = faculty.name === 'Shankar B C';
+                const isRoopa     = faculty.name === 'Roopa M.C';
+                const isSmitha    = faculty.name === 'Smitha';
                 const hasVlogAccess    = isChandan || isPriyanka;
                 const hasPodcastAccess = isChandan || isHemavathi;
-                document.getElementById('chandanSocialPanel').style.display  = hasVlogAccess    ? 'block' : 'none';
-                document.getElementById('chandanPodcastPanel').style.display = hasPodcastAccess ? 'block' : 'none';
-                document.getElementById('shankarBowPanel').style.display     = isShankar        ? 'block' : 'none';
-                document.getElementById('facultyComingSoon').style.display   = (hasVlogAccess || hasPodcastAccess || isShankar) ? 'none' : 'block';
+                const hasYtAdAccess    = isRoopa || isSmitha;
+                document.getElementById('chandanSocialPanel').style.display   = hasVlogAccess    ? 'block' : 'none';
+                document.getElementById('chandanPodcastPanel').style.display  = hasPodcastAccess ? 'block' : 'none';
+                document.getElementById('shankarBowPanel').style.display      = isShankar        ? 'block' : 'none';
+                document.getElementById('roopaSmitraYtAdPanel').style.display = hasYtAdAccess    ? 'block' : 'none';
+                document.getElementById('facultyComingSoon').style.display    = (hasVlogAccess || hasPodcastAccess || isShankar || hasYtAdAccess) ? 'none' : 'block';
+                const roleInfo = FACULTY_ROLES[faculty.name];
+                const roleLbl = document.getElementById('facultyDashRole');
+                if (roleLbl && roleInfo) roleLbl.textContent = roleInfo.role;
                 if (hasVlogAccess)    loadChandanPanel();
                 if (hasPodcastAccess) loadChandanPodcastPanel();
                 if (isShankar)        loadShankarBowPanel();
+                if (hasYtAdAccess)    loadYtAdMonitorPanel();
                 return;
             }
 
@@ -8461,6 +9852,7 @@
                 document.getElementById('chandanSocialPanel').style.display  = 'none';
                 document.getElementById('chandanPodcastPanel').style.display = 'none';
                 document.getElementById('shankarBowPanel').style.display     = 'none';
+                document.getElementById('roopaSmitraYtAdPanel').style.display = 'none';
                 document.getElementById('facultyComingSoon').style.display   = 'none';
                 document.getElementById('facultyDashboard').style.display = 'block';
                 document.getElementById('facultyDashName').textContent  = faculty.name;
@@ -8470,15 +9862,23 @@
                 const isPriyanka  = faculty.name === 'Priyanka V';
                 const isHemavathi = faculty.name === 'Hemavathi Desai';
                 const isShankar   = faculty.name === 'Shankar B C';
+                const isRoopa     = faculty.name === 'Roopa M.C';
+                const isSmitha    = faculty.name === 'Smitha';
                 const hasVlogAccess    = isChandan || isPriyanka;
                 const hasPodcastAccess = isChandan || isHemavathi;
-                document.getElementById('chandanSocialPanel').style.display  = hasVlogAccess    ? 'block' : 'none';
-                document.getElementById('chandanPodcastPanel').style.display = hasPodcastAccess ? 'block' : 'none';
-                document.getElementById('shankarBowPanel').style.display     = isShankar        ? 'block' : 'none';
-                document.getElementById('facultyComingSoon').style.display   = (hasVlogAccess || hasPodcastAccess || isShankar) ? 'none' : 'block';
+                const hasYtAdAccess    = isRoopa || isSmitha;
+                document.getElementById('chandanSocialPanel').style.display   = hasVlogAccess    ? 'block' : 'none';
+                document.getElementById('chandanPodcastPanel').style.display  = hasPodcastAccess ? 'block' : 'none';
+                document.getElementById('shankarBowPanel').style.display      = isShankar        ? 'block' : 'none';
+                document.getElementById('roopaSmitraYtAdPanel').style.display = hasYtAdAccess    ? 'block' : 'none';
+                document.getElementById('facultyComingSoon').style.display    = (hasVlogAccess || hasPodcastAccess || isShankar || hasYtAdAccess) ? 'none' : 'block';
+                const roleInfoN = FACULTY_ROLES[faculty.name];
+                const roleLblN  = document.getElementById('facultyDashRole');
+                if (roleLblN && roleInfoN) roleLblN.textContent = roleInfoN.role;
                 if (hasVlogAccess)    loadChandanPanel();
                 if (hasPodcastAccess) loadChandanPodcastPanel();
                 if (isShankar)        loadShankarBowPanel();
+                if (hasYtAdAccess)    loadYtAdMonitorPanel();
 
             } catch(err) {
                 showMsg('❌ Error: ' + err.message, false);
@@ -8496,6 +9896,9 @@
             document.getElementById('facultyLoginPwd').value = '';
             const msg = document.getElementById('facultyLoginMsg');
             if (msg) msg.style.display = 'none';
+            // Reset all functional panels
+            const resetIds = ['chandanSocialPanel','chandanPodcastPanel','shankarBowPanel','roopaSmitraYtAdPanel','facultyComingSoon'];
+            resetIds.forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
         }
 
         // ══════════════════════════════════════════════════════════════
@@ -9051,6 +10454,13 @@
                 btnEl.textContent = '⏳ Saving…';
                 await db.ref('podcastChallenge').push(entry);
                 showMsg('✅ Podcast submitted! ' + name + ' — "' + title + '" registered successfully. Awaiting Chandan\'s approval.', true);
+                // Show submitted date/time
+                const podNow = new Date();
+                const podFmted = podNow.toLocaleDateString('en-IN', {day:'2-digit',month:'short',year:'numeric'}) + ' at ' + podNow.toLocaleTimeString('en-IN', {hour:'2-digit',minute:'2-digit'});
+                const podInfoEl = document.getElementById('podcastSubmittedInfo');
+                const podDtEl = document.getElementById('podcastSubmittedDateTime');
+                if (podInfoEl) podInfoEl.style.display = 'block';
+                if (podDtEl) podDtEl.textContent = podFmted;
                 clearPodcastForm();
                 loadPodcastSubmissions();
             } catch(err) {
@@ -9533,17 +10943,62 @@
                     if (selectEl) selectEl.innerHTML = '<option value="">— No enrolled participants —</option>';
                     return;
                 }
+
+                // Group captains with their members to form team entries
+                const captains  = members.filter(m => (m.role||'').toLowerCase() === 'captain');
+                const membs     = members.filter(m => (m.role||'').toLowerCase() !== 'captain');
+                // Individual entries (no role or role='Individual')
+                const indivs    = members.filter(m => !m.role || (m.role||'').toLowerCase() === 'individual');
+
+                // Build team list: for each captain find their paired member by topic match or sequential pairing
+                const teams = [];
+                const usedMemberKeys = new Set();
+                captains.forEach(cap => {
+                    // Try to match by topic
+                    let partner = membs.find(m => !usedMemberKeys.has(m.key) && m.topic && cap.topic && m.topic === cap.topic);
+                    // If no topic match, just pick next available member
+                    if (!partner) partner = membs.find(m => !usedMemberKeys.has(m.key));
+                    if (partner) usedMemberKeys.add(partner.key);
+                    teams.push({ captain: cap, member: partner || null });
+                });
+                // Add unpaired members and individuals as solo entries
+                const solos = [
+                    ...membs.filter(m => !usedMemberKeys.has(m.key)),
+                    ...indivs
+                ];
+
                 if (listEl) {
-                    listEl.innerHTML = members.map((m, i) => `
-                        <div style="padding:6px 0;${i<members.length-1?'border-bottom:1px solid #ffe082;':''}display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+                    let listHtml = '';
+                    teams.forEach((t, i) => {
+                        const teamLabel = t.member ? t.captain.name + ' & ' + t.member.name : t.captain.name;
+                        const topicStr  = t.captain.topic ? ' — ' + t.captain.topic : '';
+                        listHtml += `<div style="padding:6px 0;border-bottom:1px solid #ffe082;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
                             <span style="background:#fff3e0;border-radius:20px;padding:2px 10px;font-size:0.82em;color:#e65100;font-weight:700">${i+1}</span>
-                            <span style="font-weight:600;color:#222;font-size:0.88em">${m.name||'—'}</span>
+                            <span style="font-weight:700;color:#222;font-size:0.88em">👥 ${teamLabel}</span>
+                            ${t.captain.topic ? `<span style="color:#f9a825;font-size:0.82em">🎯 ${t.captain.topic}</span>` : ''}
+                        </div>`;
+                    });
+                    solos.forEach((m, i) => {
+                        listHtml += `<div style="padding:6px 0;${i<solos.length-1?'border-bottom:1px solid #ffe082;':''}display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+                            <span style="background:#fff3e0;border-radius:20px;padding:2px 10px;font-size:0.82em;color:#e65100;font-weight:700">${teams.length+i+1}</span>
+                            <span style="font-weight:600;color:#222;font-size:0.88em">👤 ${m.name||'—'}</span>
                             ${m.role?`<span style="color:#f9a825;font-size:0.82em">🎭 ${m.role}</span>`:''}
-                        </div>`).join('');
+                        </div>`;
+                    });
+                    listEl.innerHTML = listHtml || '<span style="color:#888">No entries</span>';
                 }
                 if (selectEl) {
-                    selectEl.innerHTML = '<option value="">— Select participant/team —</option>' +
-                        members.map(m => `<option value="${m.key}" data-name="${m.name||''}" data-key="${m.key}">${m.name||'—'}${m.role?' — '+m.role:''}</option>`).join('');
+                    let opts = '<option value="">— Select participant/team —</option>';
+                    teams.forEach(t => {
+                        const teamLabel = t.member ? t.captain.name + ' & ' + t.member.name : t.captain.name;
+                        const displayName = t.captain.topic ? teamLabel + ' (' + t.captain.topic + ')' : teamLabel;
+                        // Store combined name for submission
+                        opts += `<option value="${t.captain.key}" data-name="${teamLabel}" data-key="${t.captain.key}" data-member="${t.member ? t.member.name : ''}">${displayName}</option>`;
+                    });
+                    solos.forEach(m => {
+                        opts += `<option value="${m.key}" data-name="${m.name||''}" data-key="${m.key}" data-member="">${m.name||'—'}${m.role?' — '+m.role:''}</option>`;
+                    });
+                    selectEl.innerHTML = opts;
                 }
             } catch(e) {
                 if (listEl) listEl.innerHTML = '<span style="color:#c62828">⚠️ Error: ' + e.message + '</span>';
@@ -9563,9 +11018,10 @@
                 if (keyEl)  keyEl.value  = '';
                 return;
             }
-            if (nameEl) nameEl.value = opt.dataset.name || '';
+            const displayName = opt.dataset.name || '';
+            if (nameEl) nameEl.value = displayName;
             if (keyEl)  keyEl.value  = opt.value;
-            if (info)   info.textContent = opt.dataset.name || '';
+            if (info)   info.textContent = displayName;
             if (disp)   disp.style.display = 'block';
         }
 
@@ -9937,6 +11393,109 @@
             updateCRView();
         }
 
+        function generateCRSummaryReport() {
+            const cls = crClass || (window.currentCRClass || '');
+            if (!cls) { alert('Class not detected. Please log in again.'); return; }
+            if (!all || !all.length) { alert('No data loaded yet. Please wait a moment and try again.'); return; }
+
+            const now = new Date();
+            const dateStr = now.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}) + ' ' + now.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
+            const LINK = 'https://harshgujjar.github.io/Spurthi-youth-fest-2026/';
+            const classData = all.filter(e => e.classYear === cls);
+
+            const lines = [];
+            lines.push('📊 *' + cls + ' — Event Enrollment Summary*');
+            lines.push('🕒 As of: ' + dateStr);
+            lines.push('─────────────────────────');
+            lines.push('📝 Total Enrollments: *' + classData.length + '*');
+            lines.push('─────────────────────────');
+
+            const evtMap = {};
+            classData.forEach(e => {
+                if (!evtMap[e.event]) evtMap[e.event] = [];
+                evtMap[e.event].push(e);
+            });
+
+            const evtList = Object.keys(evtMap).sort();
+            if (!evtList.length) {
+                lines.push('No enrollments found for this class.');
+            } else {
+                lines.push('*🎪 Events Enrolled:*');
+                evtList.forEach(ev => {
+                    const students = evtMap[ev];
+                    const captains = students.filter(s => (s.role||'').toLowerCase() === 'captain');
+                    const members  = students.filter(s => (s.role||'').toLowerCase() === 'member');
+                    const others   = students.filter(s => !s.role || (!['captain','member'].includes((s.role||'').toLowerCase())));
+                    lines.push('');
+                    lines.push('▶️ *' + ev + '* (' + students.length + ' enrolled)');
+                    if (captains.length) lines.push('  👑 Captain(s): ' + captains.map(s=>s.name).join(', '));
+                    if (members.length)  lines.push('  👤 Member(s): '  + members.map(s=>s.name).join(', '));
+                    if (others.length)   lines.push('  • ' + others.map(s=>s.name+(s.role?' ('+s.role+')':'')).join(', '));
+                });
+            }
+
+            lines.push('');
+            lines.push('─────────────────────────');
+
+            // Check vlog, podcast, yt ad submission status
+            Promise.all([
+                db.ref('vlogChallenge').orderByChild('classYear').equalTo(cls).once('value').catch(()=>null),
+                db.ref('podcastChallenge').orderByChild('classYear').equalTo(cls).once('value').catch(()=>null),
+                db.ref('youtubeAd').once('value').catch(()=>null)
+            ]).then(([vSnap, pSnap, ytSnap]) => {
+                const vlogEntries = [];
+                if (vSnap && vSnap.exists()) vSnap.forEach(ch => vlogEntries.push(ch.val()));
+                const podEntries = [];
+                if (pSnap && pSnap.exists()) pSnap.forEach(ch => podEntries.push(ch.val()));
+                let ytEntry = null;
+                if (ytSnap && ytSnap.exists()) ytSnap.forEach(ch => { if(ch.val().classYear===cls) ytEntry=ch.val(); });
+
+                if (vlogEntries.length) {
+                    lines.push('📹 *Vlog:* ' + vlogEntries.length + ' team(s) submitted ✅');
+                    vlogEntries.forEach(v => lines.push('  • ' + (v.members||'') + (v.topic?' — '+v.topic:'') + ' (' + (v.status||'Pending') + ')'));
+                } else {
+                    lines.push('📹 *Vlog:* No submission yet ❌');
+                }
+                if (podEntries.length) {
+                    lines.push('🎙️ *Podcast:* ' + podEntries.length + ' submission(s) ✅');
+                    podEntries.forEach(p => lines.push('  • ' + (p.memberName||'') + (p.episodeTitle?' — '+p.episodeTitle:'') + ' (' + (p.approvalStatus||'pending') + ')'));
+                } else {
+                    lines.push('🎙️ *Podcast:* No submission yet ❌');
+                }
+                if (ytEntry) {
+                    lines.push('📺 *YouTube Ad:* Submitted ✅' + (ytEntry.adTitle?' — '+ytEntry.adTitle:''));
+                } else {
+                    lines.push('📺 *YouTube Ad:* No submission yet ❌');
+                }
+
+                lines.push('─────────────────────────');
+                lines.push('Davan Institute — Spurthi Youth Fest 2026');
+                lines.push('🔗 ' + LINK);
+                const ta = document.getElementById('crSummaryReportText');
+                if (ta) { ta.value = lines.join('\n'); }
+            }).catch(() => {
+                lines.push('─────────────────────────');
+                lines.push('Davan Institute — Spurthi Youth Fest 2026');
+                lines.push('🔗 ' + LINK);
+                const ta = document.getElementById('crSummaryReportText');
+                if (ta) ta.value = lines.join('\n');
+            });
+        }
+
+        function copyCRSummaryReport() {
+            const ta = document.getElementById('crSummaryReportText');
+            if (!ta || !ta.value.trim()) { generateCRSummaryReport(); return; }
+            ta.select(); ta.setSelectionRange(0, 99999);
+            try {
+                navigator.clipboard.writeText(ta.value).then(() => {
+                    const el = document.getElementById('crSummaryReportCopied');
+                    if (el) { el.style.display='block'; setTimeout(()=>el.style.display='none',4000); }
+                }).catch(() => document.execCommand('copy'));
+            } catch(e) { document.execCommand('copy'); }
+            const el = document.getElementById('crSummaryReportCopied');
+            if (el) { el.style.display='block'; setTimeout(()=>el.style.display='none',4000); }
+        }
+
         function downloadCREnrollments() {
             console.log('=== DOWNLOAD CR ENROLLMENTS ===');
             console.log('CR Class:', crClass);
@@ -10078,6 +11637,147 @@
             document.getElementById('totalEnrollments').textContent = all.length;
         }
 
+        function generateEnrollSummary() {
+            if (!all || !all.length) { alert('No enrollment data loaded yet.'); return; }
+            const now = new Date();
+            const dateStr = now.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}) + ' ' + now.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
+            const uniqueStudents = new Set(all.map(e => e.phone)).size;
+            const activeEvents = new Set(all.map(e => e.event)).size;
+            const EXCLUDE = ['Faculty/Principal/Vice-Principal/Staff','Others'];
+            const realClasses = classes.filter(c => !EXCLUDE.includes(c));
+            const LINK = 'https://harshgujjar.github.io/Spurthi-youth-fest-2026/';
+
+            let lines = [];
+            lines.push('📊 *Spurthi Youth Fest 2026 — Enrollment Summary*');
+            lines.push('🕒 As of: ' + dateStr);
+            lines.push('─────────────────────────');
+            lines.push('👥 Total Students: *' + uniqueStudents + '*');
+            lines.push('📝 Total Enrollments: *' + all.length + '*');
+            lines.push('🎯 Active Events: *' + activeEvents + '*');
+            lines.push('─────────────────────────');
+            lines.push('*📋 Class-wise Totals:*');
+            realClasses.forEach(cls => {
+                const count = all.filter(e => e.classYear === cls).length;
+                if (count > 0) lines.push('  • ' + cls + ': ' + count);
+            });
+            lines.push('─────────────────────────');
+            lines.push('*🎪 Event-wise Totals:*');
+            const evtNames = [...new Set(all.map(e => e.event))].sort();
+            evtNames.forEach(ev => {
+                const count = all.filter(e => e.event === ev).length;
+                lines.push('  • ' + ev + ': ' + count);
+            });
+            lines.push('─────────────────────────');
+            lines.push('Davan Institute — Spurthi Youth Fest 2026');
+            lines.push('🔗 ' + LINK);
+
+            const ta = document.getElementById('enrollSummaryText');
+            if (ta) ta.value = lines.join('\n');
+            const copied = document.getElementById('enrollSummaryCopied');
+            if (copied) copied.style.display = 'none';
+        }
+
+        function copyEnrollSummary() {
+            const ta = document.getElementById('enrollSummaryText');
+            if (!ta || !ta.value.trim()) { generateEnrollSummary(); return; }
+            ta.select();
+            ta.setSelectionRange(0, 99999);
+            try {
+                navigator.clipboard.writeText(ta.value).then(() => {
+                    const el = document.getElementById('enrollSummaryCopied');
+                    if (el) { el.style.display = 'block'; setTimeout(() => el.style.display = 'none', 4000); }
+                }).catch(() => document.execCommand('copy'));
+            } catch(e) { document.execCommand('copy'); }
+            const el = document.getElementById('enrollSummaryCopied');
+            if (el) { el.style.display = 'block'; setTimeout(() => el.style.display = 'none', 4000); }
+        }
+
+        function generateMasterFilterSummary() {
+            const filterCl = (document.getElementById('filterClass') || {}).value || '';
+            const filterEv = (document.getElementById('filterEvent') || {}).value || '';
+            const box      = document.getElementById('masterFilterSummaryBox');
+            const labelEl  = document.getElementById('masterFilterSummaryLabel');
+            const ta       = document.getElementById('masterFilterSummaryText');
+            const copiedEl = document.getElementById('masterFilterSummaryCopied');
+            if (!box || !ta) return;
+            if (!filterCl && !filterEv) { box.style.display = 'none'; return; }
+            box.style.display = 'block';
+            if (copiedEl) copiedEl.style.display = 'none';
+
+            const LINK = 'https://harshgujjar.github.io/Spurthi-youth-fest-2026/';
+            const EXCLUDE = ['Faculty/Principal/Vice-Principal/Staff','Others'];
+            const realClasses = classes.filter(c => !EXCLUDE.includes(c));
+            const now = new Date();
+            const dateStr = now.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}) + ' ' + now.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
+
+            let data = [...all];
+            if (filterCl) data = data.filter(e => e.classYear === filterCl);
+            if (filterEv) data = data.filter(e => e.event === filterEv);
+
+            let filterDesc = '';
+            if (filterCl && filterEv) filterDesc = filterCl + ' › ' + filterEv;
+            else if (filterCl) filterDesc = 'Class: ' + filterCl;
+            else filterDesc = 'Event: ' + filterEv;
+            if (labelEl) labelEl.textContent = filterDesc;
+
+            const lines = [];
+            lines.push('📊 *Spurthi Youth Fest 2026 — Filtered Summary*');
+            lines.push('🔍 ' + filterDesc);
+            lines.push('🕒 As of: ' + dateStr);
+            lines.push('─────────────────────────');
+            lines.push('📝 Total Enrollments: *' + data.length + '*');
+
+            if (filterEv && !filterCl) {
+                // Show class breakdown + not enrolled
+                lines.push('─────────────────────────');
+                lines.push('*📋 Class-wise for ' + filterEv + ':*');
+                const enrolled = [], notEnrolled = [];
+                realClasses.forEach(cls => {
+                    const count = data.filter(e => e.classYear === cls).length;
+                    if (count > 0) { lines.push('  ✅ ' + cls + ': ' + count); enrolled.push(cls); }
+                    else notEnrolled.push(cls);
+                });
+                if (notEnrolled.length) {
+                    lines.push('─────────────────────────');
+                    lines.push('❌ Not yet enrolled (' + notEnrolled.length + '):');
+                    notEnrolled.forEach(c => lines.push('  • ' + c));
+                }
+            } else if (filterCl && !filterEv) {
+                // Show event breakdown for this class
+                lines.push('─────────────────────────');
+                lines.push('*🎪 Events enrolled — ' + filterCl + ':*');
+                const evts = [...new Set(data.map(e => e.event))].sort();
+                evts.forEach(ev => {
+                    const count = data.filter(e => e.event === ev).length;
+                    lines.push('  • ' + ev + ': ' + count);
+                });
+            } else {
+                // Both class + event selected — list students
+                lines.push('─────────────────────────');
+                lines.push('*👤 Students:*');
+                data.forEach((e, i) => lines.push('  ' + (i+1) + '. ' + e.name + (e.role ? ' (' + e.role + ')' : '')));
+            }
+
+            lines.push('─────────────────────────');
+            lines.push('Davan Institute — Spurthi Youth Fest 2026');
+            lines.push('🔗 ' + LINK);
+            ta.value = lines.join('\n');
+        }
+
+        function copyMasterFilterSummary() {
+            const ta = document.getElementById('masterFilterSummaryText');
+            if (!ta || !ta.value.trim()) return;
+            ta.select(); ta.setSelectionRange(0, 99999);
+            try {
+                navigator.clipboard.writeText(ta.value).then(() => {
+                    const el = document.getElementById('masterFilterSummaryCopied');
+                    if (el) { el.style.display = 'block'; setTimeout(() => el.style.display = 'none', 3000); }
+                }).catch(() => document.execCommand('copy'));
+            } catch(e) { document.execCommand('copy'); }
+            const el = document.getElementById('masterFilterSummaryCopied');
+            if (el) { el.style.display = 'block'; setTimeout(() => el.style.display = 'none', 3000); }
+        }
+
         function updateMaster() {
             // Use setTimeout to ensure dropdown has updated
             setTimeout(() => {
@@ -10095,6 +11795,7 @@
                 }
                 
                 updateSummary(filterCl, filterEv);
+                generateMasterFilterSummary();
                 
                 const cont = document.getElementById('masterContainer');
                 if (!cont) {
@@ -10126,8 +11827,9 @@
             if (!selectedClass && selectedEvent) {
                 const enrolledClasses = [];
                 const notEnrolledClasses = [];
+                const EXCLUDE_FROM_CHECK = ['Faculty/Principal/Vice-Principal/Staff','Others'];
                 
-                classes.forEach(cls => {
+                classes.filter(c => !EXCLUDE_FROM_CHECK.includes(c)).forEach(cls => {
                     const hasEnrollment = all.some(e => e.classYear === cls && e.event === selectedEvent);
                     if (hasEnrollment) {
                         const count = all.filter(e => e.classYear === cls && e.event === selectedEvent).length;
@@ -14904,7 +16606,9 @@ Davan Institute Team`;
                 `*Class-wise Breakdown:*`,
                 ...classLines,
                 ``,
-                `_Please remind unregistered students to sign up._`
+                `_Please remind unregistered students to sign up._`,
+                ``,
+                `\ud83d\udd17 https://harshgujjar.github.io/Spurthi-youth-fest-2026/`
             ].join('\n');
 
             const msgTextEl = document.getElementById('qsAdminMsgText');
@@ -15166,7 +16870,7 @@ Davan Institute Team`;
                         const strengthTxt = strength ? `[Class Strength: ${strength}] ` : '';
                         return `• ${cls}: ${strengthTxt}${d.total} participated, ${d.correct} correct (${d.total>0?Math.round((d.correct/d.total)*100):0}%)`;
                     }).join('\n') +
-                    `\n\n— Spurthi Youth Fest 2026`;
+                    `\n\n— Spurthi Youth Fest 2026\n🔗 https://harshgujjar.github.io/Spurthi-youth-fest-2026/`;
 
             } catch(e) {
                 if (container) container.innerHTML = `<p style="color:red;font-size:13px;padding:12px">Error: ${e.message}</p>`;
@@ -19571,6 +21275,7 @@ Davan Institute Team`;
         lines.push(`⚡ *Be quick — points awarded on approval!*`);
         lines.push(``);
         lines.push(`🎉 _Spurthi Youth Fest 2026 — Davan Institute_`);
+        lines.push(`🔗 https://harshgujjar.github.io/Spurthi-youth-fest-2026/`);
 
         document.getElementById('shWaText').value = lines.join('\n');
     }
@@ -20485,7 +22190,7 @@ ${topStudents}
                     const strengthTxt = strength ? `[Class Strength: ${strength}] ` : '';
                     return `• ${cls}: ${strengthTxt}${d.total} submitted, ${d.approved} approved (${d.total>0?Math.round((d.approved/d.total)*100):0}%)`;
                 }).join('\n') +
-                `\n\n— Spurthi Youth Fest 2026`;
+                `\n\n— Spurthi Youth Fest 2026\n🔗 https://harshgujjar.github.io/Spurthi-youth-fest-2026/`;
 
             shAdminLoadClasswiseDetail();
         } catch(e) {
@@ -20594,7 +22299,7 @@ ${topStudents}
                 const strengthTxt = strength ? `[Class Strength: ${strength}] ` : '';
                 return `• ${cls}: ${strengthTxt}${d.total} submitted, ${d.approved} approved (${d.total>0?Math.round((d.approved/d.total)*100):0}%)`;
             }).join('\n') +
-            `\n\n— Spurthi Youth Fest 2026`;
+            `\n\n— Spurthi Youth Fest 2026\n🔗 https://harshgujjar.github.io/Spurthi-youth-fest-2026/`;
 
         // Also update detail table
         shAdminLoadClasswiseDetail();
@@ -24338,7 +26043,7 @@ Proceed?`)) return;
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;" id="devTriggerVersion">
-                <strong>Version:</strong> 3.74 — BOW Results Publisher tab added in Super Admin: see Jury 1 &amp; Jury 2 averaged scores, rank table, dispute flags (gap ≥15pts), publish/unpublish BOW results live   | <strong>Last Updated:</strong> February 24, 2026 — 17:30
+                <strong>Version:</strong> 3.87 — Built on v383 (stable connection). Links added to all summaries. CR View Enrollments: Class Summary Report (Generate + Copy) showing all events + Vlog/Podcast/YT Ad status   | <strong>Last Updated:</strong> February 25, 2026 — 18:30
             </p>
             <!-- ============================================ -->
             
