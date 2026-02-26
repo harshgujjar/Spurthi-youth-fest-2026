@@ -27028,20 +27028,31 @@ Proceed?`)) return;
         const closeBtn = document.getElementById('fbPopupCloseBtn');
         const mustFill = fbDismissCount >= fbMaxDismiss;
         if (closeBtn) closeBtn.style.display = mustFill ? 'none' : 'flex';
-        // Show/hide the "must fill" warning banner
+        // Show/hide the must-fill warning banner — message depends on WHY it's forced
         let warnBanner = document.getElementById('fbMustFillBanner');
         if (!warnBanner) {
             warnBanner = document.createElement('div');
             warnBanner.id = 'fbMustFillBanner';
-            warnBanner.style.cssText = 'background:#fff8e1;border-left:4px solid #ffc107;padding:10px 16px;font-size:0.85em;color:#856404;font-weight:600;display:flex;align-items:center;gap:8px';
-            warnBanner.innerHTML = '⚠️ <span>You dismissed this earlier. Please fill the form to continue — this is required.</span>';
+            warnBanner.style.cssText = 'background:#fff8e1;border-left:4px solid #ffc107;padding:10px 16px;font-size:0.85em;color:#856404;font-weight:600;display:flex;align-items:center;gap:8px;border-radius:0';
             const header = overlay.querySelector('.fb-modal-header');
             if (header && header.nextSibling) header.parentNode.insertBefore(warnBanner, header.nextSibling);
         }
-        warnBanner.style.display = mustFill ? 'flex' : 'none';
-        // Build overall score buttons
+        if (mustFill) {
+            // Dismissed at least once before → they know they skipped it
+            const hasDismissedBefore = fbDismissCount > 0;
+            warnBanner.innerHTML = hasDismissedBefore
+                ? '⚠️ <span>You dismissed this earlier. Please fill the form to continue — this is required.</span>'
+                : '📋 <span>Your feedback is important to us. Please take a moment to fill this form — it only takes 30 seconds!</span>';
+            warnBanner.style.display = 'flex';
+            warnBanner.style.background  = hasDismissedBefore ? '#fff8e1' : '#e8f5e9';
+            warnBanner.style.borderColor = hasDismissedBefore ? '#ffc107' : '#4caf50';
+            warnBanner.style.color       = hasDismissedBefore ? '#856404' : '#1b5e20';
+        } else {
+            warnBanner.style.display = 'none';
+        }
+        // Build overall score buttons — always rebuild fresh so buttons are never missing
         const scoreRow = document.getElementById('fbOverallScoreRow');
-        if (scoreRow && !scoreRow.innerHTML.trim()) {
+        if (scoreRow) {
             let html = '';
             for (let i = 1; i <= 10; i++) {
                 const color = i <= 3 ? '#f44336' : i <= 6 ? '#ff9800' : i <= 8 ? '#66bb6a' : '#2e7d32';
@@ -27049,32 +27060,50 @@ Proceed?`)) return;
             }
             scoreRow.innerHTML = html;
         }
+        // Always reset the hidden score value so a previous pick doesn't carry over
+        const scoreInp = document.getElementById('fbOverallScore');
+        if (scoreInp) scoreInp.value = '';
         // Load event list for ratings
         await loadFeedbackEventRatings();
         // Auto-fill and configure fields based on login state
-        const phoneRow = document.getElementById('fbPhoneRow');
+        const phoneRow    = document.getElementById('fbPhoneRow');
+        const nameRow     = document.getElementById('fbName')?.closest('div');
+        const classRow    = document.getElementById('fbClassSelect')?.closest('div');
         const classSelect = document.getElementById('fbClassSelect');
         if (quizCurrentUser && quizCurrentUser.key) {
-            // Logged-in quiz student — hide phone, auto-fill name+class, lock fields
+            // ── Logged-in quiz student ──────────────────────────────────────
+            // Hide name, class and phone rows entirely — visitor doesn't need to see/fill them.
+            // Data is saved silently via hidden inputs.
             if (phoneRow) phoneRow.style.display = 'none';
+            if (nameRow)  nameRow.style.display  = 'none';
+            if (classRow) classRow.style.display = 'none';
+
+            // Silently write real values into the form fields so submitFeedback() picks them up
             const nameEl = document.getElementById('fbName');
-            if (nameEl) { nameEl.value = quizCurrentUser.name || ''; nameEl.readOnly = true; nameEl.style.background = '#f9f9f9'; nameEl.style.color = '#888'; }
+            if (nameEl) { nameEl.value = quizCurrentUser.name || ''; }
+
+            const cls = quizCurrentUser.class || '';
             if (classSelect) {
-                // Try to match class in dropdown, else set Others
-                const cls = quizCurrentUser.class || '';
                 let matched = false;
                 for (let opt of classSelect.options) { if (opt.value === cls) { classSelect.value = cls; matched = true; break; } }
                 if (!matched && cls) {
                     classSelect.value = 'others';
                     const otherEl = document.getElementById('fbClassOther');
-                    if (otherEl) { otherEl.style.display = 'block'; otherEl.value = cls; otherEl.readOnly = true; otherEl.style.background='#f9f9f9'; }
+                    if (otherEl) { otherEl.value = cls; }
                 }
-                classSelect.disabled = true; classSelect.style.background = '#f9f9f9'; classSelect.style.color = '#888';
             }
-            document.getElementById('fbClass').value = quizCurrentUser.class || '';
+            document.getElementById('fbClass').value = cls;
         } else {
-            // Visitor — show phone row, fields editable
+            // ── Anonymous visitor — show all fields editable ────────────────
             if (phoneRow) phoneRow.style.display = 'block';
+            if (nameRow)  nameRow.style.display  = 'block';
+            if (classRow) classRow.style.display = 'block';
+            // Reset fields so previous session doesn't bleed through
+            const nameEl = document.getElementById('fbName');
+            if (nameEl) { nameEl.value = ''; nameEl.readOnly = false; nameEl.style.background = ''; nameEl.style.color = ''; }
+            if (classSelect) { classSelect.value = ''; classSelect.disabled = false; classSelect.style.background = ''; classSelect.style.color = ''; }
+            const otherEl = document.getElementById('fbClassOther');
+            if (otherEl) { otherEl.style.display = 'none'; otherEl.value = ''; otherEl.readOnly = false; otherEl.style.background = ''; }
         }
         overlay.style.display = 'flex';
         overlay.style.alignItems = 'flex-start';
@@ -27186,10 +27215,10 @@ Proceed?`)) return;
         const isLoggedIn = !!(quizCurrentUser && quizCurrentUser.key);
 
         // ── Validation ──────────────────────────────────────────────
-        if (!name) { if(msgEl) msgEl.innerHTML = '<p style="color:#c62828;background:#fde8e8;padding:8px 12px;border-radius:8px;font-weight:600">⚠️ Please enter your name.</p>'; return; }
+        if (!isLoggedIn && !name) { if(msgEl) msgEl.innerHTML = '<p style="color:#c62828;background:#fde8e8;padding:8px 12px;border-radius:8px;font-weight:600">⚠️ Please enter your name.</p>'; return; }
         if (!isLoggedIn && !phone) { if(msgEl) msgEl.innerHTML = '<p style="color:#c62828;background:#fde8e8;padding:8px 12px;border-radius:8px;font-weight:600">⚠️ Please enter your phone number.</p>'; return; }
         if (!isLoggedIn && phone.length < 10) { if(msgEl) msgEl.innerHTML = '<p style="color:#c62828;background:#fde8e8;padding:8px 12px;border-radius:8px;font-weight:600">⚠️ Please enter a valid 10-digit phone number.</p>'; return; }
-        if (!cls) { if(msgEl) msgEl.innerHTML = '<p style="color:#c62828;background:#fde8e8;padding:8px 12px;border-radius:8px;font-weight:600">⚠️ Please select your class / designation.</p>'; return; }
+        if (!isLoggedIn && !cls) { if(msgEl) msgEl.innerHTML = '<p style="color:#c62828;background:#fde8e8;padding:8px 12px;border-radius:8px;font-weight:600">⚠️ Please select your class / designation.</p>'; return; }
         if (!overallScore) { if(msgEl) msgEl.innerHTML = '<p style="color:#c62828;background:#fde8e8;padding:8px 12px;border-radius:8px;font-weight:600">⚠️ Please rate the overall fest experience (1–10).</p>'; return; }
         if (!recommend) { if(msgEl) msgEl.innerHTML = '<p style="color:#c62828;background:#fde8e8;padding:8px 12px;border-radius:8px;font-weight:600">⚠️ Please answer the recommendation question.</p>'; return; }
 
@@ -31057,7 +31086,7 @@ Proceed?`)) return;
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;" id="devTriggerVersion">
-                <strong>Version:</strong> 4.30 — Built on v4.29. Fix: feedback popup was not showing for quiz students who logged in after the feedback was already active. initFeedbackSystem() runs on page load when quizCurrentUser is null, so the dedup check used localStorage only — a stale 'yes' or prior dismiss count silently blocked the popup. Now after a successful quiz login the code re-checks feedbackSettings + feedbackSubmitted/students/{key} in Firebase and shows the popup (1.2s delay) if the student hasn't submitted yet.   | <strong>Last Updated:</strong> February 26, 2026 — 20:05</p>
+                <strong>Version:</strong> 4.33 — Built on v4.32. Feedback popup for logged-in quiz students: Name, Class and Phone fields are now completely hidden from view — visitor only sees the rating questions. Their real name and class are silently written into the form's hidden inputs and saved to Firebase as before. Visitors (non-logged-in) still see all fields. Name/class validation also skipped for logged-in students since data is pre-filled in background.   | <strong>Last Updated:</strong> February 26, 2026 — 20:50</p>
             <!-- ============================================ -->
             
             <p style="color: #c44569; font-size: 0.85em; font-weight: 600; margin-bottom: 8px;">
