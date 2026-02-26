@@ -4236,6 +4236,40 @@
                         <div id="fbTriggerStatus" style="padding:10px 20px;border-radius:20px;font-weight:700;font-size:0.95em;background:#f5f5f5;color:#888">⏳ Loading...</div>
                         <button onclick="activateFeedback()" id="btnActivateFeedback" style="background:linear-gradient(135deg,#c2185b,#880e4f);color:white;border:none;border-radius:10px;padding:12px 24px;font-size:1em;font-weight:700;cursor:pointer;box-shadow:0 3px 10px rgba(194,24,91,0.4)">🚀 Activate Feedback (Make Live)</button>
                         <button onclick="deactivateFeedback()" id="btnDeactivateFeedback" style="background:white;color:#c62828;border:2px solid #f44336;border-radius:10px;padding:12px 24px;font-size:1em;font-weight:700;cursor:pointer">⛔ Deactivate Feedback</button>
+                        <a href="feedback_preview.html" target="_blank" style="display:inline-flex;align-items:center;gap:7px;background:linear-gradient(135deg,#00695c,#26a69a);color:white;text-decoration:none;border-radius:10px;padding:12px 24px;font-size:1em;font-weight:700;box-shadow:0 3px 10px rgba(0,105,92,0.35)">🔗 Open Preview Page</a>
+                    </div>
+                </div>
+
+                <!-- ── DISMISS BEHAVIOR ── -->
+                <div style="background:white;border-radius:14px;padding:22px 24px;margin-bottom:20px;box-shadow:0 2px 10px rgba(0,0,0,0.08);border-top:4px solid #f9a825">
+                    <h3 style="color:#e65100;margin:0 0 6px;font-size:1.1em">🔒 Dismiss Behavior</h3>
+                    <p style="color:#888;font-size:0.85em;margin:0 0 16px">Control how many times a visitor can dismiss the popup before they are forced to fill it.</p>
+
+                    <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:18px;background:#fff8e1;padding:14px 18px;border-radius:10px;border:2px solid #ffe082">
+                        <label style="font-weight:700;color:#555;font-size:0.95em;white-space:nowrap">Allowed dismissals before forcing:</label>
+                        <div style="display:flex;gap:8px;align-items:center">
+                            <button onclick="fbChangeDismiss(-1)" style="width:34px;height:34px;border-radius:50%;border:2px solid #e65100;background:white;color:#e65100;font-size:1.3em;font-weight:700;cursor:pointer;line-height:1;display:flex;align-items:center;justify-content:center">−</button>
+                            <span id="fbMaxDismissDisplay" style="font-size:1.8em;font-weight:900;color:#e65100;min-width:36px;text-align:center">1</span>
+                            <button onclick="fbChangeDismiss(1)" style="width:34px;height:34px;border-radius:50%;border:2px solid #e65100;background:white;color:#e65100;font-size:1.3em;font-weight:700;cursor:pointer;line-height:1;display:flex;align-items:center;justify-content:center">+</button>
+                            <input type="hidden" id="fbMaxDismissVal" value="1">
+                        </div>
+                        <div id="fbDismissExplain" style="background:#f3f3f3;border-radius:8px;padding:6px 14px;font-size:0.83em;color:#555;font-weight:600">
+                            <!-- Filled by JS -->
+                        </div>
+                    </div>
+
+                    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:0">
+                        <button onclick="saveDismissSetting()" style="background:linear-gradient(135deg,#f9a825,#ff6f00);color:white;border:none;border-radius:10px;padding:11px 24px;font-size:0.95em;font-weight:700;cursor:pointer;box-shadow:0 3px 10px rgba(249,168,37,0.4)">💾 Save Dismiss Setting</button>
+                        <span id="fbDismissSaveToast" style="display:none;background:#d4edda;color:#155724;padding:10px 18px;border-radius:10px;font-weight:700;font-size:0.9em;border:2px solid #c3e6cb">✅ Saved!</span>
+                    </div>
+
+                    <hr style="border:none;border-top:1px solid #eee;margin:18px 0">
+
+                    <h4 style="color:#c62828;margin:0 0 8px;font-size:0.95em">🔄 Reset Dismiss Counts for All Visitors</h4>
+                    <p style="color:#888;font-size:0.83em;margin:0 0 12px">When you click this, every visitor's dismiss history is cleared — they will see the popup fresh again as if it's their first time.</p>
+                    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+                        <button onclick="resetAllDismissCounts()" style="background:white;color:#c62828;border:2px solid #f44336;border-radius:10px;padding:10px 22px;font-size:0.93em;font-weight:700;cursor:pointer">🗑️ Reset All Dismiss Counts</button>
+                        <span id="fbResetToast" style="display:none;background:#d4edda;color:#155724;padding:10px 18px;border-radius:10px;font-weight:700;font-size:0.9em;border:2px solid #c3e6cb">✅ All dismiss counts reset!</span>
                     </div>
                 </div>
 
@@ -16870,11 +16904,11 @@
         let _liveMonitorListeners = [];
 
         async function startLiveJuryMonitor() {
-            // Stop old listeners
+            // ── Stop old Firebase listeners ──────────────────────────────────────
             _liveMonitorListeners.forEach(off => off());
             _liveMonitorListeners = [];
 
-            // Populate event dropdown if needed
+            // ── Populate event dropdown from jurySetup if empty ──────────────────
             const sel = document.getElementById('liveMonitorEvent');
             if (sel && sel.options.length <= 1) {
                 const s = await db.ref('jurySetup').once('value');
@@ -16892,90 +16926,509 @@
                 return;
             }
 
-            container.innerHTML = '<p style="color:#aaa;text-align:center;padding:20px">⏳ Loading...</p>';
+            container.innerHTML = '<p style="color:#aaa;text-align:center;padding:20px">⏳ Loading live monitor…</p>';
 
             try {
+                // ── Load setup + all enrollments in parallel ─────────────────────
                 const [setupSnap, enrollSnap] = await Promise.all([
                     db.ref('jurySetup/' + event).once('value'),
                     db.ref('youthfest-enrollments').once('value')
                 ]);
+
                 const setup = setupSnap.val();
                 if (!setup || !setup.criteria) {
                     container.innerHTML = '<p style="color:#999;text-align:center;padding:20px">No jury setup found for this event.</p>';
                     return;
                 }
-                const aliasMap = setup.classAliases || {};
-                const criteria = setup.criteria;
-                // Get enrolled classes
-                const classes = [];
+
+                const aliasMap  = setup.classAliases || {};
+                const criteria  = setup.criteria;
+                const j1Name    = setup.jury1Name || 'Jury 1';
+                const j2Name    = setup.jury2Name || 'Jury 2';
+
+                // ── Determine event type — config always wins ─────────────────────
+                const liveCfg  = (events && event) ? (events[event] || {}) : {};
+                let eventType  = setup.eventType || 'class';
+                if (liveCfg.multiTeam)  eventType = 'multiteam';
+                if (liveCfg.individual) eventType = 'individual';
+
+                // ── Build ordered enrolled-classes list (preserving jury sheet order) ──
+                const orderedClasses = [];
                 if (enrollSnap.exists()) {
-                    enrollSnap.forEach(c => {
-                        const e = c.val();
-                        if (e.event === event && e.classYear && !classes.includes(e.classYear)) classes.push(e.classYear);
+                    enrollSnap.forEach(ch => {
+                        const e = ch.val();
+                        if (e.event === event && e.classYear && !orderedClasses.includes(e.classYear))
+                            orderedClasses.push(e.classYear);
                     });
                 }
 
-                function renderMonitor(j1data, j2data) {
-                    const j1Name = setup.jury1Name || 'Jury 1';
-                    const j2Name = setup.jury2Name || 'Jury 2';
-                    let html = '<div style="margin-bottom:15px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">'
-                        + '<span style="background:#e3f2fd;color:#1565c0;padding:4px 12px;border-radius:20px;font-size:13px;font-weight:600">&#x1F535; ' + j1Name + '</span>'
-                        + '<span style="background:#fce4ec;color:#880e4f;padding:4px 12px;border-radius:20px;font-size:13px;font-weight:600">&#x1F534; ' + j2Name + '</span>'
-                        + '<span style="color:#888;font-size:12px">Live updates every time a jury saves marks</span>'
-                        + '</div>';
-                    html += '<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:13px">';
-                    html += '<thead><tr style="background:linear-gradient(135deg,#6a1b9a,#c44569);color:white">';
-                    html += '<th style="padding:10px;text-align:left">Class</th><th style="padding:10px;text-align:left">Code Name</th>';
-                    criteria.forEach(function(c) { html += '<th style="padding:10px;text-align:center">' + c + '</th>'; });
-                    html += '<th style="padding:10px;text-align:center">J1 Total</th>'
-                         + '<th style="padding:10px;text-align:center">J2 Total</th>'
-                         + '<th style="padding:10px;text-align:center;background:rgba(255,215,0,0.3)">Combined</th>'
-                         + '</tr></thead><tbody>';
-                    classes.forEach(function(cls, idx) {
-                        const safeKey = cls.replace(/[.\[\]#$\/\s]/g, '_');
-                        const alias = aliasMap[safeKey] || cls;
-                        const j1cls = j1data ? (j1data[safeKey] || {}) : {};
-                        const j2cls = j2data ? (j2data[safeKey] || {}) : {};
-                        const j1marks = j1cls.marks || [];
-                        const j2marks = j2cls.marks || [];
-                        const j1total = j1marks.reduce(function(s,v){ return s+(parseFloat(v)||0); }, 0);
-                        const j2total = j2marks.reduce(function(s,v){ return s+(parseFloat(v)||0); }, 0);
-                        const combined = j1total + j2total;
-                        const bg = idx % 2 === 0 ? '#fff' : '#f9f0ff';
-                        html += '<tr style="background:' + bg + ';border-bottom:1px solid #e0e0e0">';
-                        html += '<td style="padding:8px 10px;font-weight:600">' + cls + '</td>';
-                        html += '<td style="padding:8px 10px;color:#6a1b9a">' + alias + '</td>';
-                        criteria.forEach(function(c, i) {
-                            const v1 = j1marks[i] !== undefined ? j1marks[i] : '';
-                            const v2 = j2marks[i] !== undefined ? j2marks[i] : '';
-                            html += '<td style="padding:8px;text-align:center">'
-                                + '<div style="font-size:11px;color:#1565c0">J1: <input type="number" value="' + v1 + '" min="0" max="10" step="0.5"'
-                                + ' onchange="adminEditMark(\'' + event + '\',1,\'' + safeKey + '\',' + i + ',this.value)"'
-                                + ' style="width:45px;padding:2px 4px;border:1.5px solid #90caf9;border-radius:4px;font-size:11px"></div>'
-                                + '<div style="font-size:11px;color:#880e4f;margin-top:3px">J2: <input type="number" value="' + v2 + '" min="0" max="10" step="0.5"'
-                                + ' onchange="adminEditMark(\'' + event + '\',2,\'' + safeKey + '\',' + i + ',this.value)"'
-                                + ' style="width:45px;padding:2px 4px;border:1.5px solid #f48fb1;border-radius:4px;font-size:11px"></div>'
-                                + '</td>';
-                        });
-                        html += '<td style="padding:8px;text-align:center;font-weight:700;color:#1565c0">' + j1total.toFixed(1) + '</td>';
-                        html += '<td style="padding:8px;text-align:center;font-weight:700;color:#880e4f">' + j2total.toFixed(1) + '</td>';
-                        html += '<td style="padding:8px;text-align:center;font-weight:800;color:#4a148c;background:rgba(255,215,0,0.15)">' + combined.toFixed(1) + '</td>';
-                        html += '</tr>';
+                // ── Build full enrollment objects per class ───────────────────────
+                const allEventEnrollments = [];
+                if (enrollSnap.exists()) {
+                    enrollSnap.forEach(ch => {
+                        const e = ch.val(); e._key = ch.key;
+                        if (e.event === event) allEventEnrollments.push(e);
                     });
-                    html += '</tbody></table></div>';
+                }
+
+                // ── Helper: safeKey ──────────────────────────────────────────────
+                function sk(cls) { return cls.replace(/[.\[\]#$\/\s]/g, '_'); }
+
+                // ── Helper: get alias (never expose real class name to jury) ─────
+                function getMonAlias(cls) {
+                    const k = sk(cls);
+                    return aliasMap[k] || ('Code-' + (orderedClasses.indexOf(cls) + 1));
+                }
+
+                // ── Helper: sum marks array ──────────────────────────────────────
+                function sumMarks(arr) {
+                    if (!arr || !arr.length) return 0;
+                    return arr.reduce((s, v) => s + (parseFloat(v) || 0), 0);
+                }
+
+                // ── Helper: render one criterion cell (J1 + J2 stacked) ──────────
+                function critCell(eventName, rowKey, juryNum, markVal, color, borderColor) {
+                    const val = markVal !== undefined && markVal !== null && markVal !== '' ? markVal : '';
+                    return '<div style="font-size:11px;color:' + color + ';margin-bottom:2px">'
+                        + 'J' + juryNum + ': <input type="number" value="' + val + '" min="0" max="10" step="0.5"'
+                        + ' onchange="adminEditMark(\'' + eventName + '\',' + juryNum + ',\'' + rowKey + '\',' + '%%IDX%%' + ',this.value)"'
+                        + ' style="width:45px;padding:2px 4px;border:1.5px solid ' + borderColor + ';border-radius:4px;font-size:11px;text-align:center">'
+                        + '</div>';
+                }
+
+                // ── Master render function — called on every live update ──────────
+                function renderMonitor(j1data, j2data, extraData) {
+                    j1data = j1data || {};
+                    j2data = j2data || {};
+
+                    // ── Super-admin identity column helper ────────────────────────
+                    // Builds the amber "🔓 Real Identity" cell shown only in super-admin view.
+                    // Shows real class name, the jury code it maps to, and enrolled names/roles.
+                    function saIdentityCell(cls, alias, members, extraLine) {
+                        const nameList = members.map(function(m) {
+                            const role = m.role ? ' <span style="color:#888;font-size:10px">(' + m.role + ')</span>' : '';
+                            return '<span style="display:block;font-size:11px;color:#333">' + (m.name || '—') + role + '</span>';
+                        }).join('');
+                        return '<td style="padding:6px 8px;border-left:3px solid #f9a825;background:#fffde7;min-width:160px">'
+                            + '<div style="font-size:11px;font-weight:700;color:#e65100;white-space:nowrap">' + cls + '</div>'
+                            + '<div style="font-size:10px;color:#6a1b9a;margin-bottom:3px">Code: <strong>' + alias + '</strong></div>'
+                            + (extraLine ? '<div style="font-size:10px;color:#555;margin-bottom:3px">' + extraLine + '</div>' : '')
+                            + nameList
+                            + '</td>';
+                    }
+
+                    // ── Legend bar ────────────────────────────────────────────────
+                    let html = '<div style="margin-bottom:10px;padding:8px 12px;background:#fff8e1;border:1.5px solid #f9a825;border-radius:8px;font-size:12px;color:#5d4037">'
+                        + '🔓 <strong>Super-Admin View</strong> — The amber column shows real class names + enrolled participants. Jury only sees the anonymised code column.'
+                        + '</div>'
+                        + '<div style="margin-bottom:14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:10px 14px;background:#f8f9fa;border-radius:10px;border:1px solid #e0e0e0">'
+                        + '<span style="background:#e3f2fd;color:#1565c0;padding:4px 14px;border-radius:20px;font-size:13px;font-weight:600">🔵 ' + j1Name + '</span>'
+                        + '<span style="background:#fce4ec;color:#880e4f;padding:4px 14px;border-radius:20px;font-size:13px;font-weight:600">🔴 ' + j2Name + '</span>'
+                        + '<span style="background:#e8f5e9;color:#2e7d32;padding:4px 14px;border-radius:20px;font-size:12px">🟢 Live — updates on every jury save</span>'
+                        + '<span style="margin-left:auto;font-size:11px;color:#aaa">Last refreshed: ' + new Date().toLocaleTimeString() + '</span>'
+                        + '</div>';
+
+                    // Shared th for the SA identity column
+                    const saHeader = '<th style="padding:9px 8px;text-align:left;background:#f9a825;color:#212121;white-space:nowrap">🔓 Real Class &amp; Enrolled</th>';
+
+                    // ════════════════════════════════════════════════════════════════
+                    // INDIVIDUAL EVENT (Hand Writing, Talent Hunt, Pod Casting, Ramp Walk)
+                    // ════════════════════════════════════════════════════════════════
+                    if (eventType === 'individual') {
+                        const isHW  = event === 'Hand Writing';
+                        const isTH  = event === 'Talent Hunt';
+                        const isPod = event === 'Pod Casting';
+                        const usesSittingCode = isHW || isTH;
+                        const sittingPrefix   = isHW ? 'HW' : isTH ? 'TH' : '';
+                        const colHeader       = isPod ? 'Participant Code' : usesSittingCode ? 'Sitting Code' : 'Code';
+
+                        html += '<div style="background:#e3f2fd;border-left:5px solid #1565c0;padding:8px 14px;border-radius:8px;margin-bottom:12px;font-size:12px;color:#1a237e">'
+                            + '<strong>🧑 Individual Event — Live Monitor</strong> · Each participant row scored separately · '
+                            + (usesSittingCode ? 'Sitting codes shown to jury' : 'Code names shown to jury')
+                            + '</div>';
+
+                        html += '<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12.5px">'
+                            + '<thead><tr style="background:linear-gradient(135deg,#1a237e,#1565c0);color:white">'
+                            + '<th style="padding:9px 6px;text-align:center">#</th>'
+                            + saHeader
+                            + '<th style="padding:9px 8px;text-align:left">' + colHeader + '</th>';
+                        if (isPod) {
+                            html += '<th style="padding:9px 8px;text-align:left">Episode</th>'
+                                  + '<th style="padding:9px 8px;text-align:center">🎙️ Listen</th>';
+                        } else {
+                            html += '<th style="padding:9px 8px;text-align:left">Details</th>';
+                        }
+                        criteria.forEach(c => {
+                            html += '<th style="padding:9px 6px;text-align:center">' + c + '<br><small style="font-weight:400;opacity:.8">(0–10)</small></th>';
+                        });
+                        html += '<th style="padding:9px 6px;text-align:center;background:rgba(255,255,255,.12)">J1 Total</th>'
+                             + '<th style="padding:9px 6px;text-align:center;background:rgba(255,255,255,.12)">J2 Total</th>'
+                             + '<th style="padding:9px 6px;text-align:center;background:rgba(255,215,0,.25)">⭐ Combined</th>'
+                             + '</tr></thead><tbody>';
+
+                        let seq = 1;
+                        orderedClasses.forEach(cls => {
+                            const clsKey    = sk(cls);
+                            const alias     = getMonAlias(cls);
+                            const students  = allEventEnrollments.filter(e => (e.classYear || e.class) === cls);
+
+                            students.forEach((enr, idx) => {
+                                const rowKey  = clsKey + '__p' + (idx + 1);
+                                const j1row   = j1data[rowKey] || {};
+                                const j2row   = j2data[rowKey] || {};
+                                const j1marks = j1row.marks || [];
+                                const j2marks = j2row.marks || [];
+                                const j1tot   = sumMarks(j1marks);
+                                const j2tot   = sumMarks(j2marks);
+                                const combined = j1tot + j2tot;
+                                const bg = seq % 2 === 0 ? '#f0f4ff' : '#fff';
+
+                                // Build code cell (what jury sees)
+                                let codeCell;
+                                if (usesSittingCode) {
+                                    const scCode = enr.sittingCode
+                                        ? (sittingPrefix + '-' + enr.sittingCode)
+                                        : (sittingPrefix + '-' + generateSittingCode(enr._key || enr.id, sittingPrefix));
+                                    codeCell = '<span style="background:' + (isHW ? '#1a237e' : '#e65100') + ';color:white;font-weight:900;padding:4px 10px;border-radius:8px;font-size:0.9em;letter-spacing:2px">' + scCode + '</span>';
+                                } else if (isPod) {
+                                    codeCell = '<span style="background:#880e4f;color:white;font-weight:800;padding:4px 10px;border-radius:8px;font-size:0.85em">' + alias + ' — P' + (idx+1) + '</span>';
+                                } else {
+                                    codeCell = '<strong style="color:#4a148c">' + alias + ' — P' + (idx+1) + '</strong>';
+                                }
+
+                                // Extra info line for SA column
+                                const extraLine = enr.talentType ? 'Talent: ' + enr.talentType
+                                    : enr.languages ? 'Lang: ' + enr.languages
+                                    : enr.topic ? 'Topic: ' + enr.topic : '';
+
+                                html += '<tr style="background:' + bg + ';border-bottom:1px solid #e8eaf6">';
+                                html += '<td style="padding:7px 6px;text-align:center;color:#888;font-size:11px">' + seq + '</td>';
+                                // ── Super-admin identity cell ──────────────────────
+                                html += saIdentityCell(cls, alias + ' — P' + (idx+1), [enr], extraLine);
+                                // ── Jury code cell ─────────────────────────────────
+                                html += '<td style="padding:7px 8px">' + codeCell + '</td>';
+
+                                if (isPod) {
+                                    const epTitle = enr.episodeTitle ? '<strong>' + enr.episodeTitle + '</strong>' : '—';
+                                    const epTopic = enr.topic ? '<br><small style="color:#888">' + enr.topic + '</small>' : '';
+                                    html += '<td style="padding:7px 8px"><small>' + epTitle + epTopic + '</small></td>';
+                                    const spotLink = enr.link
+                                        ? '<a href="' + enr.link + '" target="_blank" style="background:#1db954;color:white;padding:3px 8px;border-radius:5px;text-decoration:none;font-size:11px;font-weight:700">▶ Spotify</a>'
+                                        : '<span style="color:#aaa;font-size:11px">No link</span>';
+                                    html += '<td style="padding:7px 8px;text-align:center">' + spotLink + '</td>';
+                                } else {
+                                    const det = (function(e){
+                                        const d=[];
+                                        if(e.topic) d.push('Topic: '+e.topic);
+                                        if(e.talentType) d.push('Talent: '+e.talentType);
+                                        if(e.languages) d.push('Lang: '+e.languages);
+                                        if(e.showstopper) d.push('Showstopper: '+e.showstopper);
+                                        if(e.cameraName) d.push('📹 '+e.cameraName);
+                                        return d.length ? d.join(' · ') : '—';
+                                    })(enr);
+                                    html += '<td style="padding:7px 8px"><small style="color:#555">' + det + '</small></td>';
+                                }
+
+                                criteria.forEach((c, i) => {
+                                    const v1 = j1marks[i] !== undefined ? j1marks[i] : '';
+                                    const v2 = j2marks[i] !== undefined ? j2marks[i] : '';
+                                    html += '<td style="padding:5px 4px;text-align:center;vertical-align:middle">'
+                                        + '<div style="font-size:11px;color:#1565c0;margin-bottom:2px">J1: <input type="number" value="' + v1 + '" min="0" max="10" step="0.5"'
+                                        + ' onchange="adminEditMark(\'' + event + '\',1,\'' + rowKey + '\',' + i + ',this.value)"'
+                                        + ' style="width:44px;padding:2px 3px;border:1.5px solid #90caf9;border-radius:4px;font-size:11px;text-align:center"></div>'
+                                        + '<div style="font-size:11px;color:#880e4f">J2: <input type="number" value="' + v2 + '" min="0" max="10" step="0.5"'
+                                        + ' onchange="adminEditMark(\'' + event + '\',2,\'' + rowKey + '\',' + i + ',this.value)"'
+                                        + ' style="width:44px;padding:2px 3px;border:1.5px solid #f48fb1;border-radius:4px;font-size:11px;text-align:center"></div>'
+                                        + '</td>';
+                                });
+
+                                const hasJ1 = j1marks.length > 0;
+                                const hasJ2 = j2marks.length > 0;
+                                html += '<td style="padding:7px 6px;text-align:center;font-weight:700;color:' + (hasJ1 ? '#1565c0' : '#bbb') + '">' + (hasJ1 ? j1tot.toFixed(1) : '—') + '</td>';
+                                html += '<td style="padding:7px 6px;text-align:center;font-weight:700;color:' + (hasJ2 ? '#880e4f' : '#bbb') + '">' + (hasJ2 ? j2tot.toFixed(1) : '—') + '</td>';
+                                html += '<td style="padding:7px 6px;text-align:center;font-weight:800;font-size:1.05em;color:' + (hasJ1||hasJ2 ? '#4a148c' : '#ccc') + ';background:rgba(255,215,0,0.13)">'
+                                    + (hasJ1 || hasJ2 ? combined.toFixed(1) : '—') + '</td>';
+                                html += '</tr>';
+                                seq++;
+                            });
+                        });
+
+                        html += '</tbody></table></div>';
+
+                    // ════════════════════════════════════════════════════════════════
+                    // MULTI-TEAM EVENT (Vlog, Best out of Waste)
+                    // ════════════════════════════════════════════════════════════════
+                    } else if (eventType === 'multiteam') {
+                        const isVlog = event === 'Vlog';
+                        const membersPerTeam = liveCfg.count || 2;
+                        const vlogSocialData = extraData || {};
+
+                        html += '<div style="background:#fff3e0;border-left:5px solid #e65100;padding:8px 14px;border-radius:8px;margin-bottom:12px;font-size:12px;color:#bf360c">'
+                            + '<strong>👥 Multi-Team Event — Live Monitor</strong> · Each team row scored separately'
+                            + (isVlog ? ' · Social scores included' : '')
+                            + '</div>';
+
+                        html += '<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12.5px">'
+                            + '<thead><tr style="background:linear-gradient(135deg,#bf360c,#e64a19);color:white">'
+                            + '<th style="padding:9px 6px;text-align:center">#</th>'
+                            + saHeader
+                            + '<th style="padding:9px 8px;text-align:left">Team Code</th>';
+                        if (isVlog) {
+                            html += '<th style="padding:9px 8px;text-align:left">Topic</th>'
+                                  + '<th style="padding:9px 8px;text-align:center;background:rgba(233,30,99,.25)">Social Score</th>';
+                        } else {
+                            html += '<th style="padding:9px 8px;text-align:left">Detail</th>';
+                        }
+                        criteria.forEach(c => {
+                            html += '<th style="padding:9px 6px;text-align:center">' + c + '<br><small style="font-weight:400;opacity:.8">(0–10)</small></th>';
+                        });
+                        html += '<th style="padding:9px 6px;text-align:center;background:rgba(255,255,255,.12)">J1 Total</th>'
+                             + '<th style="padding:9px 6px;text-align:center;background:rgba(255,255,255,.12)">J2 Total</th>'
+                             + '<th style="padding:9px 6px;text-align:center;background:rgba(255,215,0,.25)">⭐ Combined</th>'
+                             + '</tr></thead><tbody>';
+
+                        let seq = 1;
+                        orderedClasses.forEach(cls => {
+                            const clsKey   = sk(cls);
+                            const alias    = getMonAlias(cls);
+                            const classEnr = allEventEnrollments.filter(e => (e.classYear || e.class) === cls);
+
+                            // Group into teams (same logic as renderJurySheet)
+                            const teamsMap = {};
+                            classEnr.forEach((enr, idx) => {
+                                let tKey;
+                                if (enr.teamNum != null) tKey = String(enr.teamNum);
+                                else if (enr.topic)      tKey = 'topic__' + enr.topic;
+                                else                     tKey = String(Math.floor(idx / membersPerTeam) + 1);
+                                if (!teamsMap[tKey]) teamsMap[tKey] = [];
+                                teamsMap[tKey].push(enr);
+                            });
+
+                            const teamNums = Object.keys(teamsMap).sort((a,b) => Number(a)-Number(b));
+                            teamNums.forEach((tNum, tIdx) => {
+                                const teamMembers = teamsMap[tNum];
+                                const rowKey      = clsKey + '__t' + (tIdx + 1);
+                                const teamCode    = alias + ' — Team ' + (tIdx + 1);
+                                const teamTopic   = teamMembers[0].topic || '';
+
+                                let socialScore = 0;
+                                if (isVlog) {
+                                    const vKey = cls + '__' + teamTopic;
+                                    if (vlogSocialData[vKey]) socialScore = vlogSocialData[vKey].socialScore || 0;
+                                }
+
+                                const j1row   = j1data[rowKey] || {};
+                                const j2row   = j2data[rowKey] || {};
+                                const j1marks = j1row.marks || [];
+                                const j2marks = j2row.marks || [];
+                                const j1tot   = sumMarks(j1marks);
+                                const j2tot   = sumMarks(j2marks);
+                                const combined = j1tot + j2tot;
+                                const bg = seq % 2 === 0 ? '#fff8f0' : '#fff';
+
+                                const extraLine = teamTopic ? 'Topic: ' + teamTopic : '';
+
+                                html += '<tr style="background:' + bg + ';border-bottom:1px solid #ffe0b2">';
+                                html += '<td style="padding:7px 6px;text-align:center;color:#888;font-size:11px">' + seq + '</td>';
+                                // ── Super-admin identity cell ──────────────────────
+                                html += saIdentityCell(cls, teamCode, teamMembers, extraLine);
+                                // ── Team code cell ─────────────────────────────────
+                                html += '<td style="padding:7px 8px"><span style="background:#4a148c;color:white;font-weight:800;padding:3px 10px;border-radius:8px;font-size:0.85em">' + teamCode + '</span></td>';
+
+                                if (isVlog) {
+                                    html += '<td style="padding:7px 8px"><small style="color:#555">' + (teamTopic || '—') + '</small></td>';
+                                    html += '<td style="padding:7px 8px;text-align:center;font-weight:700;color:' + (socialScore > 0 ? '#e91e63' : '#aaa') + '">' + (socialScore > 0 ? socialScore : '—') + '</td>';
+                                } else {
+                                    const det = teamMembers[0].topic || teamMembers[0].cause || '—';
+                                    html += '<td style="padding:7px 8px"><small style="color:#555">' + det + '</small></td>';
+                                }
+
+                                criteria.forEach((c, i) => {
+                                    const v1 = j1marks[i] !== undefined ? j1marks[i] : '';
+                                    const v2 = j2marks[i] !== undefined ? j2marks[i] : '';
+                                    html += '<td style="padding:5px 4px;text-align:center;vertical-align:middle">'
+                                        + '<div style="font-size:11px;color:#1565c0;margin-bottom:2px">J1: <input type="number" value="' + v1 + '" min="0" max="10" step="0.5"'
+                                        + ' onchange="adminEditMark(\'' + event + '\',1,\'' + rowKey + '\',' + i + ',this.value)"'
+                                        + ' style="width:44px;padding:2px 3px;border:1.5px solid #90caf9;border-radius:4px;font-size:11px;text-align:center"></div>'
+                                        + '<div style="font-size:11px;color:#880e4f">J2: <input type="number" value="' + v2 + '" min="0" max="10" step="0.5"'
+                                        + ' onchange="adminEditMark(\'' + event + '\',2,\'' + rowKey + '\',' + i + ',this.value)"'
+                                        + ' style="width:44px;padding:2px 3px;border:1.5px solid #f48fb1;border-radius:4px;font-size:11px;text-align:center"></div>'
+                                        + '</td>';
+                                });
+
+                                const hasJ1 = j1marks.length > 0;
+                                const hasJ2 = j2marks.length > 0;
+                                html += '<td style="padding:7px 6px;text-align:center;font-weight:700;color:' + (hasJ1 ? '#1565c0' : '#bbb') + '">' + (hasJ1 ? j1tot.toFixed(1) : '—') + '</td>';
+                                html += '<td style="padding:7px 6px;text-align:center;font-weight:700;color:' + (hasJ2 ? '#880e4f' : '#bbb') + '">' + (hasJ2 ? j2tot.toFixed(1) : '—') + '</td>';
+                                html += '<td style="padding:7px 6px;text-align:center;font-weight:800;font-size:1.05em;color:' + (hasJ1||hasJ2 ? '#4a148c' : '#ccc') + ';background:rgba(255,215,0,0.13)">'
+                                    + (hasJ1 || hasJ2 ? combined.toFixed(1) : '—') + '</td>';
+                                html += '</tr>';
+                                seq++;
+                            });
+                        });
+
+                        html += '</tbody></table></div>';
+
+                    // ════════════════════════════════════════════════════════════════
+                    // CLASS-BASED EVENT (Nukkad Natak, YouTube Ad, Mime, Group Dance…)
+                    // ════════════════════════════════════════════════════════════════
+                    } else {
+                        const isNukkad = event === 'Nukkad Natak';
+                        const isYTAd   = event === 'YouTube Advertisement';
+
+                        html += '<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12.5px">'
+                            + '<thead><tr style="background:linear-gradient(135deg,#6a1b9a,#c44569);color:white">'
+                            + '<th style="padding:9px 6px;text-align:center">#</th>'
+                            + saHeader
+                            + '<th style="padding:9px 8px;text-align:left">Class Code</th>';
+                        if (isNukkad) {
+                            html += '<th style="padding:9px 8px;text-align:left">Cause/Theme</th>'
+                                  + '<th style="padding:9px 8px;text-align:center">📺 YouTube</th>'
+                                  + '<th style="padding:9px 8px;text-align:center">Bonus pts</th>';
+                        } else if (isYTAd) {
+                            html += '<th style="padding:9px 8px;text-align:left">Ad Title</th>'
+                                  + '<th style="padding:9px 8px;text-align:left">Product</th>'
+                                  + '<th style="padding:9px 8px;text-align:center;background:rgba(233,30,99,.25)">Social Score</th>';
+                        } else {
+                            html += '<th style="padding:9px 8px;text-align:left">Theme/Topic</th>';
+                        }
+                        criteria.forEach(c => {
+                            html += '<th style="padding:9px 6px;text-align:center">' + c + '<br><small style="font-weight:400;opacity:.8">(0–10)</small></th>';
+                        });
+                        html += '<th style="padding:9px 6px;text-align:center;background:rgba(255,255,255,.12)">J1 Total</th>'
+                             + '<th style="padding:9px 6px;text-align:center;background:rgba(255,255,255,.12)">J2 Total</th>'
+                             + '<th style="padding:9px 6px;text-align:center;background:rgba(255,215,0,.25)">⭐ Combined</th>'
+                             + '</tr></thead><tbody>';
+
+                        const nukkadData = extraData ? (extraData.nukkad || {}) : {};
+                        const ytAdData   = extraData ? (extraData.ytAd   || {}) : {};
+
+                        orderedClasses.forEach((cls, idx) => {
+                            const clsKey   = sk(cls);
+                            const alias    = getMonAlias(cls);
+                            const classEnr = allEventEnrollments.filter(e => (e.classYear || e.class) === cls);
+                            const firstEnr = classEnr[0] || {};
+
+                            const j1row   = j1data[clsKey] || {};
+                            const j2row   = j2data[clsKey] || {};
+                            const j1marks = j1row.marks || [];
+                            const j2marks = j2row.marks || [];
+                            const j1tot   = sumMarks(j1marks);
+                            const j2tot   = sumMarks(j2marks);
+                            const combined = j1tot + j2tot;
+                            const bg = (idx + 1) % 2 === 0 ? '#fdf6ff' : '#fff';
+
+                            // Build extra line for SA cell
+                            const extraLine = isYTAd
+                                ? ('Ad: ' + (firstEnr.adTitle || '—') + ' · Product: ' + (firstEnr.product || '—'))
+                                : isNukkad
+                                    ? ('Theme: ' + (firstEnr.cause || firstEnr.topic || '—'))
+                                    : (firstEnr.topic ? 'Topic: ' + firstEnr.topic : '');
+
+                            html += '<tr style="background:' + bg + ';border-bottom:1px solid #ede7f6">';
+                            html += '<td style="padding:7px 6px;text-align:center;color:#888;font-size:11px">' + (idx+1) + '</td>';
+                            // ── Super-admin identity cell ──────────────────────────
+                            html += saIdentityCell(cls, alias, classEnr, extraLine);
+                            // ── Class code cell ────────────────────────────────────
+                            html += '<td style="padding:7px 8px"><strong style="color:#4a148c">' + alias + '</strong></td>';
+
+                            if (isNukkad) {
+                                const nd     = nukkadData[clsKey] || {};
+                                const cause  = firstEnr.cause || firstEnr.topic || '—';
+                                const ytLink = nd.ytLink || '';
+                                const ytVer  = nd.ytVerified === true;
+                                const newVer = nd.newspaperVerified === true;
+                                const bonus  = (ytVer ? 10 : 0) + (newVer ? 10 : 0);
+                                const ytCell = ytLink
+                                    ? '<a href="' + ytLink + '" target="_blank" style="background:#ff0000;color:white;padding:3px 8px;border-radius:5px;text-decoration:none;font-size:11px;font-weight:700">▶ YouTube</a>'
+                                      + (ytVer ? ' <span style="color:#2e7d32;font-size:10px">✅</span>' : ' <span style="color:#f57c00;font-size:10px">⚠️</span>')
+                                    : '<span style="color:#aaa;font-size:11px">Not submitted</span>';
+                                html += '<td style="padding:7px 8px"><small style="color:#555">' + cause + '</small></td>';
+                                html += '<td style="padding:7px 8px;text-align:center">' + ytCell + '</td>';
+                                html += '<td style="padding:7px 8px;text-align:center;font-weight:700;color:' + (bonus > 0 ? '#2e7d32' : '#aaa') + '">+' + bonus + '</td>';
+                            } else if (isYTAd) {
+                                const yd        = ytAdData[clsKey] || {};
+                                const adTitle   = firstEnr.adTitle  || yd.adTitle  || '—';
+                                const product   = firstEnr.product  || yd.product  || '—';
+                                const socialPct = yd.socialPct != null ? yd.socialPct : (yd.socialScore || firstEnr.socialPct || firstEnr.socialScore || 0);
+                                html += '<td style="padding:7px 8px"><small style="color:#555">' + adTitle + '</small></td>';
+                                html += '<td style="padding:7px 8px"><small style="color:#555">' + product + '</small></td>';
+                                html += '<td style="padding:7px 8px;text-align:center;font-weight:700;color:' + (socialPct > 0 ? '#e91e63' : '#aaa') + '">' + (socialPct > 0 ? socialPct : '—') + '</td>';
+                            } else {
+                                const theme = firstEnr.topic || firstEnr.cause || firstEnr.product || '—';
+                                html += '<td style="padding:7px 8px"><small style="color:#555">' + theme + '</small></td>';
+                            }
+
+                            criteria.forEach((c, i) => {
+                                const v1 = j1marks[i] !== undefined ? j1marks[i] : '';
+                                const v2 = j2marks[i] !== undefined ? j2marks[i] : '';
+                                html += '<td style="padding:5px 4px;text-align:center;vertical-align:middle">'
+                                    + '<div style="font-size:11px;color:#1565c0;margin-bottom:2px">J1: <input type="number" value="' + v1 + '" min="0" max="10" step="0.5"'
+                                    + ' onchange="adminEditMark(\'' + event + '\',1,\'' + clsKey + '\',' + i + ',this.value)"'
+                                    + ' style="width:44px;padding:2px 3px;border:1.5px solid #90caf9;border-radius:4px;font-size:11px;text-align:center"></div>'
+                                    + '<div style="font-size:11px;color:#880e4f">J2: <input type="number" value="' + v2 + '" min="0" max="10" step="0.5"'
+                                    + ' onchange="adminEditMark(\'' + event + '\',2,\'' + clsKey + '\',' + i + ',this.value)"'
+                                    + ' style="width:44px;padding:2px 3px;border:1.5px solid #f48fb1;border-radius:4px;font-size:11px;text-align:center"></div>'
+                                    + '</td>';
+                            });
+
+                            const hasJ1 = j1marks.length > 0;
+                            const hasJ2 = j2marks.length > 0;
+                            html += '<td style="padding:7px 6px;text-align:center;font-weight:700;color:' + (hasJ1 ? '#1565c0' : '#bbb') + '">' + (hasJ1 ? j1tot.toFixed(1) : '—') + '</td>';
+                            html += '<td style="padding:7px 6px;text-align:center;font-weight:700;color:' + (hasJ2 ? '#880e4f' : '#bbb') + '">' + (hasJ2 ? j2tot.toFixed(1) : '—') + '</td>';
+                            html += '<td style="padding:7px 6px;text-align:center;font-weight:800;font-size:1.05em;color:' + (hasJ1||hasJ2 ? '#4a148c' : '#ccc') + ';background:rgba(255,215,0,0.13)">'
+                                + (hasJ1 || hasJ2 ? combined.toFixed(1) : '—') + '</td>';
+                            html += '</tr>';
+                        });
+
+                        html += '</tbody></table></div>';
+                    }
+
                     container.innerHTML = html;
                 }
 
-                // Subscribe to live updates
-                let j1data = null, j2data = null;
-                const ref1 = db.ref('juryMarks/' + event + '/jury1');
-                const ref2 = db.ref('juryMarks/' + event + '/jury2');
-                const h1 = ref1.on('value', snap => { j1data = snap.val(); renderMonitor(j1data, j2data); });
-                const h2 = ref2.on('value', snap => { j2data = snap.val(); renderMonitor(j1data, j2data); });
-                _liveMonitorListeners.push(() => ref1.off('value', h1));
-                _liveMonitorListeners.push(() => ref2.off('value', h2));
-            } catch(e) {
-                container.innerHTML = '<p style="color:red;text-align:center;padding:20px">Error: ' + e.message + '</p>';
+                // ── Load auxiliary data (Nukkad bonus, YT Ad social, Vlog social) ─
+                // Then subscribe to live jury marks
+                async function subscribeWithExtras() {
+                    let extraData = null;
+
+                    if (event === 'Nukkad Natak') {
+                        try {
+                            const snap = await db.ref('nukkadNatak/post').once('value');
+                            extraData = { nukkad: snap.exists() ? snap.val() : {} };
+                        } catch(e) { extraData = { nukkad: {} }; }
+                    } else if (event === 'YouTube Advertisement') {
+                        try {
+                            const snap = await db.ref('youtubeAd').once('value');
+                            const ytMap = {};
+                            if (snap.exists()) snap.forEach(ch => {
+                                const d = ch.val();
+                                const k = (d.classYear || '').replace(/[.\[\]#$\/\s]/g,'_');
+                                ytMap[k] = d;
+                            });
+                            extraData = { ytAd: ytMap };
+                        } catch(e) { extraData = { ytAd: {} }; }
+                    } else if (event === 'Vlog') {
+                        try {
+                            const snap = await db.ref('vlogChallenge').once('value');
+                            extraData = snap.exists() ? snap.val() : {};
+                        } catch(e) { extraData = {}; }
+                    }
+
+                    // ── Subscribe to real-time jury marks ────────────────────────
+                    let j1data = null, j2data = null;
+                    const ref1 = db.ref('juryMarks/' + event + '/jury1');
+                    const ref2 = db.ref('juryMarks/' + event + '/jury2');
+                    const h1 = ref1.on('value', snap => { j1data = snap.val(); renderMonitor(j1data, j2data, extraData); });
+                    const h2 = ref2.on('value', snap => { j2data = snap.val(); renderMonitor(j1data, j2data, extraData); });
+                    _liveMonitorListeners.push(() => ref1.off('value', h1));
+                    _liveMonitorListeners.push(() => ref2.off('value', h2));
+                }
+
+                await subscribeWithExtras();
+
+            } catch(err) {
+                container.innerHTML = '<p style="color:red;text-align:center;padding:20px">Error: ' + err.message + '</p>';
             }
         }
 
@@ -26510,18 +26963,37 @@ Proceed?`)) return;
     // On page load — listen for feedback trigger from Firebase
     async function initFeedbackSystem() {
         try {
-            // Check if user already submitted
-            const subKey = localStorage.getItem('spurthi_fb_submitted');
-            if (subKey === 'yes') { fbAlreadySubmitted = true; return; }
             fbDismissCount = parseInt(localStorage.getItem('spurthi_fb_dismiss') || '0');
-            // Listen for live changes to feedbackSettings
             if (!fbListenerAttached) {
                 fbListenerAttached = true;
-                db.ref('feedbackSettings').on('value', snap => {
+                db.ref('feedbackSettings').on('value', async snap => {
                     const data = snap.val();
                     if (!data || !data.active) return;
+                    // Load maxDismiss
+                    fbMaxDismiss = (data.maxDismiss !== undefined) ? parseInt(data.maxDismiss) : 1;
+                    // Handle admin reset token
+                    const storedToken = localStorage.getItem('spurthi_fb_reset_token');
+                    const serverToken = data.resetToken || '';
+                    if (serverToken && storedToken !== serverToken) {
+                        localStorage.removeItem('spurthi_fb_dismiss');
+                        localStorage.removeItem('spurthi_fb_submitted');
+                        localStorage.setItem('spurthi_fb_reset_token', serverToken);
+                        fbDismissCount = 0;
+                        fbAlreadySubmitted = false;
+                    }
+                    // ── Deduplication check ──────────────────────────────
+                    // 1. If quiz student is logged in — check Firebase by their key
+                    if (quizCurrentUser && quizCurrentUser.key) {
+                        try {
+                            const chk = await db.ref('feedbackSubmitted/students/' + quizCurrentUser.key).once('value');
+                            if (chk.exists()) { fbAlreadySubmitted = true; return; } // silently skip
+                        } catch(e) {}
+                    } else {
+                        // 2. Non-logged-in visitor — check localStorage only (phone checked at submit time)
+                        const subKey = localStorage.getItem('spurthi_fb_submitted');
+                        if (subKey === 'yes') { fbAlreadySubmitted = true; return; }
+                    }
                     if (fbAlreadySubmitted) return;
-                    // Show popup if not submitted
                     showFeedbackPopup(data);
                 });
             }
@@ -26532,16 +27004,22 @@ Proceed?`)) return;
         if (fbAlreadySubmitted) return;
         const overlay = document.getElementById('feedbackPopupOverlay');
         if (!overlay || overlay.style.display === 'flex') return;
-        // Set close button behavior based on dismiss count
+        // Set close button behavior based on dismiss count vs maxDismiss
+        fbMaxDismiss = (settings && settings.maxDismiss !== undefined) ? parseInt(settings.maxDismiss) : fbMaxDismiss;
         const closeBtn = document.getElementById('fbPopupCloseBtn');
-        if (fbDismissCount >= 1) {
-            // 2nd time — must fill
-            if (closeBtn) { closeBtn.style.display = 'none'; }
-            // Add warning
-            const header = overlay.querySelector('div > div > div');
-        } else {
-            if (closeBtn) { closeBtn.style.display = 'block'; }
+        const mustFill = fbDismissCount >= fbMaxDismiss;
+        if (closeBtn) closeBtn.style.display = mustFill ? 'none' : 'flex';
+        // Show/hide the "must fill" warning banner
+        let warnBanner = document.getElementById('fbMustFillBanner');
+        if (!warnBanner) {
+            warnBanner = document.createElement('div');
+            warnBanner.id = 'fbMustFillBanner';
+            warnBanner.style.cssText = 'background:#fff8e1;border-left:4px solid #ffc107;padding:10px 16px;font-size:0.85em;color:#856404;font-weight:600;display:flex;align-items:center;gap:8px';
+            warnBanner.innerHTML = '⚠️ <span>You dismissed this earlier. Please fill the form to continue — this is required.</span>';
+            const header = overlay.querySelector('.fb-modal-header');
+            if (header && header.nextSibling) header.parentNode.insertBefore(warnBanner, header.nextSibling);
         }
+        warnBanner.style.display = mustFill ? 'flex' : 'none';
         // Build overall score buttons
         const scoreRow = document.getElementById('fbOverallScoreRow');
         if (scoreRow && !scoreRow.innerHTML.trim()) {
@@ -26554,12 +27032,30 @@ Proceed?`)) return;
         }
         // Load event list for ratings
         await loadFeedbackEventRatings();
-        // Auto-fill name/class if quiz student logged in
-        if (quizCurrentUser) {
+        // Auto-fill and configure fields based on login state
+        const phoneRow = document.getElementById('fbPhoneRow');
+        const classSelect = document.getElementById('fbClassSelect');
+        if (quizCurrentUser && quizCurrentUser.key) {
+            // Logged-in quiz student — hide phone, auto-fill name+class, lock fields
+            if (phoneRow) phoneRow.style.display = 'none';
             const nameEl = document.getElementById('fbName');
-            const classEl = document.getElementById('fbClass');
-            if (nameEl && !nameEl.value) nameEl.value = quizCurrentUser.name || '';
-            if (classEl && !classEl.value) classEl.value = quizCurrentUser.class || '';
+            if (nameEl) { nameEl.value = quizCurrentUser.name || ''; nameEl.readOnly = true; nameEl.style.background = '#f9f9f9'; nameEl.style.color = '#888'; }
+            if (classSelect) {
+                // Try to match class in dropdown, else set Others
+                const cls = quizCurrentUser.class || '';
+                let matched = false;
+                for (let opt of classSelect.options) { if (opt.value === cls) { classSelect.value = cls; matched = true; break; } }
+                if (!matched && cls) {
+                    classSelect.value = 'others';
+                    const otherEl = document.getElementById('fbClassOther');
+                    if (otherEl) { otherEl.style.display = 'block'; otherEl.value = cls; otherEl.readOnly = true; otherEl.style.background='#f9f9f9'; }
+                }
+                classSelect.disabled = true; classSelect.style.background = '#f9f9f9'; classSelect.style.color = '#888';
+            }
+            document.getElementById('fbClass').value = quizCurrentUser.class || '';
+        } else {
+            // Visitor — show phone row, fields editable
+            if (phoneRow) phoneRow.style.display = 'block';
         }
         overlay.style.display = 'flex';
         overlay.style.alignItems = 'flex-start';
@@ -26609,6 +27105,26 @@ Proceed?`)) return;
         });
     }
 
+    function fbHandleClassChange(val) {
+        const otherInput = document.getElementById('fbClassOther');
+        const hiddenClass = document.getElementById('fbClass');
+        if (val === 'others') {
+            if (otherInput) { otherInput.style.display = 'block'; otherInput.focus(); }
+            if (hiddenClass) hiddenClass.value = '';
+        } else {
+            if (otherInput) { otherInput.style.display = 'none'; otherInput.value = ''; }
+            if (hiddenClass) hiddenClass.value = val;
+        }
+    }
+
+    // Keep fbClass hidden updated when typing in "Others" box
+    document.addEventListener('input', function(e) {
+        if (e.target && e.target.id === 'fbClassOther') {
+            const hiddenClass = document.getElementById('fbClass');
+            if (hiddenClass) hiddenClass.value = e.target.value.trim();
+        }
+    });
+
     function fbSetRecommend(val, btn) {
         fbCurrentRecommend = val;
         document.getElementById('fbRecommend').value = val;
@@ -26623,62 +27139,167 @@ Proceed?`)) return;
     }
 
     function closeFeedbackPopup() {
-        if (fbDismissCount >= 1) return; // Block close on 2nd show
+        if (fbDismissCount >= fbMaxDismiss) return; // Block close once max dismissals reached
         fbDismissCount++;
         localStorage.setItem('spurthi_fb_dismiss', fbDismissCount);
         const overlay = document.getElementById('feedbackPopupOverlay');
         if (overlay) overlay.style.display = 'none';
         document.body.style.overflow = '';
-        // Schedule re-show after 5 minutes
-        setTimeout(() => {
-            if (!fbAlreadySubmitted) {
+        // Schedule re-show after 5 minutes if still has dismissals remaining OR must force
+        if (!fbAlreadySubmitted) {
+            setTimeout(() => {
                 db.ref('feedbackSettings').once('value').then(snap => {
                     const data = snap.val();
-                    if (data && data.active) showFeedbackPopup(data);
+                    if (data && data.active && !fbAlreadySubmitted) showFeedbackPopup(data);
                 });
-            }
-        }, 5 * 60 * 1000);
+            }, 5 * 60 * 1000);
+        }
     }
 
     async function submitFeedback() {
         const name = (document.getElementById('fbName')?.value || '').trim();
-        const cls = (document.getElementById('fbClass')?.value || '').trim();
+        const cls  = (document.getElementById('fbClass')?.value || '').trim();
+        const phone = (document.getElementById('fbPhone')?.value || '').replace(/\D/g,'').trim();
         const overallScore = document.getElementById('fbOverallScore')?.value;
-        const recommend = document.getElementById('fbRecommend')?.value;
-        const suggestions = (document.getElementById('fbSuggestions')?.value || '').trim();
+        const recommend    = document.getElementById('fbRecommend')?.value;
+        const suggestions  = (document.getElementById('fbSuggestions')?.value || '').trim();
         const msgEl = document.getElementById('fbPopupMsg');
+        const isLoggedIn = !!(quizCurrentUser && quizCurrentUser.key);
+
+        // ── Validation ──────────────────────────────────────────────
         if (!name) { if(msgEl) msgEl.innerHTML = '<p style="color:#c62828;background:#fde8e8;padding:8px 12px;border-radius:8px;font-weight:600">⚠️ Please enter your name.</p>'; return; }
+        if (!isLoggedIn && !phone) { if(msgEl) msgEl.innerHTML = '<p style="color:#c62828;background:#fde8e8;padding:8px 12px;border-radius:8px;font-weight:600">⚠️ Please enter your phone number.</p>'; return; }
+        if (!isLoggedIn && phone.length < 10) { if(msgEl) msgEl.innerHTML = '<p style="color:#c62828;background:#fde8e8;padding:8px 12px;border-radius:8px;font-weight:600">⚠️ Please enter a valid 10-digit phone number.</p>'; return; }
+        if (!cls) { if(msgEl) msgEl.innerHTML = '<p style="color:#c62828;background:#fde8e8;padding:8px 12px;border-radius:8px;font-weight:600">⚠️ Please select your class / designation.</p>'; return; }
         if (!overallScore) { if(msgEl) msgEl.innerHTML = '<p style="color:#c62828;background:#fde8e8;padding:8px 12px;border-radius:8px;font-weight:600">⚠️ Please rate the overall fest experience (1–10).</p>'; return; }
         if (!recommend) { if(msgEl) msgEl.innerHTML = '<p style="color:#c62828;background:#fde8e8;padding:8px 12px;border-radius:8px;font-weight:600">⚠️ Please answer the recommendation question.</p>'; return; }
-        if(msgEl) msgEl.innerHTML = '<p style="color:#666">⏳ Submitting...</p>';
+
+        if(msgEl) msgEl.innerHTML = '<p style="color:#666">⏳ Checking for duplicates...</p>';
+
+        // ── Duplicate check before saving ───────────────────────────
         try {
-            await db.ref('feedbackResponses').push({
-                name, class: cls,
-                overallScore: parseInt(overallScore),
-                eventRatings: fbEventRatings,
-                recommend,
-                suggestions,
-                submittedAt: new Date().toISOString(),
-                userAgent: navigator.userAgent.substring(0,80)
-            });
+            if (isLoggedIn) {
+                // Check by student key
+                const existing = await db.ref('feedbackSubmitted/students/' + quizCurrentUser.key).once('value');
+                if (existing.exists()) {
+                    fbAlreadySubmitted = true;
+                    document.getElementById('feedbackPopupOverlay').style.display = 'none';
+                    document.body.style.overflow = '';
+                    return; // silently skip
+                }
+            } else {
+                // Check by phone number
+                const phoneKey = 'ph_' + phone;
+                const existing = await db.ref('feedbackSubmitted/visitors/' + phoneKey).once('value');
+                if (existing.exists()) {
+                    fbAlreadySubmitted = true;
+                    localStorage.setItem('spurthi_fb_submitted', 'yes');
+                    document.getElementById('feedbackPopupOverlay').style.display = 'none';
+                    document.body.style.overflow = '';
+                    return; // silently skip
+                }
+            }
+        } catch(e) { /* proceed even if check fails */ }
+
+        if(msgEl) msgEl.innerHTML = '<p style="color:#666">⏳ Submitting...</p>';
+
+        // ── Build submission object ──────────────────────────────────
+        const now = new Date();
+        const dateStr = now.toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' });
+        const timeStr = now.toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit', hour12:true });
+        const submissionData = {
+            name,
+            class: cls,
+            overallScore: parseInt(overallScore),
+            eventRatings: fbEventRatings,
+            recommend,
+            suggestions,
+            submittedAt: now.toISOString(),
+            submittedDate: dateStr,
+            submittedTime: timeStr,
+            submittedDateTime: dateStr + ' at ' + timeStr,
+            visitorType: isLoggedIn ? 'quiz_student' : 'visitor',
+            ...(isLoggedIn ? {
+                studentKey: quizCurrentUser.key,
+                studentName: quizCurrentUser.name,
+                studentClass: quizCurrentUser.class
+            } : {
+                phone: phone.replace(/(\d{2})(\d{4})(\d{4})/, '$1****$3') // mask middle digits in stored copy
+            })
+        };
+
+        try {
+            // Save response
+            await db.ref('feedbackResponses').push(submissionData);
+            // Mark as submitted to prevent future duplicates
+            if (isLoggedIn) {
+                await db.ref('feedbackSubmitted/students/' + quizCurrentUser.key).set({
+                    submittedAt: now.toISOString(), name, class: cls
+                });
+            } else {
+                const phoneKey = 'ph_' + phone;
+                await db.ref('feedbackSubmitted/visitors/' + phoneKey).set({
+                    submittedAt: now.toISOString(), name, class: cls
+                });
+                localStorage.setItem('spurthi_fb_submitted', 'yes');
+            }
             fbAlreadySubmitted = true;
-            localStorage.setItem('spurthi_fb_submitted', 'yes');
-            // Show thank you
+
+            // Show thank you screen
             const body = document.getElementById('feedbackFormBody');
             if (body) body.innerHTML = `<div style="text-align:center;padding:40px 20px">
                 <div style="font-size:4em;margin-bottom:16px">🎉</div>
                 <h3 style="color:#2e7d32;font-size:1.4em;margin-bottom:8px">Thank You, ${name}!</h3>
-                <p style="color:#555;font-size:1em;margin-bottom:20px">Your feedback has been recorded. We truly appreciate your time! 💪</p>
+                <p style="color:#555;font-size:1em;margin-bottom:6px">Your feedback has been recorded.</p>
+                <p style="color:#aaa;font-size:0.82em;margin-bottom:20px">📅 ${dateStr} &nbsp;🕐 ${timeStr}</p>
                 <button onclick="document.getElementById('feedbackPopupOverlay').style.display='none';document.body.style.overflow=''" style="background:linear-gradient(135deg,#880e4f,#c2185b);color:white;border:none;border-radius:10px;padding:12px 28px;font-size:1em;font-weight:700;cursor:pointer">✅ Close</button>
             </div>`;
             setTimeout(() => {
                 const overlay = document.getElementById('feedbackPopupOverlay');
                 if (overlay) overlay.style.display = 'none';
                 document.body.style.overflow = '';
-            }, 4000);
+            }, 5000);
         } catch(e) {
             if(msgEl) msgEl.innerHTML = '<p style="color:#c62828;background:#fde8e8;padding:8px 12px;border-radius:8px">❌ Error submitting: ' + e.message + '</p>';
         }
+    }
+
+    // ── Dismiss Behavior Controls ──────────────────────────────────
+    let fbAdminMaxDismiss = 1; // local copy for admin UI
+
+    const FB_DISMISS_LABELS = {
+        0: '🔴 No dismissals — must fill immediately on 1st show',
+        1: '🟡 1 dismissal — can close once, forced on 2nd show',
+        2: '🟠 2 dismissals — can close twice, forced on 3rd show',
+        3: '🟢 3 dismissals — very soft, forced on 4th show',
+    };
+
+    function fbChangeDismiss(delta) {
+        fbAdminMaxDismiss = Math.max(0, Math.min(5, fbAdminMaxDismiss + delta));
+        document.getElementById('fbMaxDismissVal').value = fbAdminMaxDismiss;
+        document.getElementById('fbMaxDismissDisplay').textContent = fbAdminMaxDismiss;
+        const explain = document.getElementById('fbDismissExplain');
+        if (explain) explain.textContent = FB_DISMISS_LABELS[fbAdminMaxDismiss] || `🟢 ${fbAdminMaxDismiss} dismissals allowed before forcing`;
+    }
+
+    async function saveDismissSetting() {
+        const val = parseInt(document.getElementById('fbMaxDismissVal')?.value || '1');
+        try {
+            await db.ref('feedbackSettings/maxDismiss').set(val);
+            fbMaxDismiss = val; // update live variable too
+            const toast = document.getElementById('fbDismissSaveToast');
+            if (toast) { toast.style.display = 'inline-block'; setTimeout(() => { toast.style.display = 'none'; }, 3000); }
+        } catch(e) { alert('❌ Error saving: ' + e.message); }
+    }
+
+    async function resetAllDismissCounts() {
+        if (!confirm('🔄 Reset dismiss counts for ALL visitors?\n\nEveryone will see the feedback popup fresh again — as if it\'s their first time.')) return;
+        try {
+            const resetToken = Date.now().toString();
+            await db.ref('feedbackSettings/resetToken').set(resetToken);
+            const toast = document.getElementById('fbResetToast');
+            if (toast) { toast.style.display = 'inline-block'; setTimeout(() => { toast.style.display = 'none'; }, 4000); }
+        } catch(e) { alert('❌ Error: ' + e.message); }
     }
 
     // ── Feedback Questions Preview + Edit ──────────────────────────
@@ -26896,6 +27517,15 @@ Proceed?`)) return;
                         <input type="checkbox" value="${ev}" ${savedEvents.includes(ev)?'checked':''} style="accent-color:#9c27b0;width:16px;height:16px"> ${ev}
                     </label>`).join('');
             }
+            // Restore dismiss setting
+            const maxDismiss = (settings.maxDismiss !== undefined) ? parseInt(settings.maxDismiss) : 1;
+            fbAdminMaxDismiss = maxDismiss;
+            const dispEl = document.getElementById('fbMaxDismissDisplay');
+            const valEl = document.getElementById('fbMaxDismissVal');
+            const explainEl = document.getElementById('fbDismissExplain');
+            if (dispEl) dispEl.textContent = maxDismiss;
+            if (valEl) valEl.value = maxDismiss;
+            if (explainEl) explainEl.textContent = FB_DISMISS_LABELS[maxDismiss] || `🟢 ${maxDismiss} dismissals allowed before forcing`;
             // Load questions preview
             await loadFeedbackQuestionLabels();
             if (msg) msg.innerHTML = '<p style="color:#28a745;background:#d4edda;padding:10px 14px;border-radius:8px;font-weight:600">✅ Feedback admin loaded.</p>';
@@ -26987,26 +27617,35 @@ Proceed?`)) return;
                     <th style="padding:10px 12px;text-align:left">#</th>
                     <th style="padding:10px 12px;text-align:left">Name</th>
                     <th style="padding:10px 12px;text-align:left">Class</th>
+                    <th style="padding:10px 12px;text-align:center">Type</th>
                     <th style="padding:10px 12px;text-align:center">Score</th>
                     <th style="padding:10px 12px;text-align:center">Recommend</th>
                     <th style="padding:10px 12px;text-align:left">Event Ratings</th>
                     <th style="padding:10px 12px;text-align:left">Suggestions</th>
+                    <th style="padding:10px 12px;text-align:left">Date</th>
                     <th style="padding:10px 12px;text-align:left">Time</th>
                 </tr></thead><tbody>`;
             responses.forEach((r, i) => {
                 const evRatings = r.eventRatings ? Object.entries(r.eventRatings).map(([ev,s]) => `${ev}: ${'⭐'.repeat(s)}`).join(', ') : '—';
                 const recColors = {yes:'#d4edda;color:#155724', maybe:'#fff3cd;color:#856404', no:'#f8d7da;color:#721c24'};
                 const recBg = recColors[r.recommend] || '#f5f5f5;color:#333';
-                const time = r.submittedAt ? new Date(r.submittedAt).toLocaleString('en-IN',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}) : '—';
+                const submittedAt = r.submittedAt ? new Date(r.submittedAt) : null;
+                const dateStr = r.submittedDate || (submittedAt ? submittedAt.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}) : '—');
+                const timeStr = r.submittedTime || (submittedAt ? submittedAt.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true}) : '—');
+                const typeLabel = r.visitorType === 'quiz_student'
+                    ? '<span style="background:#e8f5e9;color:#2e7d32;padding:2px 8px;border-radius:10px;font-size:0.8em;font-weight:700">🎓 Student</span>'
+                    : '<span style="background:#e3f2fd;color:#1565c0;padding:2px 8px;border-radius:10px;font-size:0.8em;font-weight:700">👤 Visitor</span>';
                 html += `<tr style="background:${i%2===0?'white':'#fafafa'};border-bottom:1px solid #eee">
                     <td style="padding:9px 12px;color:#888">${i+1}</td>
                     <td style="padding:9px 12px;font-weight:600">${r.name||'—'}</td>
                     <td style="padding:9px 12px">${r.class||'—'}</td>
+                    <td style="padding:9px 12px;text-align:center">${typeLabel}</td>
                     <td style="padding:9px 12px;text-align:center"><span style="background:#e3f2fd;color:#1565c0;padding:3px 10px;border-radius:20px;font-weight:700">${r.overallScore||'—'}/10</span></td>
                     <td style="padding:9px 12px;text-align:center"><span style="background:${recBg};padding:3px 10px;border-radius:20px;font-weight:700;font-size:0.85em">${r.recommend||'—'}</span></td>
                     <td style="padding:9px 12px;font-size:0.82em;max-width:200px">${evRatings}</td>
                     <td style="padding:9px 12px;font-size:0.82em;max-width:160px;color:#555;font-style:italic">${r.suggestions||'—'}</td>
-                    <td style="padding:9px 12px;font-size:0.8em;color:#888;white-space:nowrap">${time}</td>
+                    <td style="padding:9px 12px;font-size:0.8em;color:#555;white-space:nowrap">📅 ${dateStr}</td>
+                    <td style="padding:9px 12px;font-size:0.8em;color:#888;white-space:nowrap">🕐 ${timeStr}</td>
                 </tr>`;
             });
             html += '</tbody></table></div>';
@@ -30203,21 +30842,50 @@ Proceed?`)) return;
     <div id="feedbackPopupOverlay" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:99990;overflow-y:auto;padding:20px;box-sizing:border-box">
         <div style="background:white;border-radius:20px;max-width:600px;margin:20px auto;box-shadow:0 12px 50px rgba(0,0,0,0.4);overflow:hidden;position:relative">
             <!-- Header -->
-            <div style="background:linear-gradient(135deg,#880e4f,#c2185b,#e91e63);padding:24px 28px;color:white;position:relative">
+            <div class="fb-modal-header" style="background:linear-gradient(135deg,#880e4f,#c2185b,#e91e63);padding:24px 28px;color:white;position:relative">
                 <h2 style="margin:0 0 4px;font-size:1.4em">📋 Spurthi Youth Fest 2026 — Feedback</h2>
                 <p style="margin:0;opacity:0.9;font-size:0.9em">Your feedback helps us make next year even better! 🎉</p>
                 <button id="fbPopupCloseBtn" onclick="closeFeedbackPopup()" style="position:absolute;top:16px;right:16px;background:rgba(255,255,255,0.2);color:white;border:none;border-radius:50%;width:32px;height:32px;font-size:1.1em;cursor:pointer;font-weight:700;line-height:1">✕</button>
             </div>
 
             <div style="padding:24px 28px" id="feedbackFormBody">
-                <!-- Name field (auto-filled if logged in) -->
+                <!-- Name field (auto-filled if logged in quiz student) -->
                 <div style="margin-bottom:18px">
                     <label style="font-weight:700;color:#555;font-size:0.95em;display:block;margin-bottom:6px">👤 Your Name <span style="color:#c2185b">*</span></label>
                     <input type="text" id="fbName" placeholder="Enter your name..." style="width:100%;padding:11px 14px;border:2px solid #f48fb1;border-radius:10px;font-size:0.95em;box-sizing:border-box;outline:none">
                 </div>
+
+                <!-- Phone — hidden for logged-in students, shown for visitors -->
+                <div style="margin-bottom:18px" id="fbPhoneRow">
+                    <label style="font-weight:700;color:#555;font-size:0.95em;display:block;margin-bottom:6px">📱 Phone Number <span style="color:#c2185b">*</span></label>
+                    <input type="tel" id="fbPhone" placeholder="e.g. 9876543210" maxlength="15" style="width:100%;padding:11px 14px;border:2px solid #f48fb1;border-radius:10px;font-size:0.95em;box-sizing:border-box;outline:none">
+                    <small style="color:#888;margin-top:4px;display:block">Used only to prevent duplicate submissions. Not shared with anyone.</small>
+                </div>
+
+                <!-- Class / Designation with Others option -->
                 <div style="margin-bottom:18px">
-                    <label style="font-weight:700;color:#555;font-size:0.95em;display:block;margin-bottom:6px">🏫 Class / Designation</label>
-                    <input type="text" id="fbClass" placeholder="e.g. III BCA A / Faculty / Visitor" style="width:100%;padding:11px 14px;border:2px solid #f48fb1;border-radius:10px;font-size:0.95em;box-sizing:border-box;outline:none">
+                    <label style="font-weight:700;color:#555;font-size:0.95em;display:block;margin-bottom:6px">🏫 Class / Designation <span style="color:#c2185b">*</span></label>
+                    <select id="fbClassSelect" onchange="fbHandleClassChange(this.value)" style="width:100%;padding:11px 14px;border:2px solid #f48fb1;border-radius:10px;font-size:0.95em;box-sizing:border-box;outline:none;background:white;cursor:pointer">
+                        <option value="">— Select your class / role —</option>
+                        <option value="I BCA A">I BCA A</option>
+                        <option value="I BCA B">I BCA B</option>
+                        <option value="II BCA A">II BCA A</option>
+                        <option value="II BCA B">II BCA B</option>
+                        <option value="III BCA A">III BCA A</option>
+                        <option value="III BCA B">III BCA B</option>
+                        <option value="I BBA A">I BBA A</option>
+                        <option value="I BBA B">I BBA B</option>
+                        <option value="II BBA A">II BBA A</option>
+                        <option value="II BBA B">II BBA B</option>
+                        <option value="III BBA A">III BBA A</option>
+                        <option value="III BBA B">III BBA B</option>
+                        <option value="Faculty">Faculty</option>
+                        <option value="Staff">Staff</option>
+                        <option value="Guest / Visitor">Guest / Visitor</option>
+                        <option value="others">✏️ Others (type below)</option>
+                    </select>
+                    <input type="text" id="fbClassOther" placeholder="Please specify your class or designation..." style="display:none;width:100%;padding:11px 14px;border:2px solid #f48fb1;border-radius:10px;font-size:0.95em;box-sizing:border-box;outline:none;margin-top:8px">
+                    <input type="hidden" id="fbClass">
                 </div>
 
                 <!-- Overall Fest Score 1-10 -->
@@ -30282,7 +30950,7 @@ Proceed?`)) return;
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;" id="devTriggerVersion">
-                <strong>Version:</strong> 4.21 — Built on v4.20. Site Settings improvements: (1) Banner now has Font Style selector (10 fonts) and Font Size control (slider + S/M/L/XL quick buttons); (2) Save Banner and Save WhatsApp Text now show ✅ inline toast confirmation instead of only updating the message div — no more silent saves. Feedback Admin improvements: (3) New 👁️ Questions Preview & Edit section — shows all 6 questions exactly as visitors see them, with editable label text and live mini-preview per question; (4) Save / Reset to Defaults buttons with ✅ toast confirmation.   | <strong>Last Updated:</strong> February 26, 2026 — 23:00</p>
+                <strong>Version:</strong> 4.27 — Built on v4.26. Live Monitor super-admin identity column: amber 🔓 column added to all three event-type views showing real class name, jury code it maps to, and every enrolled participant name + role. Individual events show one participant per row with their real name. Multi-team events list all team members inside the amber cell. Class-based events list all class enrollees with roles. Event-specific extra info (talent type, ad title/product, cause/theme, topic) also shown. Jury still only sees the anonymised code column.   | <strong>Last Updated:</strong> February 26, 2026 — 19:10</p>
             <!-- ============================================ -->
             
             <p style="color: #c44569; font-size: 0.85em; font-weight: 600; margin-bottom: 8px;">
