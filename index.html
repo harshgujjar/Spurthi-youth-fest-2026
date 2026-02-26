@@ -2888,6 +2888,14 @@
                             <h4 style="color:#667eea;margin-bottom:15px">Question 1</h4>
                             
                             <div class="form-group">
+                                <label>Question Type:</label>
+                                <select id="quiz_q1Type" onchange="toggleQuestionType('q1')">
+                                    <option value="mcq">Multiple Choice (MCQ)</option>
+                                    <option value="text">Text Input (Student types answer)</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
                                 <label>Question Text:</label>
                                 <textarea id="quiz_q1Text" rows="3" placeholder="Enter question 1"></textarea>
                             </div>
@@ -2908,6 +2916,8 @@
                                 <small style="color:#666">Upload audio/music to play with the question</small>
                             </div>
                             
+                            <!-- MCQ Options -->
+                            <div id="quiz_q1McqSection">
                             <div class="form-group">
                                 <label>Option A:</label>
                                 <input type="text" id="quiz_q1OptA" placeholder="Option A">
@@ -2934,10 +2944,32 @@
                                     <option value="D">D</option>
                                 </select>
                             </div>
+                            </div>
+                            
+                            <!-- Text Input Answer Section -->
+                            <div id="quiz_q1TextSection" style="display:none">
+                                <div class="form-group">
+                                    <label>✅ Correct Answer (one word / short phrase):</label>
+                                    <input type="text" id="quiz_q1TextAnswer" placeholder="e.g. Newton, India, 1947">
+                                    <small style="color:#666">Students must type this exactly (case-insensitive). Keep it one word or very short.</small>
+                                </div>
+                                <div class="form-group">
+                                    <label>📖 Explanation for the Answer:</label>
+                                    <textarea id="quiz_q1TextExplanation" rows="3" placeholder="Write a brief explanation shown to students after submission"></textarea>
+                                </div>
+                            </div>
                         </div>
                         
                         <div style="background:#f8f9fa;padding:20px;border-radius:10px;margin-bottom:30px">
                             <h4 style="color:#667eea;margin-bottom:15px">Question 2</h4>
+                            
+                            <div class="form-group">
+                                <label>Question Type:</label>
+                                <select id="quiz_q2Type" onchange="toggleQuestionType('q2')">
+                                    <option value="mcq">Multiple Choice (MCQ)</option>
+                                    <option value="text">Text Input (Student types answer)</option>
+                                </select>
+                            </div>
                             
                             <div class="form-group">
                                 <label>Question Text:</label>
@@ -2960,6 +2992,8 @@
                                 <small style="color:#666">Upload audio/music to play with the question</small>
                             </div>
                             
+                            <!-- MCQ Options -->
+                            <div id="quiz_q2McqSection">
                             <div class="form-group">
                                 <label>Option A:</label>
                                 <input type="text" id="quiz_q2OptA" placeholder="Option A">
@@ -2985,6 +3019,20 @@
                                     <option value="C">C</option>
                                     <option value="D">D</option>
                                 </select>
+                            </div>
+                            </div>
+                            
+                            <!-- Text Input Answer Section -->
+                            <div id="quiz_q2TextSection" style="display:none">
+                                <div class="form-group">
+                                    <label>✅ Correct Answer (one word / short phrase):</label>
+                                    <input type="text" id="quiz_q2TextAnswer" placeholder="e.g. Newton, India, 1947">
+                                    <small style="color:#666">Students must type this exactly (case-insensitive). Keep it one word or very short.</small>
+                                </div>
+                                <div class="form-group">
+                                    <label>📖 Explanation for the Answer:</label>
+                                    <textarea id="quiz_q2TextExplanation" rows="3" placeholder="Write a brief explanation shown to students after submission"></textarea>
+                                </div>
                             </div>
                         </div>
                         
@@ -11219,7 +11267,11 @@
 
             showMsg('⏳ Verifying…', true);
             try {
-                const snap = await db.ref('quizStudents').orderByChild('phone').equalTo(cleanPhone).once('value');
+                // Try exact 10-digit match first, then with leading 0 (some entries stored as 09xxxxxxxxx)
+                let snap = await db.ref('quizStudents').orderByChild('phone').equalTo(cleanPhone).once('value');
+                if (!snap.exists()) {
+                    snap = await db.ref('quizStudents').orderByChild('phone').equalTo('0' + cleanPhone).once('value');
+                }
                 if (!snap.exists()) {
                     showMsg('❌ Not yet registered in the quiz system. Ask Super Admin to log you in using the master password.', false);
                     return;
@@ -18186,12 +18238,24 @@
                         html += '<div style="background:white;padding:20px;border-radius:8px;margin-bottom:15px;border-left:5px solid #667eea">';
                         html += '<p style="margin:0 0 10px 0;color:#667eea;font-weight:bold;font-size:1.1em">Question 1:</p>';
                         html += '<p style="margin:0 0 15px 0;color:#333;font-size:1.05em">' + questions.q1.text + '</p>';
+                        if (questions.q1.type === 'text') {
+                            html += '<div style="background:#4CAF50;color:white;padding:12px;border-radius:6px;font-weight:bold">✅ Answer: ' + (questions.q1.textAnswer || '') + '</div>';
+                            if (questions.q1.explanation) html += '<div style="background:#e8f5e9;color:#2e7d32;padding:10px;border-radius:6px;margin-top:8px;font-size:0.95em">📖 ' + questions.q1.explanation + '</div>';
+                            html += '</div>';
+                        } else {
                         html += '<div style="background:#4CAF50;color:white;padding:12px;border-radius:6px;font-weight:bold">\u2705 Correct Answer: ' + questions.q1.options[questions.q1.correct] + '</div></div>';
+                        }
                         html += '<div style="background:white;padding:20px;border-radius:8px;border-left:5px solid #667eea">';
                         html += '<p style="margin:0 0 10px 0;color:#667eea;font-weight:bold;font-size:1.1em">Question 2:</p>';
-                        if (questions.q2 && questions.q2.options) {
+                        if (questions.q2 && (questions.q2.options || questions.q2.type === 'text')) {
                         html += '<p style="margin:0 0 15px 0;color:#333;font-size:1.05em">' + questions.q2.text + '</p>';
+                        if (questions.q2.type === 'text') {
+                            html += '<div style="background:#4CAF50;color:white;padding:12px;border-radius:6px;font-weight:bold">✅ Answer: ' + (questions.q2.textAnswer || '') + '</div>';
+                            if (questions.q2.explanation) html += '<div style="background:#e8f5e9;color:#2e7d32;padding:10px;border-radius:6px;margin-top:8px;font-size:0.95em">📖 ' + questions.q2.explanation + '</div>';
+                            html += '</div>';
+                        } else {
                         html += '<div style="background:#4CAF50;color:white;padding:12px;border-radius:6px;font-weight:bold">\u2705 Correct Answer: ' + questions.q2.options[questions.q2.correct] + '</div></div>';
+                        }
                         } else { html += '<p style="color:#999;font-style:italic">Q2 not available.</p></div>'; }
                         html += '<p style="color:#2e7d32;margin:15px 0 0 0;font-size:0.9em;text-align:center"><em>Review the questions and answers from the published quiz</em></p></div>';
                         // Also show today participation banner if today has a DIFFERENT (unpublished) quiz
@@ -19099,6 +19163,13 @@ Davan Institute Team`;
             }
             
             html += `<div class="question-text">${questions.q1.text}</div>`;
+            if (questions.q1.type === 'text') {
+                html += `<div style="margin-top:15px">
+                    <label style="font-weight:600;color:#667eea;display:block;margin-bottom:8px">✏️ Type your answer below:</label>
+                    <input type="text" id="qq1TextInput" placeholder="Type your one-word / short answer here..." style="width:100%;padding:14px 16px;border:2px solid #667eea;border-radius:10px;font-size:1.05em;outline:none;transition:border 0.2s" onfocus="this.style.border='2px solid #764ba2'" onblur="this.style.border='2px solid #667eea'">
+                    <small style="color:#888;margin-top:5px;display:block">💡 Case-insensitive. Spell correctly!</small>
+                </div>`;
+            } else {
             html += '<div style="display:grid;gap:15px">';
             ['A','B','C','D'].forEach(opt => {
                 html += `<div class="quiz-option" data-question="qq1" data-value="${opt}">
@@ -19107,7 +19178,9 @@ Davan Institute Team`;
                     <input type="radio" name="qq1" value="${opt}" style="display:none">
                 </div>`;
             });
-            html += '</div></div>';
+            html += '</div>';
+            }
+            html += '</div>';
             
             // Question 2
             html += '<div class="quiz-question-card" style="animation-delay: 0.2s">';
@@ -19132,6 +19205,13 @@ Davan Institute Team`;
             }
             
             html += `<div class="question-text">${questions.q2.text}</div>`;
+            if (questions.q2.type === 'text') {
+                html += `<div style="margin-top:15px">
+                    <label style="font-weight:600;color:#667eea;display:block;margin-bottom:8px">✏️ Type your answer below:</label>
+                    <input type="text" id="qq2TextInput" placeholder="Type your one-word / short answer here..." style="width:100%;padding:14px 16px;border:2px solid #667eea;border-radius:10px;font-size:1.05em;outline:none;transition:border 0.2s" onfocus="this.style.border='2px solid #764ba2'" onblur="this.style.border='2px solid #667eea'">
+                    <small style="color:#888;margin-top:5px;display:block">💡 Case-insensitive. Spell correctly!</small>
+                </div>`;
+            } else {
             html += '<div style="display:grid;gap:15px">';
             ['A','B','C','D'].forEach(opt => {
                 html += `<div class="quiz-option" data-question="qq2" data-value="${opt}">
@@ -19141,6 +19221,7 @@ Davan Institute Team`;
                 </div>`;
             });
             html += '</div>';
+            }
             } else {
                 html += '<p style="color:#999;padding:20px;text-align:center;font-style:italic">Question 2 is not available for this quiz.</p>';
             }
@@ -19196,11 +19277,37 @@ Davan Institute Team`;
                 return;
             }
             
-            const q1 = document.querySelector('input[name="qq1"]:checked');
-            const q2 = document.querySelector('input[name="qq2"]:checked');
+            const today = await getQuizTodayServer();
+            const qRef = db.ref(`quizQuestions/${today}`);
+            const snap = await qRef.once('value');
+            const questions = snap.val();
+
+            // Determine q1 answer
+            let q1Answer = null;
+            if (questions.q1.type === 'text') {
+                const inp = document.getElementById('qq1TextInput');
+                q1Answer = inp ? inp.value.trim() : '';
+            } else {
+                const q1radio = document.querySelector('input[name="qq1"]:checked');
+                q1Answer = q1radio ? q1radio.value : null;
+            }
+
+            // Determine q2 answer
+            let q2Answer = null;
+            if (questions.q2 && questions.q2.type === 'text') {
+                const inp = document.getElementById('qq2TextInput');
+                q2Answer = inp ? inp.value.trim() : '';
+            } else {
+                const q2radio = document.querySelector('input[name="qq2"]:checked');
+                q2Answer = q2radio ? q2radio.value : null;
+            }
             
-            if (!q1 || !q2) {
-                showQuizMsg('quizPageMessage', '⚠️ Please answer all questions!', 'error');
+            if (!q1Answer) {
+                showQuizMsg('quizPageMessage', '⚠️ Please answer Question 1!', 'error');
+                return;
+            }
+            if (!q2Answer) {
+                showQuizMsg('quizPageMessage', '⚠️ Please answer Question 2!', 'error');
                 return;
             }
             
@@ -19213,8 +19320,6 @@ Davan Institute Team`;
                 submitBtn.style.opacity = '0.6';
                 submitBtn.style.cursor = 'not-allowed';
             }
-            
-            const today = await getQuizTodayServer();
             
             try {
                 // BLOCK: Check Firebase if student already submitted today
@@ -19242,20 +19347,27 @@ Davan Institute Team`;
                     }
                 }
                 
-                const qRef = db.ref(`quizQuestions/${today}`);
-                const snap = await qRef.once('value');
-                const questions = snap.val();
-                
+                // Score calculation
                 let score = 0;
-                if (q1.value === questions.q1.correct) score++;
-                if (q2.value === questions.q2.correct) score++;
+                // Q1 scoring
+                if (questions.q1.type === 'text') {
+                    if (q1Answer.toLowerCase() === questions.q1.textAnswer.toLowerCase()) score++;
+                } else {
+                    if (q1Answer === questions.q1.correct) score++;
+                }
+                // Q2 scoring
+                if (questions.q2.type === 'text') {
+                    if (q2Answer.toLowerCase() === questions.q2.textAnswer.toLowerCase()) score++;
+                } else {
+                    if (q2Answer === questions.q2.correct) score++;
+                }
                 
                 await db.ref(`quizSubmissions/${today}`).push({
                     studentKey: quizCurrentUser.key,
                     studentName: quizCurrentUser.name,
                     studentEmail: quizCurrentUser.email,
                     studentClass: quizCurrentUser.class,
-                    answers: {q1: q1.value, q2: q2.value},
+                    answers: {q1: q1Answer, q2: q2Answer},
                     score,
                     submittedAt: new Date().toISOString(),
                     timeTaken: Math.floor((Date.now() - quizStartTime) / 1000)
@@ -19577,21 +19689,34 @@ Davan Institute Team`;
                 
                 let html = '<div style="background:#f8f9fa;padding:20px;border-radius:10px">';
                 html += '<h4 style="color:#667eea;margin-bottom:15px">Today\'s Questions Preview</h4>';
-                if (q.q1 && q.q1.options) {
+                if (q.q1 && (q.q1.options || q.q1.type === 'text')) {
                 html += `<p><strong>Q1:</strong> ${q.q1.text}</p>`;
+                if (q.q1.type === 'text') {
+                    html += `<p style="color:#2196F3;margin-left:20px">✏️ Text Input</p>`;
+                    html += `<p style="color:green;font-weight:bold;margin-left:20px">Answer: ${q.q1.textAnswer}</p>`;
+                    if (q.q1.explanation) html += `<p style="color:#666;font-size:0.9em;margin-left:20px">📖 ${q.q1.explanation}</p>`;
+                } else {
                 html += `<p style="margin-left:20px">A) ${q.q1.options.A}</p>`;
                 html += `<p style="margin-left:20px">B) ${q.q1.options.B}</p>`;
                 html += `<p style="margin-left:20px">C) ${q.q1.options.C}</p>`;
                 html += `<p style="margin-left:20px">D) ${q.q1.options.D}</p>`;
-                html += `<p style="color:green;font-weight:bold;margin-left:20px">Correct: ${q.q1.correct}</p><br>`;
+                html += `<p style="color:green;font-weight:bold;margin-left:20px">Correct: ${q.q1.correct}</p>`;
+                }
+                html += '<br>';
                 } else { html += '<p style="color:#999;font-style:italic">Q1 data missing.</p>'; }
-                if (q.q2 && q.q2.options) {
+                if (q.q2 && (q.q2.options || q.q2.type === 'text')) {
                 html += `<p><strong>Q2:</strong> ${q.q2.text}</p>`;
+                if (q.q2.type === 'text') {
+                    html += `<p style="color:#2196F3;margin-left:20px">✏️ Text Input</p>`;
+                    html += `<p style="color:green;font-weight:bold;margin-left:20px">Answer: ${q.q2.textAnswer}</p>`;
+                    if (q.q2.explanation) html += `<p style="color:#666;font-size:0.9em;margin-left:20px">📖 ${q.q2.explanation}</p>`;
+                } else {
                 html += `<p style="margin-left:20px">A) ${q.q2.options.A}</p>`;
                 html += `<p style="margin-left:20px">B) ${q.q2.options.B}</p>`;
                 html += `<p style="margin-left:20px">C) ${q.q2.options.C}</p>`;
                 html += `<p style="margin-left:20px">D) ${q.q2.options.D}</p>`;
                 html += `<p style="color:green;font-weight:bold;margin-left:20px">Correct: ${q.q2.correct}</p>`;
+                }
                 } else { html += '<p style="color:#999;font-style:italic">Q2 not set for today.</p>'; }
                 html += '</div>';
                 
@@ -19835,18 +19960,34 @@ Davan Institute Team`;
                     
                     // Populate form with existing data
                     document.getElementById('quiz_q1Text').value = data.q1.text || '';
+                    const q1type = data.q1.type || 'mcq';
+                    document.getElementById('quiz_q1Type').value = q1type;
+                    toggleQuestionType('q1');
+                    if (q1type === 'mcq' && data.q1.options) {
                     document.getElementById('quiz_q1OptA').value = data.q1.options.A || '';
                     document.getElementById('quiz_q1OptB').value = data.q1.options.B || '';
                     document.getElementById('quiz_q1OptC').value = data.q1.options.C || '';
                     document.getElementById('quiz_q1OptD').value = data.q1.options.D || '';
                     document.getElementById('quiz_q1Correct').value = data.q1.correct || '';
+                    } else if (q1type === 'text') {
+                        document.getElementById('quiz_q1TextAnswer').value = data.q1.textAnswer || '';
+                        document.getElementById('quiz_q1TextExplanation').value = data.q1.explanation || '';
+                    }
                     
-                    document.getElementById('quiz_q2Text').value = data.q2.text || '';
+                    document.getElementById('quiz_q2Text').value = data.q2 ? (data.q2.text || '') : '';
+                    const q2type = (data.q2 && data.q2.type) ? data.q2.type : 'mcq';
+                    document.getElementById('quiz_q2Type').value = q2type;
+                    toggleQuestionType('q2');
+                    if (q2type === 'mcq' && data.q2 && data.q2.options) {
                     document.getElementById('quiz_q2OptA').value = data.q2.options.A || '';
                     document.getElementById('quiz_q2OptB').value = data.q2.options.B || '';
                     document.getElementById('quiz_q2OptC').value = data.q2.options.C || '';
                     document.getElementById('quiz_q2OptD').value = data.q2.options.D || '';
                     document.getElementById('quiz_q2Correct').value = data.q2.correct || '';
+                    } else if (q2type === 'text' && data.q2) {
+                        document.getElementById('quiz_q2TextAnswer').value = data.q2.textAnswer || '';
+                        document.getElementById('quiz_q2TextExplanation').value = data.q2.explanation || '';
+                    }
                     
                     showQuizMsg('quizAdminMessage', `✏️ Editing existing quiz for ${selectedDate}. Modify and save to update.`, 'success');
                     // Don't show preview on initial load - only after save
@@ -19855,7 +19996,7 @@ Davan Institute Team`;
                     console.log('No quiz found for this date, clearing form');
                     
                     // Clear form for new quiz
-                    ['quiz_q1Text','quiz_q1OptA','quiz_q1OptB','quiz_q1OptC','quiz_q1OptD','quiz_q1Correct','quiz_q2Text','quiz_q2OptA','quiz_q2OptB','quiz_q2OptC','quiz_q2OptD','quiz_q2Correct'].forEach(id => {
+                    ['quiz_q1Text','quiz_q1OptA','quiz_q1OptB','quiz_q1OptC','quiz_q1OptD','quiz_q1Correct','quiz_q2Text','quiz_q2OptA','quiz_q2OptB','quiz_q2OptC','quiz_q2OptD','quiz_q2Correct','quiz_q1TextAnswer','quiz_q1TextExplanation','quiz_q2TextAnswer','quiz_q2TextExplanation'].forEach(id => {
                         const el = document.getElementById(id);
                         if (el) el.value = '';
                     });
@@ -19967,7 +20108,7 @@ Davan Institute Team`;
                     html += '<div style="background:#f8f9fa;padding:15px;border-radius:8px">';
                     html += '<p style="margin:0 0 10px 0;font-weight:600">Question 1:</p>';
                     
-                    if (quiz.data.q1 && quiz.data.q1.options) {
+                    if (quiz.data.q1 && (quiz.data.q1.options || quiz.data.q1.type === 'text')) {
                     // Show image if present
                     if (quiz.data.q1.image) {
                         html += '<div style="text-align:center;margin:10px 0"><img src="' + quiz.data.q1.image + '" style="max-width:100%;max-height:200px;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.1)"></div>';
@@ -19979,7 +20120,13 @@ Davan Institute Team`;
                     }
                     
                     html += '<p style="margin:0 0 10px 0">' + (quiz.data.q1.text || '(no question text)') + '</p>';
-                    html += '<p style="margin:0;color:#4CAF50;font-weight:600">✅ Correct: ' + (quiz.data.q1.options[quiz.data.q1.correct] || '(unknown)') + '</p>';
+                    if (quiz.data.q1.type === 'text') {
+                        html += '<p style="margin:0;color:#2196F3;font-weight:600">✏️ Text Input Question</p>';
+                        html += '<p style="margin:4px 0 0 0;color:#4CAF50;font-weight:600">✅ Answer: ' + (quiz.data.q1.textAnswer || '(unknown)') + '</p>';
+                        if (quiz.data.q1.explanation) html += '<p style="margin:4px 0 0 0;color:#666;font-size:0.9em">📖 ' + quiz.data.q1.explanation + '</p>';
+                    } else {
+                        html += '<p style="margin:0;color:#4CAF50;font-weight:600">✅ Correct: ' + (quiz.data.q1.options[quiz.data.q1.correct] || '(unknown)') + '</p>';
+                    }
                     } else {
                         html += '<p style="color:#999;font-style:italic">Q1 data missing or incomplete.</p>';
                     }
@@ -19988,7 +20135,7 @@ Davan Institute Team`;
                     html += '<div style="background:#f8f9fa;padding:15px;border-radius:8px;margin-top:10px">';
                     html += '<p style="margin:0 0 10px 0;font-weight:600">Question 2:</p>';
                     
-                    if (quiz.data.q2 && quiz.data.q2.options) {
+                    if (quiz.data.q2 && (quiz.data.q2.options || quiz.data.q2.type === 'text')) {
                     // Show image if present
                     if (quiz.data.q2.image) {
                         html += '<div style="text-align:center;margin:10px 0"><img src="' + quiz.data.q2.image + '" style="max-width:100%;max-height:200px;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.1)"></div>';
@@ -20000,7 +20147,13 @@ Davan Institute Team`;
                     }
                     
                     html += '<p style="margin:0 0 10px 0">' + (quiz.data.q2.text || '(no question text)') + '</p>';
-                    html += '<p style="margin:0;color:#4CAF50;font-weight:600">✅ Correct: ' + (quiz.data.q2.options[quiz.data.q2.correct] || '(unknown)') + '</p>';
+                    if (quiz.data.q2.type === 'text') {
+                        html += '<p style="margin:0;color:#2196F3;font-weight:600">✏️ Text Input Question</p>';
+                        html += '<p style="margin:4px 0 0 0;color:#4CAF50;font-weight:600">✅ Answer: ' + (quiz.data.q2.textAnswer || '(unknown)') + '</p>';
+                        if (quiz.data.q2.explanation) html += '<p style="margin:4px 0 0 0;color:#666;font-size:0.9em">📖 ' + quiz.data.q2.explanation + '</p>';
+                    } else {
+                        html += '<p style="margin:0;color:#4CAF50;font-weight:600">✅ Correct: ' + (quiz.data.q2.options[quiz.data.q2.correct] || '(unknown)') + '</p>';
+                    }
                     } else {
                         html += '<p style="color:#999;font-style:italic">Q2 not set for this date.</p>';
                     }
@@ -20093,18 +20246,34 @@ Davan Institute Team`;
                 
                 // Populate the form with existing data
                 document.getElementById('quiz_q1Text').value = (quizData.q1 && quizData.q1.text) || '';
+                const q1type = (quizData.q1 && quizData.q1.type) || 'mcq';
+                document.getElementById('quiz_q1Type').value = q1type;
+                toggleQuestionType('q1');
+                if (q1type === 'mcq') {
                 document.getElementById('quiz_q1OptA').value = (quizData.q1 && quizData.q1.options && quizData.q1.options.A) || '';
                 document.getElementById('quiz_q1OptB').value = (quizData.q1 && quizData.q1.options && quizData.q1.options.B) || '';
                 document.getElementById('quiz_q1OptC').value = (quizData.q1 && quizData.q1.options && quizData.q1.options.C) || '';
                 document.getElementById('quiz_q1OptD').value = (quizData.q1 && quizData.q1.options && quizData.q1.options.D) || '';
                 document.getElementById('quiz_q1Correct').value = (quizData.q1 && quizData.q1.correct) || '';
+                } else {
+                    document.getElementById('quiz_q1TextAnswer').value = (quizData.q1 && quizData.q1.textAnswer) || '';
+                    document.getElementById('quiz_q1TextExplanation').value = (quizData.q1 && quizData.q1.explanation) || '';
+                }
                 
                 document.getElementById('quiz_q2Text').value = (quizData.q2 && quizData.q2.text) || '';
+                const q2type = (quizData.q2 && quizData.q2.type) || 'mcq';
+                document.getElementById('quiz_q2Type').value = q2type;
+                toggleQuestionType('q2');
+                if (q2type === 'mcq') {
                 document.getElementById('quiz_q2OptA').value = (quizData.q2 && quizData.q2.options && quizData.q2.options.A) || '';
                 document.getElementById('quiz_q2OptB').value = (quizData.q2 && quizData.q2.options && quizData.q2.options.B) || '';
                 document.getElementById('quiz_q2OptC').value = (quizData.q2 && quizData.q2.options && quizData.q2.options.C) || '';
                 document.getElementById('quiz_q2OptD').value = (quizData.q2 && quizData.q2.options && quizData.q2.options.D) || '';
                 document.getElementById('quiz_q2Correct').value = (quizData.q2 && quizData.q2.correct) || '';
+                } else {
+                    document.getElementById('quiz_q2TextAnswer').value = (quizData.q2 && quizData.q2.textAnswer) || '';
+                    document.getElementById('quiz_q2TextExplanation').value = (quizData.q2 && quizData.q2.explanation) || '';
+                }
                 
                 // Clear previous previews
                 document.getElementById('quiz_q1ImagePreview').innerHTML = '';
@@ -20230,6 +20399,20 @@ Davan Institute Team`;
             }
         }
         
+        // Toggle admin form between MCQ and text-input mode
+        function toggleQuestionType(qNum) {
+            const type = document.getElementById('quiz_' + qNum + 'Type').value;
+            const mcqSec = document.getElementById('quiz_' + qNum + 'McqSection');
+            const txtSec = document.getElementById('quiz_' + qNum + 'TextSection');
+            if (type === 'text') {
+                mcqSec.style.display = 'none';
+                txtSec.style.display = 'block';
+            } else {
+                mcqSec.style.display = 'block';
+                txtSec.style.display = 'none';
+            }
+        }
+
         async function saveQuizQuestionsFromAdmin() {
             // Get selected date
             const selectedDate = document.getElementById('quizDateSelector').value;
@@ -20239,33 +20422,78 @@ Davan Institute Team`;
                 return;
             }
             
+            const q1Type = document.getElementById('quiz_q1Type').value;
+            const q2Type = document.getElementById('quiz_q2Type').value;
+            
             const q1Text = document.getElementById('quiz_q1Text').value.trim();
-            const q1OptA = document.getElementById('quiz_q1OptA').value.trim();
-            const q1OptB = document.getElementById('quiz_q1OptB').value.trim();
-            const q1OptC = document.getElementById('quiz_q1OptC').value.trim();
-            const q1OptD = document.getElementById('quiz_q1OptD').value.trim();
-            const q1Correct = document.getElementById('quiz_q1Correct').value;
-            
             const q2Text = document.getElementById('quiz_q2Text').value.trim();
-            const q2OptA = document.getElementById('quiz_q2OptA').value.trim();
-            const q2OptB = document.getElementById('quiz_q2OptB').value.trim();
-            const q2OptC = document.getElementById('quiz_q2OptC').value.trim();
-            const q2OptD = document.getElementById('quiz_q2OptD').value.trim();
-            const q2Correct = document.getElementById('quiz_q2Correct').value;
-            
-            console.log('Saving questions for date:', selectedDate, {q1Text, q1Correct, q2Text, q2Correct});
-            
-            if (!q1Text || !q1OptA || !q1OptB || !q1OptC || !q1OptD || !q1Correct) {
-                alert('⚠️ Please fill all Question 1 fields!');
-                showQuizMsg('quizAdminMessage', '⚠️ Fill all Question 1 fields!', 'error');
+
+            if (!q1Text) {
+                alert('⚠️ Please fill Question 1 text!');
+                showQuizMsg('quizAdminMessage', '⚠️ Fill Question 1 text!', 'error');
                 return;
             }
-            
-            if (!q2Text || !q2OptA || !q2OptB || !q2OptC || !q2OptD || !q2Correct) {
-                alert('⚠️ Please fill all Question 2 fields!');
-                showQuizMsg('quizAdminMessage', '⚠️ Fill all Question 2 fields!', 'error');
+            if (!q2Text) {
+                alert('⚠️ Please fill Question 2 text!');
+                showQuizMsg('quizAdminMessage', '⚠️ Fill Question 2 text!', 'error');
                 return;
             }
+
+            // Build q1 data
+            let q1Data = { text: q1Text, type: q1Type };
+            if (q1Type === 'mcq') {
+                const q1OptA = document.getElementById('quiz_q1OptA').value.trim();
+                const q1OptB = document.getElementById('quiz_q1OptB').value.trim();
+                const q1OptC = document.getElementById('quiz_q1OptC').value.trim();
+                const q1OptD = document.getElementById('quiz_q1OptD').value.trim();
+                const q1Correct = document.getElementById('quiz_q1Correct').value;
+                if (!q1OptA || !q1OptB || !q1OptC || !q1OptD || !q1Correct) {
+                    alert('⚠️ Please fill all Question 1 MCQ fields!');
+                    showQuizMsg('quizAdminMessage', '⚠️ Fill all Question 1 fields!', 'error');
+                    return;
+                }
+                q1Data.options = {A:q1OptA, B:q1OptB, C:q1OptC, D:q1OptD};
+                q1Data.correct = q1Correct;
+            } else {
+                const q1Ans = document.getElementById('quiz_q1TextAnswer').value.trim();
+                const q1Exp = document.getElementById('quiz_q1TextExplanation').value.trim();
+                if (!q1Ans) {
+                    alert('⚠️ Please enter the correct answer for Question 1!');
+                    showQuizMsg('quizAdminMessage', '⚠️ Enter correct answer for Q1!', 'error');
+                    return;
+                }
+                q1Data.textAnswer = q1Ans;
+                q1Data.explanation = q1Exp;
+            }
+
+            // Build q2 data
+            let q2Data = { text: q2Text, type: q2Type };
+            if (q2Type === 'mcq') {
+                const q2OptA = document.getElementById('quiz_q2OptA').value.trim();
+                const q2OptB = document.getElementById('quiz_q2OptB').value.trim();
+                const q2OptC = document.getElementById('quiz_q2OptC').value.trim();
+                const q2OptD = document.getElementById('quiz_q2OptD').value.trim();
+                const q2Correct = document.getElementById('quiz_q2Correct').value;
+                if (!q2OptA || !q2OptB || !q2OptC || !q2OptD || !q2Correct) {
+                    alert('⚠️ Please fill all Question 2 MCQ fields!');
+                    showQuizMsg('quizAdminMessage', '⚠️ Fill all Question 2 fields!', 'error');
+                    return;
+                }
+                q2Data.options = {A:q2OptA, B:q2OptB, C:q2OptC, D:q2OptD};
+                q2Data.correct = q2Correct;
+            } else {
+                const q2Ans = document.getElementById('quiz_q2TextAnswer').value.trim();
+                const q2Exp = document.getElementById('quiz_q2TextExplanation').value.trim();
+                if (!q2Ans) {
+                    alert('⚠️ Please enter the correct answer for Question 2!');
+                    showQuizMsg('quizAdminMessage', '⚠️ Enter correct answer for Q2!', 'error');
+                    return;
+                }
+                q2Data.textAnswer = q2Ans;
+                q2Data.explanation = q2Exp;
+            }
+            
+            console.log('Saving questions for date:', selectedDate);
             
             // Get image and audio files
             const q1ImageFile = document.getElementById('quiz_q1Image').files[0];
@@ -20274,16 +20502,8 @@ Davan Institute Team`;
             const q2AudioFile = document.getElementById('quiz_q2Audio').files[0];
             
             const data = {
-                q1: {
-                    text: q1Text, 
-                    options: {A:q1OptA, B:q1OptB, C:q1OptC, D:q1OptD}, 
-                    correct: q1Correct
-                },
-                q2: {
-                    text: q2Text, 
-                    options: {A:q2OptA, B:q2OptB, C:q2OptC, D:q2OptD}, 
-                    correct: q2Correct
-                },
+                q1: q1Data,
+                q2: q2Data,
                 createdAt: new Date().toISOString(),
                 createdBy: 'Super Admin',
                 quizDate: selectedDate
@@ -20338,7 +20558,7 @@ Davan Institute Team`;
                 displaySavedQuestionsPreview(data);
                 
                 // Clear form
-                ['quiz_q1Text','quiz_q1OptA','quiz_q1OptB','quiz_q1OptC','quiz_q1OptD','quiz_q1Correct','quiz_q2Text','quiz_q2OptA','quiz_q2OptB','quiz_q2OptC','quiz_q2OptD','quiz_q2Correct'].forEach(id => {
+                ['quiz_q1Text','quiz_q1OptA','quiz_q1OptB','quiz_q1OptC','quiz_q1OptD','quiz_q1Correct','quiz_q2Text','quiz_q2OptA','quiz_q2OptB','quiz_q2OptC','quiz_q2OptD','quiz_q2Correct','quiz_q1TextAnswer','quiz_q1TextExplanation','quiz_q2TextAnswer','quiz_q2TextExplanation'].forEach(id => {
                     const el = document.getElementById(id);
                     if (el) el.value = '';
                 });
@@ -20395,11 +20615,17 @@ Davan Institute Team`;
             }
             
             html += `<p style="font-size:1.1em;font-weight:600;margin-bottom:15px">${data.q1.text}</p>`;
+            if (data.q1.type === 'text') {
+                html += `<div style="background:#e3f2fd;padding:12px;border-radius:6px;margin-bottom:8px"><span style="color:#1565c0;font-weight:600">✏️ Text Input Question</span></div>`;
+                html += `<p style="color:#28a745;font-weight:bold;margin-top:10px;font-size:1.1em">✅ Answer: ${data.q1.textAnswer}</p>`;
+                if (data.q1.explanation) html += `<p style="color:#555;font-size:0.95em;margin-top:6px">📖 ${data.q1.explanation}</p>`;
+            } else {
             html += `<p style="margin-left:20px;padding:8px;background:${data.q1.correct === 'A' ? '#d4edda' : '#f8f9fa'};border-radius:4px">A) ${data.q1.options.A} ${data.q1.correct === 'A' ? '✅' : ''}</p>`;
             html += `<p style="margin-left:20px;padding:8px;background:${data.q1.correct === 'B' ? '#d4edda' : '#f8f9fa'};border-radius:4px">B) ${data.q1.options.B} ${data.q1.correct === 'B' ? '✅' : ''}</p>`;
             html += `<p style="margin-left:20px;padding:8px;background:${data.q1.correct === 'C' ? '#d4edda' : '#f8f9fa'};border-radius:4px">C) ${data.q1.options.C} ${data.q1.correct === 'C' ? '✅' : ''}</p>`;
             html += `<p style="margin-left:20px;padding:8px;background:${data.q1.correct === 'D' ? '#d4edda' : '#f8f9fa'};border-radius:4px">D) ${data.q1.options.D} ${data.q1.correct === 'D' ? '✅' : ''}</p>`;
             html += `<p style="color:#28a745;font-weight:bold;margin-top:15px;font-size:1.1em">✓ Correct Answer: ${data.q1.correct}</p>`;
+            }
             html += '</div>';
             
             // Question 2
@@ -20417,11 +20643,17 @@ Davan Institute Team`;
             }
             
             html += `<p style="font-size:1.1em;font-weight:600;margin-bottom:15px">${data.q2.text}</p>`;
+            if (data.q2.type === 'text') {
+                html += `<div style="background:#e3f2fd;padding:12px;border-radius:6px;margin-bottom:8px"><span style="color:#1565c0;font-weight:600">✏️ Text Input Question</span></div>`;
+                html += `<p style="color:#28a745;font-weight:bold;margin-top:10px;font-size:1.1em">✅ Answer: ${data.q2.textAnswer}</p>`;
+                if (data.q2.explanation) html += `<p style="color:#555;font-size:0.95em;margin-top:6px">📖 ${data.q2.explanation}</p>`;
+            } else {
             html += `<p style="margin-left:20px;padding:8px;background:${data.q2.correct === 'A' ? '#d4edda' : '#f8f9fa'};border-radius:4px">A) ${data.q2.options.A} ${data.q2.correct === 'A' ? '✅' : ''}</p>`;
             html += `<p style="margin-left:20px;padding:8px;background:${data.q2.correct === 'B' ? '#d4edda' : '#f8f9fa'};border-radius:4px">B) ${data.q2.options.B} ${data.q2.correct === 'B' ? '✅' : ''}</p>`;
             html += `<p style="margin-left:20px;padding:8px;background:${data.q2.correct === 'C' ? '#d4edda' : '#f8f9fa'};border-radius:4px">C) ${data.q2.options.C} ${data.q2.correct === 'C' ? '✅' : ''}</p>`;
             html += `<p style="margin-left:20px;padding:8px;background:${data.q2.correct === 'D' ? '#d4edda' : '#f8f9fa'};border-radius:4px">D) ${data.q2.options.D} ${data.q2.correct === 'D' ? '✅' : ''}</p>`;
             html += `<p style="color:#28a745;font-weight:bold;margin-top:15px;font-size:1.1em">✓ Correct Answer: ${data.q2.correct}</p>`;
+            }
             html += '</div>';
             
             html += `<p style="text-align:center;margin-top:20px;color:#666"><small>Created by: ${data.createdBy || 'Super Admin'}</small></p>`;
@@ -31714,7 +31946,7 @@ Proceed?`)) return;
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;" id="devTriggerVersion">
-                <strong>Version:</strong> 4.47 — Podcast approval panel fixes: (1) Approve/Reject buttons now ALWAYS visible on every card, not hidden behind link submission; (2) Sub-topic shows read-only with ✏️ Edit button when saved, editable input when empty; (3) Approve/Reject + sub-topic on the same line; (4) chandanApprovePodcast now accepts enrollKey as fallback so pre-approval works even before CR submits link. | <strong>Last Updated:</strong> February 27, 2026 — 01:20</p>
+                <strong>Version:</strong> 4.49 — Quiz text-input question type restored &amp; error fixed: Admin can set Q1/Q2 as "MCQ" or "Text Input"; for text-input, admin enters one-word answer + explanation; students type answer in text box; scoring is case-insensitive; All Quizzes tab no longer crashes on q2.options undefined; all preview sections handle both types. | <strong>Last Updated:</strong> February 26, 2026 — 22:00</p>
             <!-- ============================================ -->
             
             <p style="color: #c44569; font-size: 0.85em; font-weight: 600; margin-bottom: 8px;">
