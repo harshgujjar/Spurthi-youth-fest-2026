@@ -3065,7 +3065,10 @@
                     <div id="quizStudentsContent" class="form-section">
                         <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:14px">
                             <h3 style="color:#6a1b9a;margin:0">Registered Quiz Students</h3>
+                            <div style="display:flex;gap:8px;flex-wrap:wrap">
                             <button class="btn btn-info btn-small" onclick="loadQuizStudentsAdmin()">🔄 Refresh Students</button>
+                            <button class="btn btn-small" onclick="fixAllPhoneNumbers()" style="background:linear-gradient(135deg,#e65100,#ff9800);color:white;font-weight:700;border:none">🔧 Fix 11-digit Phones</button>
+                            </div>
                         </div>
                         <!-- Filter Bar -->
                         <div style="background:#f3e5f5;border-radius:12px;padding:14px 18px;margin-bottom:12px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;border:2px solid #e0c8f5">
@@ -10779,7 +10782,48 @@
                 teams.sort((a,b) => (a.classYear||'').localeCompare(b.classYear||''));
 
                 if (teams.length === 0) {
-                    listEl.innerHTML = '<p style="color:#999;text-align:center;padding:30px">No YouTube Ad submissions yet.</p>';
+                    // Show all eligible classes with entry forms even if CR hasn't submitted
+                    const today = new Date().toISOString().slice(0,10);
+                    listEl.innerHTML = YT_AD_ELIGIBLE.map(cls => `
+                        <div style="background:white;border-radius:12px;border:2px solid #ffcdd2;padding:18px;box-shadow:0 2px 8px rgba(0,0,0,0.06)">
+                            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px">
+                                <div>
+                                    <span style="background:linear-gradient(135deg,#cc0000,#ff6600);color:white;border-radius:20px;padding:3px 12px;font-size:0.82em;font-weight:700">📺 ${cls}</span>
+                                </div>
+                                <span style="background:#fff3cd;color:#856404;border-radius:12px;padding:4px 12px;font-size:0.78em;font-weight:700">⏳ CR hasn't submitted link yet</span>
+                            </div>
+                            <div style="background:#fff8f0;border-radius:8px;padding:10px 14px;font-size:0.8em;color:#e65100;margin-bottom:14px">
+                                ⚠️ No YouTube Ad link or screenshot from CR yet — but you can still enter metrics once you have the numbers.
+                            </div>
+                            <div style="display:flex;flex-direction:column;gap:8px;max-width:320px">
+                                <div style="font-size:0.82em;font-weight:700;color:#444;margin-bottom:4px">📝 Enter Metrics <span style="color:#888;font-weight:400">(${today}):</span></div>
+                                <div style="display:flex;align-items:center;gap:8px">
+                                    <span style="width:90px;font-size:0.82em;color:#555;font-weight:600">👁 Views</span>
+                                    <input type="number" id="ytMon_views_nk_${cls.replace(/\s/g,'_')}" min="0" placeholder="0"
+                                           style="flex:1;padding:7px 10px;border:2px solid #ffcdd2;border-radius:8px;font-size:0.88em;outline:none">
+                                </div>
+                                <div style="display:flex;align-items:center;gap:8px">
+                                    <span style="width:90px;font-size:0.82em;color:#555;font-weight:600">👍 Likes</span>
+                                    <input type="number" id="ytMon_likes_nk_${cls.replace(/\s/g,'_')}" min="0" placeholder="0"
+                                           style="flex:1;padding:7px 10px;border:2px solid #ffcdd2;border-radius:8px;font-size:0.88em;outline:none">
+                                </div>
+                                <div style="display:flex;align-items:center;gap:8px">
+                                    <span style="width:90px;font-size:0.82em;color:#555;font-weight:600">💬 Comments</span>
+                                    <input type="number" id="ytMon_comments_nk_${cls.replace(/\s/g,'_')}" min="0" placeholder="0"
+                                           style="flex:1;padding:7px 10px;border:2px solid #ffcdd2;border-radius:8px;font-size:0.88em;outline:none">
+                                </div>
+                                <div style="background:#fff8f0;border-radius:8px;padding:8px 12px;font-size:0.8em;color:#e65100;margin-top:2px">
+                                    Formula: (Views×${formula.weightViews||1}) + (Likes×${formula.weightLikes||3}) + (Comments×${formula.weightComments||5}) ÷ ${formula.maxRaw||5000} × 50
+                                </div>
+                                <div style="display:flex;gap:8px;align-items:center;margin-top:4px">
+                                    <button onclick="saveYtAdMonitorScoreByClass('${cls}')"
+                                            style="background:linear-gradient(135deg,#cc0000,#ff6600);color:white;border:none;border-radius:8px;padding:9px 18px;font-size:0.88em;font-weight:700;cursor:pointer">
+                                        💾 Save Score
+                                    </button>
+                                    <span id="ytMonMsg_nk_${cls.replace(/\s/g,'_')}" style="font-size:0.8em;font-weight:700;display:none"></span>
+                                </div>
+                            </div>
+                        </div>`).join('');
                     return;
                 }
 
@@ -10874,12 +10918,100 @@
                         </div>
                     </div>`;
                 }).join('');
+
+                // Also show any eligible classes that haven't submitted yet
+                const submittedClasses = teams.map(t => t.classYear || '');
+                const missingClasses = YT_AD_ELIGIBLE.filter(cls => !submittedClasses.includes(cls));
+                if (missingClasses.length > 0) {
+                    const today = new Date().toISOString().slice(0,10);
+                    listEl.innerHTML += missingClasses.map(cls => `
+                        <div style="background:white;border-radius:12px;border:2px solid #ffcdd2;padding:18px;box-shadow:0 2px 8px rgba(0,0,0,0.06)">
+                            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px">
+                                <span style="background:linear-gradient(135deg,#cc0000,#ff6600);color:white;border-radius:20px;padding:3px 12px;font-size:0.82em;font-weight:700">📺 ${cls}</span>
+                                <span style="background:#fff3cd;color:#856404;border-radius:12px;padding:4px 12px;font-size:0.78em;font-weight:700">⏳ CR hasn't submitted link yet</span>
+                            </div>
+                            <div style="background:#fff8f0;border-radius:8px;padding:10px 14px;font-size:0.8em;color:#e65100;margin-bottom:14px">
+                                ⚠️ No YouTube Ad link or screenshot from CR yet — but you can still enter metrics once you have the numbers.
+                            </div>
+                            <div style="display:flex;flex-direction:column;gap:8px;max-width:320px">
+                                <div style="font-size:0.82em;font-weight:700;color:#444;margin-bottom:4px">📝 Enter Metrics <span style="color:#888;font-weight:400">(${today}):</span></div>
+                                <div style="display:flex;align-items:center;gap:8px">
+                                    <span style="width:90px;font-size:0.82em;color:#555;font-weight:600">👁 Views</span>
+                                    <input type="number" id="ytMon_views_nk_${cls.replace(/\s/g,'_')}" min="0" placeholder="0"
+                                           style="flex:1;padding:7px 10px;border:2px solid #ffcdd2;border-radius:8px;font-size:0.88em;outline:none">
+                                </div>
+                                <div style="display:flex;align-items:center;gap:8px">
+                                    <span style="width:90px;font-size:0.82em;color:#555;font-weight:600">👍 Likes</span>
+                                    <input type="number" id="ytMon_likes_nk_${cls.replace(/\s/g,'_')}" min="0" placeholder="0"
+                                           style="flex:1;padding:7px 10px;border:2px solid #ffcdd2;border-radius:8px;font-size:0.88em;outline:none">
+                                </div>
+                                <div style="display:flex;align-items:center;gap:8px">
+                                    <span style="width:90px;font-size:0.82em;color:#555;font-weight:600">💬 Comments</span>
+                                    <input type="number" id="ytMon_comments_nk_${cls.replace(/\s/g,'_')}" min="0" placeholder="0"
+                                           style="flex:1;padding:7px 10px;border:2px solid #ffcdd2;border-radius:8px;font-size:0.88em;outline:none">
+                                </div>
+                                <div style="background:#fff8f0;border-radius:8px;padding:8px 12px;font-size:0.8em;color:#e65100;margin-top:2px">
+                                    Formula: (Views×${formula.weightViews||1}) + (Likes×${formula.weightLikes||3}) + (Comments×${formula.weightComments||5}) ÷ ${formula.maxRaw||5000} × 50
+                                </div>
+                                <div style="display:flex;gap:8px;align-items:center;margin-top:4px">
+                                    <button onclick="saveYtAdMonitorScoreByClass('${cls}')"
+                                            style="background:linear-gradient(135deg,#cc0000,#ff6600);color:white;border:none;border-radius:8px;padding:9px 18px;font-size:0.88em;font-weight:700;cursor:pointer">
+                                        💾 Save Score
+                                    </button>
+                                    <span id="ytMonMsg_nk_${cls.replace(/\s/g,'_')}" style="font-size:0.8em;font-weight:700;display:none"></span>
+                                </div>
+                            </div>
+                        </div>`).join('');
+                }
             } catch(e) {
                 const isPermission = e && e.message && e.message.includes('permission_denied');
                 listEl.innerHTML = `<div style="padding:24px;background:#ffeef0;border-radius:10px;border:2px solid #f5c6cb">
                     <p style="color:#c62828;font-weight:700">${isPermission ? '🔒 Firebase permission denied on /youtubeAd' : '❌ Error: ' + e.message}</p>
                     <button onclick="loadYtAdMonitorPanel()" style="background:#cc0000;color:white;border:none;border-radius:8px;padding:8px 18px;cursor:pointer;font-weight:700">🔄 Try Again</button>
                 </div>`;
+            }
+        }
+
+        // Save score for a class that hasn't submitted their YT link yet (by class name)
+        async function saveYtAdMonitorScoreByClass(cls) {
+            const safeKey = cls.replace(/\s/g, '_');
+            const views    = parseInt(document.getElementById('ytMon_views_nk_'    + safeKey)?.value) || 0;
+            const likes    = parseInt(document.getElementById('ytMon_likes_nk_'    + safeKey)?.value) || 0;
+            const comments = parseInt(document.getElementById('ytMon_comments_nk_' + safeKey)?.value) || 0;
+            const msgEl    = document.getElementById('ytMonMsg_nk_' + safeKey);
+
+            if (msgEl) { msgEl.style.display = 'inline'; msgEl.style.color = '#856404'; msgEl.textContent = '⏳ Saving…'; }
+
+            try {
+                const fSnap = await db.ref('youtubeAd/socialFormula').once('value').catch(() => null);
+                const formula = (fSnap && fSnap.val()) || { weightViews:1, weightLikes:3, weightComments:5, maxRaw:5000 };
+                const socialRaw = views*(formula.weightViews||1) + likes*(formula.weightLikes||3) + comments*(formula.weightComments||5);
+                const socialPct = Math.min(50, +(socialRaw/(formula.maxRaw||5000)*50).toFixed(2));
+
+                // Check if an existing entry already exists for this class (created by CR later)
+                const existSnap = await db.ref('youtubeAd').orderByChild('classYear').equalTo(cls).once('value');
+                if (existSnap.exists()) {
+                    // Update the existing record
+                    existSnap.forEach(ch => {
+                        db.ref('youtubeAd/' + ch.key).update({ views, likes, comments, socialScore: socialRaw, socialPct, maxRaw: formula.maxRaw||5000 });
+                    });
+                } else {
+                    // Create a placeholder record
+                    await db.ref('youtubeAd').push({
+                        classYear: cls,
+                        views, likes, comments,
+                        socialScore: socialRaw,
+                        socialPct,
+                        maxRaw: formula.maxRaw || 5000,
+                        enteredByMonitor: true,
+                        enteredAt: new Date().toISOString()
+                    });
+                }
+                if (msgEl) { msgEl.style.color = '#155724'; msgEl.textContent = '✅ Saved! Social: ' + socialPct.toFixed(1) + '%'; setTimeout(() => { if(msgEl) msgEl.style.display='none'; }, 3000); }
+                // Reload to reflect the saved entry as a full card
+                setTimeout(() => loadYtAdMonitorPanel(), 1500);
+            } catch(e) {
+                if (msgEl) { msgEl.style.color = '#721c24'; msgEl.textContent = '❌ Error: ' + e.message; msgEl.style.display = 'inline'; }
             }
         }
 
@@ -11591,7 +11723,14 @@
             if (snap.exists()) snap.forEach(ch => teams.push({ id: ch.key, ...ch.val() }));
 
             if (teams.length === 0) {
-                listEl.innerHTML = '<div style="text-align:center;color:#aaa;padding:30px">No Vlog submissions yet.</div>';
+                listEl.innerHTML = `
+                <div style="background:#f8f8f8;border-radius:12px;border:2px dashed #a5d6a7;padding:24px;text-align:center">
+                    <div style="font-size:1em;font-weight:700;color:#1b5e20;margin-bottom:8px">📹 Vlog Challenge — 3rd B.Com</div>
+                    <div style="background:#e8f5e9;border-radius:8px;padding:14px 18px;color:#2e7d32;font-size:0.88em;font-weight:600;display:inline-block;max-width:400px">
+                        ⚠️ No Vlog teams have submitted their enrollment yet.<br>
+                        <span style="font-weight:400;color:#888;font-size:0.9em">Once CR submits their team details, they will appear here for score entry.</span>
+                    </div>
+                </div>`;
                 return;
             }
 
@@ -18625,7 +18764,9 @@
             console.log('🔵 Registration started...');
             const cls = document.getElementById('quizClass').value;
             const email = document.getElementById('quizEmail').value.trim();
-            const phone = document.getElementById('quizPhone').value.trim();
+            const phoneRaw = document.getElementById('quizPhone').value.trim();
+            // Always normalize to last 10 digits — removes leading 0, +91, country codes etc.
+            const phone = phoneRaw.replace(/\D/g,'').slice(-10);
             const name = document.getElementById('quizName').value.trim();
             
             console.log('Form values:', {cls, email, phone, name});
@@ -18640,8 +18781,8 @@
                 return;
             }
             
-            if (phone.length < 10) {
-                showQuizMsg('quizMessage', 'Please enter valid 10-digit phone!', 'error');
+            if (phone.length !== 10) {
+                showQuizMsg('quizMessage', 'Please enter a valid 10-digit phone number!', 'error');
                 return;
             }
             
@@ -18664,9 +18805,13 @@
                 }
                 
                 console.log('Checking for existing phone number...');
-                const phoneSnap = await studRef.orderByChild('phone').equalTo(phone).once('value');
+                // Check both exact 10-digit and with leading 0 (some entries stored as 09xxxxxxxxx)
+                const [phoneSnap, phoneSnap0] = await Promise.all([
+                    studRef.orderByChild('phone').equalTo(phone).once('value'),
+                    studRef.orderByChild('phone').equalTo('0' + phone).once('value')
+                ]);
                 
-                if (phoneSnap.exists()) {
+                if (phoneSnap.exists() || phoneSnap0.exists()) {
                     alert('❌ Phone Number Already Registered!\n\nThis phone number is already registered.\n\nPlease use the login form below with your existing password.');
                     showQuizMsg('quizMessage', '❌ Phone number already registered! Please login with your existing password.', 'error');
                     return;
@@ -20761,6 +20906,42 @@ Davan Institute Team`;
             }
         }
         
+        // Fix all 11-digit phone numbers (with leading 0) → normalize to 10 digits
+        async function fixAllPhoneNumbers() {
+            if (!confirm('🔧 Fix Phone Numbers\n\nThis will scan all registered students and normalize any phone numbers stored with a leading 0 (e.g. 09972652501 → 9972652501).\n\nProceed?')) return;
+
+            try {
+                const snap = await db.ref('quizStudents').once('value');
+                if (!snap.exists()) { alert('No students found.'); return; }
+
+                const toFix = [];
+                snap.forEach(child => {
+                    const d = child.val();
+                    const raw = String(d.phone || '').replace(/\D/g,'');
+                    if (raw.length === 11 && raw.startsWith('0')) {
+                        toFix.push({ key: child.key, oldPhone: d.phone, newPhone: raw.slice(1), name: d.name });
+                    }
+                });
+
+                if (toFix.length === 0) {
+                    alert('✅ All phone numbers are already in correct 10-digit format. No fixes needed!');
+                    return;
+                }
+
+                const list = toFix.map(f => `• ${f.name}: ${f.oldPhone} → ${f.newPhone}`).join('\n');
+                if (!confirm(`Found ${toFix.length} phone number(s) to fix:\n\n${list}\n\nApply fixes now?`)) return;
+
+                const updates = {};
+                toFix.forEach(f => { updates[f.key + '/phone'] = f.newPhone; });
+                await db.ref('quizStudents').update(updates);
+
+                alert(`✅ Fixed ${toFix.length} phone number(s)!\n\n${list}\n\nThese students can now log in normally.`);
+                loadQuizStudentsAdmin();
+            } catch(e) {
+                alert('❌ Error: ' + e.message);
+            }
+        }
+
         async function loadQuizStudentsAdmin() {
             try {
                 const snap = await db.ref('quizStudents').once('value');
@@ -20858,32 +21039,46 @@ Davan Institute Team`;
 
             tbody.innerHTML = '';
             if (!dupPhones.length && !dupEmails.length) {
-                tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:20px"><span style="background:#e8f5e9;color:#2e7d32;padding:8px 20px;border-radius:10px;font-weight:700">✅ No duplicate phones or emails found!</span></td></tr>';
+                tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:20px"><span style="background:#e8f5e9;color:#2e7d32;padding:8px 20px;border-radius:10px;font-weight:700">✅ No duplicate phones or emails found!</span></td></tr>';
                 if (countEl) countEl.textContent = '0 duplicates found';
                 return;
             }
+
+            // Bulk delete button at top
+            const bulkRow = tbody.insertRow();
+            bulkRow.innerHTML = `<td colspan="9" style="padding:10px 14px;background:#fce4ec;border-bottom:2px solid #f48fb1">
+                <button onclick="qsAdminDeleteOlderDuplicates()" style="background:linear-gradient(135deg,#c62828,#e53935);color:white;border:none;border-radius:8px;padding:9px 20px;font-weight:700;cursor:pointer;font-size:0.88em">
+                    🗑️ Auto-Delete Older Duplicates (keep newest per phone)
+                </button>
+                <span style="color:#880e4f;font-size:0.82em;margin-left:12px">Or use the individual 🗑️ Delete buttons below to choose which record to remove.</span>
+            </td>`;
 
             let count = 0;
             const rendered = new Set();
 
             if (dupPhones.length) {
                 const hdr = tbody.insertRow();
-                hdr.innerHTML = '<td colspan="8" style="background:#fff3e0;color:#e65100;font-weight:800;padding:8px 14px;font-size:0.9em">📞 DUPLICATE PHONE NUMBERS</td>';
+                hdr.innerHTML = '<td colspan="9" style="background:#fff3e0;color:#e65100;font-weight:800;padding:8px 14px;font-size:0.9em">📞 DUPLICATE PHONE NUMBERS</td>';
                 dupPhones.forEach(([phone, students]) => {
+                    // Sort: newest first
+                    students.sort((a,b) => new Date(b.registeredAt||0) - new Date(a.registeredAt||0));
                     students.forEach((s, si) => {
                         const key = (s.email||'')+s.phone;
                         if (rendered.has(key)) return;
                         rendered.add(key);
+                        const isOldest = si === students.length - 1;
                         const row = tbody.insertRow();
-                        row.style.background = '#fff8e1';
+                        row.id = 'qsRow_' + s.id;
+                        row.style.background = isOldest ? '#fff3e0' : '#fff8e1';
                         row.innerHTML = `<td style="color:#e65100;font-weight:700">⚠️</td>
-                            <td><strong>${s.name||''}</strong></td>
+                            <td><strong>${s.name||''}</strong>${si===0?'<br><span style="font-size:10px;background:#e8f5e9;color:#1b5e20;padding:1px 6px;border-radius:6px">✅ Newest</span>':''}</td>
                             <td style="font-size:12px">${s.email||''}</td>
                             <td style="background:#ffecb3;font-weight:800;color:#e65100">${s.phone||''} <span style="font-size:10px">(${students.length} accounts)</span></td>
                             <td style="background:#fff3cd;font-family:monospace;font-weight:bold">${s.password||''}</td>
                             <td><span style="background:#e8f5e9;color:#2e7d32;padding:2px 8px;border-radius:8px;font-size:12px">${s.class||''}</span></td>
                             <td style="font-size:12px">${s.registeredAt ? new Date(s.registeredAt).toLocaleDateString('en-IN') : '—'}</td>
-                            <td>${qsAdminEmailBadge(s)}</td>`;
+                            <td>${qsAdminEmailBadge(s)}</td>
+                            <td><button onclick="qsAdminDeleteStudent('${s.id}','${(s.name||'').replace(/'/g,'')}')" style="background:#c62828;color:white;border:none;border-radius:6px;padding:5px 12px;font-size:0.78em;font-weight:700;cursor:pointer">🗑️ Delete</button></td>`;
                         count++;
                     });
                 });
@@ -20891,28 +21086,83 @@ Davan Institute Team`;
 
             if (dupEmails.length) {
                 const hdr = tbody.insertRow();
-                hdr.innerHTML = '<td colspan="8" style="background:#fce4ec;color:#880e4f;font-weight:800;padding:8px 14px;font-size:0.9em">📧 DUPLICATE EMAIL ADDRESSES</td>';
+                hdr.innerHTML = '<td colspan="9" style="background:#fce4ec;color:#880e4f;font-weight:800;padding:8px 14px;font-size:0.9em">📧 DUPLICATE EMAIL ADDRESSES</td>';
                 dupEmails.forEach(([email, students]) => {
+                    students.sort((a,b) => new Date(b.registeredAt||0) - new Date(a.registeredAt||0));
                     students.forEach((s, si) => {
                         const key = 'em_'+(s.email||'')+s.phone;
                         if (rendered.has(key)) return;
                         rendered.add(key);
                         const row = tbody.insertRow();
+                        row.id = 'qsRow_' + s.id;
                         row.style.background = '#fce4ec';
                         row.innerHTML = `<td style="color:#880e4f;font-weight:700">⚠️</td>
-                            <td><strong>${s.name||''}</strong></td>
+                            <td><strong>${s.name||''}</strong>${si===0?'<br><span style="font-size:10px;background:#e8f5e9;color:#1b5e20;padding:1px 6px;border-radius:6px">✅ Newest</span>':''}</td>
                             <td style="background:#f8bbd0;font-weight:800;color:#880e4f;font-size:12px">${s.email||''} <span style="font-size:10px">(${students.length} accounts)</span></td>
                             <td>${s.phone||''}</td>
                             <td style="background:#fff3cd;font-family:monospace;font-weight:bold">${s.password||''}</td>
                             <td><span style="background:#e8f5e9;color:#2e7d32;padding:2px 8px;border-radius:8px;font-size:12px">${s.class||''}</span></td>
                             <td style="font-size:12px">${s.registeredAt ? new Date(s.registeredAt).toLocaleDateString('en-IN') : '—'}</td>
-                            <td>${qsAdminEmailBadge(s)}</td>`;
+                            <td>${qsAdminEmailBadge(s)}</td>
+                            <td><button onclick="qsAdminDeleteStudent('${s.id}','${(s.name||'').replace(/'/g,'')}')" style="background:#880e4f;color:white;border:none;border-radius:6px;padding:5px 12px;font-size:0.78em;font-weight:700;cursor:pointer">🗑️ Delete</button></td>`;
                         count++;
                     });
                 });
             }
 
             if (countEl) countEl.textContent = `⚠️ ${dupPhones.length} dup phone group(s), ${dupEmails.length} dup email group(s)`;
+        }
+
+        async function qsAdminDeleteStudent(id, name) {
+            if (!confirm(`🗑️ Delete student record?\n\nName: ${name}\nID: ${id}\n\nThis cannot be undone.`)) return;
+            try {
+                await db.ref('quizStudents/' + id).remove();
+                // Remove from local cache
+                if (window._qsAdminAllStudents) {
+                    window._qsAdminAllStudents = window._qsAdminAllStudents.filter(s => s.id !== id);
+                }
+                // Remove row from table
+                const row = document.getElementById('qsRow_' + id);
+                if (row) row.remove();
+                alert('✅ Deleted: ' + name);
+                // Refresh duplicates view
+                qsAdminShowDuplicates();
+            } catch(e) {
+                alert('❌ Error deleting: ' + e.message);
+            }
+        }
+
+        async function qsAdminDeleteOlderDuplicates() {
+            const all = window._qsAdminAllStudents || [];
+            const phoneMap = {};
+            all.forEach(s => {
+                if (s.phone) { if (!phoneMap[s.phone]) phoneMap[s.phone]=[]; phoneMap[s.phone].push(s); }
+            });
+            const dupGroups = Object.entries(phoneMap).filter(([,arr])=>arr.length>1);
+            if (!dupGroups.length) { alert('No duplicates to delete.'); return; }
+
+            // For each group, keep newest (highest registeredAt), delete the rest
+            const toDelete = [];
+            dupGroups.forEach(([, students]) => {
+                const sorted = [...students].sort((a,b) => new Date(b.registeredAt||0) - new Date(a.registeredAt||0));
+                sorted.slice(1).forEach(s => toDelete.push(s)); // delete all except newest
+            });
+
+            const list = toDelete.map(s => `• ${s.name} (${s.phone}, registered ${s.registeredAt ? new Date(s.registeredAt).toLocaleDateString('en-IN') : '?'})`).join('\n');
+            if (!confirm(`🗑️ Delete ${toDelete.length} older duplicate(s)?\n\nWill DELETE:\n${list}\n\n(Keeping the newest registration for each phone number)\n\nThis cannot be undone.`)) return;
+
+            try {
+                for (const s of toDelete) {
+                    await db.ref('quizStudents/' + s.id).remove();
+                }
+                // Update local cache
+                const deletedIds = new Set(toDelete.map(s => s.id));
+                window._qsAdminAllStudents = (window._qsAdminAllStudents||[]).filter(s => !deletedIds.has(s.id));
+                alert(`✅ Deleted ${toDelete.length} duplicate record(s) successfully!`);
+                loadQuizStudentsAdmin();
+            } catch(e) {
+                alert('❌ Error: ' + e.message);
+            }
         }
 
         function qsAdminShowEmailFailed() {
@@ -31946,7 +32196,7 @@ Proceed?`)) return;
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;" id="devTriggerVersion">
-                <strong>Version:</strong> 4.49 — Quiz text-input question type restored &amp; error fixed: Admin can set Q1/Q2 as "MCQ" or "Text Input"; for text-input, admin enters one-word answer + explanation; students type answer in text box; scoring is case-insensitive; All Quizzes tab no longer crashes on q2.options undefined; all preview sections handle both types. | <strong>Last Updated:</strong> February 26, 2026 — 22:00</p>
+                <strong>Version:</strong> 4.53 — Quiz text-input question type restored &amp; error fixed: Admin can set Q1/Q2 as "MCQ" or "Text Input"; for text-input, admin enters one-word answer + explanation; students type answer in text box; scoring is case-insensitive; All Quizzes tab no longer crashes on q2.options undefined; all preview sections handle both types. | <strong>Last Updated:</strong> February 26, 2026 — 23:50</p>
             <!-- ============================================ -->
             
             <p style="color: #c44569; font-size: 0.85em; font-weight: 600; margin-bottom: 8px;">
