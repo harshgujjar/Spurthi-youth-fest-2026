@@ -19331,9 +19331,7 @@ Davan Institute Team`;
             html += '<div class="quiz-question-card" style="animation-delay: 0.2s">';
             html += '<h4><span style="background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:white;padding:5px 15px;border-radius:20px;font-size:0.9em">Question 2 of 2</span></h4>';
             
-            if (questions.q2 && questions.q2.options) {
-            // Add image if present
-            if (questions.q2.image) {
+            if (questions.q2 && (questions.q2.options || questions.q2.type === 'text')) {
                 html += `<div style="text-align:center;margin:15px 0">
                     <img src="${questions.q2.image}" style="max-width:100%;max-height:300px;border-radius:12px;box-shadow:0 4px 15px rgba(0,0,0,0.2)">
                 </div>`;
@@ -32196,7 +32194,7 @@ Proceed?`)) return;
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;" id="devTriggerVersion">
-                <strong>Version:</strong> 4.53 — Quiz text-input question type restored &amp; error fixed: Admin can set Q1/Q2 as "MCQ" or "Text Input"; for text-input, admin enters one-word answer + explanation; students type answer in text box; scoring is case-insensitive; All Quizzes tab no longer crashes on q2.options undefined; all preview sections handle both types. | <strong>Last Updated:</strong> February 26, 2026 — 23:50</p>
+                <strong>Version:</strong> 4.54 — Quiz text-input question type restored &amp; error fixed: Admin can set Q1/Q2 as "MCQ" or "Text Input"; for text-input, admin enters one-word answer + explanation; students type answer in text box; scoring is case-insensitive; All Quizzes tab no longer crashes on q2.options undefined; all preview sections handle both types. | <strong>Last Updated:</strong> February 27, 2026 — 00:10</p>
             <!-- ============================================ -->
             
             <p style="color: #c44569; font-size: 0.85em; font-weight: 600; margin-bottom: 8px;">
