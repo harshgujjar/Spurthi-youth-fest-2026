@@ -2525,7 +2525,11 @@
             <!-- ── PRE-EVENT SUBMISSIONS ───────────────────────────────── -->
             <div style="background:linear-gradient(135deg,#4a148c,#7b1fa2);border-radius:14px;padding:18px;margin-bottom:16px;color:white">
                 <h3 style="margin:0 0 4px;font-size:1.1em">🎓 Nukkad Natak — Pre-Event Submissions</h3>
-                <p style="margin:0;font-size:0.82em;opacity:0.85">Submit your Social Adviser details before the event. A Social Adviser from a recognised media house is mandatory.</p>
+                <p style="margin:0 0 10px;font-size:0.82em;opacity:0.85">Submit your Social Adviser details before the event. A Social Adviser from a recognised media house is mandatory.</p>
+                <div id="crNukkadMemberList" style="display:none;margin-top:8px;border-top:1px solid rgba(255,255,255,0.3);padding-top:10px">
+                    <div style="font-size:0.8em;font-weight:700;opacity:0.9;margin-bottom:6px">👥 Your Enrolled Team:</div>
+                    <div id="crNukkadMemberNames" style="display:flex;flex-wrap:wrap;gap:6px;font-size:0.8em"></div>
+                </div>
             </div>
 
             <!-- Social Adviser -->
@@ -2539,8 +2543,14 @@
                     <label style="font-weight:600;font-size:0.88em;color:#333;display:block;margin-bottom:4px">Media House / Organisation: <span style="color:red">*</span></label>
                     <input type="text" id="crAdviserOrg" placeholder="e.g. Prajavani, Deccan Herald, DD Chandana" style="width:100%;padding:9px 12px;border:2px solid #ce93d8;border-radius:8px;font-size:0.88em">
                 </div>
+                <div style="margin-bottom:12px">
+                    <label style="font-weight:600;font-size:0.88em;color:#333;display:block;margin-bottom:4px">📍 Performance Place / Location: <span style="color:red">*</span></label>
+                    <input type="text" id="crNukkadPlace" placeholder="e.g. College Ground, Main Auditorium Entrance, Block-B Open Area" style="width:100%;padding:9px 12px;border:2px solid #ce93d8;border-radius:8px;font-size:0.88em">
+                    <div style="font-size:0.77em;color:#888;margin-top:4px">📌 Enter the exact place where your class will perform Nukkad Natak. Kotrappa sir will verify for clashes.</div>
+                </div>
+                <div id="crPlaceStatus" style="display:none;margin-bottom:10px;font-size:0.8em;font-weight:600;padding:8px 12px;border-radius:8px"></div>
                 <p style="font-size:0.8em;color:#4a148c;margin:0 0 12px;padding:8px;background:#f3e5f5;border-radius:6px">⚠️ A Social Adviser from a recognised media house is mandatory for Nukkad Natak.</p>
-                <button onclick="saveNukkadAdviser()" style="background:#6a1b9a;color:white;border:none;border-radius:8px;padding:9px 20px;font-weight:700;cursor:pointer;font-size:0.88em">💾 Save Adviser Details</button>
+                <button onclick="saveNukkadAdviser()" style="background:#6a1b9a;color:white;border:none;border-radius:8px;padding:9px 20px;font-weight:700;cursor:pointer;font-size:0.88em">💾 Save Adviser Details & Place</button>
                 <div id="crAdviserMsg" style="display:none;margin-top:8px;font-size:0.8em;font-weight:600;padding:6px 10px;border-radius:6px"></div>
             </div>
             <!-- ── END PRE-EVENT SUBMISSIONS ───────────────────────────── -->
@@ -5794,8 +5804,11 @@
                         </div>
                         <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px">
                             <button onclick="loadNukkadPrePanel()" style="background:#3949ab;color:white;border:none;border-radius:8px;padding:8px 16px;font-weight:700;cursor:pointer;font-size:0.85em">🔄 Refresh</button>
+                            <button onclick="loadNukkadOverviewTable()" style="background:#00695c;color:white;border:none;border-radius:8px;padding:8px 16px;font-weight:700;cursor:pointer;font-size:0.85em">📊 Overview Table</button>
                             <span id="nukkadPreBadge" style="background:#e8eaf6;color:#1a237e;padding:4px 14px;border-radius:20px;font-size:0.82em;font-weight:700;margin-left:auto"></span>
                         </div>
+                        <!-- All-in-one overview table (Point 5) -->
+                        <div id="nukkadOverviewTable" style="margin-bottom:16px"></div>
                         <div id="nukkadPreList" style="display:flex;flex-direction:column;gap:12px">
                             <div style="text-align:center;color:#aaa;padding:30px">Loading Nukkad Natak enrollments…</div>
                         </div>
@@ -13335,8 +13348,15 @@
                 // Load enrollment
                 const enrollSnap = await db.ref('youthfest-enrollments').orderByChild('event').equalTo('Nukkad Natak').once('value');
                 let enrolled = false;
+                const members = [];
                 if (enrollSnap.exists()) {
-                    enrollSnap.forEach(ch => { if ((ch.val().classYear || ch.val().class || '') === cls) enrolled = true; });
+                    enrollSnap.forEach(ch => {
+                        const d = ch.val();
+                        if ((d.classYear || d.class || '') === cls) {
+                            enrolled = true;
+                            if (d.name || d.studentName) members.push(d.name || d.studentName);
+                        }
+                    });
                 }
 
                 // Load post-event data
@@ -13347,7 +13367,16 @@
                     if (statusEl) statusEl.innerHTML = '<strong>⚠️ Not enrolled yet.</strong> Please enroll your class for Nukkad Natak first via the Enroll Students tab.';
                     return;
                 }
-                if (statusEl) statusEl.innerHTML = `<strong>✅ Enrolled.</strong> Class: <strong>${cls}</strong>`;
+                if (statusEl) statusEl.innerHTML = `<strong>✅ Enrolled.</strong> Class: <strong>${cls}</strong> &nbsp;|&nbsp; 👥 ${members.length} member${members.length!==1?'s':''}`;
+                // Show team members in the Pre-Event banner
+                const memberListEl = document.getElementById('crNukkadMemberList');
+                const memberNamesEl = document.getElementById('crNukkadMemberNames');
+                if (memberListEl && memberNamesEl && members.length) {
+                    memberNamesEl.innerHTML = members.map((m,i) =>
+                        `<span style="background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.4);border-radius:20px;padding:3px 10px;white-space:nowrap">${i+1}. ${m}</span>`
+                    ).join('');
+                    memberListEl.style.display = 'block';
+                }
 
                 // Pre-fill saved values
                 const ytEl   = document.getElementById('crNukkadYtLink');
@@ -13358,10 +13387,27 @@
                 // Pre-fill adviser details (from pre-event data)
                 const preSnap = await db.ref('nukkadNatak/pre/' + cls.replace(/[.#$/\[\]]/g,'_')).once('value');
                 const pre = preSnap.val() || {};
-                const advNameEl = document.getElementById('crAdviserName');
-                const advOrgEl  = document.getElementById('crAdviserOrg');
+                const advNameEl  = document.getElementById('crAdviserName');
+                const advOrgEl   = document.getElementById('crAdviserOrg');
+                const placeEl    = document.getElementById('crNukkadPlace');
+                const placeSt    = document.getElementById('crPlaceStatus');
                 if (advNameEl && pre.adviserName) advNameEl.value = pre.adviserName;
                 if (advOrgEl  && pre.adviserOrg)  advOrgEl.value  = pre.adviserOrg;
+                if (placeEl   && pre.place)        placeEl.value   = pre.place;
+                // Show place approval status to CR
+                if (placeSt && pre.place) {
+                    if (pre.placeApproved === true) {
+                        placeSt.style.display='block'; placeSt.style.background='#d4edda'; placeSt.style.color='#155724';
+                        placeSt.textContent = '✅ Your place "' + pre.place + '" has been APPROVED by Kotrappa sir!';
+                    } else if (pre.placeApproved === false) {
+                        placeSt.style.display='block'; placeSt.style.background='#f8d7da'; placeSt.style.color='#721c24';
+                        placeSt.textContent = '❌ Place "' + pre.place + '" was REJECTED. Reason: ' + (pre.placeRejectedReason || 'Not suitable') + '. Please enter a new location and save again.';
+                        if (placeEl) { placeEl.value = ''; placeEl.focus(); }
+                    } else {
+                        placeSt.style.display='block'; placeSt.style.background='#fff3e0'; placeSt.style.color='#e65100';
+                        placeSt.textContent = '⏳ Place "' + pre.place + '" submitted — awaiting Kotrappa sir\'s verification.';
+                    }
+                }
 
                 // Show current newspaper photo
                 const newsDiv = document.getElementById('crNukkadNewspaperCurrent');
@@ -13424,25 +13470,42 @@
             } catch(err) { showM('❌ Error: ' + err.message, false); }
         }
 
+        // ══════════════════════════════════════════════════════════════
+        // NUKKAD NATAK — KOTRAPPA PRE-EVENT PANEL
+        // ══════════════════════════════════════════════════════════════
+
         async function saveNukkadAdviser() {
-            const cls     = (window.currentCRClass || crClass || '').trim();
-            const advName = (document.getElementById('crAdviserName').value || '').trim();
-            const advOrg  = (document.getElementById('crAdviserOrg').value  || '').trim();
-            const msg     = document.getElementById('crAdviserMsg');
+            const cls      = (window.currentCRClass || crClass || '').trim();
+            const advName  = (document.getElementById('crAdviserName').value  || '').trim();
+            const advOrg   = (document.getElementById('crAdviserOrg').value   || '').trim();
+            const placeEl  = document.getElementById('crNukkadPlace');
+            const place    = placeEl ? placeEl.value.trim() : '';
+            const msg      = document.getElementById('crAdviserMsg');
+            const placeStatus = document.getElementById('crPlaceStatus');
             function showM(txt, ok) { msg.style.display='block'; msg.style.background=ok?'#d4edda':'#f8d7da'; msg.style.color=ok?'#155724':'#721c24'; msg.textContent=txt; }
             if (!cls)    { showM('❌ Class not set.', false); return; }
             if (!advName){ showM('❌ Please enter the Social Adviser name.', false); return; }
             if (!advOrg) { showM('❌ Please enter the Media House / Organisation name.', false); return; }
+            if (!place)  { showM('❌ Please enter the Performance Place / Location.', false); return; }
             try {
-                const key = cls.replace(/[.#$/\[\]]/g,'_');
-                await db.ref('nukkadNatak/pre/' + key).update({ adviserName: advName, adviserOrg: advOrg, savedAt: new Date().toISOString(), savedBy: cls });
-                showM('✅ Adviser details saved! Kotrappa sir will verify.', true);
+                const allPreSnap = await db.ref('nukkadNatak/pre').once('value');
+                const allPre = allPreSnap.val() || {};
+                const myKey  = cls.replace(/[.#$\/\[\]]/g,'_');
+                const clash  = Object.entries(allPre).find(([k, v]) => k !== myKey && v.place && v.place.toLowerCase().trim() === place.toLowerCase().trim());
+                if (clash) {
+                    const clashCls = clash[1].savedBy || clash[0];
+                    if (placeStatus) { placeStatus.style.display='block'; placeStatus.style.background='#fce4ec'; placeStatus.style.color='#c62828'; placeStatus.textContent='⚠️ Place clash! "' + place + '" is already requested by ' + clashCls + '. Choose a different location.'; }
+                    showM('❌ Place clash detected! Choose a different performance location.', false);
+                    return;
+                }
+            } catch(e) { /* ignore clash check, proceed */ }
+            try {
+                const key = cls.replace(/[.#$\/\[\]]/g,'_');
+                await db.ref('nukkadNatak/pre/' + key).update({ adviserName: advName, adviserOrg: advOrg, place: place, placeApproved: null, savedAt: new Date().toISOString(), savedBy: cls });
+                if (placeStatus) { placeStatus.style.display='block'; placeStatus.style.background='#fff3e0'; placeStatus.style.color='#e65100'; placeStatus.textContent='📍 Place "' + place + '" submitted — awaiting Kotrappa sir\'s verification.'; }
+                showM('✅ Adviser details & place saved! Kotrappa sir will verify.', true);
             } catch(err) { showM('❌ Error: ' + err.message, false); }
         }
-
-        // ══════════════════════════════════════════════════════════════
-        // NUKKAD NATAK — KOTRAPPA PRE-EVENT PANEL
-        // ══════════════════════════════════════════════════════════════
 
         async function loadNukkadPrePanel() {
             const listEl  = document.getElementById('nukkadPreList');
@@ -13464,11 +13527,26 @@
                         if (d.adviserOrg)  byClass[cls].adviserOrg  = d.adviserOrg;
                     });
                 }
+                // Load pre-event data (adviser + place saved by CR)
+                const preSnap = await db.ref('nukkadNatak/pre').once('value');
+                const preData = preSnap.val() || {};
+
                 // Load permissions
                 const permSnap = await db.ref('nukkadNatak/permissions').once('value');
                 const perms = permSnap.val() || {};
 
                 const classes = Object.keys(byClass);
+                // Merge pre-event data (place, adviser) into byClass
+                classes.forEach(cls => {
+                    const key = cls.replace(/[.#$/\[\]]/g,'_');
+                    const pre = preData[key] || {};
+                    if (pre.adviserName) byClass[cls].adviserName = pre.adviserName;
+                    if (pre.adviserOrg)  byClass[cls].adviserOrg  = pre.adviserOrg;
+                    byClass[cls].place         = pre.place         || '';
+                    byClass[cls].placeApproved = pre.placeApproved !== undefined ? pre.placeApproved : null;
+                    byClass[cls].placeRejectedReason = pre.placeRejectedReason || '';
+                });
+
                 if (badge) badge.textContent = classes.length + ' class' + (classes.length !== 1 ? 'es' : '') + ' enrolled';
 
                 // Build theme → classes map for duplicate detection
@@ -13507,7 +13585,20 @@
                             <div style="margin-bottom:4px"><strong>🎯 Theme:</strong> ${theme || '<em style="color:#aaa">Not set</em>'}
                                 ${isDup ? `<span style="background:#fce4ec;color:#c62828;padding:1px 8px;border-radius:8px;font-size:0.78em;font-weight:700;margin-left:6px">⚠️ Duplicate — also used by: ${dupClasses}</span>` : (theme ? `<span style="background:#e8f5e9;color:#2e7d32;padding:1px 8px;border-radius:8px;font-size:0.78em;font-weight:700;margin-left:6px">✅ Unique</span>` : '')}
                             </div>
-                            <div style="margin-bottom:2px"><strong>🎓 Social Adviser:</strong> ${data.adviserName || '<em style="color:#aaa">Not set</em>'}${data.adviserOrg ? ` <span style="color:#666">(${data.adviserOrg})</span>` : ''}</div>
+                            <div style="margin-bottom:4px"><strong>🎓 Social Adviser:</strong> ${data.adviserName || '<em style="color:#aaa">Not set</em>'}${data.adviserOrg ? ` <span style="color:#666">(${data.adviserOrg})</span>` : ''}</div>
+                            <div style="margin-bottom:4px"><strong>📍 Performance Place:</strong>
+                                ${data.place
+                                    ? `<span style="color:${data.placeApproved===true?'#2e7d32':data.placeApproved===false?'#c62828':'#e65100'};font-weight:600">${data.place}</span>
+                                       ${data.placeApproved===true?'<span style="background:#e8f5e9;color:#2e7d32;padding:1px 8px;border-radius:8px;font-size:0.78em;font-weight:700;margin-left:4px">✅ Approved</span>':data.placeApproved===false?'<span style="background:#fce4ec;color:#c62828;padding:1px 8px;border-radius:8px;font-size:0.78em;font-weight:700;margin-left:4px">❌ Rejected</span>':'<span style="background:#fff3e0;color:#e65100;padding:1px 8px;border-radius:8px;font-size:0.78em;font-weight:700;margin-left:4px">⏳ Pending</span>'}`
+                                    : '<em style="color:#aaa">Not submitted</em>'}
+                            </div>
+                            ${data.place && data.placeApproved !== true ? `
+                            <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:6px;padding:8px;background:#e8eaf6;border-radius:8px">
+                                <span style="font-size:0.82em;font-weight:700;color:#1a237e">✏️ Edit/Verify Place:</span>
+                                <input type="text" id="placeEdit_${clsKey}" value="${(data.place||'').replace(/'/g,"\'")}" style="flex:1;min-width:140px;padding:5px 9px;border:2px solid #9fa8da;border-radius:6px;font-size:0.82em">
+                                <button onclick="approveNukkadPlace('${cls}','${clsKey}')" style="background:#2e7d32;color:white;border:none;border-radius:6px;padding:5px 12px;font-weight:700;cursor:pointer;font-size:0.78em">✅ Approve</button>
+                                <button onclick="rejectNukkadPlace('${cls}','${clsKey}')" style="background:#c62828;color:white;border:none;border-radius:6px;padding:5px 12px;font-weight:700;cursor:pointer;font-size:0.78em">❌ Reject</button>
+                            </div>` : ''}
                             ${hasPermission ? `<div style="margin-top:4px;color:#2e7d32;font-weight:600">📅 Slot: ${permDate} at ${permTime}</div>` : ''}
                         </div>
                         ${!hasPermission ? `
@@ -13647,6 +13738,86 @@
         // NUKKAD NATAK — SHANKAR POST-EVENT PANEL
         // ══════════════════════════════════════════════════════════════
 
+
+        // ── Approve / Reject Place (Kotrappa) ─────────────────────────
+        async function approveNukkadPlace(cls, clsKey) {
+            const editEl = document.getElementById('placeEdit_' + clsKey);
+            const place  = editEl ? editEl.value.trim() : '';
+            if (!place) { alert('❌ Place cannot be empty.'); return; }
+            // Clash check against other classes
+            try {
+                const snap = await db.ref('nukkadNatak/pre').once('value');
+                const all  = snap.val() || {};
+                const clash = Object.entries(all).find(([k, v]) => k !== clsKey && v.place && v.place.toLowerCase().trim() === place.toLowerCase().trim() && v.placeApproved === true);
+                if (clash) {
+                    const clashCls = clash[1].savedBy || clash[0];
+                    alert('❌ Place clash! "' + place + '" is already approved for ' + clashCls + '. Edit and choose a different location.');
+                    return;
+                }
+                await db.ref('nukkadNatak/pre/' + clsKey).update({ place: place, placeApproved: true, placeApprovedAt: new Date().toISOString() });
+                alert('✅ Place approved for ' + cls);
+                loadNukkadPrePanel();
+            } catch(e) { alert('❌ Error: ' + e.message); }
+        }
+        async function rejectNukkadPlace(cls, clsKey) {
+            const reason = prompt('Reason for rejection (will be shown to CR):', 'Place not suitable, please choose another location.');
+            if (reason === null) return;
+            try {
+                await db.ref('nukkadNatak/pre/' + clsKey).update({ placeApproved: false, placeRejectedReason: reason, placeRejectedAt: new Date().toISOString() });
+                alert('❌ Place rejected for ' + cls + '. CR will see the reason.');
+                loadNukkadPrePanel();
+            } catch(e) { alert('❌ Error: ' + e.message); }
+        }
+
+        // ── All-in-one Overview Table (Point 5) ───────────────────────
+        async function loadNukkadOverviewTable() {
+            const container = document.getElementById('nukkadOverviewTable');
+            if (!container) return;
+            container.innerHTML = '<div style="text-align:center;color:#aaa;padding:20px">Loading…</div>';
+            try {
+                const [enrollSnap, preSnap, permSnap] = await Promise.all([
+                    db.ref('youthfest-enrollments').orderByChild('event').equalTo('Nukkad Natak').once('value'),
+                    db.ref('nukkadNatak/pre').once('value'),
+                    db.ref('nukkadNatak/permissions').once('value')
+                ]);
+                const byClass = {};
+                if (enrollSnap.exists()) {
+                    enrollSnap.forEach(ch => {
+                        const d = ch.val();
+                        const cls = d.classYear || d.class || 'Unknown';
+                        if (!byClass[cls]) byClass[cls] = { members: 0 };
+                        byClass[cls].members++;
+                    });
+                }
+                const pre  = preSnap.val()  || {};
+                const perm = permSnap.val() || {};
+                const classes = Object.keys(byClass).sort();
+                if (!classes.length) { container.innerHTML = '<div style="text-align:center;color:#aaa;padding:20px">No enrollments yet.</div>'; return; }
+                let rows = classes.map(cls => {
+                    const key  = cls.replace(/[.#$/\[\]]/g,'_');
+                    const p    = pre[key]  || {};
+                    const pm   = perm[key] || {};
+                    const placeColor = p.placeApproved===true?'#2e7d32':p.placeApproved===false?'#c62828':'#e65100';
+                    const placeLabel = p.placeApproved===true?'✅':p.placeApproved===false?'❌':'⏳';
+                    return `<tr style="border-bottom:1px solid #eee;font-size:0.82em">
+                        <td style="padding:8px 10px;font-weight:700;color:#1a237e">${cls}</td>
+                        <td style="padding:8px 10px;color:${placeColor}">${placeLabel} ${p.place||'<em style="color:#aaa">Not set</em>'}</td>
+                        <td style="padding:8px 10px">${p.adviserName||'<em style="color:#aaa">—</em>'}</td>
+                        <td style="padding:8px 10px;color:${pm.granted?'#2e7d32':'#e65100'}">${pm.granted ? '✅ '+pm.date+' '+pm.time : '⏳ Pending'}</td>
+                        <td style="padding:8px 10px">${byClass[cls].members}</td>
+                    </tr>`;
+                }).join('');
+                container.innerHTML = `<table style="width:100%;border-collapse:collapse;background:white;border-radius:10px;overflow:hidden">
+                    <thead><tr style="background:#1a237e;color:white;font-size:0.82em">
+                        <th style="padding:10px;text-align:left">Class</th>
+                        <th style="padding:10px;text-align:left">📍 Place</th>
+                        <th style="padding:10px;text-align:left">🎓 Adviser</th>
+                        <th style="padding:10px;text-align:left">📅 Date & Time</th>
+                        <th style="padding:10px;text-align:left">👥 Members</th>
+                    </tr></thead><tbody>${rows}</tbody></table>`;
+            } catch(e) { container.innerHTML = '<div style="color:#c62828;padding:20px">❌ Error: ' + e.message + '</div>'; }
+        }
+
         async function loadNukkadPostPanel() {
             const listEl = document.getElementById('nukkadPostList');
             const badge  = document.getElementById('nukkadPostBadge');
@@ -13690,7 +13861,9 @@
                     const newspaperUrl  = p.newspaperUrl  || '';
                     const formLink      = p.formLink      || '';
                     const ytVerified    = p.ytVerified    === true;
+                    const ytNotSub      = p.ytNotSubmitted  === true;
                     const newsVerified  = p.newspaperVerified === true;
+                    const newsNotSub    = p.newspaperNotSubmitted === true;
                     const ytVerifiedBy  = p.ytVerifiedBy  || '';
                     const newsVerifiedBy= p.newspaperVerifiedBy || '';
 
@@ -13707,9 +13880,11 @@
                                         : '<span style="font-size:0.8em;color:#aaa">Not submitted yet</span>'}
                                     ${ytVerified ? `<div style="font-size:0.72em;color:#2e7d32;margin-top:2px">✅ Verified by ${ytVerifiedBy}</div>` : ''}
                                 </div>
+                                <div style="display:flex;gap:6px;flex-wrap:wrap">
                                 ${ytLink && !ytVerified ? `<button onclick="verifyNukkadYt('${cls}','${key}')" style="background:#2e7d32;color:white;border:none;border-radius:8px;padding:6px 12px;font-weight:700;cursor:pointer;font-size:0.8em;white-space:nowrap">✅ Verify (+10 pts)</button>` : ''}
                                 ${ytVerified ? `<span style="background:#e8f5e9;color:#2e7d32;padding:3px 10px;border-radius:10px;font-size:0.78em;font-weight:700">✅ Verified</span>` : ''}
-                                ${!ytLink ? `<span style="background:#fff3e0;color:#e65100;padding:3px 10px;border-radius:10px;font-size:0.78em;font-weight:700">⏳ Pending</span>` : ''}
+                                 ${ ytNotSub ? '<span style="background:#fce4ec;color:#b71c1c;padding:3px 10px;border-radius:10px;font-size:0.78em;font-weight:700">🚫 Not Submitted</span>' : (!ytLink ? '<span style="background:#fff3e0;color:#e65100;padding:3px 10px;border-radius:10px;font-size:0.78em;font-weight:700">⏳ Pending</span><button onclick="markNukkadNotSubmitted(\'' + cls + '\',\'' + key + '\',\'yt\'" style="background:#b71c1c;color:white;border:none;border-radius:8px;padding:6px 12px;font-weight:700;cursor:pointer;font-size:0.78em">🚫 Mark Not Submitted</button>' : '') }
+                                </div>
                             </div>
                         </div>
 
@@ -13723,9 +13898,11 @@
                                         : '<span style="font-size:0.8em;color:#aaa">Not submitted yet</span>'}
                                     ${newsVerified ? `<div style="font-size:0.72em;color:#2e7d32;margin-top:2px">✅ Verified by ${newsVerifiedBy}</div>` : ''}
                                 </div>
+                                <div style="display:flex;gap:6px;flex-wrap:wrap">
                                 ${newspaperUrl && !newsVerified ? `<button onclick="verifyNukkadNewspaper('${cls}','${key}')" style="background:#1b5e20;color:white;border:none;border-radius:8px;padding:6px 12px;font-weight:700;cursor:pointer;font-size:0.8em;white-space:nowrap">✅ Verify (+10 pts)</button>` : ''}
                                 ${newsVerified ? `<span style="background:#e8f5e9;color:#2e7d32;padding:3px 10px;border-radius:10px;font-size:0.78em;font-weight:700">✅ Verified</span>` : ''}
-                                ${!newspaperUrl ? `<span style="background:#fff3e0;color:#e65100;padding:3px 10px;border-radius:10px;font-size:0.78em;font-weight:700">⏳ Pending</span>` : ''}
+                                 ${ newsNotSub ? '<span style="background:#fce4ec;color:#b71c1c;padding:3px 10px;border-radius:10px;font-size:0.78em;font-weight:700">🚫 Not Submitted</span>' : (!newspaperUrl ? '<span style="background:#fff3e0;color:#e65100;padding:3px 10px;border-radius:10px;font-size:0.78em;font-weight:700">⏳ Pending</span><button onclick="markNukkadNotSubmitted(\'' + cls + '\',\'' + key + '\',\'newspaper\'" style="background:#b71c1c;color:white;border:none;border-radius:8px;padding:6px 12px;font-weight:700;cursor:pointer;font-size:0.78em">🚫 Mark Not Submitted</button>' : '') }
+                                </div>
                             </div>
                         </div>
 
@@ -13737,6 +13914,21 @@
             } catch(err) {
                 if (listEl) listEl.innerHTML = `<div style="padding:20px;color:#c62828">❌ Error: ${err.message}</div>`;
             }
+        }
+
+
+        async function markNukkadNotSubmitted(cls, key, type) {
+            const label = type === 'yt' ? 'YouTube link' : 'Newspaper photo';
+            if (!confirm('Mark ' + cls + ' as "Not Submitted" for ' + label + '?\n\nThis will record that the class did NOT submit this item. No points will be awarded.')) return;
+            const markedBy = document.getElementById('facultyDashName') ? document.getElementById('facultyDashName').textContent : 'Verifier';
+            try {
+                const update = type === 'yt'
+                    ? { ytNotSubmitted: true, ytNotSubmittedBy: markedBy, ytNotSubmittedAt: new Date().toISOString() }
+                    : { newspaperNotSubmitted: true, newspaperNotSubmittedBy: markedBy, newspaperNotSubmittedAt: new Date().toISOString() };
+                await db.ref('nukkadNatak/post/' + key).update(update);
+                alert('🚫 Marked as Not Submitted for ' + cls);
+                loadNukkadPostPanel();
+            } catch(e) { alert('❌ Error: ' + e.message); }
         }
 
         async function verifyNukkadYt(cls, key) {
