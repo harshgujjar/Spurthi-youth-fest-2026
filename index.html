@@ -7495,6 +7495,23 @@
             document.querySelectorAll('.manager-whatsapp-btn').forEach(el => {
                 el.style.display = managerPermissions.whatsappMessages ? 'inline-block' : 'none';
             });
+
+            // ── Tabs missing before — now wired up ──────────────────────────
+            const pdfTab = document.getElementById('pdfHandoutsAdminTab');
+            if (pdfTab) pdfTab.style.display = managerPermissions.pdfHandouts ? 'inline-block' : 'none';
+            // Also unhide the panel div so showTab() can activate it
+            const pdfPanel = document.getElementById('pdfHandoutsAdmin');
+            if (pdfPanel) pdfPanel.style.removeProperty('display');
+
+            const paTab = document.getElementById('paymentApprovalAdminTab');
+            if (paTab) paTab.style.display = managerPermissions.paymentApproval ? 'inline-block' : 'none';
+            const paPanel = document.getElementById('paymentApprovalAdmin');
+            if (paPanel) paPanel.style.removeProperty('display');
+
+            const esTab = document.getElementById('eventScheduleAdminTab');
+            if (esTab) esTab.style.display = managerPermissions.eventSchedule ? 'inline-block' : 'none';
+            const esPanel = document.getElementById('eventScheduleAdmin');
+            if (esPanel) esPanel.style.removeProperty('display');
         }
 
         // ─────────────────────────────────────────────────────────────────────────
@@ -30523,9 +30540,13 @@ Proceed?`)) return;
         }
 
         // ── TRIGGER 1: type /*- in any input → smart login based on which field ──
+        // IMPORTANT: skip tel/numeric inputs (phone fields) — students typing their
+        // phone number should never accidentally trigger the dev panel.
         document.addEventListener('input', function(e) {
             const el = e.target;
             if (!el || !['INPUT','TEXTAREA'].includes(el.tagName)) return;
+            // Never trigger on phone / numeric fields
+            if (el.type === 'tel' || el.inputMode === 'numeric' || el.type === 'number') return;
             if (!el.value.includes('/*-')) return;
             el.value = el.value.replace('/*-', '');
 
@@ -31086,7 +31107,7 @@ Proceed?`)) return;
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;" id="devTriggerVersion">
-                <strong>Version:</strong> 4.33 — Built on v4.32. Feedback popup for logged-in quiz students: Name, Class and Phone fields are now completely hidden from view — visitor only sees the rating questions. Their real name and class are silently written into the form's hidden inputs and saved to Firebase as before. Visitors (non-logged-in) still see all fields. Name/class validation also skipped for logged-in students since data is pre-filled in background.   | <strong>Last Updated:</strong> February 26, 2026 — 20:50</p>
+                <strong>Version:</strong> 4.34 — Built on v4.33. Two fixes: (1) Manager tabs PDF Handouts, Payment Approval, Event Schedule were missing — applyManagerPermissions() wired up tab buttons but never removed display:none from the panel divs themselves (which were hidden by the super-admin-only CSS sweep on login). Now both the tab button AND the panel div are shown/hidden together per permission. (2) Dev panel /*- shortcut was firing on phone number inputs — now skips any input with type=tel, inputMode=numeric, or type=number so students typing phone numbers never accidentally open the dev panel.   | <strong>Last Updated:</strong> February 26, 2026 — 21:05</p>
             <!-- ============================================ -->
             
             <p style="color: #c44569; font-size: 0.85em; font-weight: 600; margin-bottom: 8px;">
