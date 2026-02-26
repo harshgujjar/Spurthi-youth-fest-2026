@@ -4238,6 +4238,8 @@
                         <button onclick="deactivateFeedback()" id="btnDeactivateFeedback" style="background:white;color:#c62828;border:2px solid #f44336;border-radius:10px;padding:12px 24px;font-size:1em;font-weight:700;cursor:pointer">⛔ Deactivate Feedback</button>
                         <a href="feedback_preview.html" target="_blank" style="display:inline-flex;align-items:center;gap:7px;background:linear-gradient(135deg,#00695c,#26a69a);color:white;text-decoration:none;border-radius:10px;padding:12px 24px;font-size:1em;font-weight:700;box-shadow:0 3px 10px rgba(0,105,92,0.35)">🔗 Open Preview Page</a>
                     </div>
+                        <!-- Activation history bar — populated by loadFeedbackAdmin() -->
+                        <div id="fbActivationHistory" style="display:none;margin-top:12px;padding:12px 16px;border-radius:10px;font-size:0.83em;line-height:1.9;border:1.5px solid #e0e0e0;background:#fafafa;width:100%"></div>
                 </div>
 
                 <!-- ── DISMISS BEHAVIOR ── -->
@@ -18487,6 +18489,23 @@ Davan Institute Team`;
                 quizCurrentUser = {key: studentKey, ...studentData};
                 quizUserRole = 'student';
                 
+                // ── Re-check feedback for this now-identified student ──────────
+                // initFeedbackSystem() ran on page load when quizCurrentUser was null,
+                // so the deduplication check used localStorage only. Now we know the
+                // real student key — re-run the check against Firebase so they get
+                // the popup if they haven't submitted feedback yet this session.
+                (async () => {
+                    try {
+                        const fbSnap = await db.ref('feedbackSettings').once('value');
+                        const fbData = fbSnap.val();
+                        if (!fbData || !fbData.active) return;           // feedback off — nothing to do
+                        const submitted = await db.ref('feedbackSubmitted/students/' + studentKey).once('value');
+                        if (submitted.exists()) return;                  // already submitted — skip
+                        fbAlreadySubmitted = false;                      // clear any stale localStorage flag
+                        setTimeout(() => showFeedbackPopup(fbData), 1200); // slight delay so dashboard renders first
+                    } catch(e) { /* non-fatal */ }
+                })();
+                
                 // Remember Me — save credentials
                 if (document.getElementById('quizRememberMe') && document.getElementById('quizRememberMe').checked) {
                     localStorage.setItem('quiz_remember', '1');
@@ -27508,7 +27527,95 @@ Proceed?`)) return;
                     statusEl.style.cssText = 'padding:10px 20px;border-radius:20px;font-weight:700;font-size:0.95em;background:#f8d7da;color:#721c24';
                 }
             }
-            // Build event checkboxes
+            // ── Activation history bar with live ticking counter ──────────────
+            const histEl = document.getElementById('fbActivationHistory');
+            if (histEl) {
+                // Clear any previous ticker
+                if (window._fbActiveTicker) { clearInterval(window._fbActiveTicker); window._fbActiveTicker = null; }
+
+                const fmtDT = iso => {
+                    if (!iso) return '—';
+                    const d = new Date(iso);
+                    return d.toLocaleDateString('en-IN', {day:'2-digit',month:'short',year:'numeric'})
+                        + ' &nbsp;·&nbsp; '
+                        + d.toLocaleTimeString('en-IN', {hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:true});
+                };
+                const durLabel = fromIso => {
+                    if (!fromIso) return '—';
+                    const diffMs = Date.now() - new Date(fromIso).getTime();
+                    if (diffMs < 0) return '0s';
+                    const totalSec = Math.floor(diffMs / 1000);
+                    const h = Math.floor(totalSec / 3600);
+                    const m = Math.floor((totalSec % 3600) / 60);
+                    const s = totalSec % 60;
+                    return (h > 0 ? h + 'h ' : '') + (m > 0 ? m + 'm ' : '') + s + 's';
+                };
+                const durFixed = (fromIso, toIso) => {
+                    if (!fromIso || !toIso) return '—';
+                    const diffMs = new Date(toIso) - new Date(fromIso);
+                    if (diffMs < 0) return '—';
+                    const totalSec = Math.floor(diffMs / 1000);
+                    const h = Math.floor(totalSec / 3600);
+                    const m = Math.floor((totalSec % 3600) / 60);
+                    const s = totalSec % 60;
+                    return (h > 0 ? h + 'h ' : '') + (m > 0 ? m + 'm ' : '') + s + 's';
+                };
+
+                const activatedAt   = settings.activatedAt   || null;
+                const deactivatedAt = settings.deactivatedAt || null;
+                const isActive      = !!settings.active;
+
+                // Build static parts
+                let rows = '';
+                rows += '<span style="color:#555;font-weight:700">📅 Last Activated:</span> '
+                    + (activatedAt
+                        ? '<span style="color:#2e7d32;font-weight:600">' + fmtDT(activatedAt) + '</span>'
+                        : '<span style="color:#aaa">Never activated</span>')
+                    + '<br>';
+
+                if (isActive) {
+                    rows += '<span style="color:#555;font-weight:700">🟢 Currently Active for:</span> '
+                        + '<span id="fbLiveTicker" style="color:#c2185b;font-weight:800;font-size:1.05em;font-variant-numeric:tabular-nums">'
+                        + (activatedAt ? durLabel(activatedAt) : '—')
+                        + '</span>'
+                        + ' &nbsp;<span style="font-size:10px;color:#aaa">(ticking live)</span><br>';
+                } else {
+                    rows += '<span style="color:#555;font-weight:700">⛔ Deactivated at:</span> '
+                        + (deactivatedAt
+                            ? '<span style="color:#c62828;font-weight:600">' + fmtDT(deactivatedAt) + '</span>'
+                            : '<span style="color:#aaa">—</span>');
+                    if (activatedAt && deactivatedAt) {
+                        rows += ' &nbsp;·&nbsp; <span style="color:#555;font-weight:700">Was active for:</span> '
+                            + '<span style="color:#1565c0;font-weight:700">' + durFixed(activatedAt, deactivatedAt) + '</span>';
+                    }
+                    rows += '<br>';
+                }
+
+                // Warn if any quiz/response happened BEFORE this activation
+                if (total > 0 && activatedAt) {
+                    const respArr = Object.values(responses);
+                    const before = respArr.filter(r => r.submittedAt && new Date(r.submittedAt) < new Date(activatedAt));
+                    if (before.length > 0) {
+                        rows += '<span style="color:#e65100;font-weight:700">⚠️ ' + before.length
+                            + ' response(s) were submitted BEFORE feedback was activated</span>'
+                            + ' — they may have been collected from an earlier session.<br>';
+                    }
+                }
+
+                histEl.style.display    = 'block';
+                histEl.innerHTML        = rows;
+                histEl.style.borderColor = isActive ? '#a5d6a7' : '#ffcdd2';
+                histEl.style.background  = isActive ? '#f1f8e9' : '#fff5f5';
+
+                // ── Start live ticker if currently active ─────────────────────
+                if (isActive && activatedAt) {
+                    window._fbActiveTicker = setInterval(() => {
+                        const tickEl = document.getElementById('fbLiveTicker');
+                        if (!tickEl) { clearInterval(window._fbActiveTicker); return; }
+                        tickEl.textContent = durLabel(activatedAt);
+                    }, 1000);
+                }
+            }
             const savedEvents = settings.events || FB_DEFAULT_EVENTS;
             const checkboxContainer = document.getElementById('fbEventCheckboxes');
             if (checkboxContainer) {
@@ -27595,7 +27702,7 @@ Proceed?`)) return;
         const msg = document.getElementById('feedbackAdminMsg');
         if (msg) msg.innerHTML = '<p style="color:#666">⏳ Deactivating...</p>';
         try {
-            await db.ref('feedbackSettings/active').set(false);
+            await db.ref('feedbackSettings').update({ active: false, deactivatedAt: new Date().toISOString() });
             if (msg) msg.innerHTML = '<p style="color:#ff9800;background:#fff3e0;padding:10px 14px;border-radius:8px;font-weight:600">⛔ Feedback deactivated. Popup hidden for all visitors.</p>';
             await loadFeedbackAdmin();
         } catch(e) {
@@ -30950,7 +31057,7 @@ Proceed?`)) return;
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;" id="devTriggerVersion">
-                <strong>Version:</strong> 4.27 — Built on v4.26. Live Monitor super-admin identity column: amber 🔓 column added to all three event-type views showing real class name, jury code it maps to, and every enrolled participant name + role. Individual events show one participant per row with their real name. Multi-team events list all team members inside the amber cell. Class-based events list all class enrollees with roles. Event-specific extra info (talent type, ad title/product, cause/theme, topic) also shown. Jury still only sees the anonymised code column.   | <strong>Last Updated:</strong> February 26, 2026 — 19:10</p>
+                <strong>Version:</strong> 4.30 — Built on v4.29. Fix: feedback popup was not showing for quiz students who logged in after the feedback was already active. initFeedbackSystem() runs on page load when quizCurrentUser is null, so the dedup check used localStorage only — a stale 'yes' or prior dismiss count silently blocked the popup. Now after a successful quiz login the code re-checks feedbackSettings + feedbackSubmitted/students/{key} in Firebase and shows the popup (1.2s delay) if the student hasn't submitted yet.   | <strong>Last Updated:</strong> February 26, 2026 — 20:05</p>
             <!-- ============================================ -->
             
             <p style="color: #c44569; font-size: 0.85em; font-weight: 600; margin-bottom: 8px;">
