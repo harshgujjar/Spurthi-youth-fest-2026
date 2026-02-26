@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Feedback Form — Exact Visitor Preview</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif; background:linear-gradient(135deg,#c44569 0%,#6a1b9a 100%); min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:flex-start; padding:20px; }
+
+  .info-bar { width:100%; max-width:660px; background:rgba(255,255,255,0.15); border:2px dashed rgba(255,255,255,0.5); border-radius:12px; padding:12px 18px; margin-bottom:18px; color:white; display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+  .info-bar span { font-size:0.88em; font-weight:600; }
+  .badge { background:rgba(255,255,255,0.25); padding:3px 12px; border-radius:20px; font-size:0.8em; font-weight:700; }
+  .badge.orange { background:rgba(255,165,0,0.5); }
+  .badge.green { background:rgba(46,125,50,0.5); }
+
+  .modal { background:white; border-radius:20px; max-width:620px; width:100%; box-shadow:0 12px 50px rgba(0,0,0,0.4); overflow:hidden; animation:slideInUp 0.35s ease; }
+  @keyframes slideInUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+
+  .modal-header { background:linear-gradient(135deg,#880e4f,#c2185b,#e91e63); padding:24px 28px; color:white; position:relative; }
+  .modal-header h2 { margin:0 0 4px; font-size:1.4em; }
+  .modal-header p { margin:0; opacity:0.9; font-size:0.9em; }
+  .close-btn { position:absolute; top:16px; right:16px; background:rgba(255,255,255,0.2); color:white; border:none; border-radius:50%; width:32px; height:32px; font-size:1.1em; cursor:pointer; font-weight:700; display:flex; align-items:center; justify-content:center; transition:background 0.2s; }
+  .close-btn:hover { background:rgba(255,255,255,0.35); }
+
+  .dismiss-note { background:#fff8e1; border-left:4px solid #ffc107; padding:10px 16px; font-size:0.85em; color:#856404; font-weight:600; display:none; align-items:center; gap:8px; }
+
+  .modal-body { padding:24px 28px; }
+
+  .field { margin-bottom:18px; }
+  .field label { font-weight:700; color:#555; font-size:0.95em; display:block; margin-bottom:6px; }
+  .field input[type="text"],
+  .field input[type="tel"],
+  .field textarea,
+  .field select { width:100%; padding:11px 14px; border:2px solid #f48fb1; border-radius:10px; font-size:0.95em; box-sizing:border-box; outline:none; font-family:inherit; transition:border 0.2s; background:white; }
+  .field input:focus, .field textarea:focus, .field select:focus { border-color:#c2185b; }
+  .field textarea { resize:vertical; }
+  .field small { color:#888; margin-top:5px; display:block; font-size:0.82em; }
+  .locked { background:#f9f9f9 !important; color:#888 !important; cursor:not-allowed !important; }
+  .required { color:#c2185b; }
+
+  .score-section { margin-bottom:22px; background:#fce4ec; padding:16px; border-radius:12px; border-left:4px solid #e91e63; }
+  .score-section label { font-weight:700; color:#880e4f; font-size:0.95em; display:block; margin-bottom:12px; }
+  .score-row { display:flex; gap:8px; flex-wrap:wrap; }
+  .score-btn { width:40px; height:40px; border-radius:50%; border:2px solid; background:white; font-weight:800; font-size:0.95em; cursor:pointer; transition:all 0.2s; font-family:inherit; }
+  .score-btn:hover { transform:scale(1.1); }
+
+  .events-section { margin-bottom:22px; }
+  .events-section h4 { color:#4a148c; margin:0 0 12px; font-size:1em; }
+  .event-card { background:#f8f9fa; border-radius:10px; padding:12px 14px; margin-bottom:10px; border:1px solid #e0e0e0; transition:border 0.2s; }
+  .event-card:hover { border-color:#9c27b0; }
+  .event-name { font-weight:700; color:#333; margin-bottom:8px; font-size:0.93em; }
+  .star-row { display:flex; gap:4px; }
+  .star-btn { width:36px; height:36px; font-size:1.3em; background:none; border:none; cursor:pointer; transition:transform 0.1s; line-height:1; }
+  .star-btn:hover { transform:scale(1.2); }
+
+  .recommend-section { margin-bottom:22px; background:#e8f5e9; padding:16px; border-radius:12px; border-left:4px solid #43a047; }
+  .recommend-section label { font-weight:700; color:#2e7d32; font-size:0.95em; display:block; margin-bottom:12px; }
+  .recommend-btns { display:flex; gap:10px; flex-wrap:wrap; }
+  .rec-btn { padding:10px 24px; border:2px solid; border-radius:20px; background:white; font-weight:700; cursor:pointer; font-size:0.95em; transition:all 0.2s; font-family:inherit; }
+  .rec-yes { border-color:#43a047; color:#2e7d32; }
+  .rec-maybe { border-color:#ff9800; color:#e65100; }
+  .rec-no { border-color:#f44336; color:#c62828; }
+
+  .submit-btn { width:100%; background:linear-gradient(135deg,#880e4f,#c2185b,#e91e63); color:white; border:none; border-radius:12px; padding:15px; font-size:1.1em; font-weight:700; cursor:pointer; box-shadow:0 4px 15px rgba(194,24,91,0.4); letter-spacing:0.5px; font-family:inherit; transition:opacity 0.2s; }
+  .submit-btn:hover { opacity:0.92; }
+  .footnote { text-align:center; color:#aaa; font-size:0.8em; margin-top:10px; }
+
+  .error-msg { background:#fde8e8; color:#c62828; padding:10px 14px; border-radius:8px; font-weight:600; font-size:0.9em; margin-bottom:12px; border:1.5px solid #f5c6cb; display:none; }
+  .error-msg.show { display:block; animation:shake 0.3s ease; }
+  @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-6px)} 75%{transform:translateX(6px)} }
+
+  .success-screen { display:none; text-align:center; padding:48px 28px; }
+  .success-screen.show { display:block; }
+
+  /* Sim controls */
+  .sim-controls { width:100%; max-width:660px; margin-top:18px; background:rgba(255,255,255,0.12); border-radius:12px; padding:16px 18px; color:white; }
+  .sim-controls h4 { font-size:0.88em; margin-bottom:12px; opacity:0.9; letter-spacing:0.3px; }
+  .sim-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+  .sim-btn { padding:9px 14px; border-radius:10px; border:2px solid rgba(255,255,255,0.4); background:rgba(255,255,255,0.1); color:white; font-size:0.82em; font-weight:700; cursor:pointer; transition:all 0.2s; text-align:left; display:flex; align-items:center; gap:8px; font-family:inherit; }
+  .sim-btn:hover { background:rgba(255,255,255,0.25); }
+  .sim-btn.active { background:rgba(255,255,255,0.3); border-color:rgba(255,255,255,0.8); }
+  .sim-label { font-size:0.75em; opacity:0.7; display:block; margin-top:2px; font-weight:500; }
+</style>
+</head>
+<body>
+
+<!-- Info bar -->
+<div class="info-bar">
+  <span>👁️ <strong>EXACT VISITOR PREVIEW</strong> — Spurthi Youth Fest 2026 Feedback Form</span>
+  <span class="badge" id="stateBadge">1st Visit — Dismissible</span>
+  <span class="badge green" id="userBadge">👤 Visitor Mode</span>
+</div>
+
+<!-- Modal -->
+<div class="modal" id="mainModal">
+
+  <!-- Header -->
+  <div class="modal-header">
+    <h2>📋 Spurthi Youth Fest 2026 — Feedback</h2>
+    <p>Your feedback helps us make next year even better! 🎉</p>
+    <button class="close-btn" id="closeBtn" onclick="handleClose()" title="Close">✕</button>
+  </div>
+
+  <!-- Must-fill warning (2nd visit) -->
+  <div class="dismiss-note" id="dismissNote">
+    ⚠️ <span>You dismissed this earlier. Please fill the form to continue — this is required.</span>
+  </div>
+
+  <!-- Form body -->
+  <div class="modal-body" id="formBody">
+
+    <!-- Q1: Name -->
+    <div class="field">
+      <label>👤 Your Name <span class="required">*</span></label>
+      <input type="text" id="fpName" placeholder="Enter your name...">
+    </div>
+
+    <!-- Q2: Phone (visitors only) -->
+    <div class="field" id="phoneRow">
+      <label>📱 Phone Number <span class="required">*</span></label>
+      <input type="tel" id="fpPhone" placeholder="e.g. 9876543210" maxlength="15">
+      <small>Used only to prevent duplicate submissions. Not shared with anyone.</small>
+    </div>
+
+    <!-- Q3: Class dropdown + Others -->
+    <div class="field">
+      <label>🏫 Class / Designation <span class="required">*</span></label>
+      <select id="fpClassSelect" onchange="handleClassChange(this.value)">
+        <option value="">— Select your class / role —</option>
+        <option value="I BCA A">I BCA A</option>
+        <option value="I BCA B">I BCA B</option>
+        <option value="II BCA A">II BCA A</option>
+        <option value="II BCA B">II BCA B</option>
+        <option value="III BCA A">III BCA A</option>
+        <option value="III BCA B">III BCA B</option>
+        <option value="I BBA A">I BBA A</option>
+        <option value="I BBA B">I BBA B</option>
+        <option value="II BBA A">II BBA A</option>
+        <option value="II BBA B">II BBA B</option>
+        <option value="III BBA A">III BBA A</option>
+        <option value="III BBA B">III BBA B</option>
+        <option value="Faculty">Faculty</option>
+        <option value="Staff">Staff</option>
+        <option value="Guest / Visitor">Guest / Visitor</option>
+        <option value="others">✏️ Others (type below)</option>
+      </select>
+      <input type="text" id="fpClassOther" placeholder="Please specify your class or designation..." style="display:none;margin-top:8px">
+      <input type="hidden" id="fpClass">
+    </div>
+
+    <!-- Q4: Overall Score -->
+    <div class="score-section">
+      <label>📝 Overall Fest Experience (1 = Poor, 10 = Excellent) <span class="required">*</span></label>
+      <div class="score-row" id="scoreRow"></div>
+      <input type="hidden" id="fpOverallScore">
+    </div>
+
+    <!-- Q5: Event Ratings -->
+    <div class="events-section">
+      <h4>⭐ Rate Each Event (1–5 Stars)</h4>
+      <div id="eventList"></div>
+    </div>
+
+    <!-- Q6: Recommend -->
+    <div class="recommend-section">
+      <label>🎯 Would you recommend Spurthi Youth Fest to others? <span class="required">*</span></label>
+      <div class="recommend-btns">
+        <button class="rec-btn rec-yes" onclick="setRecommend('yes',this)">👍 Yes!</button>
+        <button class="rec-btn rec-maybe" onclick="setRecommend('maybe',this)">🤔 Maybe</button>
+        <button class="rec-btn rec-no" onclick="setRecommend('no',this)">👎 No</button>
+      </div>
+      <input type="hidden" id="fpRecommend">
+    </div>
+
+    <!-- Q7: Suggestions -->
+    <div class="field">
+      <label>💬 Suggestions / Comments (Optional)</label>
+      <textarea id="fpSuggestions" rows="3" placeholder="Any suggestions to improve next year's fest? We'd love to hear from you!"></textarea>
+    </div>
+
+    <!-- Error -->
+    <div class="error-msg" id="errorMsg"></div>
+
+    <!-- Submit -->
+    <button class="submit-btn" onclick="handleSubmit()">🚀 Submit Feedback</button>
+    <p class="footnote">Your response is anonymous and helps us improve! 💪</p>
+  </div>
+
+  <!-- Success screen -->
+  <div class="success-screen" id="successScreen">
+    <div style="font-size:4em;margin-bottom:16px">🎉</div>
+    <h3 id="thankYouName" style="color:#2e7d32;font-size:1.4em;margin-bottom:8px">Thank You!</h3>
+    <p style="color:#555;margin-bottom:6px">Your feedback has been recorded. We truly appreciate your time! 💪</p>
+    <p id="thankYouDateTime" style="color:#aaa;font-size:0.82em;margin-bottom:24px"></p>
+    <button onclick="resetForm()" style="background:linear-gradient(135deg,#880e4f,#c2185b);color:white;border:none;border-radius:10px;padding:12px 28px;font-size:1em;font-weight:700;cursor:pointer;font-family:inherit">🔄 Reset Preview</button>
+  </div>
+
+</div>
+
+<!-- Simulation Controls -->
+<div class="sim-controls">
+  <h4>🎛️ Simulate different visitor states:</h4>
+  <div class="sim-grid">
+    <button class="sim-btn active" id="simVisitor1st" onclick="simState('visitor_1st')">
+      👤 Visitor — 1st Visit
+      <span class="sim-label">Phone required · Can dismiss once</span>
+    </button>
+    <button class="sim-btn" id="simVisitor2nd" onclick="simState('visitor_2nd')">
+      👤 Visitor — 2nd Visit
+      <span class="sim-label">Phone required · Must fill (no close)</span>
+    </button>
+    <button class="sim-btn" id="simStudent1st" onclick="simState('student_1st')">
+      🎓 Quiz Student — 1st Visit
+      <span class="sim-label">Name+Class auto-filled · No phone</span>
+    </button>
+    <button class="sim-btn" id="simStudentDone" onclick="simState('student_done')">
+      🎓 Quiz Student — Already Submitted
+      <span class="sim-label">Popup silently skipped</span>
+    </button>
+    <button class="sim-btn" id="simVisitorDone" onclick="simState('visitor_done')">
+      👤 Visitor — Already Submitted
+      <span class="sim-label">Popup silently skipped</span>
+    </button>
+    <button class="sim-btn" id="simReset" onclick="resetForm()">
+      🔄 Reset Form
+      <span class="sim-label">Clear all inputs</span>
+    </button>
+  </div>
+</div>
+
+<script>
+  const EVENTS = [
+    'Social Awareness Skit','Mad Ads','YouTube Advertisement','Case Analysis',
+    'Vlog','Podcast','Hand Writing','Talent Hunt','Best Out of Waste',
+    'Interdisciplinary','Quiz','Speed Slide Challenge','Nukkad Natak'
+  ];
+
+  let selectedScore = 0;
+  let selectedRecommend = '';
+  let starRatings = {};
+  let dismissCount = 0;
+  let maxDismiss = 1;
+  let currentMode = 'visitor_1st';
+
+  // ── Build Score Buttons ────────────────────────────────────────
+  function buildScoreButtons() {
+    const row = document.getElementById('scoreRow');
+    row.innerHTML = '';
+    for (let i = 1; i <= 10; i++) {
+      const color = i<=3?'#f44336':i<=6?'#ff9800':i<=8?'#66bb6a':'#2e7d32';
+      const btn = document.createElement('button');
+      btn.className = 'score-btn';
+      btn.textContent = i;
+      btn.style.borderColor = color;
+      btn.style.color = color;
+      btn.dataset.n = i;
+      btn.onclick = () => setScore(i);
+      row.appendChild(btn);
+    }
+  }
+
+  function setScore(n) {
+    selectedScore = n;
+    document.getElementById('fpOverallScore').value = n;
+    document.querySelectorAll('.score-btn').forEach(b => {
+      const v = parseInt(b.dataset.n);
+      const c = v<=3?'#f44336':v<=6?'#ff9800':v<=8?'#66bb6a':'#2e7d32';
+      b.style.background = v<=n ? c : 'white';
+      b.style.color      = v<=n ? 'white' : c;
+      b.style.transform  = v===n ? 'scale(1.15)' : 'scale(1)';
+      b.style.boxShadow  = v===n ? `0 3px 10px ${c}55` : 'none';
+    });
+  }
+
+  // ── Build Event Ratings ────────────────────────────────────────
+  function buildEventRatings() {
+    const list = document.getElementById('eventList');
+    list.innerHTML = '';
+    EVENTS.forEach((ev, idx) => {
+      const card = document.createElement('div');
+      card.className = 'event-card';
+      card.innerHTML = `
+        <div class="event-name">📌 ${ev}</div>
+        <div class="star-row" id="stars_${idx}">
+          ${[1,2,3,4,5].map(s=>`<button class="star-btn" onclick="setStar(${idx},'${ev.replace(/'/g,"\\'")}',${s})" title="${s} star${s>1?'s':''}">☆</button>`).join('')}
+        </div>`;
+      list.appendChild(card);
+    });
+    starRatings = {};
+  }
+
+  function setStar(idx, ev, stars) {
+    starRatings[ev] = stars;
+    const row = document.getElementById('stars_' + idx);
+    if (!row) return;
+    row.querySelectorAll('.star-btn').forEach((b,i) => {
+      b.textContent = i<stars ? '⭐' : '☆';
+      b.style.transform = i<stars ? 'scale(1.05)' : 'scale(1)';
+    });
+  }
+
+  // ── Class dropdown ─────────────────────────────────────────────
+  function handleClassChange(val) {
+    const other = document.getElementById('fpClassOther');
+    const hidden = document.getElementById('fpClass');
+    if (val === 'others') {
+      other.style.display = 'block';
+      other.focus();
+      hidden.value = '';
+      other.oninput = () => { hidden.value = other.value.trim(); };
+    } else {
+      other.style.display = 'none';
+      other.value = '';
+      hidden.value = val;
+    }
+  }
+
+  // ── Recommend ──────────────────────────────────────────────────
+  function setRecommend(val, btn) {
+    selectedRecommend = val;
+    document.getElementById('fpRecommend').value = val;
+    document.querySelectorAll('.rec-btn').forEach(b => {
+      b.style.background = 'white';
+      b.style.color = b.classList.contains('rec-yes') ? '#2e7d32' : b.classList.contains('rec-maybe') ? '#e65100' : '#c62828';
+      b.style.transform = 'scale(1)';
+    });
+    const colors = {yes:'#43a047',maybe:'#ff9800',no:'#f44336'};
+    btn.style.background = colors[val];
+    btn.style.color = 'white';
+    btn.style.transform = 'scale(1.05)';
+  }
+
+  // ── Validate & Submit ──────────────────────────────────────────
+  function handleSubmit() {
+    const name  = document.getElementById('fpName').value.trim();
+    const phone = document.getElementById('fpPhone').value.replace(/\D/g,'').trim();
+    const cls   = document.getElementById('fpClass').value;
+    const score = document.getElementById('fpOverallScore').value;
+    const rec   = document.getElementById('fpRecommend').value;
+    const isStudent = currentMode.startsWith('student');
+
+    if (!name)                       return showError('⚠️ Please enter your name.');
+    if (!isStudent && !phone)        return showError('⚠️ Please enter your phone number.');
+    if (!isStudent && phone.length < 10) return showError('⚠️ Please enter a valid 10-digit phone number.');
+    if (!cls)                        return showError('⚠️ Please select your class / designation.');
+    if (!score)                      return showError('⚠️ Please rate the overall fest experience (1–10).');
+    if (!rec)                        return showError('⚠️ Please answer the recommendation question.');
+
+    clearError();
+
+    const now = new Date();
+    const dateStr = now.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
+    const timeStr = now.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true});
+
+    document.getElementById('thankYouName').textContent = 'Thank You, ' + name + '!';
+    document.getElementById('thankYouDateTime').textContent = '📅 ' + dateStr + '  🕐 ' + timeStr;
+    document.getElementById('formBody').style.display = 'none';
+    document.getElementById('successScreen').classList.add('show');
+    document.getElementById('closeBtn').style.display = 'none';
+    document.getElementById('dismissNote').style.display = 'none';
+  }
+
+  // ── Close behavior ─────────────────────────────────────────────
+  function handleClose() {
+    if (dismissCount >= maxDismiss) return;
+    dismissCount++;
+    if (dismissCount >= maxDismiss) {
+      // Switch to "must fill" state after dismiss
+      setTimeout(() => simState(currentMode.startsWith('student') ? 'student_must' : 'visitor_2nd', true), 300);
+    }
+  }
+
+  // ── Error helpers ──────────────────────────────────────────────
+  function showError(msg) {
+    const el = document.getElementById('errorMsg');
+    el.textContent = msg;
+    el.classList.add('show');
+    el.scrollIntoView({behavior:'smooth',block:'nearest'});
+    setTimeout(() => el.classList.remove('show'), 4000);
+  }
+  function clearError() {
+    document.getElementById('errorMsg').classList.remove('show');
+  }
+
+  // ── Simulation state machine ───────────────────────────────────
+  function simState(mode, silent) {
+    currentMode = mode;
+    const closeBtn = document.getElementById('closeBtn');
+    const dismissNote = document.getElementById('dismissNote');
+    const phoneRow = document.getElementById('phoneRow');
+    const stateBadge = document.getElementById('stateBadge');
+    const userBadge = document.getElementById('userBadge');
+    const modal = document.getElementById('mainModal');
+    const formBody = document.getElementById('formBody');
+    const successScreen = document.getElementById('successScreen');
+
+    // Reset all sim btn active states
+    document.querySelectorAll('.sim-btn').forEach(b => b.classList.remove('active'));
+    const btnMap = {
+      visitor_1st:'simVisitor1st', visitor_2nd:'simVisitor2nd',
+      student_1st:'simStudent1st', student_done:'simStudentDone',
+      visitor_done:'simVisitorDone'
+    };
+    if (btnMap[mode]) document.getElementById(btnMap[mode])?.classList.add('active');
+
+    // Reset form display
+    formBody.style.display = 'block';
+    successScreen.classList.remove('show');
+    closeBtn.style.display = 'flex';
+    dismissNote.style.display = 'none';
+    modal.style.display = 'block';
+
+    // Unlock fields first
+    const nameEl = document.getElementById('fpName');
+    const classSelect = document.getElementById('fpClassSelect');
+    nameEl.readOnly = false; nameEl.classList.remove('locked');
+    classSelect.disabled = false; classSelect.classList.remove('locked');
+
+    if (mode === 'visitor_1st') {
+      dismissCount = 0; maxDismiss = 1;
+      phoneRow.style.display = 'block';
+      closeBtn.style.display = 'flex';
+      dismissNote.style.display = 'none';
+      stateBadge.textContent = '1st Visit — Dismissible';
+      stateBadge.style.background = 'rgba(255,255,255,0.25)';
+      userBadge.textContent = '👤 Visitor Mode';
+      userBadge.style.background = 'rgba(46,125,50,0.5)';
+
+    } else if (mode === 'visitor_2nd' || mode === 'student_must') {
+      dismissCount = 1; maxDismiss = 1;
+      phoneRow.style.display = mode === 'visitor_2nd' ? 'block' : 'none';
+      closeBtn.style.display = 'none';
+      dismissNote.style.display = 'flex';
+      stateBadge.textContent = '2nd Visit — Must Fill ⚠️';
+      stateBadge.style.background = 'rgba(255,165,0,0.5)';
+      userBadge.textContent = mode === 'student_must' ? '🎓 Student Mode' : '👤 Visitor Mode';
+      userBadge.style.background = 'rgba(46,125,50,0.5)';
+
+    } else if (mode === 'student_1st') {
+      dismissCount = 0; maxDismiss = 1;
+      phoneRow.style.display = 'none';
+      closeBtn.style.display = 'flex';
+      dismissNote.style.display = 'none';
+      stateBadge.textContent = '1st Visit — Dismissible';
+      stateBadge.style.background = 'rgba(255,255,255,0.25)';
+      userBadge.textContent = '🎓 Quiz Student Mode';
+      userBadge.style.background = 'rgba(21,101,192,0.6)';
+      // Auto-fill locked fields
+      nameEl.value = 'Rahul Kumar';
+      nameEl.readOnly = true; nameEl.classList.add('locked');
+      classSelect.value = 'III BCA A';
+      classSelect.disabled = true; classSelect.classList.add('locked');
+      document.getElementById('fpClass').value = 'III BCA A';
+
+    } else if (mode === 'student_done' || mode === 'visitor_done') {
+      // Silently skip — show "skipped" overlay instead of form
+      modal.style.display = 'none';
+      stateBadge.textContent = mode === 'student_done' ? '🎓 Already Submitted — Skipped' : '👤 Already Submitted — Skipped';
+      stateBadge.style.background = 'rgba(46,125,50,0.5)';
+      userBadge.textContent = mode === 'student_done' ? '🎓 Student Mode' : '👤 Visitor Mode';
+      // Show a note instead
+      const noteDiv = document.createElement('div');
+      noteDiv.id = 'skippedNote';
+      noteDiv.style.cssText = 'width:100%;max-width:620px;background:rgba(255,255,255,0.95);border-radius:16px;padding:32px;text-align:center;color:#333';
+      noteDiv.innerHTML = `
+        <div style="font-size:3em;margin-bottom:12px">✅</div>
+        <h3 style="color:#2e7d32;margin-bottom:8px">Popup Silently Skipped</h3>
+        <p style="color:#555;font-size:0.95em;margin-bottom:16px">This visitor already submitted feedback.<br>The popup does <strong>not appear at all</strong> — no message, no interruption.</p>
+        <p style="background:#e8f5e9;border-radius:8px;padding:10px 16px;color:#2e7d32;font-size:0.85em;font-weight:600">
+          ${mode === 'student_done' ? '🎓 Identified by: Quiz Student Account (works across all devices)' : '👤 Identified by: Phone number stored in Firebase + localStorage'}
+        </p>
+        <button onclick="document.getElementById('skippedNote')?.remove();document.getElementById('mainModal').style.display='block';simState('visitor_1st')" style="margin-top:16px;background:linear-gradient(135deg,#880e4f,#c2185b);color:white;border:none;border-radius:10px;padding:10px 24px;font-size:0.95em;font-weight:700;cursor:pointer;font-family:inherit">← Back to Preview</button>`;
+      const existing = document.getElementById('skippedNote');
+      if (existing) existing.remove();
+      modal.parentNode.insertBefore(noteDiv, modal.nextSibling);
+      if (!silent) document.getElementById(btnMap[mode])?.classList.add('active');
+      return;
+    }
+
+    // Remove any leftover skippedNote
+    document.getElementById('skippedNote')?.remove();
+    if (!silent) clearError();
+  }
+
+  // ── Reset ──────────────────────────────────────────────────────
+  function resetForm() {
+    document.getElementById('fpName').value = '';
+    document.getElementById('fpPhone').value = '';
+    document.getElementById('fpClassSelect').value = '';
+    document.getElementById('fpClassOther').style.display = 'none';
+    document.getElementById('fpClassOther').value = '';
+    document.getElementById('fpClass').value = '';
+    document.getElementById('fpOverallScore').value = '';
+    document.getElementById('fpRecommend').value = '';
+    document.getElementById('fpSuggestions').value = '';
+    selectedScore = 0; selectedRecommend = ''; starRatings = {};
+    document.getElementById('skippedNote')?.remove();
+    buildScoreButtons();
+    buildEventRatings();
+    // Reset recommend buttons
+    document.querySelectorAll('.rec-btn').forEach(b => {
+      b.style.background = 'white';
+      b.style.transform = 'scale(1)';
+      b.style.color = b.classList.contains('rec-yes')?'#2e7d32':b.classList.contains('rec-maybe')?'#e65100':'#c62828';
+    });
+    simState('visitor_1st');
+  }
+
+  // ── Init ───────────────────────────────────────────────────────
+  buildScoreButtons();
+  buildEventRatings();
+  simState('visitor_1st');
+</script>
+</body>
+</html>
