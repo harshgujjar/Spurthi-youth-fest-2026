@@ -18619,144 +18619,60 @@
             }
         }
         
-        // Send Email Function - Using EmailJS + Firebase Log
+        // ── Email Config ──────────────────────────────────────────────
+        // PRIMARY:  Brevo (Sendinblue) — 300 emails/day free
+        // FALLBACK: EmailJS — 200 emails/month
+        // To activate Brevo: paste your API key below
+        const BREVO_API_KEY = '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'; // e.g. xkeysib-xxxxx
+        const BREVO_SENDER  = { name: 'Davan Institute Quiz', email: 'davancollege02@gmail.com' };
+        // ──────────────────────────────────────────────────────────────
+
         async function sendQuizEmail(to, subject, body) {
-            const debugId = Date.now();
-            try {
-                console.log('========================================');
-                console.log(`📧 EMAIL DEBUG #${debugId} START`);
-                console.log('========================================');
-                console.log(`Timestamp: ${new Date().toISOString()}`);
-                console.log(`Recipient: ${to}`);
-                console.log(`Subject: ${subject}`);
-                console.log('Body preview:', body.substring(0, 150) + '...');
-                
-                let emailSent = false;
-                let emailError = null;
-                let emailJSResponse = null;
-                
-                // Step 1: Check EmailJS library
-                console.log('\n--- STEP 1: Checking EmailJS library ---');
-                if (typeof emailjs === 'undefined') {
-                    console.error('❌ EmailJS library NOT LOADED!');
-                    console.error('Check if script tag is present');
-                    emailError = 'EmailJS library not loaded';
-                } else {
-                    console.log('✅ EmailJS library is available');
-                }
-                
-                // Step 2: Send email
-                if (typeof emailjs !== 'undefined') {
-                    console.log('\n--- STEP 2: Checking EmailJS initialization ---');
-                    console.log('Public Key: iISS6N2b69VmKwx8Y');
-                    
-                    console.log('\n--- STEP 3: Preparing template parameters ---');
-                    const templateParams = {
-                        to_email: to,
-                        subject: subject,
-                        message: body,
-                        reply_to: 'davancollege02@gmail.com'
-                    };
-                    
-                    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-                    console.log('📧 EMAIL PARAMETERS BEING SENT:');
-                    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-                    console.log('Template Parameters:', templateParams);
-                    console.log('');
-                    console.log('🎯 RECIPIENT (to_email):', templateParams.to_email);
-                    console.log('📬 REPLY TO (reply_to):', templateParams.reply_to);
-                    console.log('📝 Subject:', templateParams.subject);
-                    console.log('📄 Message preview:', templateParams.message.substring(0, 100) + '...');
-                    console.log('');
-                    console.log('⚙️ Service ID: service_zhy3bnp');
-                    console.log('📋 Template ID: template_o2i00b5');
-                    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-                    console.log('');
-                    console.log('⚠️ IMPORTANT: Check your EmailJS template!');
-                    console.log('   The template should use: {{to_email}} for recipient');
-                    console.log('   NOT: {{reply_to}} (that\'s for reply address)');
-                    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-                    
-                    try {
-                        console.log('\n--- STEP 4: Sending email via EmailJS ---');
-                        console.log('⏳ Please wait...');
-                        
-                        const startTime = Date.now();
-                        emailJSResponse = await emailjs.send(
-                            'service_zhy3bnp',
-                            'template_o2i00b5',
-                            templateParams
-                        );
-                        const endTime = Date.now();
-                        
-                        emailSent = true;
-                        console.log(`\n✅✅✅ EMAIL SENT SUCCESSFULLY! (${endTime - startTime}ms) ✅✅✅`);
-                        console.log('EmailJS Response:', emailJSResponse);
-                        console.log(`✅ Email delivered to: ${to}`);
-                        console.log('✅ Check inbox in 1-2 minutes (or spam folder)');
-                        
-                    } catch (emailErr) {
-                        emailSent = false;
-                        emailError = emailErr.message || emailErr.toString();
-                        
-                        console.error('\n❌❌❌ EMAIL SEND FAILED! ❌❌❌');
-                        console.error('Error Type:', emailErr.name);
-                        console.error('Error Message:', emailErr.message);
-                        console.error('Full Error:', emailErr);
-                        
-                        // Specific error analysis
-                        if (emailErr.message && emailErr.message.includes('User ID')) {
-                            console.error('\n🔑 ISSUE: Invalid Public Key');
-                            console.error('Current Key: iISS6N2b69VmKwx8Y');
-                            console.error('→ Verify this key in EmailJS Dashboard > Account > API Keys');
-                        } else if (emailErr.message && emailErr.message.includes('Service ID')) {
-                            console.error('\n⚙️ ISSUE: Invalid Service ID');
-                            console.error('Current Service ID: service_zhy3bnp');
-                            console.error('→ Verify in EmailJS Dashboard > Email Services');
-                        } else if (emailErr.message && emailErr.message.includes('Template')) {
-                            console.error('\n📝 ISSUE: Invalid Template ID');
-                            console.error('Current Template ID: template_o2i00b5');
-                            console.error('→ Verify in EmailJS Dashboard > Email Templates');
-                        } else if (emailErr.message && emailErr.message.includes('quota')) {
-                            console.error('\n📊 ISSUE: Daily Quota Exceeded');
-                            console.error('→ Check your EmailJS dashboard for quota limits');
-                            console.error('→ Free plan: 200 emails/month');
-                        } else if (emailErr.message && (emailErr.message.includes('network') || emailErr.message.includes('Failed to fetch'))) {
-                            console.error('\n🌐 ISSUE: Network Error');
-                            console.error('→ Check internet connection');
-                            console.error('→ Check if EmailJS servers are accessible');
-                        } else {
-                            console.error('\n❓ UNKNOWN ERROR');
-                            console.error('→ See error details above');
-                        }
+            // ── Method 1: Brevo API (primary) ──────────────────────────
+            if (BREVO_API_KEY && BREVO_API_KEY !== 'PASTE_YOUR_BREVO_API_KEY_HERE') {
+                try {
+                    const res = await fetch('https://api.brevo.com/v3/smtp/email', {
+                        method: 'POST',
+                        headers: {
+                            'Accept':       'application/json',
+                            'Content-Type': 'application/json',
+                            'api-key':      BREVO_API_KEY
+                        },
+                        body: JSON.stringify({
+                            sender:   BREVO_SENDER,
+                            to:       [{ email: to }],
+                            subject:  subject,
+                            textContent: body
+                        })
+                    });
+                    if (res.ok) {
+                        console.log('✅ Email sent via Brevo to:', to);
+                        return true;
                     }
+                    const err = await res.json().catch(() => ({}));
+                    console.warn('⚠️ Brevo failed:', res.status, err.message || '');
+                } catch(e) {
+                    console.warn('⚠️ Brevo error:', e.message);
                 }
-                
-                
-                console.log('\n========================================');
-                console.log(`📧 EMAIL DEBUG #${debugId} END`);
-                console.log(`FINAL STATUS: ${emailSent ? '✅ SUCCESS' : '❌ FAILED'}`);
-                console.log('========================================');
-                
-                if (emailSent) {
-                    console.log('\n📧 What to do now:');
-                    console.log('1. Check your email inbox (may take 1-2 minutes)');
-                    console.log('2. Check SPAM/JUNK folder if not in inbox');
-                    console.log('3. Whitelist davancollege02@gmail.com in your email');
-                } else {
-                    console.log('\n📧 Troubleshooting steps:');
-                    console.log('1. Review error details above');
-                    console.log('3. Verify EmailJS credentials in dashboard');
-                    console.log('4. Check EmailJS service connection status');
-                }
-                
-                return emailSent;
-            } catch (err) {
-                console.error(`\n❌ EMAIL FUNCTION CRASHED! #${debugId}`);
-                console.error('Fatal Error:', err);
-                console.error('Error Message:', err.message);
-                return false;
             }
+
+            // ── Method 2: EmailJS (fallback) ────────────────────────────
+            try {
+                if (typeof emailjs !== 'undefined') {
+                    const resp = await emailjs.send(
+                        'service_zhy3bnp',
+                        'template_o2i00b5',
+                        { to_email: to, subject: subject, message: body, reply_to: 'davancollege02@gmail.com' }
+                    );
+                    console.log('✅ Email sent via EmailJS to:', to);
+                    return true;
+                }
+            } catch(e) {
+                console.warn('⚠️ EmailJS failed:', e.message);
+            }
+
+            console.error('❌ All email methods failed for:', to);
+            return false;
         }
         
         // Register Student
@@ -18864,33 +18780,36 @@ Davan Institute Team`;
                     console.warn('⚠️ Email send failed but registration successful:', emailErr);
                 }
                 
-                console.log('Showing success alert...');
+                console.log('Showing success...');
                 
                 // Clear any previous messages first
                 document.getElementById('quizMessage').innerHTML = '';
-                
-                // Also show in alert for immediate visibility with password segment
-                alert(`✅ Registration Successful!\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━\nYour Login Credentials:\n━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nPhone Number: ${phone}\n\n🔑 PASSWORD: ${password}\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nIMPORTANT:\n✅ Password is shown in YELLOW BOX below\n✅ Password is auto-filled in login form\n✅ You can copy it from either place\n\nNote: Email sent to ${email}\n(Check inbox or spam folder in 1-2 minutes)`);
-                
-                // Show password in a dedicated, copyable box
+
+                // Show password prominently on screen — works even if email fails
                 const passwordBoxHTML = `
-                    <div style="background:#d4edda;border:3px solid #28a745;border-radius:12px;padding:25px;margin-bottom:20px;">
-                        <h3 style="color:#155724;margin-bottom:15px;text-align:center">✅ Registration Successful!</h3>
-                        <div style="background:white;padding:20px;border-radius:8px;margin-bottom:15px;">
-                            <p style="margin-bottom:10px"><strong>Phone Number (Login ID):</strong> ${phone}</p>
-                            <p style="margin-bottom:10px"><strong>Class:</strong> ${cls}</p>
+                    <div style="background:linear-gradient(135deg,#e8f5e9,#f1f8e9);border:3px solid #2e7d32;border-radius:16px;padding:28px;margin-bottom:20px;box-shadow:0 4px 20px rgba(46,125,50,0.2)">
+                        <h3 style="color:#1b5e20;margin:0 0 18px;text-align:center;font-size:1.3em">✅ Registration Successful!</h3>
+
+                        <div style="background:white;padding:16px 20px;border-radius:10px;margin-bottom:16px;border:1px solid #c8e6c9">
+                            <p style="margin:4px 0"><strong>👤 Name:</strong> ${name}</p>
+                            <p style="margin:4px 0"><strong>📞 Phone (Login ID):</strong> ${phone}</p>
+                            <p style="margin:4px 0"><strong>🎓 Class:</strong> ${cls}</p>
                         </div>
-                        <div style="background:#fff3cd;border:2px solid #ffc107;border-radius:8px;padding:20px;text-align:center;">
-                            <p style="margin-bottom:10px;font-weight:bold;color:#856404">🔑 YOUR PASSWORD (Click to select and copy):</p>
-                            <div onclick="this.querySelector('span').select(); document.execCommand('copy');" style="cursor:pointer;background:#ffeb3b;padding:15px 25px;border-radius:8px;border:2px dashed #ffc107;display:inline-block;">
-                                <span style="font-size:2em;font-weight:bold;color:#000;user-select:all;font-family:monospace;letter-spacing:2px;">${password}</span>
+
+                        <!-- Big password box -->
+                        <div style="background:linear-gradient(135deg,#fff9c4,#fff176);border:3px solid #f9a825;border-radius:14px;padding:22px;text-align:center;margin-bottom:16px">
+                            <div style="font-size:0.95em;font-weight:700;color:#e65100;margin-bottom:10px">🔑 YOUR PASSWORD — SAVE THIS NOW!</div>
+                            <div id="pwdDisplay" style="background:white;border:2px dashed #fbc02d;border-radius:10px;padding:14px 28px;display:inline-block;cursor:pointer;margin-bottom:10px" onclick="navigator.clipboard.writeText('${password}').then(()=>{document.getElementById('copyMsg').style.display='block';setTimeout(()=>{document.getElementById('copyMsg').style.display='none'},2000)}).catch(()=>{})">
+                                <span style="font-size:2.2em;font-weight:900;color:#1a1a1a;font-family:monospace;letter-spacing:3px">${password}</span>
                             </div>
-                            <p style="margin-top:15px;font-size:0.9em;color:#856404">👆 Click on the password above to copy it</p>
+                            <div id="copyMsg" style="display:none;background:#2e7d32;color:white;padding:4px 14px;border-radius:20px;font-size:0.82em;font-weight:700;margin-bottom:8px">✅ Copied!</div>
+                            <div style="font-size:0.82em;color:#e65100;font-weight:600">👆 Tap password to copy &nbsp;|&nbsp; 📸 Screenshot this screen!</div>
                         </div>
-                        <p style="margin-top:15px;text-align:center;color:#155724">
-                            ✅ Password has been auto-filled in the login form below<br>
-                            ✅ Email sent to: ${email} (check spam if not in inbox)
-                        </p>
+
+                        <div style="background:#e3f2fd;border-radius:10px;padding:12px 16px;font-size:0.85em;color:#1565c0;text-align:center">
+                            📧 Email sent to <strong>${email}</strong> — check inbox &amp; spam folder<br>
+                            <span style="color:#888;font-size:0.9em">(If no email arrives, use the password shown above ☝️)</span>
+                        </div>
                     </div>
                 `;
                 
@@ -21115,15 +21034,11 @@ Davan Institute Team`;
             if (!confirm(`🗑️ Delete student record?\n\nName: ${name}\nID: ${id}\n\nThis cannot be undone.`)) return;
             try {
                 await db.ref('quizStudents/' + id).remove();
-                // Remove from local cache
-                if (window._qsAdminAllStudents) {
-                    window._qsAdminAllStudents = window._qsAdminAllStudents.filter(s => s.id !== id);
-                }
-                // Remove row from table
-                const row = document.getElementById('qsRow_' + id);
-                if (row) row.remove();
+                // Reload fresh from Firebase then re-show duplicates
+                const snap = await db.ref('quizStudents').once('value');
+                window._qsAdminAllStudents = [];
+                if (snap.exists()) snap.forEach(ch => { const s = ch.val(); s.id = ch.key; window._qsAdminAllStudents.push(s); });
                 alert('✅ Deleted: ' + name);
-                // Refresh duplicates view
                 qsAdminShowDuplicates();
             } catch(e) {
                 alert('❌ Error deleting: ' + e.message);
@@ -21143,7 +21058,7 @@ Davan Institute Team`;
             const toDelete = [];
             dupGroups.forEach(([, students]) => {
                 const sorted = [...students].sort((a,b) => new Date(b.registeredAt||0) - new Date(a.registeredAt||0));
-                sorted.slice(1).forEach(s => toDelete.push(s)); // delete all except newest
+                sorted.slice(1).forEach(s => toDelete.push(s));
             });
 
             const list = toDelete.map(s => `• ${s.name} (${s.phone}, registered ${s.registeredAt ? new Date(s.registeredAt).toLocaleDateString('en-IN') : '?'})`).join('\n');
@@ -21153,11 +21068,12 @@ Davan Institute Team`;
                 for (const s of toDelete) {
                     await db.ref('quizStudents/' + s.id).remove();
                 }
-                // Update local cache
-                const deletedIds = new Set(toDelete.map(s => s.id));
-                window._qsAdminAllStudents = (window._qsAdminAllStudents||[]).filter(s => !deletedIds.has(s.id));
                 alert(`✅ Deleted ${toDelete.length} duplicate record(s) successfully!`);
-                loadQuizStudentsAdmin();
+                // Reload fresh from Firebase then re-show duplicates
+                const snap = await db.ref('quizStudents').once('value');
+                window._qsAdminAllStudents = [];
+                if (snap.exists()) snap.forEach(ch => { const s = ch.val(); s.id = ch.key; window._qsAdminAllStudents.push(s); });
+                qsAdminShowDuplicates();
             } catch(e) {
                 alert('❌ Error: ' + e.message);
             }
@@ -32194,7 +32110,7 @@ Proceed?`)) return;
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;" id="devTriggerVersion">
-                <strong>Version:</strong> 4.55 — Quiz text-input question type restored &amp; error fixed: Admin can set Q1/Q2 as "MCQ" or "Text Input"; for text-input, admin enters one-word answer + explanation; students type answer in text box; scoring is case-insensitive; All Quizzes tab no longer crashes on q2.options undefined; all preview sections handle both types. | <strong>Last Updated:</strong> February 27, 2026 — 00:30</p>
+                <strong>Version:</strong> 4.57 — Quiz text-input question type restored &amp; error fixed: Admin can set Q1/Q2 as "MCQ" or "Text Input"; for text-input, admin enters one-word answer + explanation; students type answer in text box; scoring is case-insensitive; All Quizzes tab no longer crashes on q2.options undefined; all preview sections handle both types. | <strong>Last Updated:</strong> February 27, 2026 — 01:30</p>
             <!-- ============================================ -->
             
             <p style="color: #c44569; font-size: 0.85em; font-weight: 600; margin-bottom: 8px;">
