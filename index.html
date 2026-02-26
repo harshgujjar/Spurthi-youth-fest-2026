@@ -18620,40 +18620,37 @@
         }
         
         // ── Email Config ──────────────────────────────────────────────
-        // PRIMARY:  Brevo (Sendinblue) — 300 emails/day free
+        // PRIMARY:  Brevo via Cloudflare Worker Proxy (API key hidden server-side)
         // FALLBACK: EmailJS — 200 emails/month
-        // To activate Brevo: paste your API key below
-        const BREVO_API_KEY = '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'; // e.g. xkeysib-xxxxx
+        // Last Updated: 26-Feb-2025 at 21:30
+        const BREVO_WORKER_URL = 'https://cld-proxy.harshgujjar.workers.dev';
         const BREVO_SENDER  = { name: 'Davan Institute Quiz', email: 'davancollege02@gmail.com' };
         // ──────────────────────────────────────────────────────────────
 
         async function sendQuizEmail(to, subject, body) {
-            // ── Method 1: Brevo API (primary) ──────────────────────────
-            if (BREVO_API_KEY && BREVO_API_KEY !== 'PASTE_YOUR_BREVO_API_KEY_HERE') {
-                try {
-                    const res = await fetch('https://api.brevo.com/v3/smtp/email', {
-                        method: 'POST',
-                        headers: {
-                            'Accept':       'application/json',
-                            'Content-Type': 'application/json',
-                            'api-key':      BREVO_API_KEY
-                        },
-                        body: JSON.stringify({
-                            sender:   BREVO_SENDER,
-                            to:       [{ email: to }],
-                            subject:  subject,
-                            textContent: body
-                        })
-                    });
-                    if (res.ok) {
-                        console.log('✅ Email sent via Brevo to:', to);
-                        return true;
-                    }
-                    const err = await res.json().catch(() => ({}));
-                    console.warn('⚠️ Brevo failed:', res.status, err.message || '');
-                } catch(e) {
-                    console.warn('⚠️ Brevo error:', e.message);
+            // ── Method 1: Brevo via Cloudflare Worker Proxy (primary) ──
+            try {
+                const res = await fetch(BREVO_WORKER_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Accept':       'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        sender:   BREVO_SENDER,
+                        to:       [{ email: to }],
+                        subject:  subject,
+                        textContent: body
+                    })
+                });
+                if (res.ok) {
+                    console.log('✅ Email sent via Brevo Worker to:', to);
+                    return true;
                 }
+                const err = await res.json().catch(() => ({}));
+                console.warn('⚠️ Brevo Worker failed:', res.status, err.message || '');
+            } catch(e) {
+                console.warn('⚠️ Brevo Worker error:', e.message);
             }
 
             // ── Method 2: EmailJS (fallback) ────────────────────────────
