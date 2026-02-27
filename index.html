@@ -1413,6 +1413,22 @@
                     <div id="pastResultBox" style="margin-top:14px;display:none"></div>
                 </div>
                 
+                <!-- Quiz Archive: Browse older published quizzes -->
+                <div style="background:white;border-radius:14px;padding:18px 20px;margin-bottom:24px;box-shadow:0 4px 16px rgba(0,0,0,0.08);border:2px solid #ce93d8">
+                    <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;flex-wrap:wrap">
+                        <span style="font-size:1.4em">📚</span>
+                        <h4 style="margin:0;color:#6a1b9a;font-size:1em">Quiz Archive – View Older Published Quizzes</h4>
+                    </div>
+                    <p style="margin:0 0 14px 0;color:#888;font-size:0.88em">Browse questions, answers &amp; attachments from any previously published quiz.</p>
+                    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+                        <select id="quizArchiveDateSelect" style="flex:1;min-width:180px;padding:10px 14px;border:2px solid #9c27b0;border-radius:10px;font-size:14px;color:#333;background:white;cursor:pointer">
+                            <option value="">⏳ Loading published dates...</option>
+                        </select>
+                        <button onclick="loadQuizArchiveEntry()" style="background:linear-gradient(135deg,#6a1b9a,#c44569);color:white;border:none;padding:10px 20px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;white-space:nowrap">👁️ View Quiz</button>
+                    </div>
+                    <div id="quizArchiveBox" style="margin-top:16px;display:none"></div>
+                </div>
+
                 <hr style="margin:30px 0;border:none;border-top:2px solid #e9ecef">
                 
                 <h3 style="color:#6a1b9a;margin-bottom:15px">Student Registration & Login</h3>
@@ -7189,6 +7205,7 @@
                 fetchServerTimeOffset(); // pre-fetch server time offset early
                 populateQuizClasses();
                 checkPublicQuizStatus();
+                initQuizArchiveDropdown();
                 // Auto-fill remembered quiz credentials
                 if (localStorage.getItem('quiz_remember') === '1') {
                     const ph = localStorage.getItem('quiz_ph');
@@ -18568,6 +18585,12 @@
                         html += '<p style="color:#2e7d32;margin-bottom:15px;font-size:0.9em">Published: ' + publishedDate + ' at ' + publishedTime + '</p>';
                         html += '<div style="background:white;padding:20px;border-radius:8px;margin-bottom:15px;border-left:5px solid #667eea">';
                         html += '<p style="margin:0 0 10px 0;color:#667eea;font-weight:bold;font-size:1.1em">Question 1:</p>';
+                        if (questions.q1.image) {
+                            html += '<div style="text-align:center;margin:12px 0"><img src="' + questions.q1.image + '" style="max-width:100%;max-height:280px;border-radius:10px;box-shadow:0 4px 15px rgba(0,0,0,0.2)"></div>';
+                        }
+                        if (questions.q1.audio) {
+                            html += '<div style="margin:12px 0;background:#f0f4ff;padding:12px;border-radius:8px;text-align:center"><p style="margin:0 0 8px 0;font-weight:600;color:#667eea;font-size:0.95em">🎵 Audio</p><audio controls style="width:100%;max-width:400px"><source src="' + questions.q1.audio + '"></audio></div>';
+                        }
                         html += '<p style="margin:0 0 15px 0;color:#333;font-size:1.05em">' + questions.q1.text + '</p>';
                         if (questions.q1.type === 'text') {
                             html += '<div style="background:#4CAF50;color:white;padding:12px;border-radius:6px;font-weight:bold">✅ Answer: ' + (questions.q1.textAnswer || '') + '</div>';
@@ -18579,6 +18602,12 @@
                         html += '<div style="background:white;padding:20px;border-radius:8px;border-left:5px solid #667eea">';
                         html += '<p style="margin:0 0 10px 0;color:#667eea;font-weight:bold;font-size:1.1em">Question 2:</p>';
                         if (questions.q2 && (questions.q2.options || questions.q2.type === 'text')) {
+                        if (questions.q2.image) {
+                            html += '<div style="text-align:center;margin:12px 0"><img src="' + questions.q2.image + '" style="max-width:100%;max-height:280px;border-radius:10px;box-shadow:0 4px 15px rgba(0,0,0,0.2)"></div>';
+                        }
+                        if (questions.q2.audio) {
+                            html += '<div style="margin:12px 0;background:#f0f4ff;padding:12px;border-radius:8px;text-align:center"><p style="margin:0 0 8px 0;font-weight:600;color:#667eea;font-size:0.95em">🎵 Audio</p><audio controls style="width:100%;max-width:400px"><source src="' + questions.q2.audio + '"></audio></div>';
+                        }
                         html += '<p style="margin:0 0 15px 0;color:#333;font-size:1.05em">' + questions.q2.text + '</p>';
                         if (questions.q2.type === 'text') {
                             html += '<div style="background:#4CAF50;color:white;padding:12px;border-radius:6px;font-weight:bold">✅ Answer: ' + (questions.q2.textAnswer || '') + '</div>';
@@ -18766,6 +18795,78 @@
             return pwd;
         }
         
+        // ===== QUIZ ARCHIVE =====
+        async function initQuizArchiveDropdown() {
+            const sel = document.getElementById('quizArchiveDateSelect');
+            if (!sel) return;
+            try {
+                const snap = await db.ref('quizPublished').once('value');
+                if (!snap.exists()) { sel.innerHTML = '<option value="">No published quizzes yet</option>'; return; }
+                const pubData = snap.val();
+                const dates = Object.keys(pubData)
+                    .filter(d => pubData[d] && pubData[d].published === true)
+                    .sort().reverse();
+                if (dates.length === 0) { sel.innerHTML = '<option value="">No published quizzes yet</option>'; return; }
+                sel.innerHTML = '<option value="">— Select a date —</option>' + dates.map(d => {
+                    const label = new Date(d + 'T00:00:00').toLocaleDateString('en-IN', {weekday:'short', day:'2-digit', month:'long', year:'numeric'});
+                    return '<option value="' + d + '">' + label + '</option>';
+                }).join('');
+            } catch(e) {
+                sel.innerHTML = '<option value="">Error loading dates</option>';
+            }
+        }
+
+        async function loadQuizArchiveEntry() {
+            const sel = document.getElementById('quizArchiveDateSelect');
+            const box = document.getElementById('quizArchiveBox');
+            const date = sel ? sel.value : '';
+            if (!date) { box.style.display = 'block'; box.innerHTML = '<p style="color:#c0392b;font-size:0.9em">⚠️ Please select a date first.</p>'; return; }
+            box.style.display = 'block';
+            box.innerHTML = '<p style="color:#888;font-size:0.9em;text-align:center">⏳ Loading...</p>';
+            try {
+                const snap = await db.ref('quizQuestions/' + date).once('value');
+                if (!snap.exists()) { box.innerHTML = '<p style="color:#c0392b;font-size:0.9em">❌ No quiz data found for this date.</p>'; return; }
+                const q = snap.val();
+                const dateLabel = new Date(date + 'T00:00:00').toLocaleDateString('en-IN', {weekday:'long', day:'2-digit', month:'long', year:'numeric'});
+                let html = '<div style="background:#e8f5e9;padding:16px;border-radius:10px;border:2px solid #4CAF50;margin-bottom:2px">';
+                html += '<h4 style="color:#2e7d32;margin:0 0 12px 0">📅 ' + dateLabel + '</h4>';
+                // Q1
+                html += '<div style="background:white;padding:16px;border-radius:8px;margin-bottom:12px;border-left:5px solid #667eea">';
+                html += '<p style="margin:0 0 8px 0;color:#667eea;font-weight:bold">Question 1:</p>';
+                if (q.q1 && q.q1.image) html += '<div style="text-align:center;margin:10px 0"><img src="' + q.q1.image + '" style="max-width:100%;max-height:260px;border-radius:10px;box-shadow:0 4px 12px rgba(0,0,0,0.18)"></div>';
+                if (q.q1 && q.q1.audio) html += '<div style="margin:10px 0;background:#f0f4ff;padding:10px;border-radius:8px;text-align:center"><p style="margin:0 0 6px 0;font-weight:600;color:#667eea;font-size:0.92em">🎵 Audio</p><audio controls style="width:100%;max-width:380px"><source src="' + q.q1.audio + '"></audio></div>';
+                html += '<p style="margin:0 0 12px 0;color:#333;font-size:1em">' + (q.q1 ? q.q1.text : '—') + '</p>';
+                if (q.q1 && q.q1.type === 'text') {
+                    html += '<div style="background:#4CAF50;color:white;padding:10px 14px;border-radius:6px;font-weight:bold">✅ Answer: ' + (q.q1.textAnswer || '') + '</div>';
+                    if (q.q1.explanation) html += '<div style="background:#e8f5e9;color:#2e7d32;padding:9px 12px;border-radius:6px;margin-top:7px;font-size:0.93em">📖 ' + q.q1.explanation + '</div>';
+                } else if (q.q1 && q.q1.options) {
+                    html += '<div style="background:#4CAF50;color:white;padding:10px 14px;border-radius:6px;font-weight:bold">✅ Correct Answer: ' + q.q1.options[q.q1.correct] + '</div>';
+                }
+                html += '</div>';
+                // Q2
+                html += '<div style="background:white;padding:16px;border-radius:8px;border-left:5px solid #667eea">';
+                html += '<p style="margin:0 0 8px 0;color:#667eea;font-weight:bold">Question 2:</p>';
+                if (q.q2 && (q.q2.options || q.q2.type === 'text')) {
+                    if (q.q2.image) html += '<div style="text-align:center;margin:10px 0"><img src="' + q.q2.image + '" style="max-width:100%;max-height:260px;border-radius:10px;box-shadow:0 4px 12px rgba(0,0,0,0.18)"></div>';
+                    if (q.q2.audio) html += '<div style="margin:10px 0;background:#f0f4ff;padding:10px;border-radius:8px;text-align:center"><p style="margin:0 0 6px 0;font-weight:600;color:#667eea;font-size:0.92em">🎵 Audio</p><audio controls style="width:100%;max-width:380px"><source src="' + q.q2.audio + '"></audio></div>';
+                    html += '<p style="margin:0 0 12px 0;color:#333;font-size:1em">' + q.q2.text + '</p>';
+                    if (q.q2.type === 'text') {
+                        html += '<div style="background:#4CAF50;color:white;padding:10px 14px;border-radius:6px;font-weight:bold">✅ Answer: ' + (q.q2.textAnswer || '') + '</div>';
+                        if (q.q2.explanation) html += '<div style="background:#e8f5e9;color:#2e7d32;padding:9px 12px;border-radius:6px;margin-top:7px;font-size:0.93em">📖 ' + q.q2.explanation + '</div>';
+                    } else {
+                        html += '<div style="background:#4CAF50;color:white;padding:10px 14px;border-radius:6px;font-weight:bold">✅ Correct Answer: ' + q.q2.options[q.q2.correct] + '</div>';
+                    }
+                } else {
+                    html += '<p style="color:#999;font-style:italic">Q2 not available.</p>';
+                }
+                html += '</div></div>';
+                box.innerHTML = html;
+            } catch(e) {
+                box.innerHTML = '<p style="color:#c0392b;font-size:0.9em">❌ Error loading quiz: ' + (e.message || e) + '</p>';
+            }
+        }
+        // ===== END QUIZ ARCHIVE =====
+
         function showQuizMsg(id, msg, type) {
             const el = document.getElementById(id);
             if (!el) return;
@@ -32299,7 +32400,7 @@ Proceed?`)) return;
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;" id="devTriggerVersion">
-                <strong>Version:</strong> 4.57 — Quiz text-input question type restored &amp; error fixed: Admin can set Q1/Q2 as "MCQ" or "Text Input"; for text-input, admin enters one-word answer + explanation; students type answer in text box; scoring is case-insensitive; All Quizzes tab no longer crashes on q2.options undefined; all preview sections handle both types. | <strong>Last Updated:</strong> February 27, 2026 — 01:30</p>
+                <strong>Version:</strong> 4.59 — Quiz Archive added: A new "📚 Quiz Archive" section lets anyone browse all previously published quizzes by date — shows Q1 &amp; Q2 with questions, images, audio, and correct answers. Dropdown auto-populates with all published dates (newest first). | <strong>Last Updated:</strong> February 27, 2026 — 13:10</p>
             <!-- ============================================ -->
             
             <p style="color: #c44569; font-size: 0.85em; font-weight: 600; margin-bottom: 8px;">
