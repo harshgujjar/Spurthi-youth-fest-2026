@@ -1838,19 +1838,19 @@
                         <div style="display:flex;flex-direction:column;gap:8px">
                             <div style="background:white;border-radius:8px;padding:10px 14px;display:flex;align-items:center;gap:10px;border:1px solid #e1bee7">
                                 <span style="font-size:1.3em">✈️</span>
-                                <div><div style="font-weight:700;color:#4a148c;font-size:0.9em">Travel Vlog</div><div style="color:#777;font-size:0.78em">Explore a place — campus, market, landmark</div></div>
+                                <div><div style="font-weight:700;color:#4a148c;font-size:0.9em">✈️ Travel Vlog</div><div style="color:#777;font-size:0.78em">Explore a place — campus, market, landmark</div></div>
                             </div>
                             <div style="background:white;border-radius:8px;padding:10px 14px;display:flex;align-items:center;gap:10px;border:1px solid #e1bee7">
-                                <span style="font-size:1.3em">📚</span>
-                                <div><div style="font-weight:700;color:#4a148c;font-size:0.9em">Educational Vlog</div><div style="color:#777;font-size:0.78em">Teach something — tips, hacks, concepts</div></div>
+                                <span style="font-size:1.3em">🍽️</span>
+                                <div><div style="font-weight:700;color:#4a148c;font-size:0.9em">🍽️ Food Vlog</div><div style="color:#777;font-size:0.78em">Explore food, restaurants, street eats</div></div>
                             </div>
                             <div style="background:white;border-radius:8px;padding:10px 14px;display:flex;align-items:center;gap:10px;border:1px solid #e1bee7">
-                                <span style="font-size:1.3em">🎪</span>
-                                <div><div style="font-weight:700;color:#4a148c;font-size:0.9em">Event Vlog</div><div style="color:#777;font-size:0.78em">Cover a college event, fest, or activity</div></div>
+                                <span style="font-size:1.3em">🎉</span>
+                                <div><div style="font-weight:700;color:#4a148c;font-size:0.9em">🎉 Event Vlog</div><div style="color:#777;font-size:0.78em">Cover a college event, fest, or activity</div></div>
                             </div>
                             <div style="background:white;border-radius:8px;padding:10px 14px;display:flex;align-items:center;gap:10px;border:1px solid #e1bee7">
-                                <span style="font-size:1.3em">🛍️</span>
-                                <div><div style="font-weight:700;color:#4a148c;font-size:0.9em">Shops Vlog</div><div style="color:#777;font-size:0.78em">Explore local shops, food, street markets</div></div>
+                                <span style="font-size:1.3em">🌅</span>
+                                <div><div style="font-weight:700;color:#4a148c;font-size:0.9em">🌅 Daily Life Vlog</div><div style="color:#777;font-size:0.78em">A day in your life — routines, moments, lifestyle</div></div>
                             </div>
                         </div>
                     </div>
@@ -5659,8 +5659,18 @@
             </div>
 
         
-                <h2 style="color:#2196F3;margin-bottom:6px">👩‍🏫 Faculty Incharge — Admin Panel</h2>
+                <!-- Super Admin toggle for Faculty panel -->
+                <div class="super-admin-only" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:14px">
+                    <h2 style="color:#2196F3;margin:0">👩‍🏫 Faculty Incharge — Admin Panel</h2>
+                    <button onclick="toggleFacultyAdminSection()" id="facultyAdminToggleBtn"
+                            style="background:#e3f2fd;color:#1565c0;border:2px solid #90caf9;border-radius:10px;padding:7px 18px;font-size:0.85em;font-weight:700;cursor:pointer">
+                        👁 Show Panel
+                    </button>
+                </div>
                 <p style="color:#888;margin-bottom:16px;font-size:.9em">All faculty incharges for Spurthi Youth Festival 2026 events. Super Admin sees full details including quiz passwords and all assigned events.</p>
+
+                <!-- Faculty Admin content — hidden by default for super admin -->
+                <div id="facultyAdminContent" style="display:none">
 
                 <!-- Faculty Summary Cards (Super Admin sees all) -->
                 <div id="facultyCardsSuperAdmin" class="super-admin-only" style="margin-bottom:20px">
@@ -5696,6 +5706,8 @@
                         </div>
                     </div>
                 </div>
+
+                </div><!-- /facultyAdminContent -->
 
                 <!-- Faculty Dashboard (shown after login) -->
                 <div id="facultyDashboard" style="display:none;margin-top:20px">
@@ -6944,7 +6956,7 @@
             'Interdisciplinary': {size:'5 Members',count:5,role:true,topic:true,topicLabel:'Topic',allow:false,maxPerClass:1},
             'Ramp Walk': {size:'Individual members',count:0,role:true,topic:true,topicLabel:'Theme',show:true,allow:false,maxPerClass:999,pctMax:30,dynamicCount:true,individual:true},
             'Quiz': {size:'6 Members',count:6,role:true,allow:false,maxPerClass:1},
-            'Vlog': {size:'2 Members',count:2,role:true,topic:true,topicLabel:'Topic',allow:true,maxPerClass:2,vlogTopics:['Travel Vlog','Educational Vlog','Event Vlog','Shops Vlog'],multiTeam:true},
+            'Vlog': {size:'2 Members',count:2,role:true,topic:true,topicLabel:'Topic',allow:true,maxPerClass:2,vlogTopics:['✈️ Travel Vlog','🍽️ Food Vlog','🎉 Event Vlog','🌅 Daily Life Vlog'],multiTeam:true},
             'YouTube Advertisement': {size:'8 Members',count:8,role:true,prod:true,allow:false,maxPerClass:1},
             'Mad Ads': {size:'8 Members',count:8,role:true,topic:true,topicLabel:'Topic',allow:false,maxPerClass:1},
             'Hand Writing': {size:'Individual',count:1,role:false,lang:true,allow:false,maxPerClass:999,pctMax:15,oneAtATime:true,individual:true},
@@ -9497,11 +9509,7 @@
                     return;
                 }
 
-                const takenTopics = existing.map(e => e.topic);
-                if (takenTopics.includes(topic)) {
-                    showMsg('❌ Topic "' + topic + '" is already taken by another team in your class.', false);
-                    return;
-                }
+                // Note: two teams from same class may share a topic — no topic uniqueness check needed
 
                 const hashtag = document.getElementById('vlogHashtagDisplay').textContent || '#SpurthiVlogChallenge2026';
                 const entry = {
@@ -9731,31 +9739,16 @@
                     return;
                 }
 
-                // Group member records into teams by teamNum → topic → sequential chunks
-                const teamsMap = {};
-                memberRecords.forEach((m, idx) => {
-                    let tKey;
-                    if (m.teamNum !== undefined && m.teamNum !== null) tKey = 'tn__' + m.teamNum;
-                    else if (m.topic) tKey = 'tp__' + m.topic;
-                    else tKey = 'idx__' + Math.floor(idx / 2);
-                    if (!teamsMap[tKey]) teamsMap[tKey] = { members: [], topic: m.topic || '', teamNum: m.teamNum };
-                    teamsMap[tKey].members.push(m);
-                });
-
-                const sortedKeys = Object.keys(teamsMap).sort((a, b) => {
-                    const an = teamsMap[a].teamNum, bn = teamsMap[b].teamNum;
-                    if (an != null && bn != null) return Number(an) - Number(bn);
-                    return a.localeCompare(b);
-                });
-
-                sortedKeys.forEach(k => {
-                    const t = teamsMap[k];
+                // Pair members strictly in sequential groups of 2 — max 2 teams
+                // NOTE: teamNum is assigned per-individual in enrollment (not per team), so we ignore it
+                for (let i = 0; i < memberRecords.length && vlogEnrolledTeams.length < 2; i += 2) {
+                    const pair = memberRecords.slice(i, i + 2);
                     vlogEnrolledTeams.push({
-                        ...t.members[0],
-                        _allMembers: t.members,
-                        topic: t.topic || t.members[0].topic || ''
+                        ...pair[0],
+                        _allMembers: pair,
+                        topic: pair[0].topic || ''
                     });
-                });
+                }
 
                 if (!listEl || !selectEl) return;
 
@@ -11168,6 +11161,15 @@
             ]
         };
 
+        function toggleFacultyAdminSection() {
+            const content = document.getElementById('facultyAdminContent');
+            const btn     = document.getElementById('facultyAdminToggleBtn');
+            if (!content) return;
+            const isHidden = content.style.display === 'none';
+            content.style.display = isHidden ? 'block' : 'none';
+            if (btn) btn.innerHTML = isHidden ? '🙈 Hide Panel' : '👁 Show Panel';
+        }
+
         async function loadFacultyAdminPanel() {
             initFacultyDropdown();
 
@@ -11753,118 +11755,381 @@
             if (snap.exists()) snap.forEach(ch => teams.push({ id: ch.key, ...ch.val() }));
 
             if (teams.length === 0) {
-                listEl.innerHTML = `
-                <div style="background:#f8f8f8;border-radius:12px;border:2px dashed #a5d6a7;padding:24px;text-align:center">
-                    <div style="font-size:1em;font-weight:700;color:#1b5e20;margin-bottom:8px">📹 Vlog Challenge — 3rd B.Com</div>
-                    <div style="background:#e8f5e9;border-radius:8px;padding:14px 18px;color:#2e7d32;font-size:0.88em;font-weight:600;display:inline-block;max-width:400px">
-                        ⚠️ No Vlog teams have submitted their enrollment yet.<br>
-                        <span style="font-weight:400;color:#888;font-size:0.9em">Once CR submits their team details, they will appear here for score entry.</span>
+                const today = now.toISOString().slice(0,10);
+
+                // Load ALL Vlog enrollments — accept any class that has real enrollments
+                // Use the master classes list to filter out junk/test entries
+                const VALID_CLASSES_NORM = (typeof classes !== 'undefined' ? classes : []).map(c =>
+                    c.toLowerCase().replace(/[.\s]/g,'')
+                );
+                let allCards = [];
+                try {
+                    const enrollSnap = await withTimeout(db.ref('youthfest-enrollments').once('value'), 8000);
+                    const classBuckets = {};
+                    if (enrollSnap.exists()) {
+                        enrollSnap.forEach(ch => {
+                            const d = ch.val();
+                            if (d.event !== 'Vlog') return;
+                            const rawCls = (d.classYear || d.class || '').trim();
+                            if (!rawCls) return;
+                            // Skip entries whose class is not in the master list (test/junk entries)
+                            if (VALID_CLASSES_NORM.length > 0) {
+                                const normCls = rawCls.toLowerCase().replace(/[.\s]/g,'');
+                                if (!VALID_CLASSES_NORM.includes(normCls)) return;
+                            }
+                            if (!classBuckets[rawCls]) classBuckets[rawCls] = [];
+                            classBuckets[rawCls].push(d);
+                        });
+                    }
+                    // Fallback: if still empty, show placeholder for 3rd B.Com
+                    if (Object.keys(classBuckets).length === 0) {
+                        classBuckets['3rd B.Com'] = [];
+                    }
+                    // Pair members into teams of 2 per class (max 2 teams)
+                    Object.keys(classBuckets).sort().forEach(cls => {
+                        const recs = classBuckets[cls];
+                        const clsLabel = cls.toUpperCase().replace(/\./g,'').replace(/\s+/g,' ');
+                        if (recs.length === 0) {
+                            allCards.push({ cls, clsLabel, team:{ teamNum:1, members:[], topic:'' }, safeKey: clsLabel.replace(/\s/g,'_')+'_T1' });
+                            return;
+                        }
+                        let teamNum = 1;
+                        for (let i = 0; i < recs.length && teamNum <= 2; i += 2, teamNum++) {
+                            const pair = recs.slice(i, i + 2);
+                            const team = {
+                                teamNum,
+                                members: pair.map(m => (m.name || '').trim()).filter(Boolean),
+                                topic: pair[0].topic || ''
+                            };
+                            const safeKey = clsLabel.replace(/\s/g,'_') + '_T' + teamNum;
+                            allCards.push({ cls, clsLabel, team, safeKey });
+                        }
+                    });
+                } catch(ef) {
+                    allCards = [{ cls:'3rd B.Com', clsLabel:'3RD BCOM', team:{ teamNum:1, members:[], topic:'' }, safeKey:'3RD_BCOM_T1' }];
+                }
+
+                // ── Compact summary table (no-submission state) ─────────────
+                const noSubRows = allCards.map(({ clsLabel, team, safeKey }) => {
+                    const memberTxt = team.members.length > 0 ? team.members.join(' & ') : '<span style="color:#bbb;font-style:italic">not enrolled yet</span>';
+                    const topicTxt  = team.topic || '<span style="color:#bbb">—</span>';
+                    return `<tr style="border-bottom:1px solid #f0e6f6">
+                        <td style="padding:9px 10px;font-size:0.82em;font-weight:700;color:#4a148c;white-space:nowrap">
+                            <span style="background:linear-gradient(135deg,#833ab4,#e91e63);color:white;border-radius:12px;padding:2px 9px;font-size:0.78em;font-weight:700;margin-right:6px">T${team.teamNum}</span>
+                            ${clsLabel}
+                        </td>
+                        <td style="padding:9px 10px;font-size:0.82em;color:#333">${memberTxt}</td>
+                        <td style="padding:9px 10px;font-size:0.78em;color:#9c27b0">${topicTxt}</td>
+                        <td style="padding:9px 10px;font-size:0.82em;text-align:center"><span style="color:#bbb">—</span></td>
+                        <td style="padding:9px 10px;font-size:0.82em;text-align:center;color:#bbb">—</td>
+                        <td style="padding:9px 10px;font-size:0.82em;text-align:center;color:#bbb">—</td>
+                        <td style="padding:9px 10px;font-size:0.82em;text-align:center;color:#bbb">—</td>
+                        <td style="padding:9px 10px;text-align:center">
+                            <span style="background:#f5f5f5;color:#aaa;border-radius:8px;padding:3px 10px;font-size:0.82em;font-weight:700">— / 50</span>
+                        </td>
+                        <td style="padding:9px 10px;text-align:center">
+                            <button onclick="chandanToggleNoSubEntry('${safeKey}')"
+                                    style="background:#f3e5f5;color:#6a1b9a;border:1.5px solid #ce93d8;border-radius:8px;padding:4px 12px;font-size:0.78em;font-weight:700;cursor:pointer">
+                                ✏️ Enter
+                            </button>
+                        </td>
+                    </tr>`;
+                }).join('');
+
+                const noSubTableHtml = `
+                <div style="background:white;border-radius:12px;border:2px solid #e1bee7;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.06);margin-bottom:18px">
+                    <div style="background:linear-gradient(135deg,#f3e5f5,#fce4ec);padding:12px 16px;border-bottom:2px solid #e1bee7;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+                        <span style="font-weight:700;color:#4a148c;font-size:0.95em">📊 All Teams Overview — ${allCards.length} team${allCards.length!==1?'s':''} enrolled</span>
+                        <span style="background:#fff3cd;color:#856404;border-radius:10px;padding:3px 10px;font-size:0.78em;font-weight:700">⏳ No CR reel submissions yet</span>
+                    </div>
+                    <div style="overflow-x:auto">
+                    <table style="width:100%;border-collapse:collapse;min-width:600px">
+                        <thead>
+                            <tr style="background:#f8f0ff">
+                                <th style="padding:8px 10px;font-size:0.75em;color:#6a1b9a;text-align:left;font-weight:700;white-space:nowrap">Team / Class</th>
+                                <th style="padding:8px 10px;font-size:0.75em;color:#6a1b9a;text-align:left;font-weight:700">Members</th>
+                                <th style="padding:8px 10px;font-size:0.75em;color:#6a1b9a;text-align:left;font-weight:700">Topic</th>
+                                <th style="padding:8px 10px;font-size:0.75em;color:#6a1b9a;text-align:center;font-weight:700">📸</th>
+                                <th style="padding:8px 10px;font-size:0.75em;color:#6a1b9a;text-align:center;font-weight:700">👁 Views</th>
+                                <th style="padding:8px 10px;font-size:0.75em;color:#6a1b9a;text-align:center;font-weight:700">🔥 Likes</th>
+                                <th style="padding:8px 10px;font-size:0.75em;color:#6a1b9a;text-align:center;font-weight:700">💬 Cmts</th>
+                                <th style="padding:8px 10px;font-size:0.75em;color:#6a1b9a;text-align:center;font-weight:700">Score</th>
+                                <th style="padding:8px 10px;font-size:0.75em;color:#6a1b9a;text-align:center;font-weight:700">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>${noSubRows}</tbody>
+                    </table>
                     </div>
                 </div>`;
+
+                // ── Expandable entry panels (hidden by default) ──────────────
+                const noSubPanels = allCards.map(({ cls, clsLabel, team, safeKey }) => {
+                    const memberLine = team.members.length > 0
+                        ? `<strong>${team.members.join(' &amp; ')}</strong>${team.topic ? ' &nbsp;·&nbsp; 📌 ' + team.topic : ''}`
+                        : '<span style="color:#bbb;font-style:italic">No enrollment yet</span>';
+                    return `<div id="chandanNoSubEntry_${safeKey}" style="display:none;background:white;border-radius:12px;border:2px solid #ce93d8;padding:16px;margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,0.06)">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+                            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+                                <span style="background:linear-gradient(135deg,#833ab4,#e91e63);color:white;border-radius:20px;padding:3px 12px;font-size:0.82em;font-weight:700">📹 ${clsLabel} — Team ${team.teamNum}</span>
+                                <span style="font-size:0.85em;color:#4a148c">${memberLine}</span>
+                            </div>
+                            <button onclick="chandanToggleNoSubEntry('${safeKey}')"
+                                    style="background:#fce4ec;color:#c62828;border:none;border-radius:8px;padding:4px 12px;font-size:0.78em;font-weight:700;cursor:pointer">✕ Close</button>
+                        </div>
+                        <div style="background:#f8f0ff;border-radius:8px;padding:8px 12px;font-size:0.78em;color:#6a1b9a;margin-bottom:12px">
+                            ⚠️ CR hasn't submitted reel link yet — enter metrics once you have the numbers from the insight screenshot.
+                        </div>
+                        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px;max-width:420px">
+                            <div>
+                                <label style="font-size:0.72em;color:#555;font-weight:600;display:block;margin-bottom:3px">👁 Views</label>
+                                <input type="number" id="sv_views_nk_${safeKey}" min="0" placeholder="0"
+                                       style="width:100%;padding:7px 8px;border:2px solid #ce93d8;border-radius:8px;font-size:0.9em;outline:none;box-sizing:border-box">
+                            </div>
+                            <div>
+                                <label style="font-size:0.72em;color:#555;font-weight:600;display:block;margin-bottom:3px">🔥 Likes</label>
+                                <input type="number" id="sv_likes_nk_${safeKey}" min="0" placeholder="0"
+                                       style="width:100%;padding:7px 8px;border:2px solid #ce93d8;border-radius:8px;font-size:0.9em;outline:none;box-sizing:border-box">
+                            </div>
+                            <div>
+                                <label style="font-size:0.72em;color:#555;font-weight:600;display:block;margin-bottom:3px">💬 Comments</label>
+                                <input type="number" id="sv_comments_nk_${safeKey}" min="0" placeholder="0"
+                                       style="width:100%;padding:7px 8px;border:2px solid #ce93d8;border-radius:8px;font-size:0.9em;outline:none;box-sizing:border-box">
+                            </div>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+                            <button onclick="saveChandanMetricsByClass('${cls}', '${safeKey}', '${team.members.join(' & ')}')"
+                                    style="background:linear-gradient(135deg,#833ab4,#e91e63);color:white;border:none;border-radius:8px;padding:8px 20px;font-size:0.88em;font-weight:700;cursor:pointer">
+                                💾 Save Score
+                            </button>
+                            <span id="sv_msg_nk_${safeKey}" style="font-size:0.8em;font-weight:700;display:none"></span>
+                            <span style="font-size:0.72em;color:#aaa;margin-left:auto">Formula: (V×${formula.weightViews}) + (L×${formula.weightLikes}) + (C×${formula.weightComments}) ÷ ${formula.maxRaw} × 50</span>
+                        </div>
+                    </div>`;
+                }).join('');
+
+                // ── Per-class accordion rows (hidden body, arrow toggle) ──
+                // Group allCards by class so each class gets ONE accordion row
+                const clsGroups = {};
+                allCards.forEach(card => {
+                    if (!clsGroups[card.cls]) clsGroups[card.cls] = { clsLabel: card.clsLabel, cards: [] };
+                    clsGroups[card.cls].cards.push(card);
+                });
+
+                const accordionHtml = '<div style="margin-top:10px">' +
+                    Object.keys(clsGroups).sort().map(cls => {
+                        const grp      = clsGroups[cls];
+                        const bodyId   = 'vlogAccBody_' + grp.clsLabel.replace(/\s/g,'_');
+                        const arrowId  = 'vlogAccArrow_' + grp.clsLabel.replace(/\s/g,'_');
+                        const teamCount = grp.cards.length;
+
+                        // Build inner cards HTML for this class
+                        const innerCards = grp.cards.map(({ cls: c, clsLabel, team, safeKey }) => {
+                            const memberLine = team.members.length > 0
+                                ? `<div style="background:#f0ebff;border-radius:8px;padding:8px 12px;font-size:0.82em;color:#4a148c;margin-bottom:10px;border-left:3px solid #9c27b0">
+                                    <strong>👥 Team ${team.teamNum}:</strong> ${team.members.join(' &amp; ')}${team.topic ? ' &nbsp;·&nbsp; 📌 ' + team.topic : ''}
+                                   </div>`
+                                : '<div style="font-size:0.8em;color:#bbb;margin-bottom:10px;font-style:italic">No members enrolled yet</div>';
+                            return `<div style="background:#faf6ff;border-radius:10px;border:1.5px solid #e1bee7;padding:16px;margin-bottom:10px">
+                                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:6px">
+                                    <span style="background:#e8eaf6;color:#3949ab;border-radius:16px;padding:3px 12px;font-size:0.8em;font-weight:700">Team ${team.teamNum}</span>
+                                    <span style="background:#fff3cd;color:#856404;border-radius:10px;padding:3px 10px;font-size:0.75em;font-weight:700">⏳ CR hasn't submitted link yet</span>
+                                </div>
+                                ${memberLine}
+                                <div style="background:#f8f0ff;border-radius:8px;padding:8px 12px;font-size:0.78em;color:#6a1b9a;margin-bottom:12px">
+                                    ⚠️ No Instagram Reel link yet — enter metrics once you have the numbers.
+                                </div>
+                                <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px">
+                                    <div>
+                                        <label style="font-size:0.72em;color:#555;font-weight:600;display:block;margin-bottom:3px">👁 Views</label>
+                                        <input type="number" id="sv_views_nk2_${safeKey}" min="0" placeholder="0"
+                                               style="width:100%;padding:7px 8px;border:2px solid #ce93d8;border-radius:8px;font-size:0.9em;outline:none;box-sizing:border-box">
+                                    </div>
+                                    <div>
+                                        <label style="font-size:0.72em;color:#555;font-weight:600;display:block;margin-bottom:3px">🔥 Likes</label>
+                                        <input type="number" id="sv_likes_nk2_${safeKey}" min="0" placeholder="0"
+                                               style="width:100%;padding:7px 8px;border:2px solid #ce93d8;border-radius:8px;font-size:0.9em;outline:none;box-sizing:border-box">
+                                    </div>
+                                    <div>
+                                        <label style="font-size:0.72em;color:#555;font-weight:600;display:block;margin-bottom:3px">💬 Comments</label>
+                                        <input type="number" id="sv_comments_nk2_${safeKey}" min="0" placeholder="0"
+                                               style="width:100%;padding:7px 8px;border:2px solid #ce93d8;border-radius:8px;font-size:0.9em;outline:none;box-sizing:border-box">
+                                    </div>
+                                </div>
+                                <div style="background:#f8f4ff;border-radius:8px;padding:6px 12px;font-size:0.75em;color:#6a1b9a;margin-bottom:10px">
+                                    Formula: (V×${formula.weightViews}) + (L×${formula.weightLikes}) + (C×${formula.weightComments}) ÷ ${formula.maxRaw} × 50
+                                </div>
+                                <div style="display:flex;gap:8px;align-items:center">
+                                    <button onclick="saveChandanMetricsByClass('${c}', 'nk2_${safeKey}', '${team.members.join(' & ')}')"
+                                            style="background:linear-gradient(135deg,#833ab4,#e91e63);color:white;border:none;border-radius:8px;padding:8px 18px;font-size:0.85em;font-weight:700;cursor:pointer">
+                                        💾 Save Score
+                                    </button>
+                                    <span id="sv_msg_nk_nk2_${safeKey}" style="font-size:0.8em;font-weight:700;display:none"></span>
+                                </div>
+                            </div>`;
+                        }).join('');
+
+                        return `<div style="background:white;border-radius:12px;border:2px solid #f0c14b;margin-bottom:8px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,0.06)">
+                            <!-- Accordion header row -->
+                            <div onclick="toggleVlogAccordion('${bodyId}','${arrowId}')"
+                                 style="display:flex;justify-content:space-between;align-items:center;padding:12px 16px;cursor:pointer;background:#fffbf0;user-select:none">
+                                <div style="display:flex;align-items:center;gap:10px">
+                                    <span style="font-size:1em">📹</span>
+                                    <strong style="font-size:0.92em;color:#333">${grp.clsLabel}</strong>
+                                </div>
+                                <div style="display:flex;align-items:center;gap:10px">
+                                    <span style="background:#ff9800;color:white;border-radius:20px;padding:3px 12px;font-size:0.78em;font-weight:700">${teamCount} team${teamCount!==1?'s':''} enrolled</span>
+                                    <span id="${arrowId}" style="font-size:1.1em;color:#e65100;transition:transform 0.2s;display:inline-block">▶</span>
+                                </div>
+                            </div>
+                            <!-- Accordion body — hidden by default -->
+                            <div id="${bodyId}" style="display:none;padding:14px 16px;border-top:1.5px solid #ffe0b2">
+                                ${innerCards}
+                            </div>
+                        </div>`;
+                    }).join('') + '</div>';
+
+                listEl.innerHTML = noSubTableHtml + noSubPanels + accordionHtml;
                 return;
             }
 
+            // ── Summary table at top ──────────────────────────────────────
+            const summaryRows = teams.map((t, i) => {
+                const latest = t.latestSocialEntry || {};
+                const { pct } = calcSocialScore(latest.views||0, latest.likes||0, latest.comments||0, formula);
+                const hasScore = latest.views || latest.likes || latest.comments;
+                const scoreColor = hasScore ? '#1b5e20' : '#aaa';
+                const scoreBg    = hasScore ? '#e8f5e9' : '#f5f5f5';
+                const hasShot = !!(t.screenshotUrl || Object.keys(t.dailyScreenshots||{}).length);
+                return `<tr style="border-bottom:1px solid #f0e6f6">
+                    <td style="padding:9px 10px;font-size:0.82em;font-weight:700;color:#4a148c;white-space:nowrap">
+                        <span style="background:linear-gradient(135deg,#833ab4,#e91e63);color:white;border-radius:12px;padding:2px 9px;font-size:0.78em;font-weight:700;margin-right:6px">T${i+1}</span>
+                        ${t.classYear||'—'}
+                    </td>
+                    <td style="padding:9px 10px;font-size:0.82em;color:#333">${t.member1||'—'} &amp; ${t.member2||'—'}</td>
+                    <td style="padding:9px 10px;font-size:0.78em;color:#9c27b0">${t.topic||'—'}</td>
+                    <td style="padding:9px 10px;font-size:0.82em;text-align:center">${hasShot ? '<span style="color:#4caf50;font-weight:700">✅</span>' : '<span style="color:#bbb">—</span>'}</td>
+                    <td style="padding:9px 10px;font-size:0.82em;text-align:center;color:#555">${latest.views||'—'}</td>
+                    <td style="padding:9px 10px;font-size:0.82em;text-align:center;color:#555">${latest.likes||'—'}</td>
+                    <td style="padding:9px 10px;font-size:0.82em;text-align:center;color:#555">${latest.comments||'—'}</td>
+                    <td style="padding:9px 10px;text-align:center">
+                        <span style="background:${scoreBg};color:${scoreColor};border-radius:8px;padding:3px 10px;font-size:0.82em;font-weight:700">${pct} / 50</span>
+                    </td>
+                    <td style="padding:9px 10px;text-align:center">
+                        <button onclick="chandanToggleEntry('${t.id}')"
+                                style="background:#f3e5f5;color:#6a1b9a;border:1.5px solid #ce93d8;border-radius:8px;padding:4px 12px;font-size:0.78em;font-weight:700;cursor:pointer">
+                            ✏️ Enter
+                        </button>
+                    </td>
+                </tr>`;
+            }).join('');
+
+            const tableHtml = `
+            <div style="background:white;border-radius:12px;border:2px solid #e1bee7;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.06);margin-bottom:18px">
+                <div style="background:linear-gradient(135deg,#f3e5f5,#fce4ec);padding:12px 16px;border-bottom:2px solid #e1bee7;display:flex;justify-content:space-between;align-items:center">
+                    <span style="font-weight:700;color:#4a148c;font-size:0.95em">📊 All Teams Overview — ${teams.length} team${teams.length!==1?'s':''} enrolled</span>
+                    <span style="font-size:0.78em;color:#888">Formula: (V×${formula.weightViews}) + (L×${formula.weightLikes}) + (C×${formula.weightComments}) ÷ ${formula.maxRaw} × 50</span>
+                </div>
+                <div style="overflow-x:auto">
+                <table style="width:100%;border-collapse:collapse;min-width:600px">
+                    <thead>
+                        <tr style="background:#f8f0ff">
+                            <th style="padding:8px 10px;font-size:0.75em;color:#6a1b9a;text-align:left;font-weight:700;white-space:nowrap">Team / Class</th>
+                            <th style="padding:8px 10px;font-size:0.75em;color:#6a1b9a;text-align:left;font-weight:700">Members</th>
+                            <th style="padding:8px 10px;font-size:0.75em;color:#6a1b9a;text-align:left;font-weight:700">Topic</th>
+                            <th style="padding:8px 10px;font-size:0.75em;color:#6a1b9a;text-align:center;font-weight:700">📸</th>
+                            <th style="padding:8px 10px;font-size:0.75em;color:#6a1b9a;text-align:center;font-weight:700">👁 Views</th>
+                            <th style="padding:8px 10px;font-size:0.75em;color:#6a1b9a;text-align:center;font-weight:700">🔥 Likes</th>
+                            <th style="padding:8px 10px;font-size:0.75em;color:#6a1b9a;text-align:center;font-weight:700">💬 Cmts</th>
+                            <th style="padding:8px 10px;font-size:0.75em;color:#6a1b9a;text-align:center;font-weight:700">Score</th>
+                            <th style="padding:8px 10px;font-size:0.75em;color:#6a1b9a;text-align:center;font-weight:700">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>${summaryRows}</tbody>
+                </table>
+                </div>
+            </div>`;
+
+            // ── Per-team expandable entry panels ──────────────────────────
             listEl.innerHTML = teams.map((t, i) => {
                 const today      = now.toISOString().slice(0,10);
-                const metrics    = t.socialMetrics || {};
                 const latest     = t.latestSocialEntry || {};
                 const latestDate = latest.date || '—';
                 const { raw, pct } = calcSocialScore(latest.views||0, latest.likes||0, latest.comments||0, formula);
-                // Build screenshot HTML — prefer screenshotUrl, fall back to dailyScreenshots entries
-                let screenshotHtml = '';
                 const dailyShots = t.dailyScreenshots || {};
                 const dailyUrls  = Object.entries(dailyShots)
                     .sort(([a],[b]) => a.localeCompare(b))
                     .map(([dateKey, url]) => ({ label: dateKey.replace(/_/g,'-'), url }));
                 const primaryUrl = t.screenshotUrl || (dailyUrls.length ? dailyUrls[dailyUrls.length-1].url : null);
 
+                let screenshotHtml = '';
                 if (primaryUrl || dailyUrls.length) {
-                    screenshotHtml = '<div style="display:flex;flex-direction:column;gap:8px">';
+                    screenshotHtml = '<div style="display:flex;flex-direction:column;gap:6px">';
                     if (dailyUrls.length) {
                         dailyUrls.forEach(({ label, url }) => {
-                            screenshotHtml += `<a href="${url}" target="_blank" rel="noopener" style="display:inline-block">
-                                <img src="${url}" style="max-height:120px;max-width:100%;border-radius:8px;border:2px solid #a5d6a7;object-fit:contain" alt="Insight Screenshot ${label}">
-                                <div style="font-size:0.72em;color:#4caf50;margin-top:2px">📸 ${label} — Click to enlarge</div>
-                            </a>`;
+                            screenshotHtml += `<a href="${url}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:6px;font-size:0.78em;color:#1565c0;text-decoration:none;background:#e3f2fd;border-radius:6px;padding:4px 10px">
+                                📸 ${label} <span style="color:#aaa;font-size:0.85em">↗ open</span></a>`;
                         });
                     } else {
-                        screenshotHtml += `<a href="${primaryUrl}" target="_blank" rel="noopener" style="display:inline-block">
-                            <img src="${primaryUrl}" style="max-height:130px;max-width:100%;border-radius:8px;border:2px solid #a5d6a7;object-fit:contain" alt="Insight Screenshot">
-                            <div style="font-size:0.75em;color:#4caf50;margin-top:3px">📸 Click to open full screenshot</div>
-                        </a>`;
+                        screenshotHtml += `<a href="${primaryUrl}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:6px;font-size:0.78em;color:#1565c0;text-decoration:none;background:#e3f2fd;border-radius:6px;padding:4px 10px">
+                            📸 View Screenshot ↗</a>`;
                     }
                     screenshotHtml += '</div>';
                 } else {
-                    screenshotHtml = '<div style="background:#f5f5f5;border-radius:8px;padding:16px;text-align:center;color:#bbb;font-size:0.82em;border:2px dashed #ddd">No screenshot uploaded by CR</div>';
+                    screenshotHtml = '<span style="font-size:0.78em;color:#bbb">No screenshot yet</span>';
                 }
 
-                const disabled = ''; // time lock removed for testing
-                const disabledStyle = ''; // time lock removed for testing
-
-                return `<div style="background:white;border-radius:12px;border:2px solid #e1bee7;padding:18px;box-shadow:0 2px 8px rgba(0,0,0,0.06)">
-                    <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px;margin-bottom:14px">
-                        <div>
+                return `<div id="chandanEntry_${t.id}" style="display:none;background:white;border-radius:12px;border:2px solid #ce93d8;padding:16px;margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,0.06)">
+                    <!-- Header row -->
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+                        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
                             <span style="background:linear-gradient(135deg,#833ab4,#e91e63);color:white;border-radius:20px;padding:3px 12px;font-size:0.82em;font-weight:700">Team ${i+1}</span>
-                            <strong style="margin-left:8px;font-size:0.95em">${t.member1||'—'} &amp; ${t.member2||'—'}</strong>
-                            <span style="color:#9c27b0;font-size:0.82em;margin-left:8px">📌 ${t.topic||'—'}</span>
+                            <strong style="font-size:0.92em;color:#222">${t.member1||'—'} &amp; ${t.member2||'—'}</strong>
+                            <span style="color:#9c27b0;font-size:0.8em">📌 ${t.topic||'—'}</span>
+                            <span style="background:#e8f5e9;color:#1b5e20;border-radius:10px;padding:2px 10px;font-size:0.76em;font-weight:700">${t.classYear||'—'}</span>
                         </div>
-                        <span style="background:#e8f5e9;color:#1b5e20;border-radius:12px;padding:3px 12px;font-size:0.78em;font-weight:700">${t.classYear||'—'}</span>
+                        <button onclick="chandanToggleEntry('${t.id}')"
+                                style="background:#fce4ec;color:#c62828;border:none;border-radius:8px;padding:4px 12px;font-size:0.78em;font-weight:700;cursor:pointer">✕ Close</button>
                     </div>
 
-                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
-                        <!-- Screenshot -->
+                    <!-- Screenshot link + inline metrics form side by side -->
+                    <div style="display:grid;grid-template-columns:1fr 2fr;gap:16px;align-items:start">
                         <div>
-                            <div style="font-size:0.82em;font-weight:700;color:#444;margin-bottom:6px">📸 Insight Screenshot (uploaded by CR):</div>
+                            <div style="font-size:0.78em;font-weight:700;color:#444;margin-bottom:6px">📸 Screenshot</div>
                             ${screenshotHtml}
                         </div>
-
-                        <!-- Entry form -->
                         <div>
-                            <div style="font-size:0.82em;font-weight:700;color:#444;margin-bottom:8px">📝 Enter Today's Metrics <span style="color:#888;font-weight:400">(${today})</span>:</div>
-                            <div style="display:flex;flex-direction:column;gap:8px">
-                                <div style="display:flex;align-items:center;gap:8px">
-                                    <span style="width:80px;font-size:0.82em;color:#555;font-weight:600">👁 Views</span>
+                            <div style="font-size:0.8em;font-weight:700;color:#444;margin-bottom:8px">📝 Enter Metrics <span style="color:#888;font-weight:400">(${today})</span></div>
+                            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px">
+                                <div>
+                                    <label style="font-size:0.72em;color:#555;font-weight:600;display:block;margin-bottom:3px">👁 Views</label>
                                     <input type="number" id="sv_views_${t.id}" min="0" placeholder="0" value="${latest.views||''}"
-                                           style="flex:1;padding:7px 10px;border:2px solid #ce93d8;border-radius:8px;font-size:0.88em;outline:none;${disabledStyle}" ${disabled}>
+                                           style="width:100%;padding:7px 8px;border:2px solid #ce93d8;border-radius:8px;font-size:0.9em;outline:none;box-sizing:border-box">
                                 </div>
-                                <div style="display:flex;align-items:center;gap:8px">
-                                    <span style="width:80px;font-size:0.82em;color:#555;font-weight:600">❤️ Likes</span>
+                                <div>
+                                    <label style="font-size:0.72em;color:#555;font-weight:600;display:block;margin-bottom:3px">🔥 Likes</label>
                                     <input type="number" id="sv_likes_${t.id}" min="0" placeholder="0" value="${latest.likes||''}"
-                                           style="flex:1;padding:7px 10px;border:2px solid #ce93d8;border-radius:8px;font-size:0.88em;outline:none;${disabledStyle}" ${disabled}>
+                                           style="width:100%;padding:7px 8px;border:2px solid #ce93d8;border-radius:8px;font-size:0.9em;outline:none;box-sizing:border-box">
                                 </div>
-                                <div style="display:flex;align-items:center;gap:8px">
-                                    <span style="width:80px;font-size:0.82em;color:#555;font-weight:600">💬 Comments</span>
+                                <div>
+                                    <label style="font-size:0.72em;color:#555;font-weight:600;display:block;margin-bottom:3px">💬 Comments</label>
                                     <input type="number" id="sv_comments_${t.id}" min="0" placeholder="0" value="${latest.comments||''}"
-                                           style="flex:1;padding:7px 10px;border:2px solid #ce93d8;border-radius:8px;font-size:0.88em;outline:none;${disabledStyle}" ${disabled}>
-                                </div>
-                                <div style="background:#f8f4ff;border-radius:8px;padding:8px 12px;font-size:0.8em;color:#6a1b9a;margin-top:2px">
-                                    Formula: (Views×${formula.weightViews}) + (Likes×${formula.weightLikes}) + (Comments×${formula.weightComments}) ÷ ${formula.maxRaw} × 50
-                                </div>
-                                <div style="display:flex;gap:8px;align-items:center;margin-top:4px">
-                                    <button onclick="saveChandanMetrics('${t.id}')" ${disabled}
-                                            style="background:linear-gradient(135deg,#9c27b0,#e91e63);color:white;border:none;border-radius:8px;padding:9px 18px;font-size:0.88em;font-weight:700;cursor:pointer;${disabledStyle}">
-                                        💾 Save Score
-                                    </button>
-                                    <span id="sv_msg_${t.id}" style="font-size:0.8em;font-weight:700;display:none"></span>
+                                           style="width:100%;padding:7px 8px;border:2px solid #ce93d8;border-radius:8px;font-size:0.9em;outline:none;box-sizing:border-box">
                                 </div>
                             </div>
-                        </div>
-                    </div>
-
-                    <!-- Latest saved score display -->
-                    <div style="margin-top:12px;background:${latest.views ? '#e8f5e9' : '#f5f5f5'};border-radius:8px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
-                        <div style="font-size:0.82em;color:#555">
-                            Last updated: <strong>${latestDate}</strong> &nbsp;|&nbsp;
-                            Views: <strong>${latest.views||0}</strong> &nbsp;
-                            Likes: <strong>${latest.likes||0}</strong> &nbsp;
-                            Comments: <strong>${latest.comments||0}</strong>
-                        </div>
-                        <div style="font-size:0.88em;font-weight:700;color:${latest.views ? '#1b5e20' : '#aaa'}">
-                            Raw Score: ${raw} &nbsp;→&nbsp; Social Score: <strong>${pct} / 50</strong>
+                            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+                                <button onclick="saveChandanMetrics('${t.id}')"
+                                        style="background:linear-gradient(135deg,#9c27b0,#e91e63);color:white;border:none;border-radius:8px;padding:8px 20px;font-size:0.88em;font-weight:700;cursor:pointer">
+                                    💾 Save Score
+                                </button>
+                                <span id="sv_msg_${t.id}" style="font-size:0.8em;font-weight:700;display:none"></span>
+                                <span style="font-size:0.75em;color:#9c27b0;margin-left:auto">Last saved: <strong>${latestDate}</strong> — Score: <strong>${pct}/50</strong></span>
+                            </div>
                         </div>
                     </div>
                 </div>`;
             }).join('');
+
+            listEl.innerHTML = tableHtml + listEl.innerHTML;
             } catch(e) {
                 console.error('loadChandanPanel error:', e);
                 const isPermission = e && e.message && e.message.includes('permission_denied');
@@ -11885,6 +12150,92 @@
                     ${hint ? `<div style="color:#444;font-size:0.88em;background:#fff8e1;border-radius:8px;padding:10px 14px;border-left:4px solid #ffc107;margin-bottom:14px">${hint}</div>` : ''}
                     <button onclick="loadChandanPanel()" style="background:#9c27b0;color:white;border:none;border-radius:8px;padding:8px 18px;cursor:pointer;font-weight:700">🔄 Try Again</button>
                 </div>`;
+            }
+        }
+
+        function toggleLoginAccordion(bodyId, arrowId) {
+            const body  = document.getElementById(bodyId);
+            const arrow = document.getElementById(arrowId);
+            if (!body) return;
+            const isHidden = body.style.display === 'none';
+            body.style.display = isHidden ? 'block' : 'none';
+            if (arrow) arrow.style.transform = isHidden ? 'rotate(90deg)' : 'rotate(0deg)';
+            if (isHidden) setTimeout(() => body.scrollIntoView({ behavior:'smooth', block:'start' }), 50);
+        }
+
+        function toggleVlogAccordion(bodyId, arrowId) {
+            const body  = document.getElementById(bodyId);
+            const arrow = document.getElementById(arrowId);
+            if (!body) return;
+            const isHidden = body.style.display === 'none';
+            body.style.display = isHidden ? 'block' : 'none';
+            if (arrow) arrow.style.transform = isHidden ? 'rotate(90deg)' : 'rotate(0deg)';
+            if (isHidden) setTimeout(() => body.scrollIntoView({ behavior:'smooth', block:'nearest' }), 50);
+        }
+
+        function chandanToggleNoSubEntry(safeKey) {
+            const el = document.getElementById('chandanNoSubEntry_' + safeKey);
+            if (!el) return;
+            const isOpen = el.style.display !== 'none';
+            document.querySelectorAll('[id^="chandanNoSubEntry_"]').forEach(e => e.style.display = 'none');
+            if (!isOpen) {
+                el.style.display = 'block';
+                setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 50);
+            }
+        }
+
+        function chandanToggleEntry(teamId) {
+            const el = document.getElementById('chandanEntry_' + teamId);
+            if (!el) return;
+            const isOpen = el.style.display !== 'none';
+            // Close all open panels first
+            document.querySelectorAll('[id^="chandanEntry_"]').forEach(e => e.style.display = 'none');
+            // If was closed, open this one and scroll to it
+            if (!isOpen) {
+                el.style.display = 'block';
+                setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 50);
+            }
+        }
+
+        function toggleLoginAccordion(bodyId, arrowId) {
+            const body  = document.getElementById(bodyId);
+            const arrow = document.getElementById(arrowId);
+            if (!body) return;
+            const isHidden = body.style.display === 'none';
+            body.style.display = isHidden ? 'block' : 'none';
+            if (arrow) arrow.style.transform = isHidden ? 'rotate(90deg)' : 'rotate(0deg)';
+            if (isHidden) setTimeout(() => body.scrollIntoView({ behavior:'smooth', block:'start' }), 50);
+        }
+
+        function toggleVlogAccordion(bodyId, arrowId) {
+            const body  = document.getElementById(bodyId);
+            const arrow = document.getElementById(arrowId);
+            if (!body) return;
+            const isHidden = body.style.display === 'none';
+            body.style.display = isHidden ? 'block' : 'none';
+            if (arrow) arrow.style.transform = isHidden ? 'rotate(90deg)' : 'rotate(0deg)';
+            if (isHidden) setTimeout(() => body.scrollIntoView({ behavior:'smooth', block:'nearest' }), 50);
+        }
+
+        function chandanToggleNoSubEntry(safeKey) {
+            const el = document.getElementById('chandanNoSubEntry_' + safeKey);
+            if (!el) return;
+            const isOpen = el.style.display !== 'none';
+            document.querySelectorAll('[id^="chandanNoSubEntry_"]').forEach(e => e.style.display = 'none');
+            if (!isOpen) {
+                el.style.display = 'block';
+                setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 50);
+            }
+        }
+
+        function chandanToggleEntry(teamId) {
+            const el = document.getElementById('chandanEntry_' + teamId);
+            if (!el) return;
+            const isOpen = el.style.display !== 'none';
+            document.querySelectorAll('[id^="chandanEntry_"]').forEach(e => e.style.display = 'none');
+            if (!isOpen) {
+                el.style.display = 'block';
+                setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 50);
             }
         }
 
@@ -11927,6 +12278,32 @@
             // Reload to refresh display
             setTimeout(loadChandanPanel, 1500);
         }
+
+        async function saveChandanMetricsByClass(cls, inputKey, teamMembers) {
+            // inputKey: element id suffix (e.g. '3RDBCOM_T1'); teamMembers: member names string
+            const safeKey  = inputKey || cls.replace(/\s/g,'_');
+            const views    = parseInt(document.getElementById('sv_views_nk_'    + safeKey)?.value) || 0;
+            const likes    = parseInt(document.getElementById('sv_likes_nk_'    + safeKey)?.value) || 0;
+            const comments = parseInt(document.getElementById('sv_comments_nk_' + safeKey)?.value) || 0;
+            const msgEl    = document.getElementById('sv_msg_nk_' + safeKey);
+            const today    = new Date().toISOString().slice(0,10);
+
+            const fSnap   = await db.ref('vlogSettings/socialFormula').once('value').catch(()=>null);
+            const formula = (fSnap && fSnap.val()) || { weightViews:1, weightLikes:3, weightComments:5, maxRaw:5000 };
+            const { raw, pct } = calcSocialScore(views, likes, comments, formula);
+
+            const entry = { date: today, views, likes, comments, rawScore: raw, socialPct: pct, classYear: cls, members: teamMembers || '', teamKey: safeKey, savedAt: new Date().toISOString() };
+
+            if (msgEl) { msgEl.style.display='inline'; msgEl.style.color='#9c27b0'; msgEl.textContent='💾 Saving…'; }
+            try {
+                await db.ref('vlogClassMetrics/' + safeKey + '/' + today.replace(/-/g,'_')).set(entry);
+                await db.ref('vlogClassMetrics/' + safeKey + '/latest').set(entry);
+                if (msgEl) { msgEl.style.color='#1b5e20'; msgEl.textContent='✅ Score saved! (' + pct + ' / 50)'; }
+            } catch(e) {
+                if (msgEl) { msgEl.style.color='#c62828'; msgEl.textContent='❌ Error: ' + e.message; }
+            }
+        }
+
         let vlogJuryNum = null;
         let vlogJuryCriteria = [];
 
@@ -23635,6 +24012,18 @@ Davan Institute Team`;
             </div>
 
             <!-- ── HOW WE PUBLISH — full section (white card below banner) ── -->
+            <!-- Accordion wrapper -->
+            <div style="border:2px solid #e8d5f5;border-radius:12px;overflow:hidden;margin-bottom:4px">
+                <!-- Accordion header -->
+                <div onclick="toggleLoginAccordion('accHowWePublish','arrHowWePublish')" style="display:flex;justify-content:space-between;align-items:center;padding:14px 20px;background:linear-gradient(135deg,#f3e5ff,#fce4ec);cursor:pointer;user-select:none">
+                    <div style="display:flex;align-items:center;gap:10px">
+                        <span style="font-size:1.1em">📋</span>
+                        <strong style="font-size:0.95em;color:#3d0060">How We Publish the Leaderboard</strong>
+                    </div>
+                    <span id="arrHowWePublish" style="font-size:1.1em;color:#6a1b9a;transition:transform 0.2s;display:inline-block">▶</span>
+                </div>
+                <!-- Accordion body -->
+                <div id="accHowWePublish" style="display:none">
             <div style="background:white">
 
                 <!-- Section header with SA edit toggle -->
@@ -23765,7 +24154,9 @@ Davan Institute Team`;
                     </div>
 
                 </div>
-            </div>
+            </div><!-- /hwp white -->
+                </div><!-- /accHowWePublish body -->
+            </div><!-- /accHowWePublish accordion -->
         </div>
         <div id="lbPublicBody" style="display:none">
         <div class="lb-body">
@@ -28409,11 +28800,41 @@ Proceed?`)) return;
 
             // Show thank you screen
             const body = document.getElementById('feedbackFormBody');
-            if (body) body.innerHTML = `<div style="text-align:center;padding:40px 20px">
+            if (body) body.innerHTML = `<div style="text-align:center;padding:30px 20px">
                 <div style="font-size:4em;margin-bottom:16px">🎉</div>
                 <h3 style="color:#2e7d32;font-size:1.4em;margin-bottom:8px">Thank You, ${name}!</h3>
                 <p style="color:#555;font-size:1em;margin-bottom:6px">Your feedback has been recorded.</p>
                 <p style="color:#aaa;font-size:0.82em;margin-bottom:20px">📅 ${dateStr} &nbsp;🕐 ${timeStr}</p>
+
+                <!-- Responsibilities Section -->
+                <div style="text-align:left;background:#f9f0ff;border:2px solid #ce93d8;border-radius:14px;padding:18px;margin-bottom:20px">
+                    <h4 style="text-align:center;color:#6a1b9a;font-size:1em;margin-bottom:14px;letter-spacing:0.3px">📋 Coordinator Responsibilities</h4>
+
+                    <!-- Chandan G B -->
+                    <div style="background:#c8e6c9;border-radius:10px;padding:13px 14px;margin-bottom:12px;border-left:4px solid #1b5e20">
+                        <p style="font-weight:700;color:#1b5e20;font-size:0.95em;margin-bottom:4px">👨‍💼 Chandan G B</p>
+                        <p style="color:#2e7d32;font-size:0.82em;margin-bottom:6px;font-style:italic">📊 Vlog Monitor + 🎙️ Podcast Approval</p>
+                        <ul style="list-style:none;padding:0;margin:0">
+                            <li style="font-size:0.83em;color:#1b5e20;margin-bottom:3px">🎭 <strong>Ramp Walk</strong> — On stage &nbsp;|&nbsp; II BBA / III B.Com</li>
+                            <li style="font-size:0.83em;color:#1b5e20;margin-bottom:3px">🎙️ <strong>Pod Casting</strong> — Off stage &nbsp;|&nbsp; III BCOM / II BBA</li>
+                            <li style="font-size:0.83em;color:#1b5e20">📋 <strong>Vlog</strong> — Off stage &nbsp;|&nbsp; III BCOM</li>
+                        </ul>
+                    </div>
+
+                    <!-- Priyanka V -->
+                    <div style="background:#e1bee7;border-radius:10px;padding:13px 14px;border-left:4px solid #7b1fa2">
+                        <p style="font-weight:700;color:#4a148c;font-size:0.95em;margin-bottom:4px">👩‍💼 Priyanka V</p>
+                        <p style="color:#6a1b9a;font-size:0.82em;margin-bottom:6px;font-style:italic">📊 Vlog Monitor + 📋 Event Incharge</p>
+                        <ul style="list-style:none;padding:0;margin:0">
+                            <li style="font-size:0.83em;color:#4a148c;margin-bottom:3px">🎭 <strong>Mime</strong> — On stage &nbsp;|&nbsp; I BCA / II BCA 'B'</li>
+                            <li style="font-size:0.83em;color:#4a148c;margin-bottom:3px">🎭 <strong>Mad Ads</strong> — On stage &nbsp;|&nbsp; I BCOM / I BCA</li>
+                            <li style="font-size:0.83em;color:#4a148c;margin-bottom:3px">📋 <strong>YouTube Advertisement</strong> — Off stage &nbsp;|&nbsp; I BCA 'A' / II BCA 'A'</li>
+                            <li style="font-size:0.83em;color:#4a148c;margin-bottom:3px">📋 <strong>Case Analysis</strong> — Off stage &nbsp;|&nbsp; I BCOM / I BCA 'A'</li>
+                            <li style="font-size:0.83em;color:#4a148c">📋 <strong>Vlog</strong> — Off stage &nbsp;|&nbsp; III BCOM</li>
+                        </ul>
+                    </div>
+                </div>
+
                 <button onclick="document.getElementById('feedbackPopupOverlay').style.display='none';document.body.style.overflow=''" style="background:linear-gradient(135deg,#880e4f,#c2185b);color:white;border:none;border-radius:10px;padding:12px 28px;font-size:1em;font-weight:700;cursor:pointer">✅ Close</button>
             </div>`;
             setTimeout(() => {
@@ -32007,7 +32428,17 @@ Proceed?`)) return;
         <!-- ============================================ -->
         <!-- GENERAL RULES                                -->
         <!-- ============================================ -->
-        <div style="background:white;padding:25px;border-radius:8px;border:2px solid #e0e0e0;margin-bottom:24px;">
+        <div style="border:2px solid #f48fb1;border-radius:12px;margin-bottom:16px;overflow:hidden">
+            <!-- Accordion header -->
+            <div onclick="toggleLoginAccordion('accGenRules','arrGenRules')" style="display:flex;justify-content:space-between;align-items:center;padding:14px 20px;background:#fff0f5;cursor:pointer;user-select:none">
+                <div style="display:flex;align-items:center;gap:10px">
+                    <span style="font-size:1.1em">📜</span>
+                    <strong style="font-size:0.95em;color:#c44569">General Rules and Regulations</strong>
+                </div>
+                <span id="arrGenRules" style="font-size:1.1em;color:#c44569;transition:transform 0.2s;display:inline-block">▶</span>
+            </div>
+            <!-- Accordion body -->
+            <div id="accGenRules" style="display:none;padding:20px 25px;background:white;border-top:1.5px solid #f48fb1">
             <h3 style="color:#c44569;margin-bottom:14px;font-size:1.1em;">📜 General Rules</h3>
             <ol style="line-height:1.8;color:#333;">
                 <li style="margin-bottom:15px;">
@@ -32032,15 +32463,24 @@ Proceed?`)) return;
                     <span style="color:#c44569;font-weight:bold;">non-refund of deposit ₹1,500/-</span>.
                 </li>
             </ol>
-        </div>
+            </div><!-- /accGenRules body -->
+        </div><!-- /accGenRules accordion -->
 
         <!-- ============================================ -->
         <!-- SPURTHI YOUTH FEST — EVENT SCHEDULE TABLE    -->
         <!-- Festival Date: 18.03.2026                    -->
-        <!-- TO ADD A NEW EVENT: Copy a <tr> block and    -->
-        <!-- update the cells. Leave blank if unknown.    -->
         <!-- ============================================ -->
-        <div style="margin-bottom:10px;">
+        <div style="border:2px solid #ce93d8;border-radius:12px;margin-bottom:16px;overflow:hidden">
+            <!-- Accordion header -->
+            <div onclick="toggleLoginAccordion('accEventSched','arrEventSched')" style="display:flex;justify-content:space-between;align-items:center;padding:14px 20px;background:#f3e5f5;cursor:pointer;user-select:none">
+                <div style="display:flex;align-items:center;gap:10px">
+                    <span style="font-size:1.1em">📅</span>
+                    <strong style="font-size:0.95em;color:#6a1b9a">Spurthi Youth Festival — Event Schedule (18.03.2026)</strong>
+                </div>
+                <span id="arrEventSched" style="font-size:1.1em;color:#6a1b9a;transition:transform 0.2s;display:inline-block">▶</span>
+            </div>
+            <!-- Accordion body -->
+            <div id="accEventSched" style="display:none;padding:20px 20px 10px;background:white;border-top:1.5px solid #ce93d8">
             <h3 style="color:#6a1b9a;margin-bottom:16px;font-size:1.1em;">📅 Spurthi Youth Festival — Event Schedule (18.03.2026)</h3>
             <div style="overflow-x:auto;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.1);">
                 <table style="width:100%;border-collapse:collapse;background:white;font-size:.88em;">
@@ -32230,7 +32670,8 @@ Proceed?`)) return;
             <p style="font-size:.8em;color:#888;margin-top:8px;">
                 📌 <em>To add more events, copy a &lt;tr&gt; row block inside the table and fill in the details.</em>
             </p>
-        </div>
+            </div><!-- /accEventSched body -->
+        </div><!-- /accEventSched accordion -->
     </div>
     <!-- ============================================ -->
     <!-- END OF RULES SECTION                         -->
@@ -32382,6 +32823,17 @@ Proceed?`)) return;
     <!-- END FEEDBACK POPUP MODAL                                     -->
     <!-- ============================================================ -->
 
+<!-- VERSION HISTORY
+v4.57 | Feb 27 2026 01:30 IST | Quiz text-input type restored
+v4.58 | Feb 27 2026 07:15 IST | Published quiz shows images & audio
+v4.59 | Feb 27 2026 13:10 IST | Quiz Archive added
+v4.60 | Feb 27 2026 14:45 IST | Post-feedback thank-you screen shows Chandan G B & Priyanka V responsibilities
+v4.61 | Feb 27 2026 15:10 IST | Vlog monitor empty-state replaced with class-card layout matching YouTube Ad panel
+v4.62 | Feb 27 2026 15:35 IST | Fixed vlog team grouping to strictly 2 members per team; Chandan panel shows enrolled participant names per team
+v4.63 | Feb 27 2026 15:55 IST | Vlog topics updated to Travel/Food/Event/Daily Life; Chandan panel now shows all classes with vlog enrollments
+v4.64 | Feb 27 2026 16:10 IST | Vlog topic emojis added in dropdown options and enrollment form cards
+v4.65 | Feb 27 2026 16:25 IST | Fixed class name normalization so all enrollment variants merge into correct team buckets
+-->
     <footer style="background: white; border-radius: 12px; padding: 25px; margin-top: 30px; box-shadow: 0 4px 20px rgba(0,0,0,0.1);">
         <div style="text-align: center;">
             
@@ -32400,7 +32852,7 @@ Proceed?`)) return;
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;" id="devTriggerVersion">
-                <strong>Version:</strong> 4.59 — Quiz Archive added: A new "📚 Quiz Archive" section lets anyone browse all previously published quizzes by date — shows Q1 &amp; Q2 with questions, images, audio, and correct answers. Dropdown auto-populates with all published dates (newest first). | <strong>Last Updated:</strong> February 27, 2026 — 13:10</p>
+                <strong>Version:</strong> 4.65 — Fixed class name normalization so variant spellings merge into correct team buckets | <strong>Last Updated:</strong> February 27, 2026 — 16:25 IST</p>
             <!-- ============================================ -->
             
             <p style="color: #c44569; font-size: 0.85em; font-weight: 600; margin-bottom: 8px;">
