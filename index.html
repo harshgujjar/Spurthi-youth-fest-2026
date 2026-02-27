@@ -1625,6 +1625,7 @@
                 <button class="tab" onclick="showCRTab('crBestOutWaste');loadBOWSubmissions()">♻️ Best Out of Waste</button>
                 <button class="tab" id="crYtAdTab" onclick="showCRTab('crYtAd');checkYtAdEventActive();loadYtAdSubmissions()">📺 YT Advertisement</button>
                 <button class="tab" onclick="showCRTab('crNukkadNatak');loadCRNukkadPanel()">🎭 Nukkad Natak</button>
+                <button class="tab" onclick="showCRTab('crGroupDance');loadCRDancePanel()">💃 Group Dance</button>
             </div>
 
             <div id="crEnroll" class="form-section active">
@@ -2619,7 +2620,85 @@
         </div>
         <!-- ── END NUKKAD NATAK CR PANEL ───────────────────────────────── -->
 
-        <!-- Admin Section -->
+        <!-- ══════════════════════════════════════════════════════════════ -->
+        <!-- CR GROUP DANCE PANEL                                          -->
+        <!-- ══════════════════════════════════════════════════════════════ -->
+        <div id="crGroupDance" class="form-section" style="display:none">
+
+            <!-- Hero Banner -->
+            <div style="background:linear-gradient(135deg,#ad1457,#e91e63,#f06292);background-size:300% 300%;animation:vlogGradient 6s ease infinite;border-radius:16px;padding:24px;margin-bottom:20px;text-align:center;position:relative;overflow:hidden">
+                <div style="position:absolute;top:-20px;right:-20px;font-size:5em;opacity:0.12;transform:rotate(15deg)">💃</div>
+                <div style="font-size:2.2em;margin-bottom:6px">💃🕺✨</div>
+                <h2 style="color:white;margin:0 0 5px;font-size:1.5em;text-shadow:0 2px 8px rgba(0,0,0,0.35)">Group Dance — <span id="dancecrClassName" style="color:#fce4ec"></span></h2>
+                <p style="color:rgba(255,255,255,0.92);margin:0 0 10px;font-size:0.9em">Only <strong>story-based dance performances</strong> will be allowed. Each class must submit the title and a short story summary.</p>
+                <div style="display:flex;justify-content:center;gap:8px;flex-wrap:wrap">
+                    <div style="background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.5);border-radius:20px;padding:4px 14px;color:white;font-size:0.78em;font-weight:700">📖 Story-Based Only</div>
+                    <div style="background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.5);border-radius:20px;padding:4px 14px;color:white;font-size:0.78em;font-weight:700">👥 5–8 Members</div>
+                    <div style="background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.5);border-radius:20px;padding:4px 14px;color:white;font-size:0.78em;font-weight:700">🎭 Title + Summary Required</div>
+                </div>
+            </div>
+
+            <!-- Enrolled participants display -->
+            <div style="background:white;border-radius:12px;border:2px solid #f48fb1;padding:16px;margin-bottom:18px">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px">
+                    <h4 style="color:#880e4f;margin:0;font-size:0.95em">👥 Your Enrolled Dance Team</h4>
+                    <button type="button" onclick="loadCRDancePanel()" style="background:#e91e63;color:white;border:none;border-radius:6px;padding:4px 12px;font-size:0.78em;cursor:pointer;font-weight:600">🔄 Refresh</button>
+                </div>
+                <div id="danceEnrolledList" style="background:#fce4ec;border-radius:10px;border:2px solid #f48fb1;padding:12px;font-size:0.85em;color:#555">
+                    Loading enrolled participants…
+                </div>
+            </div>
+
+            <!-- Story Submission Form -->
+            <div style="background:white;border-radius:14px;border:2px solid #f48fb1;padding:22px;margin-bottom:20px">
+                <div style="display:flex;align-items:center;gap:12px;margin-bottom:4px">
+                    <div style="background:linear-gradient(135deg,#ad1457,#e91e63);color:white;border-radius:50%;width:32px;height:32px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:1em;flex-shrink:0">📖</div>
+                    <h3 style="color:#880e4f;margin:0;font-size:1.05em">Dance Story Submission</h3>
+                </div>
+                <p style="color:#888;font-size:0.82em;margin:0 0 18px;padding-left:44px">Only story-based dance performances will be allowed. Submit the title and a short summary (3–4 lines) explaining the story behind your dance.</p>
+
+                <!-- Rule reminder box -->
+                <div style="background:#fce4ec;border-left:4px solid #e91e63;border-radius:8px;padding:12px 16px;margin-bottom:18px;font-size:0.85em;color:#880e4f">
+                    📌 <strong>Rule:</strong> Only story-based dance performances will be allowed. Each class must submit the title and a short summary (3–4 lines) explaining the story behind their dance.
+                </div>
+
+                <div style="display:flex;flex-direction:column;gap:16px">
+                    <!-- Dance Title -->
+                    <div>
+                        <label style="font-size:0.88em;font-weight:700;color:#444;display:block;margin-bottom:5px">🎭 Dance Performance Title <span style="color:red">*</span></label>
+                        <input type="text" id="danceTitle" placeholder="e.g. The Journey of a River, Rise of the Phoenix, Mother's Love…"
+                            style="width:100%;padding:10px 12px;border:2px solid #ddd;border-radius:8px;font-size:0.9em;outline:none;transition:border 0.2s;box-sizing:border-box"
+                            onfocus="this.style.borderColor='#e91e63'" onblur="this.style.borderColor='#ddd'">
+                    </div>
+                    <!-- Story Summary -->
+                    <div>
+                        <label style="font-size:0.88em;font-weight:700;color:#444;display:block;margin-bottom:5px">📝 Story Summary <span style="color:red">*</span> <span style="color:#999;font-weight:400">(3–4 lines)</span></label>
+                        <textarea id="danceSummary" rows="4"
+                            placeholder="Briefly explain the story behind your dance performance — what happens, the emotions, and the message you want to convey to the audience…"
+                            style="width:100%;padding:10px 12px;border:2px solid #ddd;border-radius:8px;font-size:0.9em;outline:none;resize:vertical;transition:border 0.2s;box-sizing:border-box"
+                            onfocus="this.style.borderColor='#e91e63'" onblur="this.style.borderColor='#ddd'"></textarea>
+                        <p style="font-size:0.78em;color:#999;margin:4px 0 0">Write 3–4 lines describing the story. This will be visible to the jury and event in-charge.</p>
+                    </div>
+                </div>
+
+                <div id="danceSubmitMsg" style="display:none;margin-top:12px;padding:10px 14px;border-radius:8px;font-size:0.88em;font-weight:600"></div>
+                <div style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap">
+                    <button class="btn" id="danceSubmitBtn" onclick="saveDanceStory()"
+                        style="background:linear-gradient(135deg,#ad1457,#e91e63);border:none;flex:1;min-width:160px">💾 Save Dance Story</button>
+                    <button class="btn btn-secondary" onclick="clearDanceForm()" style="flex:0">🗑️ Clear</button>
+                </div>
+
+                <!-- Saved confirmation display -->
+                <div id="danceSavedDisplay" style="display:none;margin-top:16px;background:#fce4ec;border-radius:10px;padding:14px;border:2px solid #f48fb1">
+                    <div style="font-weight:700;color:#880e4f;margin-bottom:6px">✅ Story Saved — Visible to Jury & In-charge</div>
+                    <div style="font-size:0.88em;color:#333"><strong>Title:</strong> <span id="danceSavedTitle"></span></div>
+                    <div style="font-size:0.85em;color:#555;margin-top:6px;line-height:1.6"><strong>Summary:</strong> <span id="danceSavedSummary"></span></div>
+                    <div style="font-size:0.75em;color:#aaa;margin-top:6px" id="danceSavedAt"></div>
+                    <button onclick="enableDanceEdit()" style="margin-top:10px;background:#e91e63;color:white;border:none;border-radius:7px;padding:5px 14px;font-size:0.82em;font-weight:700;cursor:pointer">✏️ Edit Story</button>
+                </div>
+            </div>
+        </div>
+        <!-- ── END GROUP DANCE CR PANEL ──────────────────────────────────── -->
         <div class="admin-only" id="adminSection">
             <button class="btn btn-secondary" onclick="logout()" style="float:right">Logout</button>
             <!-- Admin Dashboard -->
@@ -5736,9 +5815,6 @@
                             <div style="text-align:center;color:#aaa;padding:30px">Loading Vlog submissions…</div>
                         </div>
 
-                        <div style="margin-top:16px;text-align:center">
-                            <button class="btn btn-secondary" onclick="loadChandanPanel()" style="font-size:0.88em">🔄 Refresh All Teams</button>
-                        </div>
                     </div>
 
                     <!-- ── Pod Casting Approval Panel (Chandan G B + Hemavathi Desai) ── -->
@@ -5933,6 +6009,22 @@
                         </div>
                         <div id="talentHuntList" style="display:flex;flex-direction:column;gap:10px">
                             <div style="text-align:center;color:#aaa;padding:30px">Loading entries…</div>
+                        </div>
+                    </div>
+
+                    <!-- ── Group Dance Story Panel (Anitha N / Pooja C) ── -->
+                    <div id="danceInchargePanel" style="display:none;margin-top:24px">
+                        <div style="background:linear-gradient(135deg,#fce4ec,#f3e5f5);border-radius:14px;padding:18px;border:2px solid #f48fb1;margin-bottom:16px">
+                            <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:10px">
+                                <div>
+                                    <h3 style="color:#880e4f;margin:0 0 4px;font-size:1.05em">💃 Group Dance — Story Submissions</h3>
+                                    <p style="color:#555;font-size:0.82em;margin:0">All enrolled classes' dance story submissions. Each class must submit a title and 3–4 line summary of their story-based performance.</p>
+                                </div>
+                                <button onclick="loadDanceInchargePanel()" style="background:#e91e63;color:white;border:none;border-radius:8px;padding:6px 14px;font-size:0.82em;font-weight:700;cursor:pointer">🔄 Refresh</button>
+                            </div>
+                        </div>
+                        <div id="danceInchargeList" style="display:flex;flex-direction:column;gap:14px">
+                            <div style="text-align:center;color:#aaa;padding:30px">Loading dance story submissions…</div>
                         </div>
                     </div>
 
@@ -11373,6 +11465,7 @@
                 document.getElementById('nukkadPostPanel').style.display     = 'none';
                 document.getElementById('hwAttendancePanel').style.display   = 'none';
                 document.getElementById('thAttendancePanel').style.display   = 'none';
+                document.getElementById('danceInchargePanel').style.display  = 'none';
                 document.getElementById('genericInchargePanel').style.display = 'none';
                 document.getElementById('facultyComingSoon').style.display   = 'none';
                 document.getElementById('facultyDashboard').style.display = 'block';
@@ -11396,6 +11489,7 @@
                 const hasNukkadPost    = isShankar;
                 const hasHandwriting   = isKotrappa || isAnitha;
                 const hasTalentHunt    = isAnitha || isPooja;
+                const hasDanceAccess   = isAnitha || isPooja;
                 document.getElementById('chandanSocialPanel').style.display   = hasVlogAccess    ? 'block' : 'none';
                 document.getElementById('chandanPodcastPanel').style.display  = hasPodcastAccess ? 'block' : 'none';
                 document.getElementById('shankarBowPanel').style.display      = hasBowAccess     ? 'block' : 'none';
@@ -11404,7 +11498,8 @@
                 document.getElementById('nukkadPostPanel').style.display      = hasNukkadPost    ? 'block' : 'none';
                 document.getElementById('hwAttendancePanel').style.display    = hasHandwriting   ? 'block' : 'none';
                 document.getElementById('thAttendancePanel').style.display    = hasTalentHunt    ? 'block' : 'none';
-                const hasAnySpecial = hasVlogAccess || hasPodcastAccess || hasBowAccess || hasYtAdAccess || hasNukkadPre || hasNukkadPost || hasHandwriting || hasTalentHunt;
+                document.getElementById('danceInchargePanel').style.display   = hasDanceAccess   ? 'block' : 'none';
+                const hasAnySpecial = hasVlogAccess || hasPodcastAccess || hasBowAccess || hasYtAdAccess || hasNukkadPre || hasNukkadPost || hasHandwriting || hasTalentHunt || hasDanceAccess;
                 const hasInchargeEvents = (FACULTY_EVENT_MAP[faculty.name] || []).length > 0;
                 document.getElementById('genericInchargePanel').style.display = hasInchargeEvents ? 'block' : 'none';
                 document.getElementById('facultyComingSoon').style.display    = (!hasAnySpecial && !hasInchargeEvents) ? 'block' : 'none';
@@ -11482,6 +11577,7 @@
                 const hasNukkadPost    = isShankar;
                 const hasHandwriting   = isKotrappa || isAnitha;
                 const hasTalentHunt    = isAnitha || isPooja;
+                const hasDanceAccess   = isAnitha || isPooja;
                 document.getElementById('chandanSocialPanel').style.display   = hasVlogAccess    ? 'block' : 'none';
                 document.getElementById('chandanPodcastPanel').style.display  = hasPodcastAccess ? 'block' : 'none';
                 document.getElementById('shankarBowPanel').style.display      = hasBowAccess     ? 'block' : 'none';
@@ -11490,7 +11586,8 @@
                 document.getElementById('nukkadPostPanel').style.display      = hasNukkadPost    ? 'block' : 'none';
                 document.getElementById('hwAttendancePanel').style.display    = hasHandwriting   ? 'block' : 'none';
                 document.getElementById('thAttendancePanel').style.display    = hasTalentHunt    ? 'block' : 'none';
-                const hasAnySpecial = hasVlogAccess || hasPodcastAccess || hasBowAccess || hasYtAdAccess || hasNukkadPre || hasNukkadPost || hasHandwriting || hasTalentHunt;
+                document.getElementById('danceInchargePanel').style.display   = hasDanceAccess   ? 'block' : 'none';
+                const hasAnySpecial = hasVlogAccess || hasPodcastAccess || hasBowAccess || hasYtAdAccess || hasNukkadPre || hasNukkadPost || hasHandwriting || hasTalentHunt || hasDanceAccess;
                 const hasInchargeEvents = (FACULTY_EVENT_MAP[faculty.name] || []).length > 0;
                 document.getElementById('genericInchargePanel').style.display = hasInchargeEvents ? 'block' : 'none';
                 document.getElementById('facultyComingSoon').style.display    = (!hasAnySpecial && !hasInchargeEvents) ? 'block' : 'none';
@@ -11505,6 +11602,7 @@
                 if (hasNukkadPost)    loadNukkadPostPanel();
                 if (hasHandwriting)   loadHwAttendancePanel();
                 if (hasTalentHunt)    loadThAttendancePanel();
+                if (hasDanceAccess)   loadDanceInchargePanel();
                 if (hasInchargeEvents) loadGenericInchargePanel(faculty.name);
 
             } catch(err) {
@@ -11524,7 +11622,7 @@
             const msg = document.getElementById('facultyLoginMsg');
             if (msg) msg.style.display = 'none';
             // Reset all functional panels
-            const resetIds = ['chandanSocialPanel','chandanPodcastPanel','shankarBowPanel','roopaSmitraYtAdPanel','nukkadPrePanel','nukkadPostPanel','hwAttendancePanel','thAttendancePanel','genericInchargePanel','facultyComingSoon'];
+            const resetIds = ['chandanSocialPanel','chandanPodcastPanel','shankarBowPanel','roopaSmitraYtAdPanel','nukkadPrePanel','nukkadPostPanel','hwAttendancePanel','thAttendancePanel','danceInchargePanel','genericInchargePanel','facultyComingSoon'];
             resetIds.forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
         }
 
@@ -12850,7 +12948,86 @@
                     return ca.localeCompare(cb);
                 });
 
-                listEl.innerHTML = cards.map((item, i) => {
+                // ── All Teams Overview table ─────────────────────────────
+                // Group by class
+                const overviewByClass = {};
+                cards.forEach(item => {
+                    const enr = item.enr || {};
+                    const sub = item.sub || {};
+                    const cls      = enr.classYear || enr.class || sub.classYear || '—';
+                    const name     = enr.memberName || enr.name || sub.memberName || '—';
+                    const topic    = enr.topic || sub.topic || '—';
+                    const subtopic = sub.subtopic || enr.podSubtopic || '';
+                    const hasSubmitted = !!sub.link;
+                    const rawApproval  = hasSubmitted ? (sub.approvalStatus || 'pending') : (enr.preApprovalStatus || 'pending');
+                    if (!overviewByClass[cls]) overviewByClass[cls] = [];
+                    overviewByClass[cls].push({ name, topic, subtopic, hasSubmitted, rawApproval });
+                });
+
+                const overviewRows = Object.keys(overviewByClass).sort().map((cls, ci) => {
+                    const participants = overviewByClass[cls];
+                    return participants.map((p, pi) => {
+                        const statusBg    = p.rawApproval === 'approved' ? '#d4edda' : p.rawApproval === 'rejected' ? '#f8d7da' : '#fff3cd';
+                        const statusColor = p.rawApproval === 'approved' ? '#155724' : p.rawApproval === 'rejected' ? '#721c24' : '#856404';
+                        const statusLabel = p.rawApproval === 'approved' ? '✅ Approved' : p.rawApproval === 'rejected' ? '❌ Rejected' : '⏳ Pending';
+                        const linkBadge   = p.hasSubmitted
+                            ? '<span style="background:#e3f2fd;color:#1565c0;border-radius:8px;padding:2px 8px;font-size:0.72em;font-weight:700">📤 Link Submitted</span>'
+                            : '<span style="background:#fff3cd;color:#856404;border-radius:8px;padding:2px 8px;font-size:0.72em;font-weight:700">⏳ Awaiting</span>';
+                        const subtopicCell = p.subtopic
+                            ? `<span style="background:#e3f2fd;color:#1565c0;border-radius:8px;padding:2px 8px;font-size:0.75em;font-weight:700">🔖 ${p.subtopic}</span>`
+                            : '<span style="color:#bbb;font-size:0.75em;font-style:italic">Not assigned</span>';
+                        const rowBg = ci % 2 === 0 ? '#fafafa' : 'white';
+                        return `<tr style="border-bottom:1px solid #f0f0f0;background:${rowBg}">
+                            ${pi === 0 ? `<td rowspan="${participants.length}" style="padding:9px 10px;font-size:0.82em;font-weight:700;color:#1b5e20;white-space:nowrap;border-right:2px solid #e8f5e9;vertical-align:middle">
+                                <span style="background:linear-gradient(135deg,#1db954,#191414);color:white;border-radius:10px;padding:2px 9px;font-size:0.75em;font-weight:700;display:inline-block;margin-bottom:3px">${cls}</span><br>
+                                <span style="font-size:0.72em;color:#888">${participants.length} participant${participants.length!==1?'s':''}</span>
+                            </td>` : ''}
+                            <td style="padding:8px 10px;font-size:0.82em;color:#333;font-weight:600">${p.name}</td>
+                            <td style="padding:8px 10px;font-size:0.78em;color:#1db954;font-weight:600">${p.topic}</td>
+                            <td style="padding:8px 10px;font-size:0.78em">${subtopicCell}</td>
+                            <td style="padding:8px 10px;text-align:center">${linkBadge}</td>
+                            <td style="padding:8px 10px;text-align:center">
+                                <span style="background:${statusBg};color:${statusColor};border-radius:8px;padding:3px 10px;font-size:0.75em;font-weight:700">${statusLabel}</span>
+                            </td>
+                        </tr>`;
+                    }).join('');
+                }).join('');
+
+                const totalEnrolled   = cards.length;
+                const totalSubmitted  = cards.filter(c => !!(c.sub && c.sub.link)).length;
+                const totalApproved   = cards.filter(c => {
+                    const sub = c.sub || {}, enr = c.enr || {};
+                    const raw = sub.link ? (sub.approvalStatus||'pending') : (enr.preApprovalStatus||'pending');
+                    return raw === 'approved';
+                }).length;
+
+                const overviewHtml = `
+                <div style="background:white;border-radius:12px;border:2px solid #a5d6a7;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.06);margin-bottom:20px">
+                    <div style="background:linear-gradient(135deg,#e8f5e9,#e3f2fd);padding:12px 16px;border-bottom:2px solid #a5d6a7;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+                        <span style="font-weight:700;color:#1b5e20;font-size:0.95em">📊 All Teams Overview — ${totalEnrolled} participant${totalEnrolled!==1?'s':''} enrolled</span>
+                        <div style="display:flex;gap:8px;flex-wrap:wrap">
+                            <span style="background:#e3f2fd;color:#1565c0;border-radius:10px;padding:3px 10px;font-size:0.78em;font-weight:700">📤 ${totalSubmitted} Submitted</span>
+                            <span style="background:#d4edda;color:#155724;border-radius:10px;padding:3px 10px;font-size:0.78em;font-weight:700">✅ ${totalApproved} Approved</span>
+                        </div>
+                    </div>
+                    <div style="overflow-x:auto">
+                    <table style="width:100%;border-collapse:collapse;min-width:500px">
+                        <thead>
+                            <tr style="background:#f1f8f1">
+                                <th style="padding:8px 10px;font-size:0.75em;color:#1b5e20;text-align:left;font-weight:700;white-space:nowrap;border-right:2px solid #e8f5e9">Class</th>
+                                <th style="padding:8px 10px;font-size:0.75em;color:#1b5e20;text-align:left;font-weight:700">Participant</th>
+                                <th style="padding:8px 10px;font-size:0.75em;color:#1b5e20;text-align:left;font-weight:700">Topic</th>
+                                <th style="padding:8px 10px;font-size:0.75em;color:#1b5e20;text-align:left;font-weight:700">🔖 Sub-topic</th>
+                                <th style="padding:8px 10px;font-size:0.75em;color:#1b5e20;text-align:center;font-weight:700">Link</th>
+                                <th style="padding:8px 10px;font-size:0.75em;color:#1b5e20;text-align:center;font-weight:700">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>${overviewRows || '<tr><td colspan="6" style="text-align:center;padding:20px;color:#aaa">No enrollments yet</td></tr>'}</tbody>
+                    </table>
+                    </div>
+                </div>`;
+
+                listEl.innerHTML = overviewHtml + '<div style="margin-top:8px;margin-bottom:8px;font-weight:700;color:#555;font-size:0.88em">🎙️ Individual Cards — Sub-topic & Approval</div>' + cards.map((item, i) => {
                     const enr = item.enr || {};
                     const sub = item.sub || {};
                     const entryId    = sub.id || '';
@@ -13240,8 +13417,23 @@
                     return teams;
                 }
 
-                listEl.innerHTML = Object.entries(byClass).sort(([a],[b]) => a.localeCompare(b)).map(([cls, members]) => {
+                // ── Assign globally unique team numbers across all classes ──
+                let globalTeamCounter = 0;
+                const sortedClassEntries = Object.entries(byClass).sort(([a],[b]) => a.localeCompare(b));
+                const classTeamsMap = {};
+                sortedClassEntries.forEach(([cls, members]) => {
                     const teams = groupIntoTeams(members);
+                    teams.forEach(team => {
+                        if (!team.orphan) {
+                            globalTeamCounter++;
+                            team.globalTeamNum = globalTeamCounter;
+                        }
+                    });
+                    classTeamsMap[cls] = teams;
+                });
+
+                listEl.innerHTML = sortedClassEntries.map(([cls, members]) => {
+                    const teams = classTeamsMap[cls];
                     const clsPresent = members.filter(m => m._attendance.status === 'present').length;
                     const clsTotal   = members.length;
 
@@ -13249,8 +13441,8 @@
                         const headerLabel = team.orphan
                             ? '⚠️ Unmatched Member'
                             : team.isSolo
-                                ? `👤 Individual Entry`
-                                : `👥 Team ${team.teamNum}`;
+                                ? `👤 Team ${team.globalTeamNum} (Individual)`
+                                : `👥 Team ${team.globalTeamNum}`;
                         const headerBg = team.orphan ? '#fce4ec' : team.isSolo ? '#e8f5e9' : '#e3f2fd';
                         const headerColor = team.orphan ? '#c62828' : team.isSolo ? '#2e7d32' : '#1565c0';
 
@@ -15394,9 +15586,200 @@
         // END NUKKAD NATAK
         // ══════════════════════════════════════════════════════════════
 
+        // ══════════════════════════════════════════════════════════════
+        // GROUP DANCE — CR STORY SUBMISSION
+        // ══════════════════════════════════════════════════════════════
+
+        async function loadCRDancePanel() {
+            const cls = crClass;
+            if (!cls) return;
+            // Update class name in banner
+            const nameEl = document.getElementById('dancecrClassName');
+            if (nameEl) nameEl.textContent = cls;
+            // Load enrolled participants
+            const listEl = document.getElementById('danceEnrolledList');
+            if (listEl) listEl.innerHTML = 'Loading…';
+            try {
+                const snap = await db.ref('youthfest-enrollments').once('value');
+                const members = [];
+                if (snap.exists()) {
+                    snap.forEach(ch => {
+                        const d = ch.val();
+                        if ((d.event || '').toLowerCase().replace(/\s/g,'') === 'groupdance' &&
+                            (d.classYear || d.class || '') === cls) {
+                            members.push(d);
+                        }
+                    });
+                }
+                if (listEl) {
+                    if (members.length === 0) {
+                        listEl.innerHTML = '<span style="color:#aaa;font-style:italic">No participants enrolled for Group Dance from your class yet.</span>';
+                    } else {
+                        listEl.innerHTML = members.map((m, i) => {
+                            const role = m.role ? ' <span style="background:#f3e5f5;color:#6a1b9a;padding:1px 7px;border-radius:8px;font-size:0.75em;font-weight:700">' + m.role + '</span>' : '';
+                            return '<div style="display:inline-flex;align-items:center;gap:4px;background:white;border:1.5px solid #f48fb1;border-radius:20px;padding:4px 12px;margin:3px;font-size:0.85em;font-weight:600;color:#880e4f">'
+                                + '💃 ' + (m.name || '—') + role + '</div>';
+                        }).join('');
+                    }
+                }
+                // Load saved story if any
+                const clsKey = cls.replace(/[.\[\]#$\/\s]/g, '_');
+                const storySnap = await db.ref('groupDance/' + clsKey).once('value');
+                const story = storySnap.val();
+                if (story && story.title) {
+                    // Show saved display
+                    document.getElementById('danceTitle').value   = story.title   || '';
+                    document.getElementById('danceSummary').value = story.summary || '';
+                    showDanceSaved(story);
+                } else {
+                    document.getElementById('danceSavedDisplay').style.display = 'none';
+                    document.getElementById('danceSubmitBtn').style.display = 'inline-block';
+                    document.getElementById('danceTitle').disabled   = false;
+                    document.getElementById('danceSummary').disabled = false;
+                }
+            } catch(err) {
+                if (listEl) listEl.innerHTML = '<span style="color:#c62828">Error loading: ' + err.message + '</span>';
+            }
+        }
+
+        function showDanceSaved(story) {
+            document.getElementById('danceSavedDisplay').style.display = 'block';
+            document.getElementById('danceSavedTitle').textContent   = story.title   || '';
+            document.getElementById('danceSavedSummary').textContent = story.summary || '';
+            const at = story.savedAt ? new Date(story.savedAt).toLocaleString('en-IN', {day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}) : '';
+            document.getElementById('danceSavedAt').textContent = at ? '💾 Saved on ' + at + (story.savedBy ? ' by ' + story.savedBy : '') : '';
+            // Lock inputs until Edit is clicked
+            document.getElementById('danceTitle').disabled   = true;
+            document.getElementById('danceSummary').disabled = true;
+            document.getElementById('danceSubmitBtn').style.display = 'none';
+        }
+
+        function enableDanceEdit() {
+            document.getElementById('danceSavedDisplay').style.display = 'none';
+            document.getElementById('danceTitle').disabled   = false;
+            document.getElementById('danceSummary').disabled = false;
+            document.getElementById('danceSubmitBtn').style.display = 'inline-block';
+            document.getElementById('danceTitle').focus();
+        }
+
+        async function saveDanceStory() {
+            const cls = crClass;
+            if (!cls) { alert('Class not detected. Please re-login.'); return; }
+            const title   = (document.getElementById('danceTitle').value   || '').trim();
+            const summary = (document.getElementById('danceSummary').value || '').trim();
+            const msgEl   = document.getElementById('danceSubmitMsg');
+            if (!title)   { showDanceMsg('❌ Please enter a dance performance title.', false); return; }
+            if (!summary) { showDanceMsg('❌ Please enter a story summary.', false); return; }
+
+            const btn = document.getElementById('danceSubmitBtn');
+            btn.disabled = true;
+            btn.textContent = '⏳ Saving…';
+            try {
+                const clsKey = cls.replace(/[.\[\]#$\/\s]/g, '_');
+                const story = {
+                    title      : title,
+                    summary    : summary,
+                    classYear  : cls,
+                    savedAt    : new Date().toISOString(),
+                    savedBy    : cls
+                };
+                await db.ref('groupDance/' + clsKey).set(story);
+                showDanceMsg('✅ Dance story saved! Visible to jury and in-charge.', true);
+                showDanceSaved(story);
+            } catch(err) {
+                showDanceMsg('❌ Error: ' + err.message, false);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '💾 Save Dance Story';
+            }
+        }
+
+        function showDanceMsg(msg, ok) {
+            const el = document.getElementById('danceSubmitMsg');
+            el.style.display    = 'block';
+            el.style.background = ok ? '#d4edda' : '#f8d7da';
+            el.style.color      = ok ? '#155724' : '#721c24';
+            el.textContent      = msg;
+            if (ok) setTimeout(() => { el.style.display = 'none'; }, 4000);
+        }
+
+        function clearDanceForm() {
+            document.getElementById('danceTitle').value   = '';
+            document.getElementById('danceSummary').value = '';
+            document.getElementById('danceSubmitMsg').style.display = 'none';
+            document.getElementById('danceTitle').disabled   = false;
+            document.getElementById('danceSummary').disabled = false;
+            document.getElementById('danceSubmitBtn').style.display = 'inline-block';
+            document.getElementById('danceSavedDisplay').style.display = 'none';
+        }
+
+        // ── Faculty in-charge panel for Group Dance ──
+        async function loadDanceInchargePanel() {
+            const listEl = document.getElementById('danceInchargeList');
+            if (!listEl) return;
+            listEl.innerHTML = '<div style="text-align:center;color:#aaa;padding:30px">Loading…</div>';
+            try {
+                const [enrollSnap, storySnap] = await Promise.all([
+                    db.ref('youthfest-enrollments').once('value'),
+                    db.ref('groupDance').once('value')
+                ]);
+                // Gather all Group Dance enrollments grouped by class
+                const byClass = {};
+                if (enrollSnap.exists()) {
+                    enrollSnap.forEach(ch => {
+                        const d = ch.val();
+                        if ((d.event || '').toLowerCase().replace(/\s/g,'') !== 'groupdance') return;
+                        const cls = d.classYear || d.class || 'Unknown';
+                        if (!byClass[cls]) byClass[cls] = [];
+                        byClass[cls].push(d);
+                    });
+                }
+                const stories = storySnap.val() || {};
+
+                if (!Object.keys(byClass).length) {
+                    listEl.innerHTML = '<div style="text-align:center;color:#aaa;padding:30px;font-size:0.9em">No Group Dance enrollments found yet.</div>';
+                    return;
+                }
+
+                listEl.innerHTML = Object.entries(byClass).sort(([a],[b]) => a.localeCompare(b)).map(([cls, members]) => {
+                    const clsKey = cls.replace(/[.\[\]#$\/\s]/g, '_');
+                    const story  = stories[clsKey] || {};
+                    const hasStory = !!story.title;
+                    const savedAt = story.savedAt ? new Date(story.savedAt).toLocaleString('en-IN',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}) : '';
+
+                    const memberBadges = members.map(m => {
+                        const role = m.role ? ' <span style="color:#9c27b0;font-size:0.72em;font-weight:600">(' + m.role + ')</span>' : '';
+                        return '<span style="display:inline-flex;align-items:center;gap:3px;background:#fce4ec;border:1.5px solid #f48fb1;border-radius:16px;padding:3px 10px;margin:2px;font-size:0.82em;font-weight:600;color:#880e4f">💃 ' + (m.name||'—') + role + '</span>';
+                    }).join('');
+
+                    return `<div style="background:white;border-radius:12px;border:2px solid ${hasStory ? '#f48fb1' : '#ffcdd2'};margin-bottom:10px;overflow:hidden">
+                        <div style="background:linear-gradient(135deg,${hasStory ? '#ad1457,#e91e63' : '#e53935,#ef9a9a'});padding:10px 16px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
+                            <span style="color:white;font-weight:700;font-size:0.95em">💃 ${cls}</span>
+                            <span style="background:rgba(255,255,255,0.25);color:white;padding:2px 12px;border-radius:12px;font-size:0.8em;font-weight:700">${members.length} Performer${members.length !== 1 ? 's' : ''}</span>
+                        </div>
+                        <div style="padding:12px 14px">
+                            <!-- Performers -->
+                            <div style="margin-bottom:10px">${memberBadges}</div>
+                            <!-- Story -->
+                            ${hasStory ? `
+                            <div style="background:#fce4ec;border-left:4px solid #e91e63;border-radius:8px;padding:12px 14px">
+                                <div style="font-weight:700;color:#880e4f;font-size:0.9em;margin-bottom:4px">📖 ${story.title}</div>
+                                <div style="font-size:0.85em;color:#555;line-height:1.6">${story.summary}</div>
+                                ${savedAt ? '<div style="font-size:0.72em;color:#aaa;margin-top:6px">💾 ' + savedAt + '</div>' : ''}
+                            </div>` : `
+                            <div style="background:#fff8e1;border:2px dashed #ffe082;border-radius:8px;padding:12px;text-align:center;font-size:0.85em;color:#856404">
+                                ⏳ Story not submitted yet
+                            </div>`}
+                        </div>
+                    </div>`;
+                }).join('');
+            } catch(err) {
+                listEl.innerHTML = '<div style="padding:20px;color:#c62828">❌ Error: ' + err.message + '</div>';
+            }
+        }
 
         // ══════════════════════════════════════════════════════════════
-        // VLOG: CR VIEW — check event active before showing form
+        // END GROUP DANCE
         // ══════════════════════════════════════════════════════════════
         async function checkVlogEventActive() {
             const snap = await db.ref('vlogSettings/eventActive').once('value');
@@ -16752,6 +17135,7 @@
                 const liveCfgMT = liveCfg;
                 const membersPerTeam = liveCfgMT.count || 2;
                 let seq = 1;
+                let globalMTTeamNum = 0; // global counter across all classes
 
                 let mtSeqIdx = 0;
                 enrolledClasses.forEach(cls => {
@@ -16771,10 +17155,11 @@
 
                     const teamNums = Object.keys(teamsMap).sort((a,b) => Number(a)-Number(b));
                     teamNums.forEach((tNum, tIdx) => {
+                        globalMTTeamNum++;
                         const teamMembers = teamsMap[tNum];
                         const rowKey = safeKey + '__t' + (tIdx + 1);
                         // Show ONLY alias + team number — NEVER real class name
-                        const teamCode = alias + ' — Team ' + (tIdx + 1);
+                        const teamCode = isBOW ? 'Team ' + globalMTTeamNum : alias + ' — Team ' + (tIdx + 1);
                         const teamTopic = teamMembers[0].topic || '';
                         const vlogKey   = cls + '__' + teamTopic;
                         const vlogEntry = vlogData[vlogKey] || null;
@@ -16804,14 +17189,17 @@
                 // -- CLASS-BASED EVENT --------------------------------------------
                 const isNukkad = (juryEvent === 'Nukkad Natak');
                 const isYTAd   = (juryEvent === 'YouTube Advertisement');
+                const isDance  = (juryEvent === 'Group Dance');
 
                 // For Nukkad: we'll load ytVerified bonus async after table renders
                 // For YT Ad: show social score, ad title, product
+                // For Dance: show story title + summary
 
                 html += '<div class="table-wrapper"><div class="marks-table"><table><thead><tr>';
                 html += '<th>#</th><th>Class Code</th>';
                 if (isNukkad) html += '<th>Cause/Theme</th><th>📺 YouTube</th><th>Bonus pts</th>';
                 else if (isYTAd) html += '<th>Ad Title</th><th>Product</th><th>Social Score</th>';
+                else if (isDance) html += '<th>📖 Dance Story Title</th><th>📝 Story Summary</th><th>👥 Performers</th>';
                 else html += '<th>Theme/Topic</th>';
                 criteria.forEach(crit => { html += '<th>' + crit + '<br><small>(10 marks)</small></th>'; });
                 html += '<th>Total</th></tr></thead><tbody>';
@@ -16840,6 +17228,13 @@
                         html += '<td><small>' + adTitle + '</small></td>';
                         html += '<td><small>' + product + '</small></td>';
                         html += '<td style="font-weight:700;color:' + (socialSc>0?'#e91e63':'#aaa') + '" id="ytad-social-' + safeKey + '" data-social="' + socialSc + '">' + (socialSc>0?socialSc:'—') + '</td>';
+                    } else if (isDance) {
+                        // Dance story — loaded async below
+                        html += '<td id="dance-title-' + safeKey + '"><small style="color:#aaa">Loading…</small></td>';
+                        html += '<td id="dance-summary-' + safeKey + '"><small style="color:#aaa">Loading…</small></td>';
+                        // Performers list
+                        const performers = classEnrollments.map(e => e.name || '—').join(', ');
+                        html += '<td><small style="color:#555">' + (performers || '—') + '</small></td>';
                     } else {
                         const theme = getDet(firstEnr) || '—';
                         html += '<td><small>' + theme + '</small></td>';
@@ -16908,6 +17303,29 @@
                                 ytAdCell.dataset.social = socialPct;
                             }
                             if (totalCell) totalCell.dataset.social = socialPct;
+                        });
+                    }).catch(() => {});
+                }
+
+                // -- Async: load Group Dance stories from groupDance/ ----------
+                if (isDance) {
+                    db.ref('groupDance').once('value').then(danceSnap => {
+                        const danceData = danceSnap.exists() ? danceSnap.val() : {};
+                        enrolledClasses.forEach(cls => {
+                            const safeKey = cls.replace(/[.\[\]#$\/\s]/g,'_');
+                            const story   = danceData[safeKey] || {};
+                            const titleCell   = document.getElementById('dance-title-' + safeKey);
+                            const summaryCell = document.getElementById('dance-summary-' + safeKey);
+                            if (titleCell) {
+                                titleCell.innerHTML = story.title
+                                    ? '<strong style="color:#880e4f">' + story.title + '</strong>'
+                                    : '<span style="color:#aaa;font-size:0.8em">Not submitted</span>';
+                            }
+                            if (summaryCell) {
+                                summaryCell.innerHTML = story.summary
+                                    ? '<span style="font-size:0.82em;color:#333;line-height:1.5">' + story.summary + '</span>'
+                                    : '<span style="color:#aaa;font-size:0.8em">Not submitted</span>';
+                            }
                         });
                     }).catch(() => {});
                 }
@@ -18267,6 +18685,7 @@
                     // ════════════════════════════════════════════════════════════════
                     } else if (eventType === 'multiteam') {
                         const isVlog = event === 'Vlog';
+                        const isBOW  = event === 'Best out of Waste';
                         const membersPerTeam = liveCfg.count || 2;
                         const vlogSocialData = extraData || {};
 
@@ -18295,6 +18714,7 @@
                              + '</tr></thead><tbody>';
 
                         let seq = 1;
+                        let globalSATeamNum = 0; // global counter across all classes for BOW
                         orderedClasses.forEach(cls => {
                             const clsKey   = sk(cls);
                             const alias    = getMonAlias(cls);
@@ -18313,9 +18733,10 @@
 
                             const teamNums = Object.keys(teamsMap).sort((a,b) => Number(a)-Number(b));
                             teamNums.forEach((tNum, tIdx) => {
+                                globalSATeamNum++;
                                 const teamMembers = teamsMap[tNum];
                                 const rowKey      = clsKey + '__t' + (tIdx + 1);
-                                const teamCode    = alias + ' — Team ' + (tIdx + 1);
+                                const teamCode    = isBOW ? 'Team ' + globalSATeamNum : alias + ' — Team ' + (tIdx + 1);
                                 const teamTopic   = teamMembers[0].topic || '';
 
                                 let socialScore = 0;
@@ -18382,6 +18803,7 @@
                     } else {
                         const isNukkad = event === 'Nukkad Natak';
                         const isYTAd   = event === 'YouTube Advertisement';
+                        const isDance  = event === 'Group Dance';
 
                         html += '<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12.5px">'
                             + '<thead><tr style="background:linear-gradient(135deg,#6a1b9a,#c44569);color:white">'
@@ -18396,6 +18818,10 @@
                             html += '<th style="padding:9px 8px;text-align:left">Ad Title</th>'
                                   + '<th style="padding:9px 8px;text-align:left">Product</th>'
                                   + '<th style="padding:9px 8px;text-align:center;background:rgba(233,30,99,.25)">Social Score</th>';
+                        } else if (isDance) {
+                            html += '<th style="padding:9px 8px;text-align:left">📖 Story Title</th>'
+                                  + '<th style="padding:9px 8px;text-align:left">📝 Summary</th>'
+                                  + '<th style="padding:9px 8px;text-align:left">👥 Performers</th>';
                         } else {
                             html += '<th style="padding:9px 8px;text-align:left">Theme/Topic</th>';
                         }
@@ -18409,6 +18835,7 @@
 
                         const nukkadData = extraData ? (extraData.nukkad || {}) : {};
                         const ytAdData   = extraData ? (extraData.ytAd   || {}) : {};
+                        const danceData  = extraData ? (extraData.dance  || {}) : {};
 
                         orderedClasses.forEach((cls, idx) => {
                             const clsKey   = sk(cls);
@@ -18430,7 +18857,9 @@
                                 ? ('Ad: ' + (firstEnr.adTitle || '—') + ' · Product: ' + (firstEnr.product || '—'))
                                 : isNukkad
                                     ? ('Theme: ' + (firstEnr.cause || firstEnr.topic || '—'))
-                                    : (firstEnr.topic ? 'Topic: ' + firstEnr.topic : '');
+                                    : isDance
+                                        ? ('Story: ' + (danceData[clsKey] ? (danceData[clsKey].title || 'No title') : 'Not submitted'))
+                                        : (firstEnr.topic ? 'Topic: ' + firstEnr.topic : '');
 
                             html += '<tr style="background:' + bg + ';border-bottom:1px solid #ede7f6">';
                             html += '<td style="padding:7px 6px;text-align:center;color:#888;font-size:11px">' + (idx+1) + '</td>';
@@ -18461,6 +18890,12 @@
                                 html += '<td style="padding:7px 8px"><small style="color:#555">' + adTitle + '</small></td>';
                                 html += '<td style="padding:7px 8px"><small style="color:#555">' + product + '</small></td>';
                                 html += '<td style="padding:7px 8px;text-align:center;font-weight:700;color:' + (socialPct > 0 ? '#e91e63' : '#aaa') + '">' + (socialPct > 0 ? socialPct : '—') + '</td>';
+                            } else if (isDance) {
+                                const dd = danceData[clsKey] || {};
+                                const performers = classEnr.map(e => e.name || '—').join(', ');
+                                html += '<td style="padding:7px 8px"><strong style="color:#880e4f;font-size:12px">' + (dd.title || '<span style="color:#aaa;font-weight:400;font-style:italic">Not submitted</span>') + '</strong></td>';
+                                html += '<td style="padding:7px 8px"><small style="color:#555;line-height:1.5">' + (dd.summary || '<span style="color:#aaa;font-style:italic">Not submitted</span>') + '</small></td>';
+                                html += '<td style="padding:7px 8px"><small style="color:#555">' + (performers || '—') + '</small></td>';
                             } else {
                                 const theme = firstEnr.topic || firstEnr.cause || firstEnr.product || '—';
                                 html += '<td style="padding:7px 8px"><small style="color:#555">' + theme + '</small></td>';
@@ -18520,6 +18955,11 @@
                             const snap = await db.ref('vlogChallenge').once('value');
                             extraData = snap.exists() ? snap.val() : {};
                         } catch(e) { extraData = {}; }
+                    } else if (event === 'Group Dance') {
+                        try {
+                            const snap = await db.ref('groupDance').once('value');
+                            extraData = { dance: snap.exists() ? snap.val() : {} };
+                        } catch(e) { extraData = { dance: {} }; }
                     }
 
                     // -- Subscribe to real-time jury marks ------------------------
@@ -32400,28 +32840,38 @@ Proceed?`)) return;
         <!-- ============================================ -->
         <!-- REGISTRATION + PAYMENT APPROVAL SECTION     -->
         <!-- ============================================ -->
-        <div style="background:linear-gradient(135deg,#fce4ec 0%,#f8bbd0 100%);padding:25px;border-radius:12px;border:2px solid #e91e63;margin-bottom:24px;">
-            <h3 style="color:#880e4f;margin-bottom:14px;font-size:1.15em;">💳 Registration &amp; Payment Approval</h3>
-            <p style="color:#4a0020;margin-bottom:12px;line-height:1.7;">
-                <strong>Last date for registration</strong> with one-time Refundable amount 
-                <span style="color:#c44569;font-weight:bold;font-size:1.1em;">₹1,500/-</span> 
-                on or before 
-                <span style="color:#c44569;font-weight:bold;">23rd February, Monday within 3:30 PM</span>.
-            </p>
-            <div style="background:white;border-radius:8px;padding:16px;border-left:5px solid #e91e63;">
-                <p style="margin:0 0 10px 0;color:#333;font-weight:600;">📋 Approval Process:</p>
-                <ol style="margin:0;padding-left:20px;color:#555;line-height:1.9;">
-                    <li>Student pays ₹1,500/- to the event in-charge (<strong>Lalitha S K</strong> or <strong>Priyanka V</strong>).</li>
-                    <li>In-charge verifies receipt of payment and gives <span style="color:#1b5e20;font-weight:700">✅ Approval</span>.</li>
-                    <li>Only approved students may proceed to participate in events.</li>
-                    <li>Amount is fully refundable upon meeting all event obligations.</li>
-                </ol>
+        <div style="border:2px solid #e91e63;border-radius:12px;margin-bottom:24px;overflow:hidden;">
+            <!-- Accordion header -->
+            <div onclick="toggleLoginAccordion('accRegPayment','arrRegPayment')" style="display:flex;justify-content:space-between;align-items:center;padding:14px 20px;background:linear-gradient(135deg,#fce4ec 0%,#f8bbd0 100%);cursor:pointer;user-select:none;">
+                <div style="display:flex;align-items:center;gap:10px;">
+                    <span style="font-size:1.1em;">💳</span>
+                    <strong style="font-size:0.95em;color:#880e4f;">Registration &amp; Payment Approval</strong>
+                </div>
+                <span id="arrRegPayment" style="font-size:1.1em;color:#e91e63;transition:transform 0.2s;display:inline-block;">▶</span>
             </div>
-            <div style="margin-top:14px;background:#fff8e1;border-radius:8px;padding:12px 16px;border-left:4px solid #ffa000;">
-                <p style="margin:0;color:#5d4037;font-size:.9em;">
-                    ⚠️ <strong>Note:</strong> Registration without payment confirmation from the in-charge will <strong>not be accepted</strong>. 
-                    Please ensure you collect a payment acknowledgement from <strong>Lalitha S K</strong> or <strong>Priyanka V</strong>.
+            <!-- Accordion body -->
+            <div id="accRegPayment" style="display:none;padding:20px 25px;background:white;border-top:1.5px solid #f48fb1;">
+                <p style="color:#4a0020;margin-bottom:12px;line-height:1.7;">
+                    <strong>Last date for registration</strong> with one-time Refundable amount 
+                    <span style="color:#c44569;font-weight:bold;font-size:1.1em;">₹1,500/-</span> 
+                    on or before 
+                    <span style="color:#c44569;font-weight:bold;">23rd February, Monday within 3:30 PM</span>.
                 </p>
+                <div style="background:#fce4ec;border-radius:8px;padding:16px;border-left:5px solid #e91e63;">
+                    <p style="margin:0 0 10px 0;color:#333;font-weight:600;">📋 Approval Process:</p>
+                    <ol style="margin:0;padding-left:20px;color:#555;line-height:1.9;">
+                        <li>Student pays ₹1,500/- to the event in-charge (<strong>Lalitha S K</strong> or <strong>Priyanka V</strong>).</li>
+                        <li>In-charge verifies receipt of payment and gives <span style="color:#1b5e20;font-weight:700">✅ Approval</span>.</li>
+                        <li>Only approved students may proceed to participate in events.</li>
+                        <li>Amount is fully refundable upon meeting all event obligations.</li>
+                    </ol>
+                </div>
+                <div style="margin-top:14px;background:#fff8e1;border-radius:8px;padding:12px 16px;border-left:4px solid #ffa000;">
+                    <p style="margin:0;color:#5d4037;font-size:.9em;">
+                        ⚠️ <strong>Note:</strong> Registration without payment confirmation from the in-charge will <strong>not be accepted</strong>. 
+                        Please ensure you collect a payment acknowledgement from <strong>Lalitha S K</strong> or <strong>Priyanka V</strong>.
+                    </p>
+                </div>
             </div>
         </div>
 
@@ -32833,6 +33283,16 @@ v4.62 | Feb 27 2026 15:35 IST | Fixed vlog team grouping to strictly 2 members p
 v4.63 | Feb 27 2026 15:55 IST | Vlog topics updated to Travel/Food/Event/Daily Life; Chandan panel now shows all classes with vlog enrollments
 v4.64 | Feb 27 2026 16:10 IST | Vlog topic emojis added in dropdown options and enrollment form cards
 v4.65 | Feb 27 2026 16:25 IST | Fixed class name normalization so all enrollment variants merge into correct team buckets
+v4.66 | Feb 27 2026 16:50 IST | Registration & Payment Approval segment added inside General Rules accordion under point 1
+v4.67 | Feb 27 2026 14:09 IST | Registration & Payment Approval card converted to accordion with ▶/▼ toggle
+v4.68 | Feb 27 2026 14:09 IST | All Teams Overview table added to Chandan GB / Hemavathi D podcast panel
+v4.69 | Feb 27 2026 14:09 IST | Sub-topic column added to podcast All Teams Overview table
+v4.70 | Feb 27 2026 14:31 IST | Removed redundant bottom Refresh All Teams button from Vlog panel
+v4.71 | Feb 27 2026 14:31 IST | BOW team numbers now globally unique across all classes (Team 1, 2, 3… not restarting per class)
+v4.72 | Feb 27 2026 14:31 IST | BOW jury sheet & SA live monitor now show global team numbers (Team 1, 2, 3…) not per-class numbers
+v4.73 | Feb 27 2026 14:31 IST | Fixed missing isBOW variable in SA live monitor causing loading freeze
+v4.74 | Feb 27 2026 14:31 IST | Fixed missing membersPerTeam variable in SA live monitor multiteam block
+v4.75 | Feb 27 2026 15:20 IST | Added Group Dance story tab in CR; story visible to jury, SA live monitor, and Anitha N/Pooja C incharge panel
 -->
     <footer style="background: white; border-radius: 12px; padding: 25px; margin-top: 30px; box-shadow: 0 4px 20px rgba(0,0,0,0.1);">
         <div style="text-align: center;">
@@ -32852,7 +33312,7 @@ v4.65 | Feb 27 2026 16:25 IST | Fixed class name normalization so all enrollment
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;" id="devTriggerVersion">
-                <strong>Version:</strong> 4.65 — Fixed class name normalization so variant spellings merge into correct team buckets | <strong>Last Updated:</strong> February 27, 2026 — 16:25 IST</p>
+                <strong>Version:</strong> 4.75 — Group Dance story tab in CR; visible to jury, SA monitor & incharge | <strong>Last Updated:</strong> February 27, 2026 — 15:20 IST</p>
             <!-- ============================================ -->
             
             <p style="color: #c44569; font-size: 0.85em; font-weight: 600; margin-bottom: 8px;">
