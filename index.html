@@ -6507,7 +6507,31 @@
                     <div id="registeredDevicesCount" style="color:#ce93d8;font-size:1.8em;font-weight:800;line-height:1">—</div>
                     <div style="color:rgba(255,255,255,0.65);font-size:13px">registered devices</div>
                 </div>
-                <button onclick="refreshDeviceCount()" style="margin-left:auto;background:rgba(179,136,255,0.2);color:#ce93d8;border:2px solid rgba(179,136,255,0.4);padding:8px 16px;border-radius:20px;cursor:pointer;font-size:0.85em;font-weight:700">🔄 Refresh Count</button>
+                <button onclick="refreshDeviceCount()" style="margin-left:auto;background:rgba(179,136,255,0.2);color:#ce93d8;border:2px solid rgba(179,136,255,0.4);padding:8px 16px;border-radius:20px;cursor:pointer;font-size:0.85em;font-weight:700">🔄 Refresh</button>
+            </div>
+
+            <!-- Registered Devices Inline List — collapsible -->
+            <div style="background:#fff;border-radius:14px;box-shadow:0 4px 15px rgba(0,0,0,0.15);margin-bottom:20px;overflow:hidden">
+                <!-- Header / toggle -->
+                <div onclick="toggleDevicesPanel()" style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;cursor:pointer;user-select:none">
+                    <h3 style="color:#6a1b9a;font-size:1em;margin:0">📋 Registered Devices <span id="devicesCountBadge" style="background:rgba(106,27,154,0.12);color:#6a1b9a;font-size:11px;padding:2px 8px;border-radius:10px;margin-left:6px">—</span></h3>
+                    <div style="display:flex;align-items:center;gap:8px">
+                        <button onclick="event.stopPropagation();loadAllDevices()" style="background:rgba(106,27,154,0.1);color:#6a1b9a;border:2px solid rgba(106,27,154,0.25);padding:4px 10px;border-radius:14px;cursor:pointer;font-size:11px;font-weight:700">🔄</button>
+                        <span id="devicesToggleArrow" style="color:#6a1b9a;font-size:16px;transition:transform 0.2s">▶</span>
+                    </div>
+                </div>
+                <!-- Collapsible body -->
+                <div id="devicesPanel" style="display:none;padding:0 20px 16px">
+                    <!-- Filter bar -->
+                    <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px">
+                        <button onclick="filterDevices('all')" id="devFilter_all" class="devFilterBtn activeFilter" style="padding:4px 12px;border-radius:14px;border:1.5px solid #6a1b9a;background:#6a1b9a;color:#fff;font-size:11px;font-weight:700;cursor:pointer">All</button>
+                        <button onclick="filterDevices('guest')" id="devFilter_guest" class="devFilterBtn" style="padding:4px 12px;border-radius:14px;border:1.5px solid #aaa;background:#fff;color:#666;font-size:11px;font-weight:700;cursor:pointer">👤 Guest (no login)</button>
+                        <div id="devFilterClassButtons" style="display:contents"></div>
+                    </div>
+                    <div id="allDevicesInlineList">
+                        <p style="color:#aaa;font-size:13px;text-align:center;padding:10px 0">Loading…</p>
+                    </div>
+                </div>
             </div>
 
             <!-- Compose notification -->
@@ -6531,6 +6555,26 @@
                     ⚙️ <strong>How it works:</strong> This sends via your <code style="background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px">fcm-push</code> Cloudflare Worker → FCM V1 API → all registered devices.<br>
                     Make sure your Cloudflare Worker URL is set correctly in the code (<code style="background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px">FCM_WORKER_URL</code>).
                 </p>
+            </div>
+
+            <!-- Notification History Inline -->
+            <div style="background:#fff;border-radius:14px;padding:24px;box-shadow:0 4px 15px rgba(0,0,0,0.15);margin-top:20px">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+                    <h3 style="color:#6a1b9a;font-size:1.1em;margin:0">📜 Notification History</h3>
+                    <button onclick="loadPushLogs()" style="background:rgba(106,27,154,0.1);color:#6a1b9a;border:2px solid rgba(106,27,154,0.3);padding:6px 14px;border-radius:20px;cursor:pointer;font-size:0.8em;font-weight:700">🔄 Refresh</button>
+                </div>
+                <div id="pushLogsContainer">
+                    <p style="color:#aaa;font-size:13px;text-align:center;padding:20px 0">Loading…</p>
+                </div>
+            </div>
+
+            <!-- Seen Devices Modal -->
+            <div id="seenDevicesModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);z-index:9999;align-items:center;justify-content:center">
+                <div style="background:#fff;border-radius:16px;padding:28px;max-width:480px;width:90%;max-height:80vh;overflow-y:auto;position:relative">
+                    <button onclick="document.getElementById('seenDevicesModal').style.display='none'" style="position:absolute;top:12px;right:14px;background:none;border:none;font-size:20px;cursor:pointer;color:#999">✕</button>
+                    <h3 style="color:#6a1b9a;margin-bottom:16px;font-size:1em" id="seenModalTitle">👁 Seen / Opened By</h3>
+                    <div id="seenModalBody"></div>
+                </div>
             </div>
         </div>
 
@@ -33627,6 +33671,8 @@ v4.78 | Feb 27 2026 16:45 IST | Fixed Cloudflare Worker fetch to use POST so hea
 v4.79 | Feb 27 2026 17:00 IST | Cloudinary stats worker fetch reverted to GET; worker template updated with CORS OPTIONS; warning added that stats worker must be separate from email worker
 v4.80 | Feb 27 2026 17:05 IST | Event schedule column order fixed: Start Date, End Date, Start Time, End Time
 v4.87 | Feb 28 2026 10:50 IST | Firebase Presence (Live Now panel) + PWA Push Notifications (SA send panel + student banner) added
+v4.90 | Feb 28 2026 14:37 IST | Push panel redesigned: inline registered devices list + inline notification history with seen/opened tracking; popups removed
+v4.91 | Feb 28 2026 14:56 IST | Registered Devices panel now collapsible (hidden by default) with filter by class / guest
 -->
     <!-- ============================================================ -->
     <!-- 🟢 FIREBASE PRESENCE + 📣 PUSH NOTIFICATIONS SCRIPTS       -->
@@ -33832,6 +33878,8 @@ v4.87 | Feb 28 2026 10:50 IST | Firebase Presence (Live Now panel) + PWA Push No
     // ═══════════════════════════════════════════════════════════════
     async function initPushNotifPanel() {
         await refreshDeviceCount();
+        loadAllDevices();
+        loadPushLogs();
     }
 
     async function refreshDeviceCount() {
@@ -33839,6 +33887,184 @@ v4.87 | Feb 28 2026 10:50 IST | Firebase Presence (Live Now panel) + PWA Push No
         const snap = await db.ref('fcmTokens').once('value');
         const count = snap.exists() ? Object.keys(snap.val()).length : 0;
         document.getElementById('registeredDevicesCount').textContent = count;
+    }
+
+    function escHtml(str) {
+        return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    // ── Registered Devices panel toggle ──────────────────────────
+    let _allDevicesData = [];
+
+    function toggleDevicesPanel() {
+        const panel = document.getElementById('devicesPanel');
+        const arrow = document.getElementById('devicesToggleArrow');
+        const isOpen = panel.style.display !== 'none';
+        panel.style.display = isOpen ? 'none' : 'block';
+        arrow.style.transform = isOpen ? 'rotate(0deg)' : 'rotate(90deg)';
+        if (!isOpen && _allDevicesData.length === 0) loadAllDevices();
+    }
+
+    async function loadAllDevices() {
+        const container = document.getElementById('allDevicesInlineList');
+        if (!container) return;
+        container.innerHTML = '<p style="color:#aaa;font-size:13px;text-align:center;padding:10px 0">Loading…</p>';
+        try {
+            const db = window.db || firebase.database();
+            const snap = await db.ref('fcmTokens').once('value');
+            const tokens = snap.val() || {};
+            _allDevicesData = Object.entries(tokens).sort((a,b) => (b[1].savedAt||0) - (a[1].savedAt||0));
+            const count = _allDevicesData.length;
+            document.getElementById('registeredDevicesCount').textContent = count;
+            document.getElementById('devicesCountBadge').textContent = count;
+
+            // Build class filter buttons dynamically
+            const classes = [...new Set(_allDevicesData.map(([,t]) => (t.identity&&t.identity.class)||'').filter(c=>c))].sort();
+            const classFilters = document.getElementById('devFilterClassButtons');
+            classFilters.innerHTML = classes.map(cls =>
+                `<button onclick="filterDevices('${escHtml(cls)}')" id="devFilter_${escHtml(cls)}" class="devFilterBtn" style="padding:4px 12px;border-radius:14px;border:1.5px solid #aaa;background:#fff;color:#666;font-size:11px;font-weight:700;cursor:pointer">${escHtml(cls)}</button>`
+            ).join('');
+
+            renderDeviceList('all');
+        } catch(e) {
+            container.innerHTML = `<p style="color:#c00;font-size:13px">Error: ${e.message}</p>`;
+        }
+    }
+
+    function filterDevices(filter) {
+        // Update active button style
+        document.querySelectorAll('.devFilterBtn').forEach(btn => {
+            btn.style.background = '#fff';
+            btn.style.color = '#666';
+            btn.style.borderColor = '#aaa';
+        });
+        const activeBtn = document.getElementById('devFilter_' + filter);
+        if (activeBtn) { activeBtn.style.background = '#6a1b9a'; activeBtn.style.color = '#fff'; activeBtn.style.borderColor = '#6a1b9a'; }
+        renderDeviceList(filter);
+    }
+
+    function renderDeviceList(filter) {
+        const container = document.getElementById('allDevicesInlineList');
+        if (!container) return;
+        let filtered = _allDevicesData;
+        if (filter === 'guest') {
+            filtered = _allDevicesData.filter(([,t]) => !(t.identity&&t.identity.name));
+        } else if (filter !== 'all') {
+            filtered = _allDevicesData.filter(([,t]) => (t.identity&&t.identity.class) === filter);
+        }
+        if (filtered.length === 0) {
+            container.innerHTML = '<p style="color:#aaa;font-size:13px;text-align:center;padding:10px 0">No devices in this category.</p>';
+            return;
+        }
+        container.innerHTML = filtered.map(([sid, t], i) => {
+            const identity = t.identity || {};
+            const name = identity.name || '—';
+            const cls  = identity.class || '—';
+            const device = t.device || 'Unknown';
+            const ts = t.savedAt ? new Date(t.savedAt + 5.5*60*60*1000) : null;
+            const regStr = ts
+                ? ts.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}) + ' ' +
+                  ts.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true}) + ' IST'
+                : '—';
+            const deviceIcon = device.toLowerCase().includes('mobile') ? '📱' : '💻';
+            const isGuest = !identity.name;
+            return `<div style="display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid #f0e6ff">
+                <div style="background:${isGuest?'#aaa':'linear-gradient(135deg,#c44569,#6a1b9a)'};color:#fff;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex-shrink:0">${i+1}</div>
+                <div style="flex:1;min-width:0">
+                    <div style="font-weight:700;color:${isGuest?'#aaa':'#2d2d2d'};font-size:13px">${isGuest?'<em>Guest (not logged in)</em>':escHtml(name)} ${!isGuest?`<span style="color:#6a1b9a;font-weight:600;font-size:11px">${escHtml(cls)}</span>`:''}</div>
+                    <div style="color:#888;font-size:11px;margin-top:1px">${deviceIcon} ${escHtml(device)} &nbsp;|&nbsp; 🕐 ${regStr}</div>
+                </div>
+            </div>`;
+        }).join('');
+    }
+
+    async function loadPushLogs() {
+        const container = document.getElementById('pushLogsContainer');
+        if (!container) return;
+        container.innerHTML = '<p style="color:#aaa;font-size:13px;text-align:center;padding:20px 0">Loading…</p>';
+        try {
+            const db = window.db || firebase.database();
+            const snap = await db.ref('push_logs').orderByChild('sentAt').limitToLast(30).once('value');
+            const logs = snap.val();
+            if (!logs) {
+                container.innerHTML = '<p style="color:#aaa;font-size:13px;text-align:center;padding:20px 0">No notifications sent yet.</p>';
+                return;
+            }
+            const entries = Object.entries(logs).sort((a,b) => b[1].sentAt - a[1].sentAt);
+            container.innerHTML = entries.map(([logId, log]) => {
+                const d = new Date(log.sentAt + 5.5*60*60*1000);
+                const dateStr = d.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
+                const timeStr = d.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true});
+                const seenCount = log.seen ? Object.keys(log.seen).length : 0;
+                const totalDevices = log.total || (log.devices ? log.devices.length : 0);
+                return `<div style="border:1.5px solid #e8e0f0;border-radius:10px;padding:14px 16px;margin-bottom:12px">
+                    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;flex-wrap:wrap">
+                        <div style="flex:1;min-width:0">
+                            <div style="font-weight:700;color:#2d2d2d;font-size:14px;margin-bottom:3px">📣 ${escHtml(log.title)}</div>
+                            <div style="color:#555;font-size:13px;margin-bottom:8px">${escHtml(log.body)}</div>
+                            <div style="font-size:11px;color:#888">🕐 ${dateStr} &nbsp;${timeStr} IST</div>
+                        </div>
+                        <div style="text-align:right;white-space:nowrap">
+                            <span style="background:#d4edda;color:#155724;padding:3px 10px;border-radius:12px;font-size:12px;font-weight:700">✅ ${log.sent} sent</span>
+                            ${log.failed > 0 ? `<span style="background:#f8d7da;color:#721c24;padding:3px 10px;border-radius:12px;font-size:12px;font-weight:700;margin-left:5px">❌ ${log.failed} failed</span>` : ''}
+                        </div>
+                    </div>
+                    <div style="display:flex;gap:10px;margin-top:10px;flex-wrap:wrap">
+                        <button onclick="showSeenDevices('${logId}')" style="background:rgba(106,27,154,0.08);color:#6a1b9a;border:1.5px solid rgba(106,27,154,0.25);padding:5px 12px;border-radius:16px;cursor:pointer;font-size:12px;font-weight:600">
+                            👁 Seen: ${seenCount} / ${totalDevices}
+                        </button>
+                        <button onclick="showSentDevices('${logId}')" style="background:rgba(196,69,105,0.08);color:#c44569;border:1.5px solid rgba(196,69,105,0.25);padding:5px 12px;border-radius:16px;cursor:pointer;font-size:12px;font-weight:600">
+                            📱 ${totalDevices} device(s) targeted
+                        </button>
+                    </div>
+                </div>`;
+            }).join('');
+        } catch(e) {
+            container.innerHTML = `<p style="color:#c00;font-size:13px">Error loading logs: ${e.message}</p>`;
+        }
+    }
+
+    async function showSentDevices(logId) {
+        const db = window.db || firebase.database();
+        const snap = await db.ref('push_logs/' + logId).once('value');
+        const log = snap.val();
+        if (!log) return;
+        const devices = log.devices || [];
+        document.getElementById('seenModalTitle').textContent = `📱 Targeted Devices — "${log.title}"`;
+        document.getElementById('seenModalBody').innerHTML = devices.length === 0
+            ? '<p style="color:#aaa;font-size:13px">No device info available.</p>'
+            : devices.map(d => {
+                const reg = new Date((d.savedAt||0) + 5.5*60*60*1000);
+                const regStr = reg.toLocaleDateString('en-IN',{day:'2-digit',month:'short'}) + ' ' + reg.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true});
+                return `<div style="border-bottom:1px solid #f0e6ff;padding:8px 0;font-size:13px">
+                    <strong style="color:#2d2d2d">${escHtml(d.name||'Unknown')}</strong>
+                    ${d.class ? `<span style="color:#6a1b9a;font-size:11px;margin-left:6px">${escHtml(d.class)}</span>` : ''}
+                    <br><span style="color:#888;font-size:11px">📱 ${escHtml(d.device||'')} &nbsp;|&nbsp; Registered: ${regStr} IST</span>
+                </div>`;
+              }).join('');
+        document.getElementById('seenDevicesModal').style.display = 'flex';
+    }
+
+    async function showSeenDevices(logId) {
+        const db = window.db || firebase.database();
+        const snap = await db.ref('push_logs/' + logId).once('value');
+        const log = snap.val();
+        if (!log) return;
+        const seen = log.seen || {};
+        const seenEntries = Object.values(seen);
+        document.getElementById('seenModalTitle').textContent = `👁 Seen / Opened — "${log.title}"`;
+        document.getElementById('seenModalBody').innerHTML = seenEntries.length === 0
+            ? '<p style="color:#aaa;font-size:13px;text-align:center;padding:10px">No one has opened this notification yet.</p>'
+            : seenEntries.map(s => {
+                const d = new Date((s.seenAt||0) + 5.5*60*60*1000);
+                const dStr = d.toLocaleDateString('en-IN',{day:'2-digit',month:'short'}) + ' ' + d.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true});
+                return `<div style="border-bottom:1px solid #f0e6ff;padding:8px 0;font-size:13px">
+                    <strong style="color:#2d2d2d">${escHtml(s.name||'Unknown')}</strong>
+                    ${s.class ? `<span style="color:#6a1b9a;font-size:11px;margin-left:6px">${escHtml(s.class)}</span>` : ''}
+                    <br><span style="color:#888;font-size:11px">📱 ${escHtml(s.device||'')} &nbsp;|&nbsp; Opened: ${dStr} IST</span>
+                </div>`;
+              }).join('');
+        document.getElementById('seenDevicesModal').style.display = 'flex';
     }
 
     async function sendPushNotification() {
@@ -33860,13 +34086,19 @@ v4.87 | Feb 28 2026 10:50 IST | Firebase Presence (Live Now panel) + PWA Push No
         statusEl.style.display = 'none';
 
         try {
-            // Collect all tokens from Firebase
             const db = window.db || firebase.database();
             const snap = await db.ref('fcmTokens').once('value');
             const tokens = snap.val() || {};
-            const subscriptions = Object.values(tokens)
-                .filter(t => t.subscription)
-                .map(t => t.subscription);
+            const tokenEntries = Object.entries(tokens).filter(([,t]) => t.subscription);
+            const subscriptions = tokenEntries.map(([,t]) => t.subscription);
+
+            const deviceList = tokenEntries.map(([sid, t]) => ({
+                sid,
+                device: t.device || 'Unknown',
+                name: (t.identity && t.identity.name) || '',
+                class: (t.identity && t.identity.class) || '',
+                savedAt: t.savedAt || 0
+            }));
 
             if (subscriptions.length === 0) {
                 statusEl.style.display = 'block';
@@ -33878,7 +34110,6 @@ v4.87 | Feb 28 2026 10:50 IST | Firebase Presence (Live Now panel) + PWA Push No
                 return;
             }
 
-            // Call your Cloudflare Worker
             const resp = await fetch(FCM_WORKER_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -33887,12 +34118,29 @@ v4.87 | Feb 28 2026 10:50 IST | Firebase Presence (Live Now panel) + PWA Push No
 
             if (resp.ok) {
                 const result = await resp.json();
+                const sentCount = result.sent || subscriptions.length;
+                const failedCount = result.failed || 0;
+
+                // Save log to Firebase
+                const nowIST = new Date(Date.now() + 5.5*60*60*1000);
+                const logRef = db.ref('push_logs').push();
+                await logRef.set({
+                    title, body,
+                    sentAt: Date.now(),
+                    sentAtIST: nowIST.toISOString(),
+                    sent: sentCount,
+                    failed: failedCount,
+                    total: subscriptions.length,
+                    devices: deviceList
+                });
+
                 statusEl.style.display = 'block';
                 statusEl.style.background = '#d4edda';
                 statusEl.style.color = '#155724';
-                statusEl.textContent = `✅ Sent successfully to ${result.sent || subscriptions.length} device(s)!`;
+                statusEl.textContent = `✅ Sent successfully to ${sentCount} device(s)!`;
                 document.getElementById('notifTitle').value = '';
                 document.getElementById('notifBody').value = '';
+                loadPushLogs();
             } else {
                 throw new Error('Worker returned ' + resp.status);
             }
@@ -33907,6 +34155,36 @@ v4.87 | Feb 28 2026 10:50 IST | Firebase Presence (Live Now panel) + PWA Push No
         btn.disabled = false;
         btn.textContent = '📤 Send to All Devices';
     }
+
+    // Mark notifications as seen when student opens site
+    async function markNotificationsSeen() {
+        try {
+            const sid = getSessionId();
+            const db = window.db || firebase.database();
+            const idSnap = await db.ref('fcmTokens/' + sid + '/identity').once('value');
+            const identity = idSnap.val() || {};
+            const deviceSnap = await db.ref('fcmTokens/' + sid + '/device').once('value');
+            const device = deviceSnap.val() || 'Unknown';
+            const cutoff = Date.now() - 7*24*60*60*1000;
+            const logsSnap = await db.ref('push_logs').orderByChild('sentAt').startAt(cutoff).once('value');
+            const logs = logsSnap.val();
+            if (!logs) return;
+            const nowTs = Date.now();
+            const updates = {};
+            for (const [logId, log] of Object.entries(logs)) {
+                if (!log.seen || !log.seen[sid]) {
+                    updates[`push_logs/${logId}/seen/${sid}`] = {
+                        sid, name: identity.name||'', class: identity.class||'', device, seenAt: nowTs
+                    };
+                }
+            }
+            if (Object.keys(updates).length > 0) await db.ref().update(updates);
+        } catch(e) { console.warn('[Seen]', e.message); }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        setTimeout(markNotificationsSeen, 3000);
+    });
     </script>
 
     <footer style="background: white; border-radius: 12px; padding: 25px; margin-top: 30px; box-shadow: 0 4px 20px rgba(0,0,0,0.1);">
@@ -33927,7 +34205,7 @@ v4.87 | Feb 28 2026 10:50 IST | Firebase Presence (Live Now panel) + PWA Push No
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;" id="devTriggerVersion">
-                <strong>Version:</strong> 4.87 — Firebase Presence (Live Now panel) + PWA Push Notifications added | <strong>Last Updated:</strong> February 28, 2026 — 10:50 IST</p>
+                <strong>Version:</strong> 4.91 — Registered Devices panel collapsible with class/guest filters | <strong>Last Updated:</strong> February 28, 2026 — 14:56 IST</p>
             <!-- ============================================ -->
             
             <p style="color: #c44569; font-size: 0.85em; font-weight: 600; margin-bottom: 8px;">
