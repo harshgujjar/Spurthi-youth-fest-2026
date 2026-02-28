@@ -6662,6 +6662,21 @@
                 </div>
             </div>
 
+            <!-- SW Push Debug Panel -->
+            <div style="background:#1a0030;border-radius:14px;padding:18px;margin-top:16px">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+                    <h3 style="color:#ffcc02;font-size:1em;margin:0">🔍 SW Push Debug Log</h3>
+                    <div style="display:flex;gap:8px">
+                        <button onclick="clearSwDebugLog()" style="background:rgba(255,255,255,0.1);color:#aaa;border:1px solid #444;padding:4px 12px;border-radius:12px;cursor:pointer;font-size:11px">🗑 Clear</button>
+                        <button onclick="loadSwDebugLog()" style="background:rgba(255,204,2,0.15);color:#ffcc02;border:1px solid #ffcc02;padding:4px 12px;border-radius:12px;cursor:pointer;font-size:11px">↻ Refresh</button>
+                    </div>
+                </div>
+                <p style="color:#888;font-size:11px;margin:0 0 10px">Shows what happens inside sw.js when a push is delivered — updates live. Send a notification then watch here.</p>
+                <div id="swDebugLog" style="background:#0d0d1a;border-radius:8px;padding:12px;max-height:220px;overflow-y:auto;font-family:monospace;font-size:11px;color:#a8ff78">
+                    <span style="color:#555">Waiting for push events…</span>
+                </div>
+            </div>
+
             <!-- sw.js code modal -->
             <div id="swJsModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);z-index:99999;align-items:center;justify-content:center">
                 <div style="background:#1a1a2e;border-radius:16px;padding:24px;max-width:600px;width:92%;max-height:85vh;overflow-y:auto;position:relative">
@@ -34020,6 +34035,7 @@ v5.24 | Mar 01 2026 12:59 IST | Compose Notification now shows push-enabled vs t
 v5.25 | Mar 01 2026 12:59 IST | Added Re-send Notification Permission Prompt button in admin panel — writes to Firebase, students online see banner instantly; others see it on next load
 v5.26 | Mar 01 2026 12:59 IST | Added Clean Stale Subscriptions button — tests each subscription individually via worker and removes failed ones from Firebase; success message now hints about stale count
 v5.27 | Mar 01 2026 12:59 IST | Fixed SW reg to call reg.update() on every load; added Force Update SW button — writes to Firebase, triggers reg.update() on all online devices immediately
+v5.28 | Mar 01 2026 12:59 IST | Added SW Push Debug Log panel — sw.js logs every push step to Firebase REST API; admin sees live log with push_received/push_shown_ok/push_show_error
 -->
     <!-- ============================================================ -->
     <!-- 🟢 FIREBASE PRESENCE + 📣 PUSH NOTIFICATIONS SCRIPTS       -->
@@ -34357,43 +34373,58 @@ v5.27 | Mar 01 2026 12:59 IST | Fixed SW reg to call reg.update() on every load;
     const SW_JS_CODE = `// sw.js — Spurthi Youth Fest 2026
 // Upload this file to your GitHub repo at: /Spurthi-youth-fest-2026/sw.js
 
+const FIREBASE_URL = 'https://spurthi-youthfest-2026-default-rtdb.asia-southeast1.firebasedatabase.app';
+
+function swLog(step, detail) {
+    const entry = { step, detail: detail || '', ts: Date.now() };
+    fetch(FIREBASE_URL + '/sw_debug.json', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(entry)
+    }).catch(() => {});
+}
+
 self.addEventListener('install', e => {
-    console.log('[SW] Installed');
+    swLog('install', 'SW installed');
     e.waitUntil(self.skipWaiting());
 });
 
 self.addEventListener('activate', e => {
-    console.log('[SW] Activated');
+    swLog('activate', 'SW activated');
     e.waitUntil(self.clients.claim());
 });
 
 self.addEventListener('push', function(event) {
-    console.log('[SW] Push received!', event);
+    swLog('push_received', event.data ? event.data.text() : 'NO DATA');
     let data = { title: 'Spurthi 2026', body: 'New notification' };
     try {
         if (event.data) {
             const text = event.data.text();
             try { data = JSON.parse(text); } catch(e) { data.body = text; }
         }
-    } catch(e) {}
+    } catch(e) { swLog('push_parse_error', e.message); }
     const title = data.title || (data.notification && data.notification.title) || 'Spurthi 2026';
     const body  = data.body  || (data.notification && data.notification.body)  || '';
+    swLog('push_showing', 'title=' + title + ' body=' + body);
     const options = {
         body: body,
         icon: '/Spurthi-youth-fest-2026/davan_logo_2026.gif',
         badge: '/Spurthi-youth-fest-2026/davan_logo_2026.gif',
         vibrate: [300, 100, 300, 100, 300],
-        requireInteraction: false,
+        requireInteraction: true,
         tag: 'spurthi-notif',
         renotify: true,
         data: { url: 'https://harshgujjar.github.io/Spurthi-youth-fest-2026/' }
     };
     event.waitUntil(
         self.registration.showNotification(title, options)
+            .then(() => { swLog('push_shown_ok', title); })
+            .catch(err => { swLog('push_show_error', err.message); })
     );
 });
 
 self.addEventListener('notificationclick', function(event) {
+    swLog('notification_clicked', '');
     event.notification.close();
     const url = (event.notification.data && event.notification.data.url)
                 || 'https://harshgujjar.github.io/Spurthi-youth-fest-2026/';
@@ -34491,6 +34522,7 @@ self.addEventListener('notificationclick', function(event) {
     }
     async function initPushNotifPanel() {
         await refreshDeviceCount();
+        startSwDebugPolling();
         loadAllDevices();
         loadPushLogs();
         // Re-wire buttons each time panel is opened (in case DOM wasn't ready at DOMContentLoaded)
@@ -35018,6 +35050,42 @@ self.addEventListener('notificationclick', function(event) {
         setTimeout(() => { statusEl.style.display = 'none'; }, 8000);
     }
 
+    function loadSwDebugLog() {
+        const el = document.getElementById('swDebugLog');
+        if (!el) return;
+        const db = window.db || firebase.database();
+        db.ref('sw_debug').orderByChild('ts').limitToLast(30).once('value').then(snap => {
+            const data = snap.val();
+            if (!data) { el.innerHTML = '<span style="color:#555">No debug logs yet — send a notification to see sw.js activity.</span>'; return; }
+            const entries = Object.values(data).sort((a, b) => b.ts - a.ts);
+            const colors = { push_received:'#ffcc02', push_showing:'#a8ff78', push_shown_ok:'#00e676', push_show_error:'#ff5252', push_parse_error:'#ff5252', install:'#64b5f6', activate:'#64b5f6', notification_clicked:'#ce93d8' };
+            el.innerHTML = entries.map(e => {
+                const t = new Date(e.ts);
+                const tStr = t.toLocaleTimeString('en-IN', {hour:'2-digit',minute:'2-digit',second:'2-digit'});
+                const col = colors[e.step] || '#ccc';
+                return `<div style="margin-bottom:6px;border-bottom:1px solid #1a1a2e;padding-bottom:6px"><span style="color:#555">${tStr}</span> <span style="color:${col};font-weight:700">[${e.step}]</span> <span style="color:#ddd">${e.detail || ''}</span></div>`;
+            }).join('');
+        }).catch(err => { el.innerHTML = '<span style="color:#ff5252">Error loading: ' + err.message + '</span>'; });
+    }
+
+    function clearSwDebugLog() {
+        const db = window.db || firebase.database();
+        db.ref('sw_debug').remove().then(() => {
+            const el = document.getElementById('swDebugLog');
+            if (el) el.innerHTML = '<span style="color:#555">Log cleared.</span>';
+        });
+    }
+
+    // Auto-refresh debug log every 3s when push panel is open
+    let _swDebugInterval = null;
+    function startSwDebugPolling() {
+        loadSwDebugLog();
+        _swDebugInterval = setInterval(loadSwDebugLog, 3000);
+    }
+    function stopSwDebugPolling() {
+        clearInterval(_swDebugInterval);
+    }
+
     // Mark notifications as seen when student opens site
     async function markNotificationsSeen() {
         try {
@@ -35158,6 +35226,10 @@ self.addEventListener('notificationclick', function(event) {
     window.retriggerPermissionBanner = retriggerPermissionBanner;
     window.cleanStaleSubscriptions  = cleanStaleSubscriptions;
     window.forceUpdateSW             = forceUpdateSW;
+    window.loadSwDebugLog           = loadSwDebugLog;
+    window.clearSwDebugLog          = clearSwDebugLog;
+    window.startSwDebugPolling      = startSwDebugPolling;
+    window.stopSwDebugPolling       = stopSwDebugPolling;
     window.initLiveUsersPanel      = initLiveUsersPanel;
     window.refreshLiveUsers        = refreshLiveUsers;
 
@@ -35201,7 +35273,7 @@ self.addEventListener('notificationclick', function(event) {
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;" id="devTriggerVersion">
-                <strong>Version:</strong> 5.27 — Fixed SW registration to force update on every load; added Force Update SW button so admin can push latest sw.js to all online devices instantly via Firebase | <strong>Last Updated:</strong> Mar 01, 2026 — 12:59 IST</p>
+                <strong>Version:</strong> 5.28 — Added SW Push Debug Log panel in admin — shows exactly what sw.js does when a push arrives (received, parsed, shown, or error) updating live every 3s | <strong>Last Updated:</strong> Mar 01, 2026 — 12:59 IST</p>
             <!-- ============================================ -->
             
             <p style="color: #c44569; font-size: 0.85em; font-weight: 600; margin-bottom: 8px;">
