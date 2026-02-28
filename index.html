@@ -6632,6 +6632,16 @@
                 </div>
                 <button onclick="sendPushNotification()" id="sendNotifBtn" style="background:linear-gradient(135deg,#c44569,#6a1b9a);color:#fff;border:none;padding:14px 32px;border-radius:25px;cursor:pointer;font-size:1em;font-weight:700;width:100%;letter-spacing:0.5px;box-shadow:0 4px 15px rgba(196,69,105,0.4)">📤 Send to All Devices</button>
                 <div id="notifSendStatus" style="margin-top:14px;display:none;padding:12px 16px;border-radius:8px;font-size:14px;font-weight:600;text-align:center"></div>
+                <div style="margin-top:12px;border-top:1px dashed rgba(106,27,154,0.2);padding-top:12px">
+                    <button onclick="retriggerPermissionBanner()" id="retriggerBannerBtn" style="background:linear-gradient(135deg,#1a0030,#6a1b9a);color:#fff;border:none;padding:10px 20px;border-radius:20px;cursor:pointer;font-size:13px;font-weight:700;width:100%">🔔 Re-send Notification Permission Prompt to All Students</button>
+                    <div id="retriggerStatus" style="margin-top:8px;display:none;padding:8px 12px;border-radius:8px;font-size:13px;font-weight:600;text-align:center"></div>
+                    <p style="color:#888;font-size:11px;margin-top:6px;text-align:center">Forces the &ldquo;Allow Notifications&rdquo; banner to re-appear on every student&rsquo;s screen next time they load or are on the site</p>
+                </div>
+                <div style="margin-top:10px;border-top:1px dashed rgba(106,27,154,0.2);padding-top:10px">
+                    <button onclick="cleanStaleSubscriptions()" id="cleanStaleBtn" style="background:linear-gradient(135deg,#e53935,#b71c1c);color:#fff;border:none;padding:10px 20px;border-radius:20px;cursor:pointer;font-size:13px;font-weight:700;width:100%">🧹 Clean Stale Subscriptions from Firebase</button>
+                    <div id="cleanStaleStatus" style="margin-top:8px;display:none;padding:8px 12px;border-radius:8px;font-size:13px;font-weight:600;text-align:center"></div>
+                    <p style="color:#888;font-size:11px;margin-top:6px;text-align:center">Tests each stored subscription and removes expired/invalid ones — run this if you see many &ldquo;failed&rdquo; in Notification History</p>
+                </div>
             </div>
 
             <!-- Info box -->
@@ -34001,6 +34011,9 @@ v5.20 | Mar 01 2026 00:55 IST | Fixed ALL push panel buttons (refreshDeviceCount
 v5.21 | Mar 01 2026 01:05 IST | Rewired Test Push Now + Copy sw.js via addEventListener in initPushNotifPanel — onclick scope unreliable, now wired directly on DOM element
 v5.22 | Mar 01 2026 01:15 IST | Fixed Test Push hanging with 6s SW timeout; identity recovery now scans all FCM tokens to find real name when localStorage SID has no identity
 v5.23 | Mar 01 2026 12:59 IST | Fixed Compose Notification silently doing nothing when 0 subscriptions found — now shows clear warning; worker errors and network failures also surfaced with exact error message
+v5.24 | Mar 01 2026 12:59 IST | Compose Notification now shows push-enabled vs total registered count; 0-subscription warning tells admin students must click Allow on notification prompt
+v5.25 | Mar 01 2026 12:59 IST | Added Re-send Notification Permission Prompt button in admin panel — writes to Firebase, students online see banner instantly; others see it on next load
+v5.26 | Mar 01 2026 12:59 IST | Added Clean Stale Subscriptions button — tests each subscription individually via worker and removes failed ones from Firebase; success message now hints about stale count
 -->
     <!-- ============================================================ -->
     <!-- 🟢 FIREBASE PRESENCE + 📣 PUSH NOTIFICATIONS SCRIPTS       -->
@@ -34204,6 +34217,38 @@ self.addEventListener('activate', e => e.waitUntil(self.clients.claim()));
             sessionStorage.setItem('notif_banner_shown', '1');
         }
     };
+
+    // ─── RETRIGGER BANNER LISTENER (student side) ───────────────
+    // Admin writes to notif_banner_retrigger → banner re-appears for all students
+    (function() {
+        const waitForDb2 = setInterval(() => {
+            if (window.db) {
+                clearInterval(waitForDb2);
+                let _lastRetrigger = null;
+                window.db.ref('notif_banner_retrigger').on('value', snap => {
+                    if (!snap.exists()) return;
+                    const data = snap.val();
+                    if (!data || !data.triggeredAt) return;
+                    if (_lastRetrigger === data.triggeredAt) return;
+                    _lastRetrigger = data.triggeredAt;
+                    // Skip if already granted — they don't need the banner
+                    if (typeof Notification !== 'undefined' && Notification.permission === 'granted') return;
+                    // Skip if browser has permanently blocked (can't override that)
+                    if (typeof Notification !== 'undefined' && Notification.permission === 'denied') return;
+                    // Clear the dismissed flag so banner can show again
+                    localStorage.removeItem('notif_banner_dismissed');
+                    sessionStorage.removeItem('notif_banner_shown');
+                    // Show the banner immediately
+                    const banner = document.getElementById('notifPermBanner');
+                    if (banner) {
+                        banner.style.display = 'flex';
+                        sessionStorage.setItem('notif_banner_shown', '1');
+                        console.log('[Push] Admin triggered permission banner re-show');
+                    }
+                });
+            }
+        }, 500);
+    })();
 
     // ═══════════════════════════════════════════════════════════════
     // 🟢 LIVE NOW PANEL — SA functions
@@ -34743,7 +34788,8 @@ self.addEventListener('notificationclick', function(event) {
             // ── STEP 2: FCM push (filtered by target) ──
             const snap = await db.ref('fcmTokens').once('value');
             const tokens = snap.val() || {};
-            let tokenEntries = Object.entries(tokens).filter(([,t]) => t.subscription);
+            const allEntries = Object.entries(tokens);
+            let tokenEntries = allEntries.filter(([,t]) => t.subscription);
 
             // Filter by class or person name (all devices of that person)
             if (_notifTarget === 'class' && targetClass) {
@@ -34761,12 +34807,14 @@ self.addEventListener('notificationclick', function(event) {
             }));
 
             let sentCount = 0, failedCount = 0;
-            console.log('[FCM Push] Total token entries:', tokenEntries.length, '| Valid subscriptions:', subscriptions.length);
+            const totalRegistered = allEntries.length;
+            const pushEnabled = allEntries.filter(([,t]) => t.subscription).length;
+            console.log('[FCM Push] Registered:', totalRegistered, '| Push-enabled:', pushEnabled, '| Targeting:', subscriptions.length);
             if (subscriptions.length === 0) {
                 statusEl.style.display = 'block';
                 statusEl.style.background = '#fff3cd';
                 statusEl.style.color = '#856404';
-                statusEl.textContent = `⚠️ In-app toast sent, but NO registered devices found for "${_notifTarget === 'all' ? 'All' : _notifTarget === 'class' ? targetClass : targetName}" — FCM push skipped. Make sure students have subscribed on their devices.`;
+                statusEl.textContent = `⚠️ In-app toast sent, but 0 devices found with push enabled for this target (${totalRegistered} total registered, ${pushEnabled} push-enabled). Students must open the site and tap Allow on the notification prompt.`;
                 btn.disabled = false;
                 btn.textContent = _notifTarget === 'all' ? '📢 Send to All Devices' : _notifTarget === 'class' ? '🏫 Send to Class' : '👤 Send to Person';
                 loadPushLogs();
@@ -34776,12 +34824,27 @@ self.addEventListener('notificationclick', function(event) {
                 const resp = await fetch(FCM_WORKER_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ title, body, subscriptions })
+                    body: JSON.stringify({ title, body, subscriptions, sids: tokenEntries.map(([sid]) => sid) })
                 });
                 if (resp.ok) {
                     const result = await resp.json();
                     sentCount = result.sent || subscriptions.length;
                     failedCount = result.failed || 0;
+                    // Auto-cleanup: remove stale subscriptions from Firebase
+                    if (result.failedSids && result.failedSids.length > 0) {
+                        const cleanupUpdates = {};
+                        result.failedSids.forEach(sid => { cleanupUpdates['fcmTokens/' + sid + '/subscription'] = null; });
+                        db.ref().update(cleanupUpdates).then(() => {
+                            console.log('[FCM Push] Cleaned up', result.failedSids.length, 'stale subscriptions from Firebase');
+                        }).catch(() => {});
+                    } else if (failedCount > 0 && result.failedIndexes && result.failedIndexes.length > 0) {
+                        // Fallback: worker returns indexes instead of sids
+                        const cleanupUpdates = {};
+                        result.failedIndexes.forEach(idx => {
+                            if (tokenEntries[idx]) cleanupUpdates['fcmTokens/' + tokenEntries[idx][0] + '/subscription'] = null;
+                        });
+                        db.ref().update(cleanupUpdates).catch(() => {});
+                    }
                 } else {
                     const errText = await resp.text().catch(() => resp.status);
                     console.warn('[FCM Push] Worker returned error:', resp.status, errText);
@@ -34828,7 +34891,7 @@ self.addEventListener('notificationclick', function(event) {
             statusEl.style.display = 'block';
             statusEl.style.background = '#d4edda';
             statusEl.style.color = '#155724';
-            statusEl.textContent = `✅ Sent to ${targetLabel}! FCM push: ${sentCount}/${subscriptions.length} delivered${failedCount > 0 ? `, ${failedCount} failed` : ''}.`;
+            statusEl.textContent = `✅ Sent to ${targetLabel}! FCM push: ${sentCount}/${subscriptions.length} delivered${failedCount > 0 ? ` (⚠️ ${failedCount} stale — use “Clean Stale” button below to remove them)` : ''}. (${pushEnabled} of ${totalRegistered} push-enabled)`;
             document.getElementById('notifTitle').value = '';
             document.getElementById('notifBody').value = '';
             loadPushLogs();
@@ -34844,6 +34907,86 @@ self.addEventListener('notificationclick', function(event) {
         btn.disabled = false;
         btn.textContent = _notifTarget === 'all' ? '📢 Send to All Devices' : _notifTarget === 'class' ? '🏫 Send to Class' : '👤 Send to Person';
 
+    }
+
+    async function retriggerPermissionBanner() {
+        const btn = document.getElementById('retriggerBannerBtn');
+        const statusEl = document.getElementById('retriggerStatus');
+        btn.disabled = true;
+        btn.textContent = '⏳ Sending…';
+        try {
+            const db = window.db || firebase.database();
+            await db.ref('notif_banner_retrigger').set({ triggeredAt: Date.now(), triggeredBy: 'admin' });
+            statusEl.style.display = 'block';
+            statusEl.style.background = '#d4edda';
+            statusEl.style.color = '#155724';
+            statusEl.textContent = '✅ Done! Banner will re-appear for all students on their next page load or within seconds if they are currently online.';
+        } catch(err) {
+            statusEl.style.display = 'block';
+            statusEl.style.background = '#f8d7da';
+            statusEl.style.color = '#721c24';
+            statusEl.textContent = '❌ Failed: ' + err.message;
+        }
+        btn.disabled = false;
+        btn.textContent = '🔔 Re-send Notification Permission Prompt to All Students';
+        setTimeout(() => { statusEl.style.display = 'none'; }, 6000);
+    }
+
+    async function cleanStaleSubscriptions() {
+        const btn = document.getElementById('cleanStaleBtn');
+        const statusEl = document.getElementById('cleanStaleStatus');
+        btn.disabled = true;
+        statusEl.style.display = 'block';
+        statusEl.style.background = '#e3f2fd';
+        statusEl.style.color = '#0d47a1';
+        statusEl.textContent = '⏳ Loading subscriptions from Firebase…';
+        try {
+            const db = window.db || firebase.database();
+            const snap = await db.ref('fcmTokens').once('value');
+            const tokens = snap.val() || {};
+            const entries = Object.entries(tokens).filter(([,t]) => t.subscription);
+            if (entries.length === 0) {
+                statusEl.style.background = '#fff3cd'; statusEl.style.color = '#856404';
+                statusEl.textContent = '⚠️ No push subscriptions found in Firebase.';
+                btn.disabled = false; return;
+            }
+            statusEl.textContent = `⏳ Testing ${entries.length} subscriptions one by one…`;
+            let removed = 0, kept = 0;
+            for (let idx = 0; idx < entries.length; idx++) {
+                const [sid, t] = entries[idx];
+                statusEl.textContent = `⏳ Testing ${idx + 1} / ${entries.length}…`;
+                let sub;
+                try { sub = typeof t.subscription === 'string' ? JSON.parse(t.subscription) : t.subscription; } catch(e) { sub = null; }
+                if (!sub || !sub.endpoint) {
+                    await db.ref('fcmTokens/' + sid + '/subscription').remove();
+                    removed++; continue;
+                }
+                // Send a test ping to the worker with just this one subscription
+                try {
+                    const resp = await fetch(FCM_WORKER_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ title: '_ping', body: '_test', subscriptions: [sub], sids: [sid] })
+                    });
+                    if (resp.ok) {
+                        const result = await resp.json();
+                        const failed = (result.failed || 0) > 0 || (result.sent || 0) === 0;
+                        if (failed) {
+                            await db.ref('fcmTokens/' + sid + '/subscription').remove();
+                            removed++;
+                        } else { kept++; }
+                    } else { kept++; } // worker error — don't remove, might be temporary
+                } catch(e) { kept++; } // network error — keep
+                // Small delay to avoid rate limiting
+                await new Promise(r => setTimeout(r, 300));
+            }
+            statusEl.style.background = '#d4edda'; statusEl.style.color = '#155724';
+            statusEl.textContent = `✅ Done! Removed ${removed} stale subscriptions, kept ${kept} valid. Next send will only target ${kept} device(s).`;
+        } catch(err) {
+            statusEl.style.background = '#f8d7da'; statusEl.style.color = '#721c24';
+            statusEl.textContent = '❌ Error: ' + err.message;
+        }
+        btn.disabled = false;
     }
 
     // Mark notifications as seen when student opens site
@@ -34983,6 +35126,8 @@ self.addEventListener('notificationclick', function(event) {
     window.copySwJs                = copySwJs;
     window.testPushLocally         = testPushLocally;
     window.maybeShowNotifBanner    = maybeShowNotifBanner;
+    window.retriggerPermissionBanner = retriggerPermissionBanner;
+    window.cleanStaleSubscriptions  = cleanStaleSubscriptions;
     window.initLiveUsersPanel      = initLiveUsersPanel;
     window.refreshLiveUsers        = refreshLiveUsers;
 
@@ -35026,7 +35171,7 @@ self.addEventListener('notificationclick', function(event) {
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;" id="devTriggerVersion">
-                <strong>Version:</strong> 5.23 — Fixed Compose Notification silently doing nothing when 0 subscriptions found — now shows clear error; worker errors and network failures also surfaced | <strong>Last Updated:</strong> Mar 01, 2026 — 12:59 IST</p>
+                <strong>Version:</strong> 5.26 — Added “Clean Stale Subscriptions” button — tests each stored push subscription individually and removes expired ones from Firebase | <strong>Last Updated:</strong> Mar 01, 2026 — 12:59 IST</p>
             <!-- ============================================ -->
             
             <p style="color: #c44569; font-size: 0.85em; font-weight: 600; margin-bottom: 8px;">
