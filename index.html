@@ -7092,7 +7092,7 @@
             'Pod Casting': {size:'Individual',count:1,role:false,topic:true,topicLabel:'Topic',allow:false,maxPerClass:3,individual:true,podcastTopics:['🌍 Geo Politics','🏙️ Davangere','👨‍👩‍👧 Family','🏏 Sports']},
             'Mime': {size:'6 Members',count:6,role:true,topic:true,topicLabel:'Theme',allow:false,maxPerClass:1},
             'Interdisciplinary': {size:'5 Members',count:5,role:true,topic:true,topicLabel:'Topic',allow:false,maxPerClass:1},
-            'Ramp Walk': {size:'Individual members',count:0,role:true,topic:true,topicLabel:'Theme',show:true,allow:false,maxPerClass:999,pctMax:30,dynamicCount:true,individual:true},
+            'Ramp Walk': {size:'Individual members',count:0,role:true,topic:true,topicLabel:'Theme',show:true,allow:false,maxPerClass:999,pctMax:30,dynamicCount:true},
             'Quiz': {size:'6 Members',count:6,role:true,allow:false,maxPerClass:1},
             'Vlog': {size:'2 Members',count:2,role:true,topic:true,topicLabel:'Topic',allow:true,maxPerClass:2,vlogTopics:['✈️ Travel Vlog','🍽️ Food Vlog','🎉 Event Vlog','🌅 Daily Life Vlog'],multiTeam:true},
             'YouTube Advertisement': {size:'8 Members',count:8,role:true,prod:true,allow:false,maxPerClass:1},
@@ -11227,8 +11227,8 @@
         // Define faculty roles (used in cards + dashboard)
         const FACULTY_ROLES = {
             'Chandan G B'     : { role: '📊 Vlog Monitor + 🎙️ Podcast Approval', color: '#1b5e20', bg: '#c8e6c9', detail: 'Vlog Social Score Monitor & Pod Casting Approval Incharge' },
-            'Priyanka V'      : { role: '📊 Vlog Monitor + 📋 Event Incharge',   color: '#4a148c', bg: '#e1bee7', detail: 'Vlog Social Score Monitor & Incharge: Mime, Mad Ads, YouTube Advertisement, Case Analysis, Vlog' },
-            'Roopa M.C'       : { role: '📺 YT Ad Monitor + 📋 Event Incharge',  color: '#b71c1c', bg: '#ffcdd2', detail: 'YouTube Ad Social Score Monitor & Incharge: Mime, Mad Ads, YouTube Advertisement, Case Analysis' },
+            'Priyanka V'      : { role: '📊 Vlog Monitor + 📋 Event Incharge',   color: '#4a148c', bg: '#e1bee7', detail: 'Vlog Social Score Monitor & Incharge: Mime, Vlog' },
+            'Roopa M.C'       : { role: '📋 Event Incharge',  color: '#b71c1c', bg: '#ffcdd2', detail: 'Event Incharge: Mad Ads, YouTube Advertisement, Case Analysis' },
             'Smitha'          : { role: '📺 YT Ad Monitor + 📋 Event Incharge',  color: '#b71c1c', bg: '#ffcdd2', detail: 'YouTube Ad Social Score Monitor & Incharge: Social Awareness Skit, YouTube Advertisement, Quiz' },
             'Kotrappa K'      : { role: '🎭 Nukkad Pre-event + ✍️ Handwriting Incharge', color: '#1a237e', bg: '#c5cae9', detail: 'Nukkad Natak — theme verification & permission slip. Also Incharge: Hand Writing' },
             'Anitha N'        : { role: '✍️ Handwriting + 🎭 Talent Hunt Incharge',       color: '#1a237e', bg: '#c5cae9', detail: 'Handwriting Competition & Talent Hunt — attendance & sitting codes' },
@@ -11243,13 +11243,9 @@
         const FACULTY_EVENT_MAP = {
             'Priyanka V': [
                 { name:'Mime',                  type:'On stage',  classes:"I BCA / II BCA 'B'" },
-                { name:'Mad Ads',               type:'On stage',  classes:'I BCOM / I BCA' },
-                { name:'YouTube Advertisement', type:'Off stage', classes:"I BCA 'A' / II BCA 'A'" },
-                { name:'Case Analysis',         type:'Off stage', classes:"I BCOM / I BCA 'A'" },
                 { name:'Vlog',                  type:'Off stage', classes:'III BCOM' }
             ],
             'Roopa M.C': [
-                { name:'Mime',                  type:'On stage',  classes:"I BCA / II BCA 'B'" },
                 { name:'Mad Ads',               type:'On stage',  classes:'I BCOM / I BCA' },
                 { name:'YouTube Advertisement', type:'Off stage', classes:"I BCA 'A' / II BCA 'A'" },
                 { name:'Case Analysis',         type:'Off stage', classes:"I BCOM / I BCA 'A'" }
@@ -32669,8 +32665,8 @@ Proceed?`)) return;
                         <td style="padding:7px 10px;font-size:.79em;color:#555">${it.meeting1||'—'}</td>
                         <td style="padding:7px 10px;font-size:.79em;color:#555">${it.meeting2||'—'}</td>
                         <td style="padding:7px 10px;text-align:center;font-size:.82em;color:#1b5e20;font-weight:600">${it.startDate||'—'}</td>
-                        <td style="padding:7px 10px;text-align:center;font-size:.82em;color:#0d47a1;font-weight:600">${it.startTime||'—'}</td>
                         <td style="padding:7px 10px;text-align:center;font-size:.82em;color:#b71c1c;font-weight:600">${it.endDate||'—'}</td>
+                        <td style="padding:7px 10px;text-align:center;font-size:.82em;color:#0d47a1;font-weight:600">${it.startTime||'—'}</td>
                         <td style="padding:7px 10px;text-align:center;font-size:.82em;color:#6a1b9a;font-weight:600">${it.endTime||'—'}</td>
                         <td style="padding:7px 10px;text-align:center;white-space:nowrap">
                             <button onclick="esEditLoad('${it.id}')" style="background:#e3f2fd;color:#0d47a1;border:none;border-radius:6px;padding:3px 10px;cursor:pointer;font-size:.8em;font-weight:700;margin:2px">✏️ Edit</button>
@@ -32818,8 +32814,8 @@ Proceed?`)) return;
                 <td style="padding:9px 10px;font-size:.82em">${it.meeting1||'—'}</td>
                 <td style="padding:9px 10px;font-size:.82em">${it.meeting2||'—'}</td>
                 <td style="padding:9px 10px;text-align:center;font-weight:600;color:${it.startDate?'#1b5e20':'#aaa'}">${it.startDate||'—'}</td>
-                <td style="padding:9px 10px;text-align:center;font-weight:600;color:${it.startTime?'#0d47a1':'#aaa'}">${it.startTime||'—'}</td>
                 <td style="padding:9px 10px;text-align:center;font-weight:600;color:${it.endDate?'#b71c1c':'#aaa'}">${it.endDate||'—'}</td>
+                <td style="padding:9px 10px;text-align:center;font-weight:600;color:${it.startTime?'#0d47a1':'#aaa'}">${it.startTime||'—'}</td>
                 <td style="padding:9px 10px;text-align:center;font-weight:600;color:${it.endTime?'#6a1b9a':'#aaa'}">${it.endTime||'—'}</td>
             </tr>`).join('');
         } catch(e) {
@@ -33181,8 +33177,8 @@ Proceed?`)) return;
                             <th style="padding:11px 10px;text-align:left;white-space:nowrap">I Meeting Timings</th>
                             <th style="padding:11px 10px;text-align:left;white-space:nowrap">II Meeting Timings</th>
                             <th style="padding:11px 10px;text-align:center;white-space:nowrap">Event Start Date</th>
-                            <th style="padding:11px 10px;text-align:center;white-space:nowrap">Event Start Time</th>
                             <th style="padding:11px 10px;text-align:center;white-space:nowrap">Event End Date</th>
+                            <th style="padding:11px 10px;text-align:center;white-space:nowrap">Event Start Time</th>
                             <th style="padding:11px 10px;text-align:center;white-space:nowrap">Event End Time</th>
                         </tr>
                     </thead>
@@ -33554,7 +33550,7 @@ v4.79 | Feb 27 2026 17:00 IST | Cloudinary stats worker fetch reverted to GET; w
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;" id="devTriggerVersion">
-                <strong>Version:</strong> 4.82 — Quiz cleanup table shows Winner & Runner-Up per day for verification | <strong>Last Updated:</strong> February 27, 2026 — 17:45 IST</p>
+                <strong>Version:</strong> 4.86 — Event schedule column order fixed: Start Date, End Date, Start Time, End Time | <strong>Last Updated:</strong> February 28, 2026 — 17:05 IST</p>
             <!-- ============================================ -->
             
             <p style="color: #c44569; font-size: 0.85em; font-weight: 600; margin-bottom: 8px;">
