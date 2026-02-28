@@ -34000,6 +34000,7 @@ v5.19 | Mar 01 2026 00:40 IST | Fixed Test Push Now button not working — showS
 v5.20 | Mar 01 2026 00:55 IST | Fixed ALL push panel buttons (refreshDeviceCount, toggleDevicesPanel, sendPushNotification etc) — entire Firebase IIFE was trapping all functions, now all exposed via window.*
 v5.21 | Mar 01 2026 01:05 IST | Rewired Test Push Now + Copy sw.js via addEventListener in initPushNotifPanel — onclick scope unreliable, now wired directly on DOM element
 v5.22 | Mar 01 2026 01:15 IST | Fixed Test Push hanging with 6s SW timeout; identity recovery now scans all FCM tokens to find real name when localStorage SID has no identity
+v5.23 | Mar 01 2026 12:59 IST | Fixed Compose Notification silently doing nothing when 0 subscriptions found — now shows clear warning; worker errors and network failures also surfaced with exact error message
 -->
     <!-- ============================================================ -->
     <!-- 🟢 FIREBASE PRESENCE + 📣 PUSH NOTIFICATIONS SCRIPTS       -->
@@ -34760,22 +34761,51 @@ self.addEventListener('notificationclick', function(event) {
             }));
 
             let sentCount = 0, failedCount = 0;
-            if (subscriptions.length > 0) {
-                try {
-                    const resp = await fetch(FCM_WORKER_URL, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ title, body, subscriptions })
-                    });
-                    if (resp.ok) {
-                        const result = await resp.json();
-                        sentCount = result.sent || subscriptions.length;
-                        failedCount = result.failed || 0;
-                    }
-                } catch(fcmErr) {
-                    console.warn('[FCM Push] Failed (in-app still delivered):', fcmErr.message);
+            console.log('[FCM Push] Total token entries:', tokenEntries.length, '| Valid subscriptions:', subscriptions.length);
+            if (subscriptions.length === 0) {
+                statusEl.style.display = 'block';
+                statusEl.style.background = '#fff3cd';
+                statusEl.style.color = '#856404';
+                statusEl.textContent = `⚠️ In-app toast sent, but NO registered devices found for "${_notifTarget === 'all' ? 'All' : _notifTarget === 'class' ? targetClass : targetName}" — FCM push skipped. Make sure students have subscribed on their devices.`;
+                btn.disabled = false;
+                btn.textContent = _notifTarget === 'all' ? '📢 Send to All Devices' : _notifTarget === 'class' ? '🏫 Send to Class' : '👤 Send to Person';
+                loadPushLogs();
+                return;
+            }
+            try {
+                const resp = await fetch(FCM_WORKER_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ title, body, subscriptions })
+                });
+                if (resp.ok) {
+                    const result = await resp.json();
+                    sentCount = result.sent || subscriptions.length;
+                    failedCount = result.failed || 0;
+                } else {
+                    const errText = await resp.text().catch(() => resp.status);
+                    console.warn('[FCM Push] Worker returned error:', resp.status, errText);
                     failedCount = subscriptions.length;
+                    statusEl.style.display = 'block';
+                    statusEl.style.background = '#f8d7da';
+                    statusEl.style.color = '#721c24';
+                    statusEl.textContent = `❌ FCM Worker error ${resp.status}: ${errText}`;
+                    btn.disabled = false;
+                    btn.textContent = _notifTarget === 'all' ? '📢 Send to All Devices' : _notifTarget === 'class' ? '🏫 Send to Class' : '👤 Send to Person';
+                    loadPushLogs();
+                    return;
                 }
+            } catch(fcmErr) {
+                console.warn('[FCM Push] Failed (in-app still delivered):', fcmErr.message);
+                failedCount = subscriptions.length;
+                statusEl.style.display = 'block';
+                statusEl.style.background = '#f8d7da';
+                statusEl.style.color = '#721c24';
+                statusEl.textContent = `❌ FCM Worker unreachable: ${fcmErr.message}`;
+                btn.disabled = false;
+                btn.textContent = _notifTarget === 'all' ? '📢 Send to All Devices' : _notifTarget === 'class' ? '🏫 Send to Class' : '👤 Send to Person';
+                loadPushLogs();
+                return;
             }
 
             // Save log
@@ -34798,7 +34828,7 @@ self.addEventListener('notificationclick', function(event) {
             statusEl.style.display = 'block';
             statusEl.style.background = '#d4edda';
             statusEl.style.color = '#155724';
-            statusEl.textContent = `✅ In-app toast sent to ${targetLabel}! FCM push: ${sentCount} sent, ${failedCount} failed.`;
+            statusEl.textContent = `✅ Sent to ${targetLabel}! FCM push: ${sentCount}/${subscriptions.length} delivered${failedCount > 0 ? `, ${failedCount} failed` : ''}.`;
             document.getElementById('notifTitle').value = '';
             document.getElementById('notifBody').value = '';
             loadPushLogs();
@@ -34996,7 +35026,7 @@ self.addEventListener('notificationclick', function(event) {
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;" id="devTriggerVersion">
-                <strong>Version:</strong> 5.14 — Fixed person-targeted toast not showing — now resolves real identity from FCM token when _currentUserName is generic | <strong>Last Updated:</strong> Feb 28, 2026 — 23:44 IST</p>
+                <strong>Version:</strong> 5.23 — Fixed Compose Notification silently doing nothing when 0 subscriptions found — now shows clear error; worker errors and network failures also surfaced | <strong>Last Updated:</strong> Mar 01, 2026 — 12:59 IST</p>
             <!-- ============================================ -->
             
             <p style="color: #c44569; font-size: 0.85em; font-weight: 600; margin-bottom: 8px;">
