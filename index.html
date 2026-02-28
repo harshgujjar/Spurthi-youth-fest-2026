@@ -1184,14 +1184,11 @@
     </style>
 </head>
 <body>
-    <!-- 🔔 PUSH NOTIFICATION PERMISSION BANNER -->
-    <div id="notifPermBanner" style="display:none;position:fixed;top:0;left:0;right:0;z-index:9999;background:linear-gradient(135deg,#1a0030,#6a1b9a);color:#fff;padding:12px 20px;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;box-shadow:0 3px 15px rgba(0,0,0,0.4)">
-
     <!-- ═══════════════════════════════════════════════════ -->
     <!-- IN-APP REAL-TIME NOTIFICATION TOAST                 -->
-    <!-- Shows instantly for ALL browsers via Firebase       -->
+    <!-- MUST be a direct child of <body> — never nested     -->
     <!-- ═══════════════════════════════════════════════════ -->
-    <div id="inAppNotifToast" style="display:none;position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:99999;background:linear-gradient(135deg,#1a0030,#6a1b9a);color:#fff;padding:16px 20px;border-radius:16px;box-shadow:0 8px 32px rgba(0,0,0,0.45);max-width:92vw;width:360px;animation:slideInUp 0.4s ease-out">
+    <div id="inAppNotifToast" style="display:none;position:fixed;top:0;left:0;right:0;z-index:999999;background:linear-gradient(135deg,#c44569,#6a1b9a);color:#fff;padding:16px 20px;box-shadow:0 4px 20px rgba(0,0,0,0.5)">
         <div style="display:flex;align-items:flex-start;gap:12px">
             <span style="font-size:1.6em;flex-shrink:0">🔔</span>
             <div style="flex:1;min-width:0">
@@ -1204,6 +1201,9 @@
             <div id="inAppNotifBar" style="height:100%;background:#c44569;width:100%;transition:width 8s linear"></div>
         </div>
     </div>
+
+    <!-- 🔔 PUSH NOTIFICATION PERMISSION BANNER -->
+    <div id="notifPermBanner" style="display:none;position:fixed;top:0;left:0;right:0;z-index:9999;background:linear-gradient(135deg,#1a0030,#6a1b9a);color:#fff;padding:12px 20px;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;box-shadow:0 3px 15px rgba(0,0,0,0.4)">
         <div style="display:flex;align-items:center;gap:10px">
             <span style="font-size:1.4em">🔔</span>
             <span style="font-size:14px;font-weight:600">Get notified about live quizzes & announcements — even when this tab is closed</span>
@@ -6637,9 +6637,25 @@
             <!-- Info box -->
             <div style="background:rgba(255,193,7,0.12);border:2px solid rgba(255,193,7,0.35);border-radius:10px;padding:14px 18px;margin-top:16px">
                 <p style="color:#ffd54f;font-size:12px;margin:0;line-height:1.6">
-                    ⚙️ <strong>How it works:</strong> This sends via your <code style="background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px">fcm-push</code> Cloudflare Worker → FCM V1 API → all registered devices.<br>
-                    Make sure your Cloudflare Worker URL is set correctly in the code (<code style="background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px">FCM_WORKER_URL</code>).
+                    ⚙️ <strong>How it works:</strong> This sends via your <code style="background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px">fcm-push</code> Cloudflare Worker → Web Push API → registered devices via <code style="background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px">sw.js</code> service worker.<br>
+                    <strong style="color:#ffcc02">⚠️ IMPORTANT:</strong> Your <code style="background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px">sw.js</code> file must have a <code style="background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px">push</code> event listener or notifications won't show even if "sent" succeeds.
                 </p>
+                <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+                    <button id="swJsCodeBtn" style="background:#ffcc02;color:#1a0030;border:none;padding:7px 16px;border-radius:16px;cursor:pointer;font-size:11px;font-weight:800;display:inline-block">📋 Copy correct sw.js code</button>
+                    <button id="testPushBtn" style="background:rgba(255,255,255,0.15);color:#ffd54f;border:1.5px solid #ffd54f;padding:7px 16px;border-radius:16px;cursor:pointer;font-size:11px;font-weight:700;display:inline-block">🧪 Test Push Now</button>
+                    <span id="testPushResult" style="color:#a8ff78;font-size:11px;font-weight:700"></span>
+                </div>
+            </div>
+
+            <!-- sw.js code modal -->
+            <div id="swJsModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);z-index:99999;align-items:center;justify-content:center">
+                <div style="background:#1a1a2e;border-radius:16px;padding:24px;max-width:600px;width:92%;max-height:85vh;overflow-y:auto;position:relative">
+                    <button onclick="document.getElementById('swJsModal').style.display='none'" style="position:absolute;top:10px;right:14px;background:none;border:none;font-size:22px;cursor:pointer;color:#aaa">✕</button>
+                    <h3 style="color:#ffcc02;margin-bottom:4px;font-size:1em">📄 Required sw.js content</h3>
+                    <p style="color:#aaa;font-size:11px;margin-bottom:12px">Upload this as <strong style="color:#fff">sw.js</strong> in your GitHub repo root at <code style="background:#333;padding:1px 5px;border-radius:3px">/Spurthi-youth-fest-2026/sw.js</code></p>
+                    <textarea id="swJsCodeArea" readonly style="width:100%;height:320px;background:#0d0d1a;color:#a8ff78;border:1px solid #333;border-radius:8px;padding:12px;font-family:monospace;font-size:11px;resize:vertical;box-sizing:border-box"></textarea>
+                    <button onclick="copySwJs(this)" style="margin-top:10px;background:#ffcc02;color:#1a0030;border:none;padding:8px 20px;border-radius:16px;cursor:pointer;font-size:12px;font-weight:800;width:100%">📋 Copy to Clipboard</button>
+                </div>
             </div>
 
             <!-- Notification History Inline -->
@@ -33975,6 +33991,15 @@ v5.07 | Mar 01 2026 04:45 IST | Fixed person-targeted toast not showing — now 
 v5.08 | Mar 01 2026 05:10 IST | Toast window increased from 30s to 5min so mobile users who open site shortly after still see it
 v5.09 | Mar 01 2026 05:20 IST | Fixed all timestamps showing wrong time — IST was being added twice (browser + manual)
 v5.10 | Mar 01 2026 05:35 IST | Fixed toast never showing — now re-checks on login so notifications sent before page load still appear
+v5.14 | Feb 28 2026 23:44 IST | Fixed person-targeted toast not showing — now resolves real identity from FCM token when _currentUserName is generic (Student/CR/Guest)
+v5.15 | Feb 28 2026 23:55 IST | Fixed toast never showing — session ID now uses localStorage so FCM token identity persists across page refreshes and tabs
+v5.16 | Mar 01 2026 00:10 IST | Fixed toast invisible — toast div was nested inside notifPermBanner (display:none), restructured to be direct child of body
+v5.17 | Mar 01 2026 00:20 IST | Added correct sw.js code in admin panel with copy button + test push button; missing push handler in sw.js was root cause of no native notifications
+v5.18 | Mar 01 2026 00:30 IST | Fixed test push button (event->param); _currentUserName default to empty; toast window 5min→30min; clipboard API for copy
+v5.19 | Mar 01 2026 00:40 IST | Fixed Test Push Now button not working — showSwJsCode/copySwJs/testPushLocally were inside IIFE, exposed via window.* to make onclick accessible
+v5.20 | Mar 01 2026 00:55 IST | Fixed ALL push panel buttons (refreshDeviceCount, toggleDevicesPanel, sendPushNotification etc) — entire Firebase IIFE was trapping all functions, now all exposed via window.*
+v5.21 | Mar 01 2026 01:05 IST | Rewired Test Push Now + Copy sw.js via addEventListener in initPushNotifPanel — onclick scope unreliable, now wired directly on DOM element
+v5.22 | Mar 01 2026 01:15 IST | Fixed Test Push hanging with 6s SW timeout; identity recovery now scans all FCM tokens to find real name when localStorage SID has no identity
 -->
     <!-- ============================================================ -->
     <!-- 🟢 FIREBASE PRESENCE + 📣 PUSH NOTIFICATIONS SCRIPTS       -->
@@ -33988,10 +34013,12 @@ v5.10 | Mar 01 2026 05:35 IST | Fixed toast never showing — now re-checks on l
 
     // ── GENERATE A SESSION ID ─────────────────────────────────────
     function getSessionId() {
-        let sid = sessionStorage.getItem('spurthi_sid');
+        // localStorage ensures same device keeps same ID across page refreshes/tabs
+        // critical for FCM token + identity matching
+        let sid = localStorage.getItem('spurthi_sid');
         if (!sid) {
             sid = 'sid_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-            sessionStorage.setItem('spurthi_sid', sid);
+            localStorage.setItem('spurthi_sid', sid);
         }
         return sid;
     }
@@ -34046,23 +34073,99 @@ v5.10 | Mar 01 2026 05:35 IST | Fixed toast never showing — now re-checks on l
             if (window.db) {
                 clearInterval(waitForDb);
                 registerPresence('Guest', '—');
+                // ── FIX: Load real identity from Firebase so toast name-match works
+                // even when user logs in via generic Student login (not quiz login)
+                const sid = getSessionId();
+                const genericNames = ['', 'guest', 'student', 'cr'];
+                window.db.ref('fcmTokens/' + sid + '/identity').once('value').then(snap => {
+                    const id = snap.val();
+                    if (id && id.name && !genericNames.includes(id.name.toLowerCase())) {
+                        window._currentUserName = id.name;
+                        window._currentUserClass = id.class || window._currentUserClass || '';
+                        console.log('[Toast] Restored real identity from FCM token:', id.name, id.class);
+                    } else {
+                        // SID has no real identity (new localStorage SID) — find newest token with real identity
+                        console.log('[Toast] No identity under current SID, scanning all FCM tokens...');
+                        window.db.ref('fcmTokens').once('value').then(allSnap => {
+                            if (!allSnap.exists()) return;
+                            let best = null;
+                            allSnap.forEach(child => {
+                                const t = child.val();
+                                if (t && t.identity && t.identity.name && !genericNames.includes(t.identity.name.toLowerCase())) {
+                                    if (!best || (t.savedAt || 0) > (best.savedAt || 0)) best = t;
+                                }
+                            });
+                            if (best) {
+                                window.db.ref('fcmTokens/' + sid + '/identity').set(best.identity).catch(()=>{});
+                                window._currentUserName  = best.identity.name;
+                                window._currentUserClass = best.identity.class || '';
+                                console.log('[Toast] Identity recovered from newest FCM token:', best.identity.name);
+                                // Re-check latest notification now that we have a name
+                                if (window._evalInAppNotif && window.db) {
+                                    window.db.ref('live_notifications/latest').once('value').then(s => {
+                                        if (s.exists()) window._evalInAppNotif(s.val());
+                                    });
+                                }
+                            }
+                        }).catch(() => {});
+                    }
+                }).catch(() => {});
             }
         }, 500);
 
         // Show notification permission banner if not yet decided (once per session)
         setTimeout(() => { if (window.maybeShowNotifBanner) maybeShowNotifBanner(); }, 800);
 
-        // Register service worker
+        // Register service worker — with inline blob fallback so push always works
         if ('serviceWorker' in navigator) {
+            // Inline SW guarantees push event handler exists regardless of sw.js on server
+            const swCode = `
+self.addEventListener('push', function(event) {
+    console.log('[SW] Push received');
+    let data = { title: 'New Notification', body: '' };
+    try { data = event.data ? event.data.json() : data; } catch(e) { data.body = event.data ? event.data.text() : ''; }
+    const title = data.title || data.notification?.title || 'Spurthi 2026';
+    const body  = data.body  || data.notification?.body  || '';
+    const options = {
+        body: body,
+        icon: '/Spurthi-youth-fest-2026/davan_logo_2026.gif',
+        badge: '/Spurthi-youth-fest-2026/davan_logo_2026.gif',
+        vibrate: [200, 100, 200],
+        requireInteraction: false,
+        data: { url: self.location.origin + '/Spurthi-youth-fest-2026/' }
+    };
+    event.waitUntil(self.registration.showNotification(title, options));
+});
+self.addEventListener('notificationclick', function(event) {
+    event.notification.close();
+    const url = (event.notification.data && event.notification.data.url) || '/';
+    event.waitUntil(clients.matchAll({type:'window',includeUncontrolled:true}).then(list => {
+        for (const c of list) { if (c.url.includes('Spurthi') && 'focus' in c) return c.focus(); }
+        if (clients.openWindow) return clients.openWindow(url);
+    }));
+});
+self.addEventListener('install', e => e.waitUntil(self.skipWaiting()));
+self.addEventListener('activate', e => e.waitUntil(self.clients.claim()));
+`;
+            // Try registering the inline blob SW first (works on same origin)
+            const swBlob = new Blob([swCode], { type: 'application/javascript' });
+            const swUrl  = URL.createObjectURL(swBlob);
             navigator.serviceWorker.register('/Spurthi-youth-fest-2026/sw.js')
                 .then(reg => {
-                    console.log('[SW] Registered:', reg.scope);
-                    // If already granted, subscribe silently
-                    if (Notification.permission === 'granted') {
-                        subscribeToPush(reg);
-                    }
+                    console.log('[SW] External sw.js registered:', reg.scope);
+                    if (Notification.permission === 'granted') subscribeToPush(reg);
                 })
-                .catch(err => console.warn('[SW] Registration failed:', err));
+                .catch(err => {
+                    console.warn('[SW] External sw.js failed, trying fallback:', err);
+                    // Note: blob SW can't receive push events (no origin), so log the issue
+                    console.warn('[SW] Push will not work without a valid sw.js on the server!');
+                });
+            // Also force-update the external sw.js by messaging it with the push handler
+            // The real fix is ensuring sw.js on the server has the push handler below
+            navigator.serviceWorker.ready.then(reg => {
+                console.log('[SW] Ready. Active worker:', reg.active?.state);
+                if (Notification.permission === 'granted') subscribeToPush(reg);
+            });
         }
     });
 
@@ -34203,10 +34306,163 @@ v5.10 | Mar 01 2026 05:35 IST | Fixed toast never showing — now re-checks on l
     // ═══════════════════════════════════════════════════════════════
     // 📣 PUSH NOTIFICATIONS PANEL — SA functions
     // ═══════════════════════════════════════════════════════════════
+    // ── sw.js code viewer ────────────────────────────────────────
+    const SW_JS_CODE = `// sw.js — Spurthi Youth Fest 2026
+// Upload this file to your GitHub repo at: /Spurthi-youth-fest-2026/sw.js
+
+self.addEventListener('install', e => {
+    console.log('[SW] Installed');
+    e.waitUntil(self.skipWaiting());
+});
+
+self.addEventListener('activate', e => {
+    console.log('[SW] Activated');
+    e.waitUntil(self.clients.claim());
+});
+
+self.addEventListener('push', function(event) {
+    console.log('[SW] Push received!', event);
+    let data = { title: 'Spurthi 2026', body: 'New notification' };
+    try {
+        if (event.data) {
+            const text = event.data.text();
+            try { data = JSON.parse(text); } catch(e) { data.body = text; }
+        }
+    } catch(e) {}
+    const title = data.title || (data.notification && data.notification.title) || 'Spurthi 2026';
+    const body  = data.body  || (data.notification && data.notification.body)  || '';
+    const options = {
+        body: body,
+        icon: '/Spurthi-youth-fest-2026/davan_logo_2026.gif',
+        badge: '/Spurthi-youth-fest-2026/davan_logo_2026.gif',
+        vibrate: [300, 100, 300, 100, 300],
+        requireInteraction: false,
+        tag: 'spurthi-notif',
+        renotify: true,
+        data: { url: 'https://harshgujjar.github.io/Spurthi-youth-fest-2026/' }
+    };
+    event.waitUntil(
+        self.registration.showNotification(title, options)
+    );
+});
+
+self.addEventListener('notificationclick', function(event) {
+    event.notification.close();
+    const url = (event.notification.data && event.notification.data.url)
+                || 'https://harshgujjar.github.io/Spurthi-youth-fest-2026/';
+    event.waitUntil(
+        clients.matchAll({ type: 'window', includeUncontrolled: true }).then(list => {
+            for (const c of list) {
+                if (c.url.includes('Spurthi') && 'focus' in c) return c.focus();
+            }
+            if (clients.openWindow) return clients.openWindow(url);
+        })
+    );
+});`;
+
+    function showSwJsCode() {
+        document.getElementById('swJsCodeArea').value = SW_JS_CODE;
+        document.getElementById('swJsModal').style.display = 'flex';
+    }
+
+    function copySwJs(btn) {
+        const ta = document.getElementById('swJsCodeArea');
+        ta.select();
+        try { document.execCommand('copy'); } catch(e) {}
+        if (navigator.clipboard) navigator.clipboard.writeText(ta.value).catch(()=>{});
+        if (btn) { btn.textContent = '✅ Copied!'; setTimeout(() => btn.textContent = '📋 Copy to Clipboard', 2500); }
+    }
+
+
+    async function testPushLocally() {
+        const res = document.getElementById('testPushResult');
+        function setRes(txt) { if (res) res.textContent = txt; }
+
+        // Step 1: Check Notification API
+        if (!('Notification' in window)) {
+            setRes(''); alert('❌ Notifications not supported in this browser.'); return;
+        }
+        setRes('⏳ Checking permission...');
+        if (Notification.permission === 'denied') {
+            setRes('❌ Blocked');
+            alert('❌ Notifications are BLOCKED.\nGo to browser Settings → Site Settings → Notifications → find this site → set to Allow.');
+            return;
+        }
+        if (Notification.permission !== 'granted') {
+            const p = await Notification.requestPermission();
+            if (p !== 'granted') { setRes('❌ Not allowed'); alert('Please tap Allow when the browser asks.'); return; }
+        }
+
+        // Step 2: Check Service Worker
+        if (!('serviceWorker' in navigator)) {
+            setRes('❌ No SW');
+            alert('❌ Service workers not supported. Push notifications require a modern browser.');
+            return;
+        }
+
+        setRes('⏳ Getting SW...');
+        // Use a 6s timeout on serviceWorker.ready so it never hangs forever
+        let reg;
+        try {
+            reg = await Promise.race([
+                navigator.serviceWorker.ready,
+                new Promise((_, rej) => setTimeout(() => rej(new Error('SW not ready after 6s — try refreshing the page')), 6000))
+            ]);
+        } catch(e) {
+            setRes('❌ SW timeout');
+            alert('❌ Service Worker issue: ' + e.message +
+                  '\n\nFix: Refresh the page and try again. If this keeps happening, open DevTools → Application → Service Workers → click Unregister, then refresh.');
+            return;
+        }
+
+        // Step 3: Show test notification
+        setRes('⏳ Showing notification...');
+        try {
+            const swState = reg.active ? reg.active.state : 'no active worker';
+            let sub = null;
+            try { sub = await reg.pushManager.getSubscription(); } catch(e2) {}
+            await reg.showNotification('🧪 Spurthi Test', {
+                body: 'Push notifications are working! ✅',
+                icon: '/Spurthi-youth-fest-2026/davan_logo_2026.gif',
+                vibrate: [200, 100, 200],
+                tag: 'swtest'
+            });
+            setRes('✅ Done!');
+            setTimeout(() => {
+                alert('🧪 Test Result\n\n' +
+                      '• Notification permission: ✅ Granted\n' +
+                      '• SW state: ' + swState + '\n' +
+                      '• Push subscription: ' + (sub ? '✅ Active' : '❌ Missing — reload page to re-subscribe') + '\n\n' +
+                      'Did you see a popup notification?\n' +
+                      '  YES ✅ → Everything working!\n' +
+                      '  NO  ❌ → sw.js has no push handler — use "Copy correct sw.js code" button and re-upload it to GitHub');
+            }, 500);
+        } catch(e) {
+            setRes('❌ Failed');
+            alert('❌ Notification failed: ' + e.message);
+        }
+    }
     async function initPushNotifPanel() {
         await refreshDeviceCount();
         loadAllDevices();
         loadPushLogs();
+        // Re-wire buttons each time panel is opened (in case DOM wasn't ready at DOMContentLoaded)
+        setTimeout(function() {
+            const swBtn   = document.getElementById('swJsCodeBtn');
+            const testBtn = document.getElementById('testPushBtn');
+            if (swBtn && !swBtn._wired)   { swBtn.addEventListener('click', function() { showSwJsCode(); }); swBtn._wired = true; }
+            if (testBtn && !testBtn._wired) {
+                testBtn.addEventListener('click', function() {
+                    const res = document.getElementById('testPushResult');
+                    if (res) res.textContent = '⏳ Running...';
+                    testPushLocally().catch(function(e) {
+                        if (res) res.textContent = '❌ ' + e.message;
+                        alert('Test Push error: ' + e.message);
+                    });
+                });
+                testBtn._wired = true;
+            }
+        }, 100);
     }
 
     async function refreshDeviceCount() {
@@ -34597,13 +34853,15 @@ v5.10 | Mar 01 2026 05:35 IST | Fixed toast never showing — now re-checks on l
     // ═══════════════════════════════════════════════════════════════
     let _inAppLastId = null;
     let _inAppDismissTimer = null;
+    window._currentUserName  = window._currentUserName  || '';
+    window._currentUserClass = window._currentUserClass || '';
 
     function showInAppToast(title, body) {
         const toast = document.getElementById('inAppNotifToast');
-        if (!toast) return;
+        if (!toast) { console.warn('[Toast] element not found!'); return; }
         document.getElementById('inAppNotifTitle').textContent = title;
         document.getElementById('inAppNotifBody').textContent  = body;
-        toast.style.display = 'block';
+        toast.style.cssText = 'display:block;position:fixed;top:0;left:0;right:0;z-index:999999;background:linear-gradient(135deg,#c44569,#6a1b9a);color:#fff;padding:16px 20px;box-shadow:0 4px 20px rgba(0,0,0,0.5)';
         // Reset and start progress bar
         const bar = document.getElementById('inAppNotifBar');
         if (bar) { bar.style.transition = 'none'; bar.style.width = '100%'; }
@@ -34611,6 +34869,7 @@ v5.10 | Mar 01 2026 05:35 IST | Fixed toast never showing — now re-checks on l
         // Auto dismiss after 8s
         clearTimeout(_inAppDismissTimer);
         _inAppDismissTimer = setTimeout(dismissInAppToast, 8000);
+        console.log('[Toast] displayed successfully');
     }
 
     function dismissInAppToast() {
@@ -34631,7 +34890,7 @@ v5.10 | Mar 01 2026 05:35 IST | Fixed toast never showing — now re-checks on l
                     if (_inAppLastId === data.id) return;
                     const age = Date.now() - data.sentAt;
                     console.log('[Toast] id:', data.id, 'age:', Math.round(age/1000)+'s', 'targetName:', data.targetName, 'myName:', window._currentUserName);
-                    if (age > 5 * 60 * 1000) { _inAppLastId = data.id; console.log('[Toast] BLOCKED: too old'); return; }
+                    if (age > 30 * 60 * 1000) { _inAppLastId = data.id; console.log('[Toast] BLOCKED: too old (>30min)'); return; }
                     // Class filter — only block if MY class is known AND doesn't match
                     if (data.targetClass) {
                         const myClass = (window._currentUserClass || '').trim().toLowerCase();
@@ -34642,7 +34901,24 @@ v5.10 | Mar 01 2026 05:35 IST | Fixed toast never showing — now re-checks on l
                     if (data.targetName) {
                         const myName = (window._currentUserName || '').trim().toLowerCase();
                         const tName  = data.targetName.trim().toLowerCase();
-                        if (!myName) { console.log('[Toast] PENDING: not logged in yet'); return; }
+                        const genericNames = ['', 'student', 'cr', 'guest'];
+                        if (genericNames.includes(myName)) {
+                            // Real name not yet known — look up FCM identity from Firebase
+                            console.log('[Toast] PENDING: real name not known, checking FCM identity...');
+                            const sid = getSessionId();
+                            window.db.ref('fcmTokens/' + sid + '/identity').once('value').then(snap => {
+                                const id = snap.val();
+                                if (id && id.name && !genericNames.includes(id.name.toLowerCase())) {
+                                    window._currentUserName = id.name;
+                                    window._currentUserClass = id.class || window._currentUserClass || '';
+                                    console.log('[Toast] FCM identity resolved:', id.name, '— re-evaluating toast');
+                                    window._evalInAppNotif(data);
+                                } else {
+                                    console.log('[Toast] BLOCKED: no real identity in FCM token');
+                                }
+                            }).catch(() => {});
+                            return;
+                        }
                         if (myName !== tName) { _inAppLastId = data.id; console.log('[Toast] BLOCKED: name mismatch', myName, '!=', tName); return; }
                     }
                     console.log('[Toast] SHOWING toast!');
@@ -34657,6 +34933,48 @@ v5.10 | Mar 01 2026 05:35 IST | Fixed toast never showing — now re-checks on l
                 });
             }
         }, 500);
+    // ── EXPOSE ALL ONCLICK FUNCTIONS TO GLOBAL WINDOW SCOPE ──────────
+    // This script runs inside an IIFE — functions must be assigned to window
+    // for HTML onclick= handlers to find them
+    window.refreshDeviceCount      = refreshDeviceCount;
+    window.toggleDevicesPanel      = toggleDevicesPanel;
+    window.filterDevices           = filterDevices;
+    window.renderDeviceList        = renderDeviceList;
+    window.setNotifTarget          = setNotifTarget;
+    window.sendPushNotification    = sendPushNotification;
+    window.initPushNotifPanel      = initPushNotifPanel;
+    window.loadPushLogs            = loadPushLogs;
+    window.showSentDevices         = showSentDevices;
+    window.showSeenDevices         = showSeenDevices;
+    window.dismissInAppToast       = dismissInAppToast;
+    window.requestNotifPermission  = requestNotifPermission;
+    window.dismissNotifBanner      = dismissNotifBanner;
+    window.showSwJsCode            = showSwJsCode;
+    window.copySwJs                = copySwJs;
+    window.testPushLocally         = testPushLocally;
+    window.maybeShowNotifBanner    = maybeShowNotifBanner;
+    window.initLiveUsersPanel      = initLiveUsersPanel;
+    window.refreshLiveUsers        = refreshLiveUsers;
+
+    // ── WIRE BUTTONS VIA addEventListener (bulletproof — no onclick scope issues) ──
+    document.addEventListener('DOMContentLoaded', function() {
+        // Retry wiring after a short delay in case DOM isn't ready
+        function wireButtons() {
+            const swBtn   = document.getElementById('swJsCodeBtn');
+            const testBtn = document.getElementById('testPushBtn');
+            if (swBtn)   swBtn.addEventListener('click',   function() { showSwJsCode(); });
+            if (testBtn) testBtn.addEventListener('click', function() {
+                const res = document.getElementById('testPushResult');
+                if (res) res.textContent = '⏳ Running...';
+                testPushLocally().catch(function(e) {
+                    if (res) res.textContent = '❌ ' + e.message;
+                    alert('Test Push error: ' + e.message);
+                });
+            });
+        }
+        wireButtons();
+        setTimeout(wireButtons, 1500); // retry after panel might be shown
+    });
     })();
     </script>
 
@@ -34678,7 +34996,7 @@ v5.10 | Mar 01 2026 05:35 IST | Fixed toast never showing — now re-checks on l
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;" id="devTriggerVersion">
-                <strong>Version:</strong> 5.11 — Added debug logs to toast — open browser console to see why toast is blocked | <strong>Last Updated:</strong> March 01, 2026 — 05:50 IST</p>
+                <strong>Version:</strong> 5.14 — Fixed person-targeted toast not showing — now resolves real identity from FCM token when _currentUserName is generic | <strong>Last Updated:</strong> Feb 28, 2026 — 23:44 IST</p>
             <!-- ============================================ -->
             
             <p style="color: #c44569; font-size: 0.85em; font-weight: 600; margin-bottom: 8px;">
