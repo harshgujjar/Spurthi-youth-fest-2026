@@ -33665,15 +33665,13 @@ v4.87 | Feb 28 2026 10:50 IST | Firebase Presence (Live Now panel) + PWA Push No
     // ═══════════════════════════════════════════════════════════════
     // 🟢 FIREBASE PRESENCE — writes /liveUsers/{sessionId}
     // ═══════════════════════════════════════════════════════════════
-    let _presenceRegistered = false;
 
     function registerPresence(name, className) {
-        if (_presenceRegistered) return;
-        _presenceRegistered = true;
+        const db = window.db || firebase.database();
+        if (!db) { setTimeout(() => registerPresence(name, className), 1000); return; }
 
         const sid = getSessionId();
-        const db  = firebase.database();
-        const ref = db.ref('liveUsers/' + sid);
+        const presRef = db.ref('liveUsers/' + sid);
 
         const data = {
             name:   name      || 'Guest',
@@ -33683,20 +33681,26 @@ v4.87 | Feb 28 2026 10:50 IST | Firebase Presence (Live Now panel) + PWA Push No
         };
 
         // Write presence
-        ref.set(data);
+        presRef.set(data);
 
         // Auto-remove when tab closes / connection drops
-        ref.onDisconnect().remove();
+        presRef.onDisconnect().remove();
 
-        // Keep alive — re-set every 4 minutes (Firebase drops connection ~5 min idle)
-        setInterval(() => { ref.set(data); }, 4 * 60 * 1000);
+        // Keep alive — re-set every 4 minutes
+        if (!window._presenceInterval) {
+            window._presenceInterval = setInterval(() => { presRef.set(data); }, 4 * 60 * 1000);
+        }
     }
 
     // Call registerPresence as soon as Firebase is ready
-    // (re-called with real name/class when user logs in — see loginSuccess hook below)
     document.addEventListener('DOMContentLoaded', () => {
-        // Register as Guest immediately; overridden after login
-        setTimeout(() => { registerPresence('Guest', '—'); }, 2000);
+        // Wait for window.db to be set by main script, then register as Guest
+        const waitForDb = setInterval(() => {
+            if (window.db) {
+                clearInterval(waitForDb);
+                registerPresence('Guest', '—');
+            }
+        }, 500);
 
         // Show notification permission banner if not yet decided
         if (Notification.permission === 'default' && !localStorage.getItem('notif_banner_dismissed')) {
@@ -33722,12 +33726,11 @@ v4.87 | Feb 28 2026 10:50 IST | Firebase Presence (Live Now panel) + PWA Push No
     // You should call  window.onSpurthiLogin(name, className)  inside your
     // existing loginSuccess / quiz login success code.
     window.onSpurthiLogin = function(name, className) {
-        _presenceRegistered = false; // allow re-register with real identity
-        registerPresence(name, className);
-        // Also save FCM token under their identity
+        registerPresence(name, className); // always re-write with real identity
+        // Also save FCM token identity
         const sid = getSessionId();
-        const tokenRef = firebase.database().ref('fcmTokens/' + sid + '/identity');
-        tokenRef.set({ name, class: className });
+        const db = window.db || firebase.database();
+        db.ref('fcmTokens/' + sid + '/identity').set({ name, class: className });
     };
 
     // ═══════════════════════════════════════════════════════════════
@@ -33736,8 +33739,8 @@ v4.87 | Feb 28 2026 10:50 IST | Firebase Presence (Live Now panel) + PWA Push No
     let _liveUsersListener = null;
 
     function initLiveUsersPanel() {
-        if (_liveUsersListener) return; // already listening
-        const db = firebase.database();
+        if (_liveUsersListener) return;
+        const db = window.db || firebase.database();
         _liveUsersListener = db.ref('liveUsers').on('value', snap => {
             const data = snap.val() || {};
             const users = Object.values(data);
@@ -33808,7 +33811,7 @@ v4.87 | Feb 28 2026 10:50 IST | Firebase Presence (Live Now panel) + PWA Push No
 
     async function saveFcmToken(subscription) {
         const sid = getSessionId();
-        const db  = firebase.database();
+        const db  = window.db || firebase.database();
         await db.ref('fcmTokens/' + sid).update({
             subscription: JSON.stringify(subscription),
             device: getDeviceType(),
@@ -33832,7 +33835,7 @@ v4.87 | Feb 28 2026 10:50 IST | Firebase Presence (Live Now panel) + PWA Push No
     }
 
     async function refreshDeviceCount() {
-        const db = firebase.database();
+        const db = window.db || firebase.database();
         const snap = await db.ref('fcmTokens').once('value');
         const count = snap.exists() ? Object.keys(snap.val()).length : 0;
         document.getElementById('registeredDevicesCount').textContent = count;
@@ -33858,7 +33861,7 @@ v4.87 | Feb 28 2026 10:50 IST | Firebase Presence (Live Now panel) + PWA Push No
 
         try {
             // Collect all tokens from Firebase
-            const db = firebase.database();
+            const db = window.db || firebase.database();
             const snap = await db.ref('fcmTokens').once('value');
             const tokens = snap.val() || {};
             const subscriptions = Object.values(tokens)
