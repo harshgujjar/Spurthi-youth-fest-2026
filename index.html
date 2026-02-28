@@ -1186,6 +1186,24 @@
 <body>
     <!-- 🔔 PUSH NOTIFICATION PERMISSION BANNER -->
     <div id="notifPermBanner" style="display:none;position:fixed;top:0;left:0;right:0;z-index:9999;background:linear-gradient(135deg,#1a0030,#6a1b9a);color:#fff;padding:12px 20px;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;box-shadow:0 3px 15px rgba(0,0,0,0.4)">
+
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- IN-APP REAL-TIME NOTIFICATION TOAST                 -->
+    <!-- Shows instantly for ALL browsers via Firebase       -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <div id="inAppNotifToast" style="display:none;position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:99999;background:linear-gradient(135deg,#1a0030,#6a1b9a);color:#fff;padding:16px 20px;border-radius:16px;box-shadow:0 8px 32px rgba(0,0,0,0.45);max-width:92vw;width:360px;animation:slideInUp 0.4s ease-out">
+        <div style="display:flex;align-items:flex-start;gap:12px">
+            <span style="font-size:1.6em;flex-shrink:0">🔔</span>
+            <div style="flex:1;min-width:0">
+                <div id="inAppNotifTitle" style="font-weight:800;font-size:0.95em;margin-bottom:4px;word-break:break-word"></div>
+                <div id="inAppNotifBody" style="font-size:0.83em;opacity:0.88;word-break:break-word"></div>
+            </div>
+            <button onclick="dismissInAppToast()" style="background:rgba(255,255,255,0.15);border:none;color:#fff;border-radius:50%;width:26px;height:26px;cursor:pointer;font-size:0.9em;flex-shrink:0;line-height:26px;text-align:center">✕</button>
+        </div>
+        <div id="inAppNotifProgress" style="height:3px;background:rgba(255,255,255,0.3);border-radius:2px;margin-top:12px;overflow:hidden">
+            <div id="inAppNotifBar" style="height:100%;background:#c44569;width:100%;transition:width 8s linear"></div>
+        </div>
+    </div>
         <div style="display:flex;align-items:center;gap:10px">
             <span style="font-size:1.4em">🔔</span>
             <span style="font-size:14px;font-weight:600">Get notified about live quizzes & announcements — even when this tab is closed</span>
@@ -33902,13 +33920,15 @@ v4.94 | Feb 28 2026 17:25 IST | Push notification banner fixed to truly show onl
 v4.95 | Feb 28 2026 17:35 IST | /*- in quiz password field of Student and CR login now bypasses all auth rules and logs in directly
 v4.96 | Feb 28 2026 17:50 IST | Live Now and Notifications panels clear data when switching away — reload fresh on each tab click
 v4.97 | Feb 28 2026 17:38 IST | Live Now and Notifications panels now properly hidden when switching to any other tab
+v4.98 | Feb 28 2026 19:16 IST | In-app real-time notification toast added via Firebase — works on all browsers including Opera
+v4.99 | Feb 28 2026 19:33 IST | VAPID public key replaced with newly generated key pair (fresh Web Push setup)
 -->
     <!-- ============================================================ -->
     <!-- 🟢 FIREBASE PRESENCE + 📣 PUSH NOTIFICATIONS SCRIPTS       -->
     <!-- ============================================================ -->
     <script>
     // ─── CONFIGURATION ───────────────────────────────────────────
-    const VAPID_KEY = 'BPiqq8xx1T9e6TU0slbjwUufEWHyzskTztBAkH89AwUd6-ktp-qpTl4HUI_3qE7pLd5609z1C8gdLF4V2XTHImg';
+    const VAPID_KEY = 'BJg-BcOEBrGpMtgD_WXXsf2NIimR3yjvfqnRiS86KRS85677lCSXjuuLUkOcnk_bDTrGiCrFFTf517YTRdnTTXY';
     // ⚠️ Replace this with your actual fcm-push Cloudflare Worker URL after deploying it
     const FCM_WORKER_URL = 'https://fcm-push.harshgujjar.workers.dev';
     // ─────────────────────────────────────────────────────────────
@@ -34334,6 +34354,16 @@ v4.97 | Feb 28 2026 17:38 IST | Live Now and Notifications panels now properly h
 
         try {
             const db = window.db || firebase.database();
+
+            // ── STEP 1: Write to Firebase for in-app real-time toast (works on ALL browsers) ──
+            await db.ref('live_notifications/latest').set({
+                title,
+                body,
+                sentAt: Date.now(),
+                id: Date.now().toString()
+            });
+
+            // ── STEP 2: Try FCM push (best-effort, may fail on some browsers) ──
             const snap = await db.ref('fcmTokens').once('value');
             const tokens = snap.val() || {};
             const tokenEntries = Object.entries(tokens).filter(([,t]) => t.subscription);
@@ -34347,50 +34377,47 @@ v4.97 | Feb 28 2026 17:38 IST | Live Now and Notifications panels now properly h
                 savedAt: t.savedAt || 0
             }));
 
-            if (subscriptions.length === 0) {
-                statusEl.style.display = 'block';
-                statusEl.style.background = '#fff3cd';
-                statusEl.style.color = '#856404';
-                statusEl.textContent = '⚠️ No registered devices found.';
-                btn.disabled = false;
-                btn.textContent = '📤 Send to All Devices';
-                return;
+            let sentCount = 0, failedCount = 0;
+
+            if (subscriptions.length > 0) {
+                try {
+                    const resp = await fetch(FCM_WORKER_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ title, body, subscriptions })
+                    });
+                    if (resp.ok) {
+                        const result = await resp.json();
+                        sentCount = result.sent || subscriptions.length;
+                        failedCount = result.failed || 0;
+                    }
+                } catch(fcmErr) {
+                    console.warn('[FCM Push] Failed (in-app still delivered):', fcmErr.message);
+                    failedCount = subscriptions.length;
+                }
             }
 
-            const resp = await fetch(FCM_WORKER_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ title, body, subscriptions })
+            // Save log to Firebase
+            const nowIST = new Date(Date.now() + 5.5*60*60*1000);
+            const logRef = db.ref('push_logs').push();
+            await logRef.set({
+                title, body,
+                sentAt: Date.now(),
+                sentAtIST: nowIST.toISOString(),
+                sent: sentCount,
+                failed: failedCount,
+                total: subscriptions.length,
+                devices: deviceList
             });
 
-            if (resp.ok) {
-                const result = await resp.json();
-                const sentCount = result.sent || subscriptions.length;
-                const failedCount = result.failed || 0;
+            statusEl.style.display = 'block';
+            statusEl.style.background = '#d4edda';
+            statusEl.style.color = '#155724';
+            statusEl.textContent = `✅ In-app notification sent to all open tabs! FCM push: ${sentCount} sent, ${failedCount} failed.`;
+            document.getElementById('notifTitle').value = '';
+            document.getElementById('notifBody').value = '';
+            loadPushLogs();
 
-                // Save log to Firebase
-                const nowIST = new Date(Date.now() + 5.5*60*60*1000);
-                const logRef = db.ref('push_logs').push();
-                await logRef.set({
-                    title, body,
-                    sentAt: Date.now(),
-                    sentAtIST: nowIST.toISOString(),
-                    sent: sentCount,
-                    failed: failedCount,
-                    total: subscriptions.length,
-                    devices: deviceList
-                });
-
-                statusEl.style.display = 'block';
-                statusEl.style.background = '#d4edda';
-                statusEl.style.color = '#155724';
-                statusEl.textContent = `✅ Sent successfully to ${sentCount} device(s)!`;
-                document.getElementById('notifTitle').value = '';
-                document.getElementById('notifBody').value = '';
-                loadPushLogs();
-            } else {
-                throw new Error('Worker returned ' + resp.status);
-            }
         } catch (err) {
             statusEl.style.display = 'block';
             statusEl.style.background = '#f8d7da';
@@ -34432,6 +34459,55 @@ v4.97 | Feb 28 2026 17:38 IST | Live Now and Notifications panels now properly h
     document.addEventListener('DOMContentLoaded', () => {
         setTimeout(markNotificationsSeen, 3000);
     });
+
+    // ═══════════════════════════════════════════════════════════════
+    // 📣 IN-APP REAL-TIME NOTIFICATION TOAST
+    // Listens to Firebase live_notifications/latest
+    // Works on ALL browsers — Opera, Chrome, Safari, Firefox
+    // ═══════════════════════════════════════════════════════════════
+    let _inAppLastId = null;
+    let _inAppDismissTimer = null;
+
+    function showInAppToast(title, body) {
+        const toast = document.getElementById('inAppNotifToast');
+        if (!toast) return;
+        document.getElementById('inAppNotifTitle').textContent = title;
+        document.getElementById('inAppNotifBody').textContent  = body;
+        toast.style.display = 'block';
+        // Reset and start progress bar
+        const bar = document.getElementById('inAppNotifBar');
+        if (bar) { bar.style.transition = 'none'; bar.style.width = '100%'; }
+        setTimeout(() => { if (bar) { bar.style.transition = 'width 8s linear'; bar.style.width = '0%'; } }, 50);
+        // Auto dismiss after 8s
+        clearTimeout(_inAppDismissTimer);
+        _inAppDismissTimer = setTimeout(dismissInAppToast, 8000);
+    }
+
+    function dismissInAppToast() {
+        clearTimeout(_inAppDismissTimer);
+        const toast = document.getElementById('inAppNotifToast');
+        if (toast) toast.style.display = 'none';
+    }
+
+    // Start listening as soon as Firebase is ready
+    (function startInAppNotifListener() {
+        const waitForDb = setInterval(() => {
+            if (window.db) {
+                clearInterval(waitForDb);
+                window.db.ref('live_notifications/latest').on('value', snap => {
+                    if (!snap.exists()) return;
+                    const data = snap.val();
+                    if (!data || !data.id) return;
+                    // Don't show if same notification already shown this session
+                    if (_inAppLastId === data.id) return;
+                    // Don't show if older than 30 seconds (page was loaded after it was sent)
+                    if (Date.now() - data.sentAt > 30000) { _inAppLastId = data.id; return; }
+                    _inAppLastId = data.id;
+                    showInAppToast(data.title, data.body);
+                });
+            }
+        }, 500);
+    })();
     </script>
 
     <footer style="background: white; border-radius: 12px; padding: 25px; margin-top: 30px; box-shadow: 0 4px 20px rgba(0,0,0,0.1);">
@@ -34452,7 +34528,7 @@ v4.97 | Feb 28 2026 17:38 IST | Live Now and Notifications panels now properly h
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;" id="devTriggerVersion">
-                <strong>Version:</strong> 4.97 — Live Now and Notifications panels now properly hidden when switching to any other tab | <strong>Last Updated:</strong> February 28, 2026 — 17:38 IST</p>
+                <strong>Version:</strong> 4.99 — VAPID public key replaced with newly generated key pair (fresh Web Push setup) | <strong>Last Updated:</strong> February 28, 2026 — 19:33 IST</p>
             <!-- ============================================ -->
             
             <p style="color: #c44569; font-size: 0.85em; font-weight: 600; margin-bottom: 8px;">
