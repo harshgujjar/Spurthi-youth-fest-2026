@@ -4565,6 +4565,42 @@
                         Run a scan to see node sizes.
                     </div>
                 </div>
+
+                <!-- ── Quiz Submissions Date-Wise Cleanup ── -->
+                <div style="margin-top:28px">
+                    <h3 style="color:#c44569;margin-bottom:4px">🗂️ Quiz Submissions — Date-Wise Cleanup</h3>
+                    <p style="color:#888;font-size:.82em;margin-bottom:14px">Safely delete old quiz submissions day by day. <strong>Winners &amp; leaderboard are stored in <code>quizResults</code> — completely separate — and will NOT be affected.</strong></p>
+
+                    <div style="background:#fff8e1;border-left:4px solid #ffc107;border-radius:8px;padding:12px 14px;margin-bottom:14px;font-size:.83em;color:#856404">
+                        ✅ <strong>Safe to delete:</strong> Days where "Results Saved" shows ✅ — scores &amp; winners already recorded in quizResults.<br>
+                        ⚠️ <strong>Do NOT delete:</strong> Days marked ❌ Results Not Saved — raw submissions may still be needed for scoring.
+                    </div>
+
+                    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px">
+                        <button class="btn btn-success" onclick="qsCleanupLoad()" id="qsc-load-btn">📂 Load Submission Days</button>
+                        <button class="btn btn-small" onclick="qsCleanupSelectAll()" style="background:#6a1b9a;color:white">☑ Select All Safe Days</button>
+                        <button class="btn btn-small" onclick="qsCleanupDeleteSelected()" id="qsc-del-btn" style="background:#dc3545;color:white;display:none">🗑️ Delete Selected Days</button>
+                    </div>
+
+                    <div id="qsc-alert" style="display:none;padding:12px 16px;border-radius:8px;margin-bottom:12px;font-weight:600;font-size:.85em"></div>
+
+                    <div id="qsc-table-wrap" style="display:none;overflow-x:auto">
+                        <table style="width:100%;border-collapse:collapse;font-size:.84em">
+                            <thead>
+                                <tr style="background:linear-gradient(135deg,#c44569,#6a1b9a);color:white">
+                                    <th style="padding:9px 12px;text-align:center;border-radius:8px 0 0 0;width:40px">☑</th>
+                                    <th style="padding:9px 12px;text-align:left">📅 Date</th>
+                                    <th style="padding:9px 12px;text-align:center">👥 Submissions</th>
+                                    <th style="padding:9px 12px;text-align:center">📦 Est. Size</th>
+                                    <th style="padding:9px 12px;text-align:center">🏆 Results Saved?</th>
+                                    <th style="padding:9px 12px;text-align:left;border-radius:0 8px 0 0">🥇 Winner / 🥈 Runner-Up</th>
+                                </tr>
+                            </thead>
+                            <tbody id="qsc-tbody"></tbody>
+                        </table>
+                        <p id="qsc-total-label" style="color:#888;font-size:.78em;margin-top:8px;text-align:right"></p>
+                    </div>
+                </div>
             </div>
             <!-- ================================================ -->
             <!-- END DB INSPECTOR PANEL                           -->
@@ -4735,6 +4771,15 @@
                         </ol>
                         <pre style="background:#1e1e2e;color:#cdd6f4;border-radius:8px;padding:14px;margin:10px 0;font-size:.78em;overflow-x:auto;line-height:1.6"><code>export default {
   async fetch(request) {
+    // Allow CORS preflight
+    if (request.method === 'OPTIONS') {
+      return new Response(null, { headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type'
+      }});
+    }
+
     // ✏️ Fill in YOUR Cloudinary credentials below
     const API_KEY    = "YOUR_API_KEY_HERE";
     const API_SECRET = "YOUR_API_SECRET_HERE";
@@ -4749,8 +4794,8 @@
 
     return new Response(JSON.stringify(data), {
       headers: {
-        "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "*"
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*'
       }
     });
   }
@@ -4772,6 +4817,7 @@
                             <button class="btn btn-small" onclick="cldLiveClear()" style="background:#888;color:white">🗑️ Clear</button>
                         </div>
                         <p style="color:#aaa;font-size:.76em;margin-top:8px">The URL is saved in your browser for next time.</p>
+                        <p style="color:#c0392b;font-size:.78em;margin-top:6px;font-weight:600">⚠️ This must be your <strong>Cloudinary stats worker</strong> — NOT your email/Brevo worker. Create a separate worker with the code shown above (paste your API_KEY, API_SECRET, CLOUD_NAME).</p>
                     </div>
 
                     <!-- Progress Bar -->
@@ -11643,9 +11689,14 @@
             list.innerHTML = '<div style="text-align:center;color:#aaa;padding:30px">⏳ Loading your events…</div>';
 
             let allEnrollments = [];
+            let danceStories   = {};
             try {
-                const snap = await db.ref('youthfest-enrollments').once('value');
-                if (snap.exists()) snap.forEach(ch => { allEnrollments.push({ id: ch.key, ...ch.val() }); });
+                const [enrollSnap, storySnap] = await Promise.all([
+                    db.ref('youthfest-enrollments').once('value'),
+                    db.ref('groupDance').once('value')
+                ]);
+                if (enrollSnap.exists()) enrollSnap.forEach(ch => { allEnrollments.push({ id: ch.key, ...ch.val() }); });
+                danceStories = storySnap.val() || {};
             } catch(e) {
                 list.innerHTML = '<div style="color:#c62828;padding:16px">❌ Error loading enrollments: ' + e.message + '</div>';
                 return;
@@ -11695,6 +11746,7 @@
                     .concat(classKeys.map(c => `<option value="${c}">${c} (${byClass[c].length})</option>`)).join('');
 
                 // Per-class rows with member list — collapsed by default
+                const isDanceEvt = evt.name.trim().toLowerCase() === 'group dance';
                 const classRowsHtml = classKeys.length
                     ? classKeys.map(cls => {
                         const members = byClass[cls];
@@ -11709,7 +11761,26 @@
                                 ${extra ? `<span style="color:#999;font-size:0.82em">${extra}</span>` : ''}
                             </div>`;
                         }).join('');
+                        // Dance story block — shown for Group Dance event
+                        let danceStoryHtml = '';
+                        if (isDanceEvt) {
+                            const clsKey  = cls.replace(/[\.\[\]#$\/\s]/g, '_');
+                            const story   = danceStories[clsKey] || {};
+                            const savedAt = story.savedAt ? new Date(story.savedAt).toLocaleString('en-IN',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}) : '';
+                            danceStoryHtml = story.title
+                                ? `<div style="background:linear-gradient(135deg,#fce4ec,#f8bbd0);border-top:2px solid #f48fb1;padding:12px 14px">
+                                    <div style="font-size:0.72em;font-weight:700;color:#ad1457;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:5px">🎭 Dance Performance Title</div>
+                                    <div style="font-weight:800;color:#880e4f;font-size:1em;margin-bottom:10px;line-height:1.4">${story.title}</div>
+                                    <div style="font-size:0.72em;font-weight:700;color:#ad1457;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:5px">📝 Story Summary</div>
+                                    <div style="font-size:0.85em;color:#444;line-height:1.7;background:rgba(255,255,255,0.65);border-radius:6px;padding:8px 10px">${story.summary}</div>
+                                    ${savedAt ? '<div style="font-size:0.71em;color:#aaa;margin-top:6px;text-align:right">💾 Submitted: ' + savedAt + '</div>' : ''}
+                                   </div>`
+                                : `<div style="background:#fff8e1;border-top:2px dashed #ffe082;padding:10px 14px;text-align:center;font-size:0.82em;color:#856404">
+                                    ⏳ <strong>Dance Performance Title &amp; Story Summary not submitted yet</strong>
+                                   </div>`;
+                        }
                         return `<div class="gip_clsrow_${evtIdx}" data-cls="${cls}" style="border-bottom:1px solid #f0f0f0">
+                            ${isDanceEvt ? danceStoryHtml : ''}
                             <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:#f8f9fa;cursor:pointer;user-select:none"
                                  onclick="var b=this.nextElementSibling;b.style.display=b.style.display==='none'?'block':'none';this.querySelector('.gip_arr').textContent=b.style.display==='none'?'▶':'▼'">
                                 <span style="font-weight:700;color:#333;font-size:0.84em">📚 ${cls}</span>
@@ -15758,18 +15829,22 @@
                             <span style="background:rgba(255,255,255,0.25);color:white;padding:2px 12px;border-radius:12px;font-size:0.8em;font-weight:700">${members.length} Performer${members.length !== 1 ? 's' : ''}</span>
                         </div>
                         <div style="padding:12px 14px">
-                            <!-- Performers -->
-                            <div style="margin-bottom:10px">${memberBadges}</div>
-                            <!-- Story -->
+                            <!-- Dance Performance Title & Story Summary — shown first and prominently -->
                             ${hasStory ? `
-                            <div style="background:#fce4ec;border-left:4px solid #e91e63;border-radius:8px;padding:12px 14px">
-                                <div style="font-weight:700;color:#880e4f;font-size:0.9em;margin-bottom:4px">📖 ${story.title}</div>
-                                <div style="font-size:0.85em;color:#555;line-height:1.6">${story.summary}</div>
-                                ${savedAt ? '<div style="font-size:0.72em;color:#aaa;margin-top:6px">💾 ' + savedAt + '</div>' : ''}
+                            <div style="background:linear-gradient(135deg,#fce4ec,#f8bbd0);border:2px solid #e91e63;border-radius:10px;padding:14px 16px;margin-bottom:12px">
+                                <div style="font-size:0.75em;font-weight:700;color:#ad1457;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:6px">🎭 Dance Performance Title</div>
+                                <div style="font-weight:800;color:#880e4f;font-size:1.05em;margin-bottom:10px;line-height:1.4">${story.title}</div>
+                                <div style="font-size:0.75em;font-weight:700;color:#ad1457;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:6px">📝 Story Summary</div>
+                                <div style="font-size:0.88em;color:#444;line-height:1.7;background:rgba(255,255,255,0.6);border-radius:6px;padding:8px 10px">${story.summary}</div>
+                                ${savedAt ? '<div style="font-size:0.72em;color:#aaa;margin-top:8px;text-align:right">💾 Submitted: ' + savedAt + '</div>' : ''}
                             </div>` : `
-                            <div style="background:#fff8e1;border:2px dashed #ffe082;border-radius:8px;padding:12px;text-align:center;font-size:0.85em;color:#856404">
-                                ⏳ Story not submitted yet
+                            <div style="background:#fff8e1;border:2px dashed #ffe082;border-radius:8px;padding:14px;text-align:center;font-size:0.85em;color:#856404;margin-bottom:12px">
+                                <div style="font-size:1.1em;margin-bottom:4px">⏳</div>
+                                <strong>Dance Performance Title &amp; Story Summary not submitted yet</strong>
                             </div>`}
+                            <!-- Performers -->
+                            <div style="font-size:0.75em;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.7px;margin-bottom:6px">👥 Performers</div>
+                            <div>${memberBadges}</div>
                         </div>
                     </div>`;
                 }).join('');
@@ -31645,6 +31720,169 @@ Proceed?`)) return;
         document.getElementById('cld-mode-live-btn').style.color = isManual ? '#6a1b9a' : '#333';
     }
 
+    // ── Quiz Submissions Date-Wise Cleanup ────────────────────────────────────
+    let qscDays = {}; // { dateKey: { count, resultsSaved, sizeEst } }
+
+    async function qsCleanupLoad() {
+        const btn = document.getElementById('qsc-load-btn');
+        const tbody = document.getElementById('qsc-tbody');
+        const wrap = document.getElementById('qsc-table-wrap');
+        const delBtn = document.getElementById('qsc-del-btn');
+        btn.disabled = true; btn.textContent = '⏳ Loading…';
+        qscShowAlert('', '');
+        qscDays = {};
+
+        try {
+            const [subSnap, resSnap] = await Promise.all([
+                db.ref('quizSubmissions').once('value'),
+                db.ref('quizResults').once('value')
+            ]);
+            // Normalize all result keys to dashes format (2026-02-24)
+            // so they match regardless of whether stored with dashes or underscores
+            const resultDates = new Set();
+            const resultData  = {}; // normalized key -> result object
+            if (resSnap.exists()) resSnap.forEach(ch => {
+                const normKey = ch.key.replace(/_/g, '-');
+                resultDates.add(normKey);
+                resultDates.add(ch.key.replace(/-/g, '_'));
+                resultDates.add(ch.key);
+                resultData[normKey] = ch.val();
+            });
+
+            if (!subSnap.exists()) {
+                qscShowAlert('✅ No quiz submissions found — nothing to delete!', '#d4edda', '#155724');
+                btn.disabled = false; btn.textContent = '📂 Load Submission Days';
+                return;
+            }
+
+            subSnap.forEach(daySnap => {
+                const dateKey = daySnap.key;
+                let count = 0;
+                let sizeEst = 0;
+                daySnap.forEach(sub => {
+                    count++;
+                    sizeEst += JSON.stringify(sub.val()).length;
+                });
+                // Normalize dateKey to dashes for comparison
+                const normalizedKey = dateKey.replace(/_/g, '-');
+                const resultObj = resultData[normalizedKey] || null;
+                qscDays[dateKey] = {
+                    count,
+                    sizeEst,
+                    resultsSaved: !!(resultDates.has(normalizedKey) || resultDates.has(dateKey)),
+                    resultObj
+                };
+            });
+
+            const sortedDates = Object.keys(qscDays).sort();
+            let totalSize = 0;
+            tbody.innerHTML = sortedDates.map(dk => {
+                const d = qscDays[dk];
+                totalSize += d.sizeEst;
+                const displayDate = qscFormatDate(dk);
+                const sizeLabel = d.sizeEst > 1024 ? (d.sizeEst / 1024).toFixed(1) + ' KB' : d.sizeEst + ' B';
+                const safe = d.resultsSaved;
+                const r = d.resultObj;
+                let winnerHtml = '<span style="color:#bbb;font-size:.8em">—</span>';
+                if (r && r.winner) {
+                    const declDate = r.declaredAt ? new Date(r.declaredAt).toLocaleString('en-IN',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}) : '';
+                    winnerHtml = `<div style="font-size:.82em;line-height:1.7">
+                        <div><span style="font-size:1em">🥇</span> <strong style="color:#1565c0">${r.winner.name}</strong> <span style="color:#888">(${r.winner.class})</span> <span style="background:#fff3cd;color:#856404;padding:1px 6px;border-radius:8px;font-size:.78em">${r.winner.score}/2</span></div>
+                        ${r.runnerUp ? `<div><span style="font-size:1em">🥈</span> <strong style="color:#6a1b9a">${r.runnerUp.name}</strong> <span style="color:#888">(${r.runnerUp.class})</span> <span style="background:#e8f5e9;color:#1b5e20;padding:1px 6px;border-radius:8px;font-size:.78em">${r.runnerUp.score}/2</span></div>` : ''}
+                        ${declDate ? `<div style="color:#aaa;font-size:.75em">📅 Declared: ${declDate}</div>` : ''}
+                    </div>`;
+                }
+                return `<tr style="border-bottom:1px solid #f0f0f0;background:${safe ? '#fff' : '#fff8e1'}">
+                    <td style="padding:9px 12px;text-align:center">
+                        <input type="checkbox" class="qsc-chk" data-key="${dk}" ${safe ? '' : 'disabled title="Results not saved yet — unsafe to delete"'}
+                               style="width:16px;height:16px;cursor:${safe ? 'pointer' : 'not-allowed'}">
+                    </td>
+                    <td style="padding:9px 12px;font-weight:700;color:#333">${displayDate}</td>
+                    <td style="padding:9px 12px;text-align:center;color:#1565c0;font-weight:700">${d.count}</td>
+                    <td style="padding:9px 12px;text-align:center;color:#6a1b9a;font-weight:600">${sizeLabel}</td>
+                    <td style="padding:9px 12px;text-align:center">
+                        ${safe
+                            ? '<span style="background:#d4edda;color:#155724;padding:3px 10px;border-radius:12px;font-size:.82em;font-weight:700">✅ Saved</span>'
+                            : '<span style="background:#fff3cd;color:#856404;padding:3px 10px;border-radius:12px;font-size:.82em;font-weight:700">⚠️ Not Saved</span>'}
+                    </td>
+                    <td style="padding:9px 14px">${winnerHtml}</td>
+                </tr>`;
+            }).join('');
+
+            const totalLabel = document.getElementById('qsc-total-label');
+            const totalKB = (totalSize / 1024).toFixed(1);
+            totalLabel.textContent = `Total quizSubmissions size: ~${totalKB} KB across ${sortedDates.length} day(s)`;
+
+            wrap.style.display = 'block';
+            delBtn.style.display = 'inline-block';
+            qscShowAlert(`📂 Found ${sortedDates.length} submission day(s). Safe days (✅) can be deleted without affecting winners or leaderboard.`, '#d4edda', '#155724');
+
+        } catch(err) {
+            qscShowAlert('❌ Error loading: ' + err.message, '#f8d7da', '#721c24');
+        }
+        btn.disabled = false; btn.textContent = '🔄 Refresh';
+    }
+
+    function qscFormatDate(dk) {
+        // dateKey format: "2026-02-24" or "2026_02_24"
+        const normalized = dk.replace(/_/g, '-');
+        const d = new Date(normalized + 'T00:00:00');
+        if (isNaN(d)) return dk;
+        return d.toLocaleDateString('en-IN', { weekday:'short', day:'2-digit', month:'short', year:'numeric' });
+    }
+
+    function qsCleanupSelectAll() {
+        document.querySelectorAll('.qsc-chk:not([disabled])').forEach(chk => chk.checked = true);
+    }
+
+    async function qsCleanupDeleteSelected() {
+        const checked = [...document.querySelectorAll('.qsc-chk:checked')];
+        if (!checked.length) {
+            qscShowAlert('⚠️ No days selected. Check the boxes next to the days you want to delete.', '#fff3cd', '#856404');
+            return;
+        }
+        const keys = checked.map(c => c.dataset.key);
+        const totalEntries = keys.reduce((s, k) => s + (qscDays[k]?.count || 0), 0);
+        const totalKB = (keys.reduce((s, k) => s + (qscDays[k]?.sizeEst || 0), 0) / 1024).toFixed(1);
+        const confirmed = confirm(
+            `🗑️ DELETE QUIZ SUBMISSIONS\n\n` +
+            `You are about to delete submissions for ${keys.length} day(s):\n` +
+            keys.map(k => `• ${qscFormatDate(k)} (${qscDays[k]?.count} entries)`).join('\n') +
+            `\n\nTotal: ${totalEntries} submissions (~${totalKB} KB)\n\n` +
+            `✅ Winners & leaderboard (quizResults) will NOT be affected.\n\n` +
+            `This cannot be undone. Continue?`
+        );
+        if (!confirmed) return;
+
+        const delBtn = document.getElementById('qsc-del-btn');
+        delBtn.disabled = true; delBtn.textContent = '⏳ Deleting…';
+
+        try {
+            const updates = {};
+            keys.forEach(k => { updates['quizSubmissions/' + k] = null; });
+            await db.ref().update(updates);
+            qscShowAlert(`✅ Successfully deleted ${keys.length} day(s) — ${totalEntries} submissions removed (~${totalKB} KB freed). Reload to refresh sizes.`, '#d4edda', '#155724');
+            // Remove deleted rows
+            keys.forEach(k => {
+                const chk = document.querySelector(`.qsc-chk[data-key="${k}"]`);
+                if (chk) chk.closest('tr').remove();
+                delete qscDays[k];
+            });
+        } catch(err) {
+            qscShowAlert('❌ Delete failed: ' + err.message, '#f8d7da', '#721c24');
+        }
+        delBtn.disabled = false; delBtn.textContent = '🗑️ Delete Selected Days';
+    }
+
+    function qscShowAlert(msg, bg, color) {
+        const el = document.getElementById('qsc-alert');
+        if (!msg) { el.style.display = 'none'; return; }
+        el.style.display = 'block';
+        el.style.background = bg || '#fff3cd';
+        el.style.color = color || '#856404';
+        el.innerHTML = msg;
+    }
+
     // -- Helpers ---------------------------------------------------------------
     function cldFmtMB(mb) {
         if (!mb && mb !== 0) return '—';
@@ -31801,7 +32039,7 @@ Proceed?`)) return;
 
         try {
             pb.style.width = '50%'; pl.textContent = 'Fetching from Cloudinary via Worker…';
-            const resp = await fetch(workerUrl);
+            const resp = await fetch(workerUrl, { method: 'GET' });
             pb.style.width = '85%'; pl.textContent = 'Processing…';
 
             if (!resp.ok) throw new Error(`Worker returned HTTP ${resp.status}. Check your Worker URL and deployment.`);
@@ -33293,6 +33531,10 @@ v4.72 | Feb 27 2026 14:31 IST | BOW jury sheet & SA live monitor now show global
 v4.73 | Feb 27 2026 14:31 IST | Fixed missing isBOW variable in SA live monitor causing loading freeze
 v4.74 | Feb 27 2026 14:31 IST | Fixed missing membersPerTeam variable in SA live monitor multiteam block
 v4.75 | Feb 27 2026 15:20 IST | Added Group Dance story tab in CR; story visible to jury, SA live monitor, and Anitha N/Pooja C incharge panel
+v4.76 | Feb 27 2026 16:10 IST | Dance Performance Title & Story Summary shown prominently (first) in Anitha N / Pooja C incharge panel
+v4.77 | Feb 27 2026 16:30 IST | Dance Title & Story Summary now visible inside Group Dance card in generic incharge panel for Anitha N / Pooja C
+v4.78 | Feb 27 2026 16:45 IST | Fixed Cloudflare Worker fetch to use POST so health-check no longer gets 405 Method Not Allowed
+v4.79 | Feb 27 2026 17:00 IST | Cloudinary stats worker fetch reverted to GET; worker template updated with CORS OPTIONS; warning added that stats worker must be separate from email worker
 -->
     <footer style="background: white; border-radius: 12px; padding: 25px; margin-top: 30px; box-shadow: 0 4px 20px rgba(0,0,0,0.1);">
         <div style="text-align: center;">
@@ -33312,7 +33554,7 @@ v4.75 | Feb 27 2026 15:20 IST | Added Group Dance story tab in CR; story visible
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;" id="devTriggerVersion">
-                <strong>Version:</strong> 4.75 — Group Dance story tab in CR; visible to jury, SA monitor & incharge | <strong>Last Updated:</strong> February 27, 2026 — 15:20 IST</p>
+                <strong>Version:</strong> 4.82 — Quiz cleanup table shows Winner & Runner-Up per day for verification | <strong>Last Updated:</strong> February 27, 2026 — 17:45 IST</p>
             <!-- ============================================ -->
             
             <p style="color: #c44569; font-size: 0.85em; font-weight: 600; margin-bottom: 8px;">
