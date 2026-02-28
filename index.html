@@ -1184,6 +1184,17 @@
     </style>
 </head>
 <body>
+    <!-- 🔔 PUSH NOTIFICATION PERMISSION BANNER -->
+    <div id="notifPermBanner" style="display:none;position:fixed;top:0;left:0;right:0;z-index:9999;background:linear-gradient(135deg,#1a0030,#6a1b9a);color:#fff;padding:12px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;box-shadow:0 3px 15px rgba(0,0,0,0.4)">
+        <div style="display:flex;align-items:center;gap:10px">
+            <span style="font-size:1.4em">🔔</span>
+            <span style="font-size:14px;font-weight:600">Get notified about live quizzes & announcements — even when this tab is closed</span>
+        </div>
+        <div style="display:flex;gap:10px;flex-shrink:0">
+            <button onclick="requestNotifPermission()" style="background:#c44569;color:#fff;border:none;padding:8px 20px;border-radius:20px;cursor:pointer;font-size:13px;font-weight:700">🔔 Allow</button>
+            <button onclick="dismissNotifBanner()" style="background:rgba(255,255,255,0.15);color:#fff;border:2px solid rgba(255,255,255,0.4);padding:8px 16px;border-radius:20px;cursor:pointer;font-size:13px">Later</button>
+        </div>
+    </div>
     <div class="container">
         <!-- ============================================ -->
         <!-- TO CHANGE BANNER IMAGE:                      -->
@@ -2768,6 +2779,8 @@
                 <button class="tab super-admin-only" onclick="showTab('allEventsOverview');loadAllEventsOverview()" id="allEventsOverviewTab">📊 All Events Overview</button>
                 <button class="tab super-admin-only" onclick="showTab('siteSettingsPanel');loadSiteSettings()" id="siteSettingsPanelTab">⚙️ Site Settings</button>
                 <button class="tab super-admin-only" onclick="showTab('feedbackAdminPanel');loadFeedbackAdmin()" id="feedbackAdminPanelTab">📋 Feedback Admin</button>
+                <button class="tab super-admin-only" onclick="showTab('liveUsersPanel');initLiveUsersPanel()" id="liveUsersPanelTab">🟢 Live Now</button>
+                <button class="tab super-admin-only" onclick="showTab('pushNotifPanel');initPushNotifPanel()" id="pushNotifPanelTab">📣 Notifications</button>
             </div><!-- end .tabs -->
 
             <div class="content" id="adminContentBox">
@@ -6442,6 +6455,85 @@
         </div>
         <!-- ── End Leaderboard Admin Panel ── -->
 
+        <!-- ============================================ -->
+        <!-- 🟢 LIVE USERS PANEL                         -->
+        <!-- ============================================ -->
+        <div id="liveUsersPanel" class="form-section super-admin-only" style="margin-top:20px">
+            <h2 style="color:#ffd700;margin-bottom:12px;text-shadow:0 2px 8px rgba(0,0,0,0.4)">🟢 Live Now — Who's on the Site</h2>
+            <p style="color:rgba(255,255,255,0.7);font-size:13px;margin-bottom:18px">Real-time list of everyone currently viewing the site. Updates automatically. When someone closes their tab, they are removed instantly.</p>
+
+            <!-- Live count badge -->
+            <div style="background:linear-gradient(135deg,#0a3d0a,#1a6b1a);border-radius:14px;padding:20px 24px;margin-bottom:18px;border:2px solid rgba(76,175,80,0.5);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+                <div style="display:flex;align-items:center;gap:14px">
+                    <span style="font-size:2.2em;animation:pulse 2s infinite">🟢</span>
+                    <div>
+                        <div id="liveCountBadge" style="color:#4caf50;font-size:2em;font-weight:800;line-height:1">0</div>
+                        <div style="color:rgba(255,255,255,0.7);font-size:13px">users currently on site</div>
+                    </div>
+                </div>
+                <button onclick="refreshLiveUsers()" style="background:rgba(76,175,80,0.25);color:#a5d6a7;border:2px solid rgba(76,175,80,0.5);padding:10px 20px;border-radius:20px;cursor:pointer;font-size:0.9em;font-weight:700">🔄 Refresh</button>
+            </div>
+
+            <!-- Live users table -->
+            <div style="background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 4px 15px rgba(0,0,0,0.15)">
+                <table style="width:100%;border-collapse:collapse">
+                    <thead>
+                        <tr style="background:linear-gradient(135deg,#1a0030,#6a1b9a)">
+                            <th style="padding:12px 16px;text-align:left;color:#ffd700;font-size:13px">👤 Name</th>
+                            <th style="padding:12px 16px;text-align:left;color:#ffd700;font-size:13px">🎓 Class</th>
+                            <th style="padding:12px 16px;text-align:left;color:#ffd700;font-size:13px">🕐 Since</th>
+                            <th style="padding:12px 16px;text-align:left;color:#ffd700;font-size:13px">📱 Device</th>
+                        </tr>
+                    </thead>
+                    <tbody id="liveUsersTableBody">
+                        <tr><td colspan="4" style="text-align:center;padding:30px;color:#999;font-size:14px">⏳ Loading live users…</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <p style="color:rgba(255,255,255,0.45);font-size:11px;margin-top:10px">⚠️ Only students who have logged in show their name & class. Anonymous visitors appear as "Guest".</p>
+        </div>
+
+        <!-- ============================================ -->
+        <!-- 📣 PUSH NOTIFICATIONS PANEL                 -->
+        <!-- ============================================ -->
+        <div id="pushNotifPanel" class="form-section super-admin-only" style="margin-top:20px">
+            <h2 style="color:#ffd700;margin-bottom:12px;text-shadow:0 2px 8px rgba(0,0,0,0.4)">📣 Push Notifications</h2>
+            <p style="color:rgba(255,255,255,0.7);font-size:13px;margin-bottom:18px">Send a notification to all registered devices — even when the site is closed. Students must have clicked "Allow" on the notification prompt at least once.</p>
+
+            <!-- Registered devices count -->
+            <div style="background:linear-gradient(135deg,#1a0030,#3d0060);border-radius:14px;padding:18px 24px;margin-bottom:20px;border:2px solid rgba(179,136,255,0.4);display:flex;align-items:center;gap:16px">
+                <span style="font-size:2em">📱</span>
+                <div>
+                    <div id="registeredDevicesCount" style="color:#ce93d8;font-size:1.8em;font-weight:800;line-height:1">—</div>
+                    <div style="color:rgba(255,255,255,0.65);font-size:13px">registered devices</div>
+                </div>
+                <button onclick="refreshDeviceCount()" style="margin-left:auto;background:rgba(179,136,255,0.2);color:#ce93d8;border:2px solid rgba(179,136,255,0.4);padding:8px 16px;border-radius:20px;cursor:pointer;font-size:0.85em;font-weight:700">🔄 Refresh Count</button>
+            </div>
+
+            <!-- Compose notification -->
+            <div style="background:#fff;border-radius:14px;padding:24px;box-shadow:0 4px 15px rgba(0,0,0,0.15)">
+                <h3 style="color:#6a1b9a;margin-bottom:16px;font-size:1.1em">✏️ Compose Notification</h3>
+                <div class="form-group" style="margin-bottom:14px">
+                    <label style="color:#444;font-weight:700;font-size:13px">Title</label>
+                    <input type="text" id="notifTitle" placeholder="e.g. 🎓 Quiz is Live Now!" maxlength="100" style="border:2px solid #c44569;border-radius:8px;padding:10px 14px;width:100%;font-size:14px">
+                </div>
+                <div class="form-group" style="margin-bottom:20px">
+                    <label style="color:#444;font-weight:700;font-size:13px">Message</label>
+                    <textarea id="notifBody" placeholder="e.g. Today's quiz has started — open the site now and submit your answers before time runs out!" rows="3" maxlength="200" style="border:2px solid #c44569;border-radius:8px;padding:10px 14px;width:100%;font-size:14px;resize:vertical"></textarea>
+                </div>
+                <button onclick="sendPushNotification()" id="sendNotifBtn" style="background:linear-gradient(135deg,#c44569,#6a1b9a);color:#fff;border:none;padding:14px 32px;border-radius:25px;cursor:pointer;font-size:1em;font-weight:700;width:100%;letter-spacing:0.5px;box-shadow:0 4px 15px rgba(196,69,105,0.4)">📤 Send to All Devices</button>
+                <div id="notifSendStatus" style="margin-top:14px;display:none;padding:12px 16px;border-radius:8px;font-size:14px;font-weight:600;text-align:center"></div>
+            </div>
+
+            <!-- Info box -->
+            <div style="background:rgba(255,193,7,0.12);border:2px solid rgba(255,193,7,0.35);border-radius:10px;padding:14px 18px;margin-top:16px">
+                <p style="color:#ffd54f;font-size:12px;margin:0;line-height:1.6">
+                    ⚙️ <strong>How it works:</strong> This sends via your <code style="background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px">fcm-push</code> Cloudflare Worker → FCM V1 API → all registered devices.<br>
+                    Make sure your Cloudflare Worker URL is set correctly in the code (<code style="background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px">FCM_WORKER_URL</code>).
+                </p>
+            </div>
+        </div>
+
         <!-- Jury Section -->
         <div class="jury-only" id="jurySection">            <button class="btn btn-secondary" onclick="logout()" style="float:right">Logout</button>
             
@@ -7388,6 +7480,7 @@
             document.getElementById('userInfo').innerHTML = 'Logged in as: <span class="admin-badge">Student - '+cls+'</span>';
             document.getElementById('loginSection').style.display = 'none';
             document.getElementById('studentSection').style.display = 'block';
+            window.onSpurthiLogin('Student', cls); // 🟢 Firebase Presence
             document.getElementById('currentClassName').textContent = cls;
             document.getElementById('classIndicator').classList.add('active');
             
@@ -20182,6 +20275,7 @@ Davan Institute Team`;
                 document.getElementById('quizStudentNameBadge').textContent = studentData.name;
                 document.getElementById('quizStudentEmail').textContent = studentData.email;
                 document.getElementById('quizStudentClass').textContent = studentData.class;
+                window.onSpurthiLogin(studentData.name, studentData.class); // 🟢 Firebase Presence
                 
                 console.log('Calling checkQuizTodayStatus()');
                 await checkQuizTodayStatus();
@@ -33531,7 +33625,287 @@ v4.76 | Feb 27 2026 16:10 IST | Dance Performance Title & Story Summary shown pr
 v4.77 | Feb 27 2026 16:30 IST | Dance Title & Story Summary now visible inside Group Dance card in generic incharge panel for Anitha N / Pooja C
 v4.78 | Feb 27 2026 16:45 IST | Fixed Cloudflare Worker fetch to use POST so health-check no longer gets 405 Method Not Allowed
 v4.79 | Feb 27 2026 17:00 IST | Cloudinary stats worker fetch reverted to GET; worker template updated with CORS OPTIONS; warning added that stats worker must be separate from email worker
+v4.80 | Feb 27 2026 17:05 IST | Event schedule column order fixed: Start Date, End Date, Start Time, End Time
+v4.87 | Feb 28 2026 10:50 IST | Firebase Presence (Live Now panel) + PWA Push Notifications (SA send panel + student banner) added
 -->
+    <!-- ============================================================ -->
+    <!-- 🟢 FIREBASE PRESENCE + 📣 PUSH NOTIFICATIONS SCRIPTS       -->
+    <!-- ============================================================ -->
+    <script>
+    // ─── CONFIGURATION ───────────────────────────────────────────
+    const VAPID_KEY = 'BPiqq8xx1T9e6TU0slbjwUufEWHyzskTztBAkH89AwUd6-ktp-qpTl4HUI_3qE7pLd5609z1C8gdLF4V2XTHImg';
+    // ⚠️ Replace this with your actual fcm-push Cloudflare Worker URL after deploying it
+    const FCM_WORKER_URL = 'https://fcm-push.harshgujjar.workers.dev';
+    // ─────────────────────────────────────────────────────────────
+
+    // ── GENERATE A SESSION ID ─────────────────────────────────────
+    function getSessionId() {
+        let sid = sessionStorage.getItem('spurthi_sid');
+        if (!sid) {
+            sid = 'sid_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+            sessionStorage.setItem('spurthi_sid', sid);
+        }
+        return sid;
+    }
+
+    // ── DETECT DEVICE TYPE ────────────────────────────────────────
+    function getDeviceType() {
+        return /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent) ? 'Mobile' : 'Desktop';
+    }
+
+    // ── FORMAT TIME AS HH:MM AM/PM ────────────────────────────────
+    function fmtTime(ts) {
+        const d = new Date(ts);
+        let h = d.getHours(), m = d.getMinutes();
+        const ampm = h >= 12 ? 'PM' : 'AM';
+        h = h % 12 || 12;
+        return h + ':' + String(m).padStart(2, '0') + ' ' + ampm;
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // 🟢 FIREBASE PRESENCE — writes /liveUsers/{sessionId}
+    // ═══════════════════════════════════════════════════════════════
+    let _presenceRegistered = false;
+
+    function registerPresence(name, className) {
+        if (_presenceRegistered) return;
+        _presenceRegistered = true;
+
+        const sid = getSessionId();
+        const db  = firebase.database();
+        const ref = db.ref('liveUsers/' + sid);
+
+        const data = {
+            name:   name      || 'Guest',
+            class:  className || '—',
+            device: getDeviceType(),
+            since:  Date.now()
+        };
+
+        // Write presence
+        ref.set(data);
+
+        // Auto-remove when tab closes / connection drops
+        ref.onDisconnect().remove();
+
+        // Keep alive — re-set every 4 minutes (Firebase drops connection ~5 min idle)
+        setInterval(() => { ref.set(data); }, 4 * 60 * 1000);
+    }
+
+    // Call registerPresence as soon as Firebase is ready
+    // (re-called with real name/class when user logs in — see loginSuccess hook below)
+    document.addEventListener('DOMContentLoaded', () => {
+        // Register as Guest immediately; overridden after login
+        setTimeout(() => { registerPresence('Guest', '—'); }, 2000);
+
+        // Show notification permission banner if not yet decided
+        if (Notification.permission === 'default' && !localStorage.getItem('notif_banner_dismissed')) {
+            const banner = document.getElementById('notifPermBanner');
+            if (banner) banner.style.display = 'flex';
+        }
+
+        // Register service worker
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/Spurthi-youth-fest-2026/sw.js')
+                .then(reg => {
+                    console.log('[SW] Registered:', reg.scope);
+                    // If already granted, subscribe silently
+                    if (Notification.permission === 'granted') {
+                        subscribeToPush(reg);
+                    }
+                })
+                .catch(err => console.warn('[SW] Registration failed:', err));
+        }
+    });
+
+    // ── HOOK: called from your existing login functions after login success
+    // You should call  window.onSpurthiLogin(name, className)  inside your
+    // existing loginSuccess / quiz login success code.
+    window.onSpurthiLogin = function(name, className) {
+        _presenceRegistered = false; // allow re-register with real identity
+        registerPresence(name, className);
+        // Also save FCM token under their identity
+        const sid = getSessionId();
+        const tokenRef = firebase.database().ref('fcmTokens/' + sid + '/identity');
+        tokenRef.set({ name, class: className });
+    };
+
+    // ═══════════════════════════════════════════════════════════════
+    // 🟢 LIVE NOW PANEL — SA functions
+    // ═══════════════════════════════════════════════════════════════
+    let _liveUsersListener = null;
+
+    function initLiveUsersPanel() {
+        if (_liveUsersListener) return; // already listening
+        const db = firebase.database();
+        _liveUsersListener = db.ref('liveUsers').on('value', snap => {
+            const data = snap.val() || {};
+            const users = Object.values(data);
+            document.getElementById('liveCountBadge').textContent = users.length;
+
+            const tbody = document.getElementById('liveUsersTableBody');
+            if (users.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:30px;color:#999;font-size:14px">🔴 No users currently online</td></tr>';
+                return;
+            }
+            // Sort by since desc (most recent first)
+            users.sort((a, b) => b.since - a.since);
+            tbody.innerHTML = users.map((u, i) => `
+                <tr style="background:${i % 2 === 0 ? '#fafafa' : '#fff'};border-bottom:1px solid #eee">
+                    <td style="padding:11px 16px;font-size:14px;color:#1a0030;font-weight:600">${u.name || 'Guest'}</td>
+                    <td style="padding:11px 16px;font-size:13px;color:#555">${u.class || '—'}</td>
+                    <td style="padding:11px 16px;font-size:13px;color:#888">${fmtTime(u.since)}</td>
+                    <td style="padding:11px 16px;font-size:13px">
+                        <span style="background:${u.device === 'Mobile' ? '#e8f5e9' : '#e3f2fd'};color:${u.device === 'Mobile' ? '#2e7d32' : '#1565c0'};padding:3px 10px;border-radius:12px;font-size:12px;font-weight:700">${u.device || 'Unknown'}</span>
+                    </td>
+                </tr>
+            `).join('');
+        });
+    }
+
+    function refreshLiveUsers() {
+        // Listener already live — just force a UI flash to show it's working
+        const badge = document.getElementById('liveCountBadge');
+        badge.style.opacity = '0.4';
+        setTimeout(() => { badge.style.opacity = '1'; }, 400);
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // 🔔 PUSH NOTIFICATION BANNER — student side
+    // ═══════════════════════════════════════════════════════════════
+    function dismissNotifBanner() {
+        localStorage.setItem('notif_banner_dismissed', '1');
+        const banner = document.getElementById('notifPermBanner');
+        if (banner) banner.style.display = 'none';
+    }
+
+    async function requestNotifPermission() {
+        dismissNotifBanner();
+        if (!('Notification' in window)) return;
+        const permission = await Notification.requestPermission();
+        if (permission === 'granted') {
+            const reg = await navigator.serviceWorker.ready;
+            await subscribeToPush(reg);
+        }
+    }
+
+    async function subscribeToPush(reg) {
+        try {
+            const existing = await reg.pushManager.getSubscription();
+            if (existing) {
+                await saveFcmToken(existing);
+                return;
+            }
+            const sub = await reg.pushManager.subscribe({
+                userVisibleOnly: true,
+                applicationServerKey: urlBase64ToUint8Array(VAPID_KEY)
+            });
+            await saveFcmToken(sub);
+        } catch (e) {
+            console.warn('[Push] Subscribe failed:', e);
+        }
+    }
+
+    async function saveFcmToken(subscription) {
+        const sid = getSessionId();
+        const db  = firebase.database();
+        await db.ref('fcmTokens/' + sid).update({
+            subscription: JSON.stringify(subscription),
+            device: getDeviceType(),
+            savedAt: Date.now()
+        });
+        console.log('[Push] Token saved to Firebase');
+    }
+
+    function urlBase64ToUint8Array(base64String) {
+        const padding = '='.repeat((4 - base64String.length % 4) % 4);
+        const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+        const raw = atob(base64);
+        return Uint8Array.from([...raw].map(c => c.charCodeAt(0)));
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // 📣 PUSH NOTIFICATIONS PANEL — SA functions
+    // ═══════════════════════════════════════════════════════════════
+    async function initPushNotifPanel() {
+        await refreshDeviceCount();
+    }
+
+    async function refreshDeviceCount() {
+        const db = firebase.database();
+        const snap = await db.ref('fcmTokens').once('value');
+        const count = snap.exists() ? Object.keys(snap.val()).length : 0;
+        document.getElementById('registeredDevicesCount').textContent = count;
+    }
+
+    async function sendPushNotification() {
+        const title = document.getElementById('notifTitle').value.trim();
+        const body  = document.getElementById('notifBody').value.trim();
+        const statusEl = document.getElementById('notifSendStatus');
+        const btn = document.getElementById('sendNotifBtn');
+
+        if (!title || !body) {
+            statusEl.style.display = 'block';
+            statusEl.style.background = '#fff3cd';
+            statusEl.style.color = '#856404';
+            statusEl.textContent = '⚠️ Please fill in both Title and Message.';
+            return;
+        }
+
+        btn.disabled = true;
+        btn.textContent = '⏳ Sending…';
+        statusEl.style.display = 'none';
+
+        try {
+            // Collect all tokens from Firebase
+            const db = firebase.database();
+            const snap = await db.ref('fcmTokens').once('value');
+            const tokens = snap.val() || {};
+            const subscriptions = Object.values(tokens)
+                .filter(t => t.subscription)
+                .map(t => t.subscription);
+
+            if (subscriptions.length === 0) {
+                statusEl.style.display = 'block';
+                statusEl.style.background = '#fff3cd';
+                statusEl.style.color = '#856404';
+                statusEl.textContent = '⚠️ No registered devices found.';
+                btn.disabled = false;
+                btn.textContent = '📤 Send to All Devices';
+                return;
+            }
+
+            // Call your Cloudflare Worker
+            const resp = await fetch(FCM_WORKER_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ title, body, subscriptions })
+            });
+
+            if (resp.ok) {
+                const result = await resp.json();
+                statusEl.style.display = 'block';
+                statusEl.style.background = '#d4edda';
+                statusEl.style.color = '#155724';
+                statusEl.textContent = `✅ Sent successfully to ${result.sent || subscriptions.length} device(s)!`;
+                document.getElementById('notifTitle').value = '';
+                document.getElementById('notifBody').value = '';
+            } else {
+                throw new Error('Worker returned ' + resp.status);
+            }
+        } catch (err) {
+            statusEl.style.display = 'block';
+            statusEl.style.background = '#f8d7da';
+            statusEl.style.color = '#721c24';
+            statusEl.textContent = '❌ Failed to send: ' + err.message;
+            console.error('[Push Send]', err);
+        }
+
+        btn.disabled = false;
+        btn.textContent = '📤 Send to All Devices';
+    }
+    </script>
+
     <footer style="background: white; border-radius: 12px; padding: 25px; margin-top: 30px; box-shadow: 0 4px 20px rgba(0,0,0,0.1);">
         <div style="text-align: center;">
             
@@ -33550,7 +33924,7 @@ v4.79 | Feb 27 2026 17:00 IST | Cloudinary stats worker fetch reverted to GET; w
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;" id="devTriggerVersion">
-                <strong>Version:</strong> 4.86 — Event schedule column order fixed: Start Date, End Date, Start Time, End Time | <strong>Last Updated:</strong> February 28, 2026 — 17:05 IST</p>
+                <strong>Version:</strong> 4.87 — Firebase Presence (Live Now panel) + PWA Push Notifications added | <strong>Last Updated:</strong> February 28, 2026 — 10:50 IST</p>
             <!-- ============================================ -->
             
             <p style="color: #c44569; font-size: 0.85em; font-weight: 600; margin-bottom: 8px;">
