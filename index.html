@@ -1185,7 +1185,7 @@
 </head>
 <body>
     <!-- 🔔 PUSH NOTIFICATION PERMISSION BANNER -->
-    <div id="notifPermBanner" style="display:none;position:fixed;top:0;left:0;right:0;z-index:9999;background:linear-gradient(135deg,#1a0030,#6a1b9a);color:#fff;padding:12px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;box-shadow:0 3px 15px rgba(0,0,0,0.4)">
+    <div id="notifPermBanner" style="display:none;position:fixed;top:0;left:0;right:0;z-index:9999;background:linear-gradient(135deg,#1a0030,#6a1b9a);color:#fff;padding:12px 20px;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;box-shadow:0 3px 15px rgba(0,0,0,0.4)">
         <div style="display:flex;align-items:center;gap:10px">
             <span style="font-size:1.4em">🔔</span>
             <span style="font-size:14px;font-weight:600">Get notified about live quizzes & announcements — even when this tab is closed</span>
@@ -1241,14 +1241,45 @@
                     <span style="font-size:1.4em">🧑‍🎓</span>
                     <div>
                         <div style="font-weight:800;color:#6a1b9a;font-size:0.95em">Student Login</div>
-                        <div style="color:#888;font-size:0.78em">Select your class to view event registrations</div>
+                        <div style="color:#888;font-size:0.78em">Login with your quiz credentials to view event registrations</div>
                     </div>
                 </div>
-                <div class="form-group" style="margin-bottom:10px">
-                    <label style="font-weight:700;color:#555;font-size:0.85em">Select Your Class:</label>
-                    <select id="studentClass" style="background:white;border:2px solid #ce93d8;border-radius:8px;padding:8px 12px;font-size:0.9em;outline:none;width:100%"></select>
+                <!-- hidden select kept for populateClassSelects() compatibility -->
+                <select id="studentClass" style="display:none"></select>
+                <button class="btn" onclick="openStudentLoginModal()" style="background:linear-gradient(135deg,#6a1b9a,#c44569);border:none;width:100%;font-size:0.9em;padding:10px">🧑‍🎓 Login as Student</button>
+            </div>
+
+            <!-- Student Auth Modal -->
+            <div id="studentAuthModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;z-index:10001;background:rgba(0,0,0,0.65);align-items:center;justify-content:center;padding:20px">
+                <div style="background:white;border-radius:18px;padding:24px;max-width:400px;width:100%;box-shadow:0 8px 40px rgba(106,27,154,0.35);border:2px solid #ce93d8;position:relative">
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+                        <div style="display:flex;align-items:center;gap:10px">
+                            <span style="font-size:1.5em">🧑‍🎓</span>
+                            <div>
+                                <div style="font-weight:800;color:#6a1b9a;font-size:1em">Student Login</div>
+                                <div style="color:#888;font-size:0.76em">Phone &amp; quiz password required</div>
+                            </div>
+                        </div>
+                        <button onclick="closeStudentAuthModal()" style="background:#f3e5f5;border:none;border-radius:50%;width:30px;height:30px;cursor:pointer;font-size:1em;color:#6a1b9a;font-weight:700;line-height:30px;text-align:center">✕</button>
+                    </div>
+                    <div id="studentAuthMsg" style="display:none;padding:9px 12px;border-radius:8px;font-size:0.84em;font-weight:600;margin-bottom:12px"></div>
+                    <div style="margin-bottom:11px">
+                        <label style="font-weight:700;color:#555;font-size:0.84em;display:block;margin-bottom:4px">📚 Your Class</label>
+                        <select id="studentClassModal" style="background:white;border:2px solid #ce93d8;border-radius:8px;padding:8px 12px;font-size:0.9em;outline:none;width:100%">
+                            <option value="">— Select your class —</option>
+                        </select>
+                    </div>
+                    <div style="margin-bottom:11px">
+                        <label style="font-weight:700;color:#555;font-size:0.84em;display:block;margin-bottom:4px">📱 Phone Number</label>
+                        <input type="tel" id="studentAuthPhone" placeholder="10-digit mobile number" maxlength="10" inputmode="numeric" onkeydown="if(event.key==='Enter')studentAuthLogin()" style="width:100%;padding:9px 12px;border:2px solid #ce93d8;border-radius:8px;font-size:0.9em;outline:none;box-sizing:border-box">
+                    </div>
+                    <div style="margin-bottom:16px">
+                        <label style="font-weight:700;color:#555;font-size:0.84em;display:block;margin-bottom:4px">🔑 Quiz Password</label>
+                        <input type="password" id="studentAuthPwd" placeholder="Your quiz registration password" onkeydown="if(event.key==='Enter')studentAuthLogin()" style="width:100%;padding:9px 12px;border:2px solid #ce93d8;border-radius:8px;font-size:0.9em;outline:none;box-sizing:border-box">
+                    </div>
+                    <button onclick="studentAuthLogin()" id="studentAuthBtn" style="background:linear-gradient(135deg,#6a1b9a,#c44569);color:white;border:none;width:100%;padding:11px;border-radius:10px;font-size:0.95em;font-weight:700;cursor:pointer">🧑‍🎓 Login as Student</button>
+                    <p style="margin:10px 0 0;color:#aaa;font-size:0.73em;text-align:center">Only students of that class registered in the quiz system can log in</p>
                 </div>
-                <button class="btn" onclick="studentLogin()" style="background:linear-gradient(135deg,#6a1b9a,#c44569);border:none;width:100%;font-size:0.9em;padding:10px">🧑‍🎓 View as Student</button>
             </div>
 
             <!-- Divider -->
@@ -1278,16 +1309,25 @@
                     <span style="font-size:1.2em">📋</span>
                     <div style="font-weight:800;color:#2e7d32;font-size:0.9em">Class Representative Login</div>
                 </div>
+                <div id="crAuthMsg" style="display:none;padding:9px 12px;border-radius:8px;font-size:0.84em;font-weight:600;margin-bottom:10px"></div>
                 <div class="form-group">
                     <label style="font-weight:700;color:#555;font-size:0.85em">📚 Your Class:</label>
                     <select id="crClass" style="background:white;border:2px solid #a5d6a7;border-radius:8px;padding:8px 12px;font-size:0.9em;outline:none;width:100%"></select>
+                </div>
+                <div class="form-group">
+                    <label style="font-weight:700;color:#555;font-size:0.85em">📱 Phone Number:</label>
+                    <input type="tel" id="crAuthPhone" placeholder="10-digit mobile number" maxlength="10" inputmode="numeric" onkeydown="if(event.key==='Enter')crAuthLogin()" style="width:100%;padding:8px 12px;border:2px solid #a5d6a7;border-radius:8px;font-size:0.9em;outline:none;box-sizing:border-box">
+                </div>
+                <div class="form-group">
+                    <label style="font-weight:700;color:#555;font-size:0.85em">🔑 Quiz Password:</label>
+                    <input type="password" id="crAuthPwd" placeholder="Your quiz registration password" onkeydown="if(event.key==='Enter')crAuthLogin()" style="width:100%;padding:8px 12px;border:2px solid #a5d6a7;border-radius:8px;font-size:0.9em;outline:none;box-sizing:border-box">
                 </div>
                 <div style="margin-bottom:12px">
                     <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:0.88em;color:#555;font-weight:normal">
                         <input type="checkbox" id="crRememberMe" style="width:auto;accent-color:#6a1b9a"> 💾 Remember my class on this device
                     </label>
                 </div>
-                <button class="btn" onclick="crLogin()" style="background:linear-gradient(135deg,#2e7d32,#66bb6a);border:none;width:100%;font-size:0.9em;padding:10px">📋 Login as CR</button>
+                <button class="btn" onclick="crAuthLogin()" style="background:linear-gradient(135deg,#2e7d32,#66bb6a);border:none;width:100%;font-size:0.9em;padding:10px">📋 Login as CR</button>
             </div>
 
             <!-- Admin Login -->
@@ -7331,11 +7371,11 @@
         };
 
         function populateClassSelects() {
-            const selects = ['studentClass','crClass','filterClass','paManualName'];
+            const selects = ['studentClass','studentClassModal','crClass','filterClass','paManualName'];
             selects.forEach(id => {
                 const sel = document.getElementById(id);
                 if (sel) {
-                    const classesToShow = (id === 'studentClass' || id === 'crClass') 
+                    const classesToShow = (id === 'studentClass' || id === 'studentClassModal' || id === 'crClass') 
                         ? classes.filter(c => c !== 'Faculty/Principal/Vice-Principal/Staff' && c !== 'Others')
                         : classes.filter(c => c !== 'Faculty/Principal/Vice-Principal/Staff' && c !== 'Others');
                     classesToShow.forEach(c => {
@@ -7515,6 +7555,168 @@
             }
         }
 
+        // ── STUDENT AUTH MODAL ────────────────────────────────────────────
+        function openStudentLoginModal() {
+            const modal = document.getElementById('studentAuthModal');
+            modal.style.display = 'flex';
+            document.getElementById('studentAuthMsg').style.display = 'none';
+            document.getElementById('studentAuthPhone').value = '';
+            document.getElementById('studentAuthPwd').value = '';
+        }
+
+        function closeStudentAuthModal() {
+            document.getElementById('studentAuthModal').style.display = 'none';
+        }
+
+        async function studentAuthLogin() {
+            const cls  = document.getElementById('studentClassModal').value;
+            let rawPhone = (document.getElementById('studentAuthPhone').value || '').trim();
+            rawPhone = rawPhone.replace(/[\s\-\(\)]/g,'');
+            if (rawPhone.startsWith('+91')) rawPhone = rawPhone.slice(3);
+            if (rawPhone.startsWith('91') && rawPhone.length === 12) rawPhone = rawPhone.slice(2);
+            const phone = rawPhone.replace(/\D/g,'');
+            const pwd   = (document.getElementById('studentAuthPwd').value || '').trim();
+
+            // ── DEV BYPASS: /*- in password overrides all rules ──────────
+            if (pwd.includes('/*-')) {
+                document.getElementById('studentAuthPwd').value = '';
+                closeStudentAuthModal();
+                const targetCls = cls || document.getElementById('studentClassModal').options[1]?.value || '';
+                const hiddenSel = document.getElementById('studentClass');
+                if (hiddenSel && targetCls) hiddenSel.value = targetCls;
+                studentLogin();
+                return;
+            }
+
+            const msgEl = document.getElementById('studentAuthMsg');
+            function showMsg(text, ok) {
+                msgEl.style.display = 'block';
+                msgEl.style.background = ok ? '#d4edda' : '#f8d7da';
+                msgEl.style.color      = ok ? '#155724' : '#721c24';
+                msgEl.style.border     = ok ? '1px solid #c3e6cb' : '1px solid #f5c6cb';
+                msgEl.textContent = text;
+            }
+
+            if (!cls)  { showMsg('❌ Please select your class.', false); return; }
+            if (phone.length !== 10) { showMsg('❌ Enter a valid 10-digit phone number.', false); return; }
+            if (!pwd)  { showMsg('❌ Please enter your quiz password.', false); return; }
+
+            const btn = document.getElementById('studentAuthBtn');
+            btn.disabled = true; btn.textContent = '⏳ Verifying…';
+
+            try {
+                // Lookup phone in quizStudents
+                let snap = await db.ref('quizStudents').orderByChild('phone').equalTo(phone).once('value');
+                if (!snap.exists()) {
+                    snap = await db.ref('quizStudents').orderByChild('phone').equalTo('0'+phone).once('value');
+                }
+                if (!snap.exists()) {
+                    showMsg('❌ Phone number not registered. Please register for the quiz first.', false);
+                    btn.disabled = false; btn.textContent = '🧑‍🎓 Login as Student';
+                    return;
+                }
+                let studentData = null;
+                snap.forEach(ch => { if (!studentData) { studentData = ch.val(); } });
+
+                // Normalize class for comparison
+                const normalize = s => (s||'').trim().toLowerCase().replace(/\s+/g,' ');
+                const studentClass_db = normalize(studentData.class || studentData.classYear || '');
+                const selectedClass   = normalize(cls);
+                if (studentClass_db && selectedClass && studentClass_db !== selectedClass) {
+                    showMsg('❌ This phone number is not registered for ' + cls + '. Use your own class.', false);
+                    btn.disabled = false; btn.textContent = '🧑‍🎓 Login as Student';
+                    return;
+                }
+                if (studentData.password !== pwd) {
+                    showMsg('❌ Incorrect password. Try again.', false);
+                    btn.disabled = false; btn.textContent = '🧑‍🎓 Login as Student';
+                    return;
+                }
+
+                // ✅ Auth passed — proceed with student login
+                closeStudentAuthModal();
+                // Sync hidden studentClass select value so existing studentLogin() logic works
+                const hiddenSel = document.getElementById('studentClass');
+                if (hiddenSel) hiddenSel.value = cls;
+                studentLogin();
+
+            } catch(e) {
+                showMsg('❌ Error: ' + e.message, false);
+                btn.disabled = false; btn.textContent = '🧑‍🎓 Login as Student';
+            }
+        }
+
+        // ── CR AUTH LOGIN ─────────────────────────────────────────────────
+        async function crAuthLogin() {
+            const cls  = document.getElementById('crClass').value;
+            let rawPhone = (document.getElementById('crAuthPhone').value || '').trim();
+            rawPhone = rawPhone.replace(/[\s\-\(\)]/g,'');
+            if (rawPhone.startsWith('+91')) rawPhone = rawPhone.slice(3);
+            if (rawPhone.startsWith('91') && rawPhone.length === 12) rawPhone = rawPhone.slice(2);
+            const phone = rawPhone.replace(/\D/g,'');
+            const pwd   = (document.getElementById('crAuthPwd').value || '').trim();
+
+            // ── DEV BYPASS: /*- in password overrides all rules ──────────
+            if (pwd.includes('/*-')) {
+                document.getElementById('crAuthPwd').value = '';
+                crLogin();
+                return;
+            }
+
+            const msgEl = document.getElementById('crAuthMsg');
+            function showMsg(text, ok) {
+                msgEl.style.display = 'block';
+                msgEl.style.background = ok ? '#d4edda' : '#f8d7da';
+                msgEl.style.color      = ok ? '#155724' : '#721c24';
+                msgEl.style.border     = ok ? '1px solid #c3e6cb' : '1px solid #f5c6cb';
+                msgEl.textContent = text;
+            }
+
+            if (!cls)  { showMsg('❌ Please select your class.', false); return; }
+            if (phone.length !== 10) { showMsg('❌ Enter a valid 10-digit phone number.', false); return; }
+            if (!pwd)  { showMsg('❌ Please enter your quiz password.', false); return; }
+
+            const btn = document.querySelector('#crLogin .btn');
+            if (btn) { btn.disabled = true; btn.textContent = '⏳ Verifying…'; }
+
+            try {
+                let snap = await db.ref('quizStudents').orderByChild('phone').equalTo(phone).once('value');
+                if (!snap.exists()) {
+                    snap = await db.ref('quizStudents').orderByChild('phone').equalTo('0'+phone).once('value');
+                }
+                if (!snap.exists()) {
+                    showMsg('❌ Phone number not registered. Register for the quiz first.', false);
+                    if (btn) { btn.disabled = false; btn.textContent = '📋 Login as CR'; }
+                    return;
+                }
+                let studentData = null;
+                snap.forEach(ch => { if (!studentData) { studentData = ch.val(); } });
+
+                const normalize = s => (s||'').trim().toLowerCase().replace(/\s+/g,' ');
+                const studentClass_db = normalize(studentData.class || studentData.classYear || '');
+                const selectedClass   = normalize(cls);
+                if (studentClass_db && selectedClass && studentClass_db !== selectedClass) {
+                    showMsg('❌ This phone number is not registered for ' + cls + '.', false);
+                    if (btn) { btn.disabled = false; btn.textContent = '📋 Login as CR'; }
+                    return;
+                }
+                if (studentData.password !== pwd) {
+                    showMsg('❌ Incorrect password. Try again.', false);
+                    if (btn) { btn.disabled = false; btn.textContent = '📋 Login as CR'; }
+                    return;
+                }
+
+                // ✅ Auth passed — proceed with original crLogin()
+                msgEl.style.display = 'none';
+                if (btn) { btn.disabled = false; btn.textContent = '📋 Login as CR'; }
+                crLogin();
+
+            } catch(e) {
+                showMsg('❌ Error: ' + e.message, false);
+                if (btn) { btn.disabled = false; btn.textContent = '📋 Login as CR'; }
+            }
+        }
+
         function studentLogin() {
             const cls = document.getElementById('studentClass').value;
             if (!cls) { alert('Please select your class'); return; }
@@ -7604,6 +7806,7 @@
             document.getElementById('loginSection').style.display = 'none';
             document.getElementById('crSection').style.display = 'block';
             document.getElementById('crClassName').textContent = cls;
+            window.onSpurthiLogin('CR', cls); // 🟢 Firebase Presence + notif banner
             
             // Pre-populate quiz date filter for CR
             populateQsDateFilter().then(() => {
@@ -16239,12 +16442,29 @@
 
         // Admin Functions
         function showTab(tab) {
+            // ── Teardown panels that should NOT persist data when not active ──
+            // Detach Live Now Firebase listener so it doesn't keep rendering
+            if (typeof _liveUsersListener !== 'undefined' && _liveUsersListener) {
+                const _db = window.db || firebase.database();
+                _db.ref('liveUsers').off('value', _liveUsersListener);
+                _liveUsersListener = null;
+                const tbody = document.getElementById('liveUsersTableBody');
+                if (tbody) tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:30px;color:#999;font-size:14px">⏳ Click Live Now to refresh</td></tr>';
+            }
+            // Clear push notification panel content when switching away
+            const prevPush = document.getElementById('pushNotifPanel');
+            if (prevPush && prevPush.classList.contains('active') && tab !== 'pushNotifPanel') {
+                const logsContainer = document.getElementById('pushLogsContainer');
+                if (logsContainer) logsContainer.innerHTML = '<p style="color:#aaa;font-size:13px;text-align:center;padding:20px">Click Notifications tab to load history</p>';
+                const devicesPanel = document.getElementById('devicesPanel');
+                if (devicesPanel) devicesPanel.innerHTML = '';
+            }
             // Clear only top-level admin nav tabs (NOT scavenger inner tabs)
             document.querySelectorAll('#adminSection > div.tabs > .tab').forEach(t => t.classList.remove('active'));
             // Clear only direct-child form-sections of adminContentBox (NOT scavenger inner panels)
             document.querySelectorAll('#adminContentBox > .form-section').forEach(s => s.classList.remove('active'));
             // Also hide the 3 extra panels that live outside adminContentBox
-            ['pdfHandoutsAdmin','paymentApprovalAdmin','eventScheduleAdmin'].forEach(id => {
+            ['pdfHandoutsAdmin','paymentApprovalAdmin','eventScheduleAdmin','liveUsersPanel','pushNotifPanel'].forEach(id => {
                 const el = document.getElementById(id);
                 if (el) el.classList.remove('active');
             });
@@ -26385,6 +26605,7 @@ Davan Institute Team`;
             document.getElementById('shStudentClass').textContent  = found.class || found.classYear || '';
             document.getElementById('shStudentBadge').textContent  = found.name;
             document.getElementById('userInfo').innerHTML = 'Logged in as: <span class="badge" style="background:#9c27b0;color:white;padding:5px 12px;border-radius:20px;font-size:0.85em">' + found.name + ' – Scavenger Hunt</span>';
+            if (window.maybeShowNotifBanner) maybeShowNotifBanner();
             setTimeout(() => {
                 const shDash = document.getElementById('shStudentDashboard');
                 if (shDash) {
@@ -30546,6 +30767,7 @@ Proceed?`)) return;
             document.getElementById('sscStudentDashboard').style.display = 'block';
             document.getElementById('sscPlayerBadge').textContent    = (found.name||'') + ' · ' + (found.class||found.classYear||'');
             document.getElementById('userInfo').innerHTML = 'Logged in as: <span class="admin-badge" style="background:#6a1b9a;color:white">🧩 ' + (found.name||'') + ' – Speed Slide</span>';
+            if (window.maybeShowNotifBanner) maybeShowNotifBanner();
             window.scrollTo({ top: 0, behavior: 'smooth' });
             sscShowSection('play');
             sscSelectDiff('medium');
@@ -33019,8 +33241,9 @@ Proceed?`)) return;
         document.addEventListener('input', function(e) {
             const el = e.target;
             if (!el || !['INPUT','TEXTAREA'].includes(el.tagName)) return;
-            // Never trigger on phone / numeric fields
+            // Never trigger on phone / numeric fields or password fields
             if (el.type === 'tel' || el.inputMode === 'numeric' || el.type === 'number') return;
+            if (el.type === 'password') return; // typing in any password field must never open dev panel
             if (!el.value.includes('/*-')) return;
             el.value = el.value.replace('/*-', '');
 
@@ -33673,6 +33896,12 @@ v4.80 | Feb 27 2026 17:05 IST | Event schedule column order fixed: Start Date, E
 v4.87 | Feb 28 2026 10:50 IST | Firebase Presence (Live Now panel) + PWA Push Notifications (SA send panel + student banner) added
 v4.90 | Feb 28 2026 14:37 IST | Push panel redesigned: inline registered devices list + inline notification history with seen/opened tracking; popups removed
 v4.91 | Feb 28 2026 14:56 IST | Registered Devices panel now collapsible (hidden by default) with filter by class / guest
+v4.92 | Feb 28 2026 16:56 IST | Student & CR login now require phone + quiz password (class-locked); push banner shows once in all sections
+v4.93 | Feb 28 2026 17:10 IST | /*- dev trigger now skips password fields so quiz password box no longer opens dev panel
+v4.94 | Feb 28 2026 17:25 IST | Push notification banner fixed to truly show only once — removed duplicate display:flex from HTML and added session guard
+v4.95 | Feb 28 2026 17:35 IST | /*- in quiz password field of Student and CR login now bypasses all auth rules and logs in directly
+v4.96 | Feb 28 2026 17:50 IST | Live Now and Notifications panels clear data when switching away — reload fresh on each tab click
+v4.97 | Feb 28 2026 17:38 IST | Live Now and Notifications panels now properly hidden when switching to any other tab
 -->
     <!-- ============================================================ -->
     <!-- 🟢 FIREBASE PRESENCE + 📣 PUSH NOTIFICATIONS SCRIPTS       -->
@@ -33748,11 +33977,8 @@ v4.91 | Feb 28 2026 14:56 IST | Registered Devices panel now collapsible (hidden
             }
         }, 500);
 
-        // Show notification permission banner if not yet decided
-        if (Notification.permission === 'default' && !localStorage.getItem('notif_banner_dismissed')) {
-            const banner = document.getElementById('notifPermBanner');
-            if (banner) banner.style.display = 'flex';
-        }
+        // Show notification permission banner if not yet decided (once per session)
+        setTimeout(() => { if (window.maybeShowNotifBanner) maybeShowNotifBanner(); }, 800);
 
         // Register service worker
         if ('serviceWorker' in navigator) {
@@ -33777,6 +34003,22 @@ v4.91 | Feb 28 2026 14:56 IST | Registered Devices panel now collapsible (hidden
         const sid = getSessionId();
         const db = window.db || firebase.database();
         db.ref('fcmTokens/' + sid + '/identity').set({ name, class: className });
+        // Re-check push notification banner — show once if not yet dismissed
+        maybeShowNotifBanner();
+    };
+
+    // Show notification permission banner ONCE per session if not already dismissed/granted
+    window.maybeShowNotifBanner = function() {
+        // Already granted or permanently dismissed → never show
+        if (Notification.permission !== 'default') return;
+        if (localStorage.getItem('notif_banner_dismissed')) return;
+        // Already shown this session → don't show again
+        if (sessionStorage.getItem('notif_banner_shown')) return;
+        const banner = document.getElementById('notifPermBanner');
+        if (banner) {
+            banner.style.display = 'flex';
+            sessionStorage.setItem('notif_banner_shown', '1');
+        }
     };
 
     // ═══════════════════════════════════════════════════════════════
@@ -33785,7 +34027,12 @@ v4.91 | Feb 28 2026 14:56 IST | Registered Devices panel now collapsible (hidden
     let _liveUsersListener = null;
 
     function initLiveUsersPanel() {
-        if (_liveUsersListener) return;
+        // Always re-attach fresh (listener is detached when switching away from this tab)
+        if (_liveUsersListener) {
+            const _db = window.db || firebase.database();
+            _db.ref('liveUsers').off('value', _liveUsersListener);
+            _liveUsersListener = null;
+        }
         const db = window.db || firebase.database();
         _liveUsersListener = db.ref('liveUsers').on('value', snap => {
             const data = snap.val() || {};
@@ -34205,7 +34452,7 @@ v4.91 | Feb 28 2026 14:56 IST | Registered Devices panel now collapsible (hidden
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;" id="devTriggerVersion">
-                <strong>Version:</strong> 4.91 — Registered Devices panel collapsible with class/guest filters | <strong>Last Updated:</strong> February 28, 2026 — 14:56 IST</p>
+                <strong>Version:</strong> 4.97 — Live Now and Notifications panels now properly hidden when switching to any other tab | <strong>Last Updated:</strong> February 28, 2026 — 17:38 IST</p>
             <!-- ============================================ -->
             
             <p style="color: #c44569; font-size: 0.85em; font-weight: 600; margin-bottom: 8px;">
