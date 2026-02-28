@@ -6642,6 +6642,11 @@
                     <div id="cleanStaleStatus" style="margin-top:8px;display:none;padding:8px 12px;border-radius:8px;font-size:13px;font-weight:600;text-align:center"></div>
                     <p style="color:#888;font-size:11px;margin-top:6px;text-align:center">Tests each stored subscription and removes expired/invalid ones — run this if you see many &ldquo;failed&rdquo; in Notification History</p>
                 </div>
+                <div style="margin-top:10px;border-top:1px dashed rgba(106,27,154,0.2);padding-top:10px">
+                    <button onclick="forceUpdateSW()" id="forceUpdateSWBtn" style="background:linear-gradient(135deg,#0277bd,#01579b);color:#fff;border:none;padding:10px 20px;border-radius:20px;cursor:pointer;font-size:13px;font-weight:700;width:100%">🔄 Force Service Worker Update on All Devices</button>
+                    <div id="forceUpdateSWStatus" style="margin-top:8px;display:none;padding:8px 12px;border-radius:8px;font-size:13px;font-weight:600;text-align:center"></div>
+                    <p style="color:#888;font-size:11px;margin-top:6px;text-align:center">Forces all online student devices to reload the latest sw.js immediately — use this after uploading a new sw.js to GitHub</p>
+                </div>
             </div>
 
             <!-- Info box -->
@@ -34014,6 +34019,7 @@ v5.23 | Mar 01 2026 12:59 IST | Fixed Compose Notification silently doing nothin
 v5.24 | Mar 01 2026 12:59 IST | Compose Notification now shows push-enabled vs total registered count; 0-subscription warning tells admin students must click Allow on notification prompt
 v5.25 | Mar 01 2026 12:59 IST | Added Re-send Notification Permission Prompt button in admin panel — writes to Firebase, students online see banner instantly; others see it on next load
 v5.26 | Mar 01 2026 12:59 IST | Added Clean Stale Subscriptions button — tests each subscription individually via worker and removes failed ones from Firebase; success message now hints about stale count
+v5.27 | Mar 01 2026 12:59 IST | Fixed SW reg to call reg.update() on every load; added Force Update SW button — writes to Firebase, triggers reg.update() on all online devices immediately
 -->
     <!-- ============================================================ -->
     <!-- 🟢 FIREBASE PRESENCE + 📣 PUSH NOTIFICATIONS SCRIPTS       -->
@@ -34132,53 +34138,25 @@ v5.26 | Mar 01 2026 12:59 IST | Added Clean Stale Subscriptions button — tests
 
         // Register service worker — with inline blob fallback so push always works
         if ('serviceWorker' in navigator) {
-            // Inline SW guarantees push event handler exists regardless of sw.js on server
-            const swCode = `
-self.addEventListener('push', function(event) {
-    console.log('[SW] Push received');
-    let data = { title: 'New Notification', body: '' };
-    try { data = event.data ? event.data.json() : data; } catch(e) { data.body = event.data ? event.data.text() : ''; }
-    const title = data.title || data.notification?.title || 'Spurthi 2026';
-    const body  = data.body  || data.notification?.body  || '';
-    const options = {
-        body: body,
-        icon: '/Spurthi-youth-fest-2026/davan_logo_2026.gif',
-        badge: '/Spurthi-youth-fest-2026/davan_logo_2026.gif',
-        vibrate: [200, 100, 200],
-        requireInteraction: false,
-        data: { url: self.location.origin + '/Spurthi-youth-fest-2026/' }
-    };
-    event.waitUntil(self.registration.showNotification(title, options));
-});
-self.addEventListener('notificationclick', function(event) {
-    event.notification.close();
-    const url = (event.notification.data && event.notification.data.url) || '/';
-    event.waitUntil(clients.matchAll({type:'window',includeUncontrolled:true}).then(list => {
-        for (const c of list) { if (c.url.includes('Spurthi') && 'focus' in c) return c.focus(); }
-        if (clients.openWindow) return clients.openWindow(url);
-    }));
-});
-self.addEventListener('install', e => e.waitUntil(self.skipWaiting()));
-self.addEventListener('activate', e => e.waitUntil(self.clients.claim()));
-`;
-            // Try registering the inline blob SW first (works on same origin)
-            const swBlob = new Blob([swCode], { type: 'application/javascript' });
-            const swUrl  = URL.createObjectURL(swBlob);
+            // SW registered below — see sw.js on GitHub for push handler
+            // Register external sw.js — force update every time to pick up latest push handler
             navigator.serviceWorker.register('/Spurthi-youth-fest-2026/sw.js')
                 .then(reg => {
-                    console.log('[SW] External sw.js registered:', reg.scope);
+                    console.log('[SW] Registered:', reg.scope);
+                    // Force update check — ensures browser picks up latest sw.js from GitHub
+                    reg.update().then(() => {
+                        console.log('[SW] Update check triggered');
+                    }).catch(() => {});
                     if (Notification.permission === 'granted') subscribeToPush(reg);
                 })
                 .catch(err => {
-                    console.warn('[SW] External sw.js failed, trying fallback:', err);
-                    // Note: blob SW can't receive push events (no origin), so log the issue
-                    console.warn('[SW] Push will not work without a valid sw.js on the server!');
+                    console.warn('[SW] sw.js registration failed:', err.message);
                 });
-            // Also force-update the external sw.js by messaging it with the push handler
-            // The real fix is ensuring sw.js on the server has the push handler below
             navigator.serviceWorker.ready.then(reg => {
-                console.log('[SW] Ready. Active worker:', reg.active?.state);
+                console.log('[SW] Ready. Active worker:', reg.active ? reg.active.state : 'none');
                 if (Notification.permission === 'granted') subscribeToPush(reg);
+                // Verify push handler exists by checking sw.js content
+                reg.update().catch(() => {});
             });
         }
     });
@@ -34245,6 +34223,29 @@ self.addEventListener('activate', e => e.waitUntil(self.clients.claim()));
                         sessionStorage.setItem('notif_banner_shown', '1');
                         console.log('[Push] Admin triggered permission banner re-show');
                     }
+                });
+            }
+        }, 500);
+    })();
+
+    // ─── SW FORCE UPDATE LISTENER (student side) ────────────────
+    (function() {
+        const waitForDbSW = setInterval(() => {
+            if (window.db) {
+                clearInterval(waitForDbSW);
+                let _lastSWUpdate = null;
+                window.db.ref('sw_force_update').on('value', snap => {
+                    if (!snap.exists()) return;
+                    const data = snap.val();
+                    if (!data || !data.triggeredAt) return;
+                    if (_lastSWUpdate === data.triggeredAt) return;
+                    _lastSWUpdate = data.triggeredAt;
+                    if (!('serviceWorker' in navigator)) return;
+                    navigator.serviceWorker.ready.then(reg => {
+                        reg.update().then(() => {
+                            console.log('[SW] Admin triggered force update — sw.js reloaded');
+                        }).catch(() => {});
+                    }).catch(() => {});
                 });
             }
         }, 500);
@@ -34989,6 +34990,34 @@ self.addEventListener('notificationclick', function(event) {
         btn.disabled = false;
     }
 
+    async function forceUpdateSW() {
+        const btn = document.getElementById('forceUpdateSWBtn');
+        const statusEl = document.getElementById('forceUpdateSWStatus');
+        btn.disabled = true;
+        btn.textContent = '⏳ Sending…';
+        try {
+            const db = window.db || firebase.database();
+            await db.ref('sw_force_update').set({ triggeredAt: Date.now(), triggeredBy: 'admin' });
+            // Also update own SW
+            if ('serviceWorker' in navigator) {
+                const reg = await navigator.serviceWorker.ready;
+                await reg.update();
+            }
+            statusEl.style.display = 'block';
+            statusEl.style.background = '#d4edda';
+            statusEl.style.color = '#155724';
+            statusEl.textContent = '✅ Done! All online devices will reload their sw.js within seconds. Offline devices will update on next visit.';
+        } catch(err) {
+            statusEl.style.display = 'block';
+            statusEl.style.background = '#f8d7da';
+            statusEl.style.color = '#721c24';
+            statusEl.textContent = '❌ Failed: ' + err.message;
+        }
+        btn.disabled = false;
+        btn.textContent = '🔄 Force Service Worker Update on All Devices';
+        setTimeout(() => { statusEl.style.display = 'none'; }, 8000);
+    }
+
     // Mark notifications as seen when student opens site
     async function markNotificationsSeen() {
         try {
@@ -35128,6 +35157,7 @@ self.addEventListener('notificationclick', function(event) {
     window.maybeShowNotifBanner    = maybeShowNotifBanner;
     window.retriggerPermissionBanner = retriggerPermissionBanner;
     window.cleanStaleSubscriptions  = cleanStaleSubscriptions;
+    window.forceUpdateSW             = forceUpdateSW;
     window.initLiveUsersPanel      = initLiveUsersPanel;
     window.refreshLiveUsers        = refreshLiveUsers;
 
@@ -35171,7 +35201,7 @@ self.addEventListener('notificationclick', function(event) {
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;" id="devTriggerVersion">
-                <strong>Version:</strong> 5.26 — Added “Clean Stale Subscriptions” button — tests each stored push subscription individually and removes expired ones from Firebase | <strong>Last Updated:</strong> Mar 01, 2026 — 12:59 IST</p>
+                <strong>Version:</strong> 5.27 — Fixed SW registration to force update on every load; added Force Update SW button so admin can push latest sw.js to all online devices instantly via Firebase | <strong>Last Updated:</strong> Mar 01, 2026 — 12:59 IST</p>
             <!-- ============================================ -->
             
             <p style="color: #c44569; font-size: 0.85em; font-weight: 600; margin-bottom: 8px;">
