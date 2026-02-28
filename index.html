@@ -6647,6 +6647,11 @@
                     <div id="forceUpdateSWStatus" style="margin-top:8px;display:none;padding:8px 12px;border-radius:8px;font-size:13px;font-weight:600;text-align:center"></div>
                     <p style="color:#888;font-size:11px;margin-top:6px;text-align:center">Forces all online student devices to reload the latest sw.js immediately — use this after uploading a new sw.js to GitHub</p>
                 </div>
+                <div style="margin-top:10px;border-top:1px dashed rgba(106,27,154,0.2);padding-top:10px">
+                    <button onclick="forceResubscribeAll()" id="forceResubBtn" style="background:linear-gradient(135deg,#e65100,#bf360c);color:#fff;border:none;padding:10px 20px;border-radius:20px;cursor:pointer;font-size:13px;font-weight:700;width:100%">🔁 Force Re-subscribe All Devices to Push</button>
+                    <div id="forceResubStatus" style="margin-top:8px;display:none;padding:8px 12px;border-radius:8px;font-size:13px;font-weight:600;text-align:center"></div>
+                    <p style="color:#888;font-size:11px;margin-top:6px;text-align:center">Clears old stale subscriptions and forces all online devices to create a fresh push subscription — run this after updating sw.js if notifications still don't appear</p>
+                </div>
             </div>
 
             <!-- Info box -->
@@ -6669,10 +6674,12 @@
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
                     <h3 style="color:#ffcc02;font-size:1em;margin:0">🔍 SW Push Debug Log</h3>
                     <div style="display:flex;gap:8px">
+                        <button onclick="diagnosePushOnDevice()" style="background:rgba(0,200,83,0.2);color:#a8ff78;border:1px solid #a8ff78;padding:4px 12px;border-radius:12px;cursor:pointer;font-size:11px">🔬 Diagnose</button>
                         <button onclick="clearSwDebugLog()" style="background:rgba(255,255,255,0.1);color:#aaa;border:1px solid #444;padding:4px 12px;border-radius:12px;cursor:pointer;font-size:11px">🗑 Clear</button>
                         <button onclick="loadSwDebugLog()" style="background:rgba(255,204,2,0.15);color:#ffcc02;border:1px solid #ffcc02;padding:4px 12px;border-radius:12px;cursor:pointer;font-size:11px">↻ Refresh</button>
                     </div>
                 </div>
+                <div id="swDiagnoseResult" style="display:none;background:#0d0d1a;border:1px solid #333;border-radius:8px;padding:10px;margin-bottom:10px;font-family:monospace;font-size:11px;color:#fff;line-height:1.7"></div>
                 <p style="color:#888;font-size:11px;margin:0 0 10px">Shows what happens inside sw.js when a push is delivered — updates live. Send a notification then watch here.</p>
                 <div id="swDebugLog" style="background:#0d0d1a;border-radius:8px;padding:12px;max-height:220px;overflow-y:auto;font-family:monospace;font-size:11px;color:#a8ff78">
                     <span style="color:#555">Waiting for push events…</span>
@@ -34040,6 +34047,8 @@ v5.26 | Mar 01 2026 12:59 IST | Added Clean Stale Subscriptions button — tests
 v5.27 | Mar 01 2026 12:59 IST | Fixed SW reg to call reg.update() on every load; added Force Update SW button — writes to Firebase, triggers reg.update() on all online devices immediately
 v5.28 | Mar 01 2026 12:59 IST | Added SW Push Debug Log panel — sw.js logs every push step to Firebase REST API; admin sees live log with push_received/push_shown_ok/push_show_error
 v5.29 | Mar 01 2026 | Added ⬇️ Download sw.js button + auto health-check that fetches live sw.js and warns if push handler is missing — root fix for "notification not going"
+v5.30 | Mar 01 2026 | Fixed stale push subscription — after SW update old sub no longer receives pushes; now forces fresh re-subscribe; added Force Re-subscribe All Devices admin button + Firebase listener on student side
+v5.31 | Mar 01 2026 | Added 🔬 Diagnose button in SW Push Debug panel — shows permission, SW state, subscription existence, Firebase match, and VAPID key to pinpoint exactly why notifications aren't arriving
 -->
     <!-- ============================================================ -->
     <!-- 🟢 FIREBASE PRESENCE + 📣 PUSH NOTIFICATIONS SCRIPTS       -->
@@ -34271,6 +34280,38 @@ v5.29 | Mar 01 2026 | Added ⬇️ Download sw.js button + auto health-check tha
         }, 500);
     })();
 
+    // ─── FORCE RE-SUBSCRIBE LISTENER (student side) ─────────────
+    // Admin writes to push_force_resub → all online students drop old sub and get fresh one
+    (function() {
+        const waitForDbResub = setInterval(() => {
+            if (window.db) {
+                clearInterval(waitForDbResub);
+                let _lastResub = null;
+                window.db.ref('push_force_resub').on('value', snap => {
+                    if (!snap.exists()) return;
+                    const data = snap.val();
+                    if (!data || !data.triggeredAt) return;
+                    if (_lastResub === data.triggeredAt) return;
+                    _lastResub = data.triggeredAt;
+                    if (!('serviceWorker' in navigator)) return;
+                    if (Notification.permission !== 'granted') return;
+                    navigator.serviceWorker.ready.then(reg => {
+                        localStorage.removeItem('spurthi_push_subbed_v2');
+                        subscribeToPush(reg, true).then(() => {
+                            console.log('[Push] Admin triggered force re-subscribe — fresh subscription saved');
+                        }).catch(() => {});
+                    }).catch(() => {});
+                });
+            }
+        }, 500);
+    })();
+                        }).catch(() => {});
+                    }).catch(() => {});
+                });
+            }
+        }, 500);
+    })();
+
     // ═══════════════════════════════════════════════════════════════
     // 🟢 LIVE NOW PANEL — SA functions
     // ═══════════════════════════════════════════════════════════════
@@ -34331,22 +34372,32 @@ v5.29 | Mar 01 2026 | Added ⬇️ Download sw.js button + auto health-check tha
         const permission = await Notification.requestPermission();
         if (permission === 'granted') {
             const reg = await navigator.serviceWorker.ready;
-            await subscribeToPush(reg);
+            await subscribeToPush(reg, true); // force fresh subscription
         }
     }
 
-    async function subscribeToPush(reg) {
+    async function subscribeToPush(reg, forceResub) {
         try {
             const existing = await reg.pushManager.getSubscription();
-            if (existing) {
+            // Force re-subscribe if: explicitly requested, or first time after SW update
+            // This is critical — after SW update, old subscription is stale and won't receive pushes
+            const needsResub = forceResub || !localStorage.getItem('spurthi_push_subbed_v2');
+            if (existing && !needsResub) {
                 await saveFcmToken(existing);
                 return;
+            }
+            // Unsubscribe old stale subscription first
+            if (existing) {
+                await existing.unsubscribe();
+                console.log('[Push] Unsubscribed old stale subscription');
             }
             const sub = await reg.pushManager.subscribe({
                 userVisibleOnly: true,
                 applicationServerKey: urlBase64ToUint8Array(VAPID_KEY)
             });
+            localStorage.setItem('spurthi_push_subbed_v2', '1');
             await saveFcmToken(sub);
+            console.log('[Push] Fresh subscription created and saved');
         } catch (e) {
             console.warn('[Push] Subscribe failed:', e);
         }
@@ -34524,7 +34575,91 @@ self.addEventListener('notificationclick', function(event) {
             alert('❌ Notification failed: ' + e.message);
         }
     }
-    async function initPushNotifPanel() {
+    async function diagnosePushOnDevice() {
+        const el = document.getElementById('swDiagnoseResult');
+        if (!el) return;
+        el.style.display = 'block';
+        el.innerHTML = '⏳ Running diagnosis…';
+
+        const lines = [];
+        const ok  = t => `<span style="color:#a8ff78">✅ ${t}</span>`;
+        const err = t => `<span style="color:#ff5252">❌ ${t}</span>`;
+        const warn= t => `<span style="color:#ffcc02">⚠️ ${t}</span>`;
+
+        // 1. Notification permission
+        const perm = ('Notification' in window) ? Notification.permission : 'unsupported';
+        lines.push(perm === 'granted' ? ok('Notification permission: granted') : err('Notification permission: ' + perm + ' — student must click Allow'));
+
+        // 2. Service Worker
+        if (!('serviceWorker' in navigator)) {
+            lines.push(err('Service Workers not supported in this browser'));
+            el.innerHTML = lines.join('<br>'); return;
+        }
+        lines.push(ok('Service Workers: supported'));
+
+        // 3. SW registration
+        let reg;
+        try {
+            reg = await Promise.race([
+                navigator.serviceWorker.ready,
+                new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 4000))
+            ]);
+            lines.push(ok('SW registered — scope: ' + reg.scope));
+            lines.push(reg.active ? ok('SW active state: ' + reg.active.state) : err('SW has no active worker'));
+        } catch(e) {
+            lines.push(err('SW not ready: ' + e.message));
+            el.innerHTML = lines.join('<br>'); return;
+        }
+
+        // 4. Push subscription
+        try {
+            const sub = await reg.pushManager.getSubscription();
+            if (!sub) {
+                lines.push(err('No push subscription on this device — page reload needed to re-subscribe'));
+            } else {
+                const endpoint = sub.endpoint || '';
+                const shortEp = endpoint.substring(0, 60) + '…';
+                lines.push(ok('Push subscription exists'));
+                lines.push(warn('Endpoint: ' + shortEp));
+                const expiry = sub.expirationTime;
+                if (expiry && expiry < Date.now()) {
+                    lines.push(err('Subscription EXPIRED — must re-subscribe'));
+                } else {
+                    lines.push(ok('Subscription not expired'));
+                }
+                // Check if subscription is saved in Firebase
+                const sid = localStorage.getItem('spurthi_sid');
+                if (sid && window.db) {
+                    const snap = await window.db.ref('fcmTokens/' + sid + '/subscription').once('value');
+                    if (snap.exists()) {
+                        let saved;
+                        try { saved = JSON.parse(snap.val()); } catch(e) { saved = snap.val(); }
+                        const savedEp = (saved && saved.endpoint) ? saved.endpoint.substring(0,60) + '…' : 'missing';
+                        const match = saved && saved.endpoint === endpoint;
+                        lines.push(match ? ok('Firebase subscription matches browser') : err('Firebase subscription MISMATCH — browser has different sub than Firebase. Click Force Re-subscribe below!'));
+                    } else {
+                        lines.push(err('No subscription saved in Firebase for this device — click Force Re-subscribe'));
+                    }
+                }
+            }
+        } catch(e) {
+            lines.push(err('Could not get subscription: ' + e.message));
+        }
+
+        // 5. VAPID key check (indirect — just show key length)
+        lines.push(warn('VAPID public key used: ' + VAPID_KEY.substring(0,20) + '… (verify this matches your Cloudflare Worker)'));
+
+        // 6. Summary
+        const hasErrors = lines.some(l => l.includes('ff5252'));
+        lines.push('');
+        lines.push(hasErrors
+            ? err('ISSUES FOUND — click 🔁 Force Re-subscribe below, then try sending again')
+            : ok('All checks passed — if push still fails, the VAPID private key in your Cloudflare Worker may not match the public key above'));
+
+        el.innerHTML = lines.join('<br>');
+    }
+
+    window.diagnosePushOnDevice = diagnosePushOnDevice;
         await refreshDeviceCount();
         startSwDebugPolling();
         loadAllDevices();
@@ -35089,7 +35224,36 @@ self.addEventListener('notificationclick', function(event) {
         setTimeout(() => { statusEl.style.display = 'none'; }, 8000);
     }
 
-    function loadSwDebugLog() {
+    async function forceResubscribeAll() {
+        const btn = document.getElementById('forceResubBtn');
+        const statusEl = document.getElementById('forceResubStatus');
+        btn.disabled = true;
+        btn.textContent = '⏳ Sending…';
+        statusEl.style.display = 'none';
+        try {
+            const db = window.db || firebase.database();
+            // Write Firebase flag — all online student devices listen and force re-subscribe
+            await db.ref('push_force_resub').set({ triggeredAt: Date.now(), triggeredBy: 'admin' });
+            // Also force re-subscribe on this device
+            if ('serviceWorker' in navigator && Notification.permission === 'granted') {
+                const reg = await navigator.serviceWorker.ready;
+                localStorage.removeItem('spurthi_push_subbed_v2');
+                await subscribeToPush(reg, true);
+            }
+            statusEl.style.display = 'block';
+            statusEl.style.background = '#d4edda';
+            statusEl.style.color = '#155724';
+            statusEl.textContent = '✅ Done! All online devices will drop old stale subscriptions and create fresh ones. Then send your notification — it should now arrive.';
+        } catch(err) {
+            statusEl.style.display = 'block';
+            statusEl.style.background = '#f8d7da';
+            statusEl.style.color = '#721c24';
+            statusEl.textContent = '❌ Failed: ' + err.message;
+        }
+        btn.disabled = false;
+        btn.textContent = '🔁 Force Re-subscribe All Devices to Push';
+        setTimeout(() => { statusEl.style.display = 'none'; }, 10000);
+    }
         const el = document.getElementById('swDebugLog');
         if (!el) return;
         const db = window.db || firebase.database();
@@ -35265,6 +35429,7 @@ self.addEventListener('notificationclick', function(event) {
     window.retriggerPermissionBanner = retriggerPermissionBanner;
     window.cleanStaleSubscriptions  = cleanStaleSubscriptions;
     window.forceUpdateSW             = forceUpdateSW;
+    window.forceResubscribeAll        = forceResubscribeAll;
     window.loadSwDebugLog           = loadSwDebugLog;
     window.clearSwDebugLog          = clearSwDebugLog;
     window.startSwDebugPolling      = startSwDebugPolling;
@@ -35312,7 +35477,7 @@ self.addEventListener('notificationclick', function(event) {
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;" id="devTriggerVersion">
-                <strong>Version:</strong> 5.29 — Added ⬇️ Download sw.js button + auto health-check that detects if live sw.js is missing push handler and shows red warning | <strong>Last Updated:</strong> Mar 01, 2026</p>
+                <strong>Version:</strong> 5.31 — Added 🔬 Diagnose button in SW Debug panel — checks permission, SW state, subscription, Firebase match, and VAPID key to find exact push failure cause | <strong>Last Updated:</strong> Mar 01, 2026</p>
             <!-- ============================================ -->
             
             <p style="color: #c44569; font-size: 0.85em; font-weight: 600; margin-bottom: 8px;">
