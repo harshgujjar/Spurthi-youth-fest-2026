@@ -33922,6 +33922,7 @@ v4.96 | Feb 28 2026 17:50 IST | Live Now and Notifications panels clear data whe
 v4.97 | Feb 28 2026 17:38 IST | Live Now and Notifications panels now properly hidden when switching to any other tab
 v4.98 | Feb 28 2026 19:16 IST | In-app real-time notification toast added via Firebase — works on all browsers including Opera
 v4.99 | Feb 28 2026 19:33 IST | VAPID public key replaced with newly generated key pair (fresh Web Push setup)
+v5.00 | Feb 28 2026 19:33 IST | Fixed push: subscription was stored as JSON string — now parsed before sending to worker
 -->
     <!-- ============================================================ -->
     <!-- 🟢 FIREBASE PRESENCE + 📣 PUSH NOTIFICATIONS SCRIPTS       -->
@@ -34367,7 +34368,7 @@ v4.99 | Feb 28 2026 19:33 IST | VAPID public key replaced with newly generated k
             const snap = await db.ref('fcmTokens').once('value');
             const tokens = snap.val() || {};
             const tokenEntries = Object.entries(tokens).filter(([,t]) => t.subscription);
-            const subscriptions = tokenEntries.map(([,t]) => t.subscription);
+            const subscriptions = tokenEntries.map(([,t]) => { try { return typeof t.subscription === "string" ? JSON.parse(t.subscription) : t.subscription; } catch(e) { return null; } }).filter(Boolean);
 
             const deviceList = tokenEntries.map(([sid, t]) => ({
                 sid,
@@ -34528,7 +34529,7 @@ v4.99 | Feb 28 2026 19:33 IST | VAPID public key replaced with newly generated k
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;" id="devTriggerVersion">
-                <strong>Version:</strong> 4.99 — VAPID public key replaced with newly generated key pair (fresh Web Push setup) | <strong>Last Updated:</strong> February 28, 2026 — 19:33 IST</p>
+                <strong>Version:</strong> 5.00 — Fixed push: subscription JSON string now parsed before sending to worker | <strong>Last Updated:</strong> February 28, 2026 — 19:33 IST</p>
             <!-- ============================================ -->
             
             <p style="color: #c44569; font-size: 0.85em; font-weight: 600; margin-bottom: 8px;">
