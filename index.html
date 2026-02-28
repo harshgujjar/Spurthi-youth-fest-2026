@@ -6657,9 +6657,11 @@
                 </p>
                 <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
                     <button id="swJsCodeBtn" style="background:#ffcc02;color:#1a0030;border:none;padding:7px 16px;border-radius:16px;cursor:pointer;font-size:11px;font-weight:800;display:inline-block">📋 Copy correct sw.js code</button>
+                    <button id="swJsDownloadBtn" style="background:#00c853;color:#fff;border:none;padding:7px 16px;border-radius:16px;cursor:pointer;font-size:11px;font-weight:800;display:inline-block">⬇️ Download sw.js</button>
                     <button id="testPushBtn" style="background:rgba(255,255,255,0.15);color:#ffd54f;border:1.5px solid #ffd54f;padding:7px 16px;border-radius:16px;cursor:pointer;font-size:11px;font-weight:700;display:inline-block">🧪 Test Push Now</button>
                     <span id="testPushResult" style="color:#a8ff78;font-size:11px;font-weight:700"></span>
                 </div>
+                <div id="swJsHealthBadge" style="margin-top:8px;font-size:11px;font-weight:700;display:none"></div>
             </div>
 
             <!-- SW Push Debug Panel -->
@@ -6684,7 +6686,8 @@
                     <h3 style="color:#ffcc02;margin-bottom:4px;font-size:1em">📄 Required sw.js content</h3>
                     <p style="color:#aaa;font-size:11px;margin-bottom:12px">Upload this as <strong style="color:#fff">sw.js</strong> in your GitHub repo root at <code style="background:#333;padding:1px 5px;border-radius:3px">/Spurthi-youth-fest-2026/sw.js</code></p>
                     <textarea id="swJsCodeArea" readonly style="width:100%;height:320px;background:#0d0d1a;color:#a8ff78;border:1px solid #333;border-radius:8px;padding:12px;font-family:monospace;font-size:11px;resize:vertical;box-sizing:border-box"></textarea>
-                    <button onclick="copySwJs(this)" style="margin-top:10px;background:#ffcc02;color:#1a0030;border:none;padding:8px 20px;border-radius:16px;cursor:pointer;font-size:12px;font-weight:800;width:100%">📋 Copy to Clipboard</button>
+                    <button onclick="copySwJs(this)" style="margin-top:10px;background:#ffcc02;color:#1a0030;border:none;padding:8px 20px;border-radius:16px;cursor:pointer;font-size:12px;font-weight:800;width:calc(50% - 4px)">📋 Copy to Clipboard</button>
+                    <button onclick="(function(){var b=new Blob([SW_JS_CODE],{type:'application/javascript'});var a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='sw.js';a.click();})()" style="margin-top:10px;background:#00c853;color:#fff;border:none;padding:8px 20px;border-radius:16px;cursor:pointer;font-size:12px;font-weight:800;width:calc(50% - 4px)">⬇️ Download sw.js</button>
                 </div>
             </div>
 
@@ -34036,6 +34039,7 @@ v5.25 | Mar 01 2026 12:59 IST | Added Re-send Notification Permission Prompt but
 v5.26 | Mar 01 2026 12:59 IST | Added Clean Stale Subscriptions button — tests each subscription individually via worker and removes failed ones from Firebase; success message now hints about stale count
 v5.27 | Mar 01 2026 12:59 IST | Fixed SW reg to call reg.update() on every load; added Force Update SW button — writes to Firebase, triggers reg.update() on all online devices immediately
 v5.28 | Mar 01 2026 12:59 IST | Added SW Push Debug Log panel — sw.js logs every push step to Firebase REST API; admin sees live log with push_received/push_shown_ok/push_show_error
+v5.29 | Mar 01 2026 | Added ⬇️ Download sw.js button + auto health-check that fetches live sw.js and warns if push handler is missing — root fix for "notification not going"
 -->
     <!-- ============================================================ -->
     <!-- 🟢 FIREBASE PRESENCE + 📣 PUSH NOTIFICATIONS SCRIPTS       -->
@@ -34527,8 +34531,10 @@ self.addEventListener('notificationclick', function(event) {
         loadPushLogs();
         // Re-wire buttons each time panel is opened (in case DOM wasn't ready at DOMContentLoaded)
         setTimeout(function() {
-            const swBtn   = document.getElementById('swJsCodeBtn');
-            const testBtn = document.getElementById('testPushBtn');
+            const swBtn      = document.getElementById('swJsCodeBtn');
+            const testBtn    = document.getElementById('testPushBtn');
+            const dlBtn      = document.getElementById('swJsDownloadBtn');
+            const healthBadge = document.getElementById('swJsHealthBadge');
             if (swBtn && !swBtn._wired)   { swBtn.addEventListener('click', function() { showSwJsCode(); }); swBtn._wired = true; }
             if (testBtn && !testBtn._wired) {
                 testBtn.addEventListener('click', function() {
@@ -34540,6 +34546,39 @@ self.addEventListener('notificationclick', function(event) {
                     });
                 });
                 testBtn._wired = true;
+            }
+            if (dlBtn && !dlBtn._wired) {
+                dlBtn.addEventListener('click', function() {
+                    const blob = new Blob([SW_JS_CODE], {type: 'application/javascript'});
+                    const a = document.createElement('a');
+                    a.href = URL.createObjectURL(blob);
+                    a.download = 'sw.js';
+                    a.click();
+                    URL.revokeObjectURL(a.href);
+                });
+                dlBtn._wired = true;
+            }
+            // Auto-check if live sw.js on GitHub has push handler
+            if (healthBadge && !healthBadge._checked) {
+                healthBadge._checked = true;
+                fetch('/Spurthi-youth-fest-2026/sw.js?_=' + Date.now())
+                    .then(r => r.text())
+                    .then(txt => {
+                        if (txt.includes("addEventListener('push'") || txt.includes('addEventListener("push"')) {
+                            healthBadge.style.display = 'block';
+                            healthBadge.style.color = '#a8ff78';
+                            healthBadge.textContent = '✅ sw.js on GitHub has push handler — notifications should work.';
+                        } else {
+                            healthBadge.style.display = 'block';
+                            healthBadge.style.color = '#ff5252';
+                            healthBadge.textContent = '❌ sw.js on GitHub is MISSING the push handler! Download sw.js below and upload it to GitHub — this is why notifications are not showing.';
+                        }
+                    })
+                    .catch(() => {
+                        healthBadge.style.display = 'block';
+                        healthBadge.style.color = '#ffcc02';
+                        healthBadge.textContent = '⚠️ Could not fetch sw.js to verify. If notifications aren\'t showing, download sw.js and upload to GitHub.';
+                    });
             }
         }, 100);
     }
@@ -35273,7 +35312,7 @@ self.addEventListener('notificationclick', function(event) {
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;" id="devTriggerVersion">
-                <strong>Version:</strong> 5.28 — Added SW Push Debug Log panel in admin — shows exactly what sw.js does when a push arrives (received, parsed, shown, or error) updating live every 3s | <strong>Last Updated:</strong> Mar 01, 2026 — 12:59 IST</p>
+                <strong>Version:</strong> 5.29 — Added ⬇️ Download sw.js button + auto health-check that detects if live sw.js is missing push handler and shows red warning | <strong>Last Updated:</strong> Mar 01, 2026</p>
             <!-- ============================================ -->
             
             <p style="color: #c44569; font-size: 0.85em; font-weight: 600; margin-bottom: 8px;">
