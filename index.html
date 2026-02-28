@@ -6595,6 +6595,33 @@
             <!-- Compose notification -->
             <div style="background:#fff;border-radius:14px;padding:24px;box-shadow:0 4px 15px rgba(0,0,0,0.15)">
                 <h3 style="color:#6a1b9a;margin-bottom:16px;font-size:1.1em">✏️ Compose Notification</h3>
+
+                <!-- Target selector -->
+                <div style="margin-bottom:16px">
+                    <label style="color:#444;font-weight:700;font-size:13px;display:block;margin-bottom:8px">🎯 Send To</label>
+                    <div style="display:flex;gap:8px;flex-wrap:wrap">
+                        <button id="ntBtn_all" onclick="setNotifTarget('all')" style="padding:7px 16px;border-radius:20px;border:2px solid #6a1b9a;background:#6a1b9a;color:#fff;font-size:12px;font-weight:700;cursor:pointer">📢 All Devices</button>
+                        <button id="ntBtn_class" onclick="setNotifTarget('class')" style="padding:7px 16px;border-radius:20px;border:2px solid #aaa;background:#fff;color:#666;font-size:12px;font-weight:700;cursor:pointer">🏫 One Class</button>
+                        <button id="ntBtn_person" onclick="setNotifTarget('person')" style="padding:7px 16px;border-radius:20px;border:2px solid #aaa;background:#fff;color:#666;font-size:12px;font-weight:700;cursor:pointer">👤 One Person</button>
+                    </div>
+                </div>
+
+                <!-- Class selector (hidden by default) -->
+                <div id="notifClassRow" style="display:none;margin-bottom:14px">
+                    <label style="color:#444;font-weight:700;font-size:13px">Class</label>
+                    <select id="notifTargetClass" style="width:100%;padding:10px 14px;border:2px solid #6a1b9a;border-radius:8px;font-size:14px;margin-top:4px">
+                        <option value="">— Loading classes… —</option>
+                    </select>
+                </div>
+
+                <!-- Person selector (hidden by default) -->
+                <div id="notifPersonRow" style="display:none;margin-bottom:14px">
+                    <label style="color:#444;font-weight:700;font-size:13px">Person</label>
+                    <select id="notifTargetPerson" style="width:100%;padding:10px 14px;border:2px solid #6a1b9a;border-radius:8px;font-size:14px;margin-top:4px">
+                        <option value="">— Loading devices… —</option>
+                    </select>
+                </div>
+
                 <div class="form-group" style="margin-bottom:14px">
                     <label style="color:#444;font-weight:700;font-size:13px">Title</label>
                     <input type="text" id="notifTitle" placeholder="e.g. 🎓 Quiz is Live Now!" maxlength="100" style="border:2px solid #c44569;border-radius:8px;padding:10px 14px;width:100%;font-size:14px">
@@ -33943,6 +33970,11 @@ v5.02 | Feb 28 2026 21:30 IST | Fixed Cannot read properties of undefined error 
 v5.03 | Feb 28 2026 21:45 IST | Fixed /*- bypass not working in quiz login password field
 v5.04 | Feb 28 2026 22:00 IST | Fixed Live Now showing Guest after login — presence interval now resets with new identity
 v5.05 | Feb 28 2026 22:15 IST | Merged all v5.01–v5.04 fixes into single file (previous updates were missing)
+v5.06 | Mar 01 2026 00:30 IST | Targeted notifications — send to All / One Class / One Person with both in-app toast and FCM push
+v5.07 | Mar 01 2026 04:45 IST | Fixed person-targeted toast not showing — now targets by name not session ID, works across all devices
+v5.08 | Mar 01 2026 05:10 IST | Toast window increased from 30s to 5min so mobile users who open site shortly after still see it
+v5.09 | Mar 01 2026 05:20 IST | Fixed all timestamps showing wrong time — IST was being added twice (browser + manual)
+v5.10 | Mar 01 2026 05:35 IST | Fixed toast never showing — now re-checks on login so notifications sent before page load still appear
 -->
     <!-- ============================================================ -->
     <!-- 🟢 FIREBASE PRESENCE + 📣 PUSH NOTIFICATIONS SCRIPTS       -->
@@ -34038,7 +34070,15 @@ v5.05 | Feb 28 2026 22:15 IST | Merged all v5.01–v5.04 fixes into single file 
     // You should call  window.onSpurthiLogin(name, className)  inside your
     // existing loginSuccess / quiz login success code.
     window.onSpurthiLogin = function(name, className) {
-        registerPresence(name, className); // always re-write with real identity
+        registerPresence(name, className);
+        window._currentUserClass = className || '';
+        window._currentUserName  = name      || '';
+        // Re-check latest notification in case it arrived before login
+        if (window.db) {
+            window.db.ref('live_notifications/latest').once('value').then(snap => {
+                if (snap.exists() && window._evalInAppNotif) window._evalInAppNotif(snap.val());
+            });
+        }
         // Also save FCM token identity
         const sid = getSessionId();
         const db = window.db || firebase.database();
@@ -34248,7 +34288,7 @@ v5.05 | Feb 28 2026 22:15 IST | Merged all v5.01–v5.04 fixes into single file 
             const name = identity.name || '—';
             const cls  = identity.class || '—';
             const device = t.device || 'Unknown';
-            const ts = t.savedAt ? new Date(t.savedAt + 5.5*60*60*1000) : null;
+            const ts = t.savedAt ? new Date(t.savedAt) : null;
             const regStr = ts
                 ? ts.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}) + ' ' +
                   ts.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true}) + ' IST'
@@ -34279,7 +34319,7 @@ v5.05 | Feb 28 2026 22:15 IST | Merged all v5.01–v5.04 fixes into single file 
             }
             const entries = Object.entries(logs).sort((a,b) => b[1].sentAt - a[1].sentAt);
             container.innerHTML = entries.map(([logId, log]) => {
-                const d = new Date(log.sentAt + 5.5*60*60*1000);
+                const d = new Date(log.sentAt);
                 const dateStr = d.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
                 const timeStr = d.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true});
                 const seenCount = log.seen ? Object.keys(log.seen).length : 0;
@@ -34321,7 +34361,7 @@ v5.05 | Feb 28 2026 22:15 IST | Merged all v5.01–v5.04 fixes into single file 
         document.getElementById('seenModalBody').innerHTML = devices.length === 0
             ? '<p style="color:#aaa;font-size:13px">No device info available.</p>'
             : devices.map(d => {
-                const reg = new Date((d.savedAt||0) + 5.5*60*60*1000);
+                const reg = new Date(d.savedAt||0);
                 const regStr = reg.toLocaleDateString('en-IN',{day:'2-digit',month:'short'}) + ' ' + reg.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true});
                 return `<div style="border-bottom:1px solid #f0e6ff;padding:8px 0;font-size:13px">
                     <strong style="color:#2d2d2d">${escHtml(d.name||'Unknown')}</strong>
@@ -34343,7 +34383,7 @@ v5.05 | Feb 28 2026 22:15 IST | Merged all v5.01–v5.04 fixes into single file 
         document.getElementById('seenModalBody').innerHTML = seenEntries.length === 0
             ? '<p style="color:#aaa;font-size:13px;text-align:center;padding:10px">No one has opened this notification yet.</p>'
             : seenEntries.map(s => {
-                const d = new Date((s.seenAt||0) + 5.5*60*60*1000);
+                const d = new Date(s.seenAt||0);
                 const dStr = d.toLocaleDateString('en-IN',{day:'2-digit',month:'short'}) + ' ' + d.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true});
                 return `<div style="border-bottom:1px solid #f0e6ff;padding:8px 0;font-size:13px">
                     <strong style="color:#2d2d2d">${escHtml(s.name||'Unknown')}</strong>
@@ -34352,6 +34392,56 @@ v5.05 | Feb 28 2026 22:15 IST | Merged all v5.01–v5.04 fixes into single file 
                 </div>`;
               }).join('');
         document.getElementById('seenDevicesModal').style.display = 'flex';
+    }
+
+    // ── Notification target state ──────────────────────────────────
+    let _notifTarget = 'all'; // 'all' | 'class' | 'person'
+
+    function setNotifTarget(mode) {
+        _notifTarget = mode;
+        const db = window.db || firebase.database();
+
+        // Update button styles
+        ['all','class','person'].forEach(m => {
+            const btn = document.getElementById('ntBtn_' + m);
+            if (!btn) return;
+            if (m === mode) {
+                btn.style.background = '#6a1b9a'; btn.style.color = '#fff'; btn.style.borderColor = '#6a1b9a';
+            } else {
+                btn.style.background = '#fff'; btn.style.color = '#666'; btn.style.borderColor = '#aaa';
+            }
+        });
+
+        // Show/hide rows
+        document.getElementById('notifClassRow').style.display  = mode === 'class'  ? 'block' : 'none';
+        document.getElementById('notifPersonRow').style.display = mode === 'person' ? 'block' : 'none';
+
+        // Update send button label
+        const sendBtn = document.getElementById('sendNotifBtn');
+        if (sendBtn) sendBtn.textContent = mode === 'all' ? '📢 Send to All Devices' : mode === 'class' ? '🏫 Send to Class' : '👤 Send to Person';
+
+        // Populate dropdowns
+        if (mode === 'class' || mode === 'person') {
+            db.ref('fcmTokens').once('value').then(snap => {
+                const tokens = snap.val() || {};
+                if (mode === 'class') {
+                    const classes = [...new Set(Object.values(tokens).map(t => (t.identity && t.identity.class) || '').filter(Boolean))].sort();
+                    const sel = document.getElementById('notifTargetClass');
+                    sel.innerHTML = '<option value="">— Select class —</option>' + classes.map(c => `<option value="${c}">${c}</option>`).join('');
+                } else {
+                    // Deduplicate by name — one person may have multiple devices/sessions
+                    const nameMap = {};
+                    Object.values(tokens).forEach(t => {
+                        const name = (t.identity && t.identity.name) || '';
+                        const cls  = (t.identity && t.identity.class) || '—';
+                        if (name && name !== 'Guest' && !nameMap[name]) nameMap[name] = cls;
+                    });
+                    const people = Object.entries(nameMap).sort((a,b) => a[0].localeCompare(b[0]));
+                    const sel = document.getElementById('notifTargetPerson');
+                    sel.innerHTML = '<option value="">— Select person —</option>' + people.map(([name, cls]) => `<option value="${name}">${name} · ${cls}</option>`).join('');
+                }
+            });
+        }
     }
 
     async function sendPushNotification() {
@@ -34368,6 +34458,12 @@ v5.05 | Feb 28 2026 22:15 IST | Merged all v5.01–v5.04 fixes into single file 
             return;
         }
 
+        // Validate target selection
+        const targetClass  = (_notifTarget === 'class')  ? (document.getElementById('notifTargetClass').value  || '') : '';
+        const targetName   = (_notifTarget === 'person') ? (document.getElementById('notifTargetPerson').value || '') : '';
+        if (_notifTarget === 'class'  && !targetClass)  { statusEl.style.display='block'; statusEl.style.background='#fff3cd'; statusEl.style.color='#856404'; statusEl.textContent='⚠️ Please select a class.'; return; }
+        if (_notifTarget === 'person' && !targetName)   { statusEl.style.display='block'; statusEl.style.background='#fff3cd'; statusEl.style.color='#856404'; statusEl.textContent='⚠️ Please select a person.'; return; }
+
         btn.disabled = true;
         btn.textContent = '⏳ Sending…';
         statusEl.style.display = 'none';
@@ -34375,30 +34471,39 @@ v5.05 | Feb 28 2026 22:15 IST | Merged all v5.01–v5.04 fixes into single file 
         try {
             const db = window.db || firebase.database();
 
-            // ── STEP 1: Write to Firebase for in-app real-time toast (works on ALL browsers) ──
-            await db.ref('live_notifications/latest').set({
-                title,
-                body,
+            // ── STEP 1: Write to Firebase for in-app real-time toast ──
+            const notifPayload = {
+                title, body,
                 sentAt: Date.now(),
-                id: Date.now().toString()
-            });
+                id: Date.now().toString(),
+                targetClass: targetClass || null,
+                targetName:  targetName  || null
+            };
 
-            // ── STEP 2: Try FCM push (best-effort, may fail on some browsers) ──
+            // Always write to /latest — clients filter by targetClass or targetName
+            await db.ref('live_notifications/latest').set(notifPayload);
+
+            // ── STEP 2: FCM push (filtered by target) ──
             const snap = await db.ref('fcmTokens').once('value');
             const tokens = snap.val() || {};
-            const tokenEntries = Object.entries(tokens).filter(([,t]) => t.subscription);
-            const subscriptions = tokenEntries.map(([,t]) => { try { return typeof t.subscription === "string" ? JSON.parse(t.subscription) : t.subscription; } catch(e) { return null; } }).filter(Boolean);
+            let tokenEntries = Object.entries(tokens).filter(([,t]) => t.subscription);
 
+            // Filter by class or person name (all devices of that person)
+            if (_notifTarget === 'class' && targetClass) {
+                tokenEntries = tokenEntries.filter(([,t]) => (t.identity && t.identity.class) === targetClass);
+            } else if (_notifTarget === 'person' && targetName) {
+                tokenEntries = tokenEntries.filter(([,t]) => (t.identity && t.identity.name) === targetName);
+            }
+
+            const subscriptions = tokenEntries.map(([,t]) => { try { return typeof t.subscription === "string" ? JSON.parse(t.subscription) : t.subscription; } catch(e) { return null; } }).filter(Boolean);
             const deviceList = tokenEntries.map(([sid, t]) => ({
-                sid,
-                device: t.device || 'Unknown',
+                sid, device: t.device || 'Unknown',
                 name: (t.identity && t.identity.name) || '',
                 class: (t.identity && t.identity.class) || '',
                 savedAt: t.savedAt || 0
             }));
 
             let sentCount = 0, failedCount = 0;
-
             if (subscriptions.length > 0) {
                 try {
                     const resp = await fetch(FCM_WORKER_URL, {
@@ -34417,7 +34522,7 @@ v5.05 | Feb 28 2026 22:15 IST | Merged all v5.01–v5.04 fixes into single file 
                 }
             }
 
-            // Save log to Firebase
+            // Save log
             const nowIST = new Date(Date.now() + 5.5*60*60*1000);
             const logRef = db.ref('push_logs').push();
             await logRef.set({
@@ -34427,13 +34532,17 @@ v5.05 | Feb 28 2026 22:15 IST | Merged all v5.01–v5.04 fixes into single file 
                 sent: sentCount,
                 failed: failedCount,
                 total: subscriptions.length,
-                devices: deviceList
+                devices: deviceList,
+                target: _notifTarget,
+                targetClass: targetClass || null,
+                targetName: targetName || null
             });
 
+            const targetLabel = _notifTarget === 'all' ? 'all devices' : _notifTarget === 'class' ? `class: ${targetClass}` : `${targetName}`;
             statusEl.style.display = 'block';
             statusEl.style.background = '#d4edda';
             statusEl.style.color = '#155724';
-            statusEl.textContent = `✅ In-app notification sent to all open tabs! FCM push: ${sentCount} sent, ${failedCount} failed.`;
+            statusEl.textContent = `✅ In-app toast sent to ${targetLabel}! FCM push: ${sentCount} sent, ${failedCount} failed.`;
             document.getElementById('notifTitle').value = '';
             document.getElementById('notifBody').value = '';
             loadPushLogs();
@@ -34447,7 +34556,8 @@ v5.05 | Feb 28 2026 22:15 IST | Merged all v5.01–v5.04 fixes into single file 
         }
 
         btn.disabled = false;
-        btn.textContent = '📤 Send to All Devices';
+        btn.textContent = _notifTarget === 'all' ? '📢 Send to All Devices' : _notifTarget === 'class' ? '🏫 Send to Class' : '👤 Send to Person';
+
     }
 
     // Mark notifications as seen when student opens site
@@ -34514,16 +34624,36 @@ v5.05 | Feb 28 2026 22:15 IST | Merged all v5.01–v5.04 fixes into single file 
         const waitForDb = setInterval(() => {
             if (window.db) {
                 clearInterval(waitForDb);
-                window.db.ref('live_notifications/latest').on('value', snap => {
-                    if (!snap.exists()) return;
-                    const data = snap.val();
+
+                // Core function to evaluate and show a notification
+                window._evalInAppNotif = function(data) {
                     if (!data || !data.id) return;
-                    // Don't show if same notification already shown this session
                     if (_inAppLastId === data.id) return;
-                    // Don't show if older than 30 seconds (page was loaded after it was sent)
-                    if (Date.now() - data.sentAt > 30000) { _inAppLastId = data.id; return; }
+                    const age = Date.now() - data.sentAt;
+                    console.log('[Toast] id:', data.id, 'age:', Math.round(age/1000)+'s', 'targetName:', data.targetName, 'myName:', window._currentUserName);
+                    if (age > 5 * 60 * 1000) { _inAppLastId = data.id; console.log('[Toast] BLOCKED: too old'); return; }
+                    // Class filter — only block if MY class is known AND doesn't match
+                    if (data.targetClass) {
+                        const myClass = (window._currentUserClass || '').trim().toLowerCase();
+                        const tClass  = data.targetClass.trim().toLowerCase();
+                        if (myClass && myClass !== tClass) { console.log('[Toast] BLOCKED: class mismatch', myClass, '!=', tClass); return; }
+                    }
+                    // Person filter — only block if MY name is known AND doesn't match
+                    if (data.targetName) {
+                        const myName = (window._currentUserName || '').trim().toLowerCase();
+                        const tName  = data.targetName.trim().toLowerCase();
+                        if (!myName) { console.log('[Toast] PENDING: not logged in yet'); return; }
+                        if (myName !== tName) { _inAppLastId = data.id; console.log('[Toast] BLOCKED: name mismatch', myName, '!=', tName); return; }
+                    }
+                    console.log('[Toast] SHOWING toast!');
                     _inAppLastId = data.id;
                     showInAppToast(data.title, data.body);
+                };
+
+                // Listen to /latest (all, class, and person targeted)
+                window.db.ref('live_notifications/latest').on('value', snap => {
+                    if (!snap.exists()) return;
+                    window._evalInAppNotif(snap.val());
                 });
             }
         }, 500);
@@ -34548,7 +34678,7 @@ v5.05 | Feb 28 2026 22:15 IST | Merged all v5.01–v5.04 fixes into single file 
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;" id="devTriggerVersion">
-                <strong>Version:</strong> 5.05 — Merged all v5.01–v5.04 fixes into single file | <strong>Last Updated:</strong> February 28, 2026 — 22:15 IST</p>
+                <strong>Version:</strong> 5.11 — Added debug logs to toast — open browser console to see why toast is blocked | <strong>Last Updated:</strong> March 01, 2026 — 05:50 IST</p>
             <!-- ============================================ -->
             
             <p style="color: #c44569; font-size: 0.85em; font-weight: 600; margin-bottom: 8px;">
