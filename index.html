@@ -34089,6 +34089,7 @@ v5.41 | Mar 01 2026 | Added 🗑 delete button on each notification history entr
 v5.42 | Mar 01 2026 | Fixed notifications wiping themselves: stopped auto-deleting subscriptions worker marks failed (Firefox endpoints are valid but worker can't reach them); added Firefox/Mozilla endpoint warning in Diagnose and on subscribe
 v5.43 | Mar 01 2026 | Fixed race condition: saveFcmToken now polls Firebase until write confirmed (up to 5s) before returning, so sendPushNotification always finds the token instead of falling back to localStorage
 v5.44 | Mar 01 2026 | Root fix for worker delivery failure: generated fresh matched VAPID key pair; new public key in HTML; full Cloudflare Worker code with matching private key embedded in admin panel with Copy + Download buttons
+v5.45 | Mar 01 2026 | Fixed InvalidAccessError: old VAPID public key was 64 bytes (invalid); replaced with fresh correctly-generated 65-byte key pair
 -->
     <!-- ============================================================ -->
     <!-- 🟢 FIREBASE PRESENCE + 📣 PUSH NOTIFICATIONS SCRIPTS       -->
@@ -34096,7 +34097,7 @@ v5.44 | Mar 01 2026 | Root fix for worker delivery failure: generated fresh matc
     <script>
     (function() {
     // ─── CONFIGURATION ───────────────────────────────────────────
-    const VAPID_KEY = 'twJAtYJ_UTPTamHoELvIj2-01vtmYvaDid-66345Rxpp_8g4Dn8SgookhtKhbLGXhYRsdwBVZ-yWGMlVSMnoNw';
+    const VAPID_KEY = 'BLrDcA6CEFSxsK5JphRx7YpKx-aZFvE3jiJgxYkMtIj2iVGNEII3pYoDmP6w3gUtEF9H2AI6Wm3TL5628_6iKTg';
     // ⚠️ Replace this with your actual fcm-push Cloudflare Worker URL after deploying it
     const FCM_WORKER_URL = 'https://fcm-push.harshgujjar.workers.dev';
     // ─────────────────────────────────────────────────────────────
@@ -35572,8 +35573,8 @@ self.addEventListener('notificationclick', function(event) {
 // Paste this entire file, then click Deploy.
 // ⚠️ VAPID keys below are matched to the HTML file — do NOT change them.
 
-const VAPID_PUBLIC_KEY  = 'twJAtYJ_UTPTamHoELvIj2-01vtmYvaDid-66345Rxpp_8g4Dn8SgookhtKhbLGXhYRsdwBVZ-yWGMlVSMnoNw';
-const VAPID_PRIVATE_KEY = 'cacQI3enJVQmYhiGu-1fHN9FtEHjkl3kScdo3_v-ZTw';
+const VAPID_PUBLIC_KEY  = 'BLrDcA6CEFSxsK5JphRx7YpKx-aZFvE3jiJgxYkMtIj2iVGNEII3pYoDmP6w3gUtEF9H2AI6Wm3TL5628_6iKTg';
+const VAPID_PRIVATE_KEY = 'l3s13VcNmE3X4yhFo3hTcwELH07HMK71ItNEsTeBMUw';
 const VAPID_SUBJECT     = 'mailto:harshgujjar@example.com';
 
 function base64urlToUint8Array(base64url) {
@@ -35895,7 +35896,7 @@ export default {
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;" id="devTriggerVersion">
-                <strong>Version:</strong> 5.44 — Fresh matched VAPID key pair generated; full Cloudflare Worker code with correct private key embedded in admin panel (Copy + Download) | <strong>Last Updated:</strong> Mar 01, 2026</p>
+                <strong>Version:</strong> 5.45 — Fixed InvalidAccessError: replaced malformed 64-byte VAPID public key with valid 65-byte key pair | <strong>Last Updated:</strong> Mar 01, 2026</p>
             <!-- ============================================ -->
             
             <p style="color: #c44569; font-size: 0.85em; font-weight: 600; margin-bottom: 8px;">
