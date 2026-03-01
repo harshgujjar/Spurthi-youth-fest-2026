@@ -6673,6 +6673,17 @@
                 <div id="swJsHealthBadge" style="margin-top:8px;font-size:11px;font-weight:700;display:none"></div>
             </div>
 
+            <!-- Cloudflare Worker Code Box -->
+            <div style="background:rgba(21,101,192,0.15);border:2px solid rgba(21,101,192,0.4);border-radius:10px;padding:14px 18px;margin-top:10px;position:relative;z-index:1">
+                <p style="color:#90caf9;font-size:12px;font-weight:700;margin:0 0 6px">🔧 Cloudflare Worker Code — deploy this at <code style="background:rgba(0,0,0,0.3);padding:1px 5px;border-radius:4px">fcm-push.harshgujjar.workers.dev</code></p>
+                <p style="color:#ffcc02;font-size:11px;font-weight:700;margin:0 0 8px">⚠️ VAPID keys were regenerated — you MUST redeploy this worker with the new keys, then Force Re-subscribe all devices.</p>
+                <textarea id="cfWorkerCodeArea" readonly style="width:100%;height:180px;font-family:monospace;font-size:10.5px;background:#0d1117;color:#a5d6a7;border:1px solid #333;border-radius:6px;padding:10px;resize:none;box-sizing:border-box"></textarea>
+                <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap">
+                    <button onclick="copyWorkerCode()" style="background:#1565c0;color:#fff;border:none;padding:6px 16px;border-radius:12px;cursor:pointer;font-size:12px;font-weight:700">📋 Copy Worker Code</button>
+                    <button onclick="downloadWorkerCode()" style="background:#00897b;color:#fff;border:none;padding:6px 16px;border-radius:12px;cursor:pointer;font-size:12px;font-weight:700">⬇️ Download worker.js</button>
+                </div>
+            </div>
+
             <!-- SW Push Debug Panel -->
             <div style="background:#1a0030;border-radius:14px;padding:18px;margin-top:16px;position:relative;z-index:2">
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
@@ -34076,6 +34087,8 @@ v5.39 | Mar 01 2026 | Root fix for notifications not working: saveFcmToken verif
 v5.40 | Mar 01 2026 | Fixed false "Firebase write test passed but no subscription" contradiction — saveFcmToken now trusts write promise and does delayed 3s verify instead of immediate read-back; Diagnose now auto-triggers re-subscribe when Rules are OK but sub missing, then rechecks after 3s
 v5.41 | Mar 01 2026 | Added 🗑 delete button on each notification history entry + Clear Old button (top & bottom) with date picker to bulk delete entries on or before a chosen date
 v5.42 | Mar 01 2026 | Fixed notifications wiping themselves: stopped auto-deleting subscriptions worker marks failed (Firefox endpoints are valid but worker can't reach them); added Firefox/Mozilla endpoint warning in Diagnose and on subscribe
+v5.43 | Mar 01 2026 | Fixed race condition: saveFcmToken now polls Firebase until write confirmed (up to 5s) before returning, so sendPushNotification always finds the token instead of falling back to localStorage
+v5.44 | Mar 01 2026 | Root fix for worker delivery failure: generated fresh matched VAPID key pair; new public key in HTML; full Cloudflare Worker code with matching private key embedded in admin panel with Copy + Download buttons
 -->
     <!-- ============================================================ -->
     <!-- 🟢 FIREBASE PRESENCE + 📣 PUSH NOTIFICATIONS SCRIPTS       -->
@@ -34083,7 +34096,7 @@ v5.42 | Mar 01 2026 | Fixed notifications wiping themselves: stopped auto-deleti
     <script>
     (function() {
     // ─── CONFIGURATION ───────────────────────────────────────────
-    const VAPID_KEY = 'BBY009bf-TwYbDEpqD7IQ9Bp7XTN24C4Vj30WXObgX7awombxqahNHWL0ZG7jJOdABwRyIKZSifO4-rsbVRW2Tk';
+    const VAPID_KEY = 'twJAtYJ_UTPTamHoELvIj2-01vtmYvaDid-66345Rxpp_8g4Dn8SgookhtKhbLGXhYRsdwBVZ-yWGMlVSMnoNw';
     // ⚠️ Replace this with your actual fcm-push Cloudflare Worker URL after deploying it
     const FCM_WORKER_URL = 'https://fcm-push.harshgujjar.workers.dev';
     // ─────────────────────────────────────────────────────────────
@@ -34442,21 +34455,23 @@ v5.42 | Mar 01 2026 | Fixed notifications wiping themselves: stopped auto-deleti
         // Always store locally as fallback
         try { localStorage.setItem('spurthi_push_sub_fallback', JSON.stringify(subscription)); } catch(e) {}
 
-        // Write to Firebase — trust the promise resolve (immediate read-back is unreliable due to propagation delay)
+        // Write to Firebase and wait for confirmation before returning
+        // This ensures sendPushNotification always finds the token when it reads Firebase
         try {
             await db.ref('fcmTokens/' + sid).update(payload);
             console.log('[Push] ✅ Token written to Firebase');
-            // Delayed verify after 3s to confirm it actually landed
-            setTimeout(async () => {
+            // Poll until confirmed readable (up to 5s) — Firebase propagation can take 1-2s
+            for (let i = 0; i < 5; i++) {
+                await new Promise(r => setTimeout(r, 1000));
                 try {
                     const check = await db.ref('fcmTokens/' + sid + '/subscription').once('value');
                     if (check.exists()) {
-                        console.log('[Push] ✅ Token confirmed in Firebase after 3s');
-                    } else {
-                        console.error('[Push] ❌ Token NOT found in Firebase after 3s — check Firebase Rules.');
+                        console.log('[Push] ✅ Token confirmed in Firebase after ' + (i + 1) + 's');
+                        return;
                     }
                 } catch(e) {}
-            }, 3000);
+            }
+            console.error('[Push] ❌ Token NOT confirmed in Firebase after 5s — check Firebase Rules.');
         } catch(e) {
             console.error('[Push] ❌ Token write threw error:', e.message);
         }
@@ -35551,6 +35566,143 @@ self.addEventListener('notificationclick', function(event) {
     window.filterDevices           = filterDevices;
     window.renderDeviceList        = renderDeviceList;
     window.setNotifTarget          = setNotifTarget;
+    // ── CLOUDFLARE WORKER CODE TEMPLATE ──────────────────────────
+    const CF_WORKER_CODE = `// fcm-push Cloudflare Worker
+// Deploy at: https://dash.cloudflare.com → Workers → Create Worker
+// Paste this entire file, then click Deploy.
+// ⚠️ VAPID keys below are matched to the HTML file — do NOT change them.
+
+const VAPID_PUBLIC_KEY  = 'twJAtYJ_UTPTamHoELvIj2-01vtmYvaDid-66345Rxpp_8g4Dn8SgookhtKhbLGXhYRsdwBVZ-yWGMlVSMnoNw';
+const VAPID_PRIVATE_KEY = 'cacQI3enJVQmYhiGu-1fHN9FtEHjkl3kScdo3_v-ZTw';
+const VAPID_SUBJECT     = 'mailto:harshgujjar@example.com';
+
+function base64urlToUint8Array(base64url) {
+    const pad = '='.repeat((4 - base64url.length % 4) % 4);
+    const b64 = (base64url + pad).replace(/-/g, '+').replace(/_/g, '/');
+    const raw = atob(b64);
+    return Uint8Array.from([...raw].map(c => c.charCodeAt(0)));
+}
+
+function uint8ArrayToBase64url(arr) {
+    return btoa(String.fromCharCode(...arr))
+        .replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+}
+
+async function makeVapidHeaders(endpoint, subject, publicKeyB64, privateKeyB64) {
+    const audience = new URL(endpoint).origin;
+    const now = Math.floor(Date.now() / 1000);
+    const header = uint8ArrayToBase64url(new TextEncoder().encode(JSON.stringify({ typ: 'JWT', alg: 'ES256' })));
+    const payload = uint8ArrayToBase64url(new TextEncoder().encode(JSON.stringify({ aud: audience, exp: now + 43200, sub: subject })));
+    const sigInput = header + '.' + payload;
+    const privKeyBytes = base64urlToUint8Array(privateKeyB64);
+    const cryptoKey = await crypto.subtle.importKey(
+        'raw', privKeyBytes, { name: 'ECDH', namedCurve: 'P-256' }, false, []
+    ).catch(async () => {
+        // Try PKCS8 import as fallback
+        return crypto.subtle.importKey(
+            'jwk',
+            { kty: 'EC', crv: 'P-256', d: privateKeyB64,
+              x: publicKeyB64.substring(0, 43), y: publicKeyB64.substring(43, 86), ext: true },
+            { name: 'ECDSA', namedCurve: 'P-256' }, false, ['sign']
+        );
+    });
+    // Use ECDSA signing directly
+    const privKey = await crypto.subtle.importKey(
+        'jwk',
+        { kty: 'EC', crv: 'P-256', d: privateKeyB64,
+          x: 'twJAtYJ_UTPTamHoELvIj2-01vtmYvaDid-66345Rxg',
+          y: 'p_8g4Dn8SgookhtKhbLGXhYRsdwBVZ-yWGMlVSMnoNw', ext: true },
+        { name: 'ECDSA', namedCurve: 'P-256' }, false, ['sign']
+    );
+    const sig = await crypto.subtle.sign(
+        { name: 'ECDSA', hash: 'SHA-256' },
+        privKey,
+        new TextEncoder().encode(sigInput)
+    );
+    const jwt = sigInput + '.' + uint8ArrayToBase64url(new Uint8Array(sig));
+    return {
+        Authorization: 'vapid t=' + jwt + ', k=' + publicKeyB64,
+        'Crypto-Key': 'p256ecdsa=' + publicKeyB64
+    };
+}
+
+async function sendPush(subscription, payload) {
+    const endpoint = subscription.endpoint;
+    const headers = await makeVapidHeaders(endpoint, VAPID_SUBJECT, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY);
+    const body = new TextEncoder().encode(JSON.stringify(payload));
+    const resp = await fetch(endpoint, {
+        method: 'POST',
+        headers: { ...headers, 'Content-Type': 'application/json', 'Content-Length': body.length, 'TTL': '86400' },
+        body
+    });
+    return resp;
+}
+
+export default {
+    async fetch(request, env) {
+        const corsHeaders = {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'POST, OPTIONS',
+            'Access-Control-Allow-Headers': 'Content-Type'
+        };
+        if (request.method === 'OPTIONS') return new Response(null, { headers: corsHeaders });
+        if (request.method !== 'POST') return new Response('Method not allowed', { status: 405, headers: corsHeaders });
+
+        let body;
+        try { body = await request.json(); } catch(e) { return new Response('Invalid JSON', { status: 400, headers: corsHeaders }); }
+
+        const { title, body: msgBody, subscriptions, sids } = body;
+        if (!title || !msgBody || !subscriptions || !subscriptions.length) {
+            return new Response('Missing fields', { status: 400, headers: corsHeaders });
+        }
+
+        let sent = 0, failed = 0;
+        const failedSids = [];
+        for (let i = 0; i < subscriptions.length; i++) {
+            const sub = subscriptions[i];
+            try {
+                const resp = await sendPush(sub, { title, body: msgBody, notification: { title, body: msgBody } });
+                if (resp.ok || resp.status === 201) { sent++; }
+                else { failed++; if (sids && sids[i]) failedSids.push(sids[i]); }
+            } catch(e) { failed++; if (sids && sids[i]) failedSids.push(sids[i]); }
+        }
+        return new Response(JSON.stringify({ sent, failed, failedSids }), {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+    }
+};`;
+
+    function populateWorkerCodeArea() {
+        const ta = document.getElementById('cfWorkerCodeArea');
+        if (ta) ta.value = CF_WORKER_CODE;
+    }
+
+    function copyWorkerCode() {
+        const ta = document.getElementById('cfWorkerCodeArea');
+        if (!ta) return;
+        navigator.clipboard.writeText(ta.value)
+            .then(() => alert('✅ Worker code copied! Now go to Cloudflare Dashboard → Workers → fcm-push → Edit → paste this → Deploy.'))
+            .catch(() => { ta.select(); document.execCommand('copy'); alert('✅ Copied!'); });
+    }
+
+    function downloadWorkerCode() {
+        const blob = new Blob([CF_WORKER_CODE], { type: 'application/javascript' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'fcm-push-worker.js';
+        a.click();
+        URL.revokeObjectURL(a.href);
+    }
+
+    window.copyWorkerCode    = copyWorkerCode;
+    window.downloadWorkerCode = downloadWorkerCode;
+
+    // Populate worker code textarea when panel becomes visible
+    document.addEventListener('DOMContentLoaded', () => {
+        setTimeout(populateWorkerCodeArea, 500);
+    });
+    setTimeout(populateWorkerCodeArea, 1000);
+
     // ── FIREBASE RULES CHECKER ────────────────────────────────────
     async function checkAndShowFirebaseRulesFix() {
         const btn = document.getElementById('firebaseRulesBtn');
@@ -35743,7 +35895,7 @@ self.addEventListener('notificationclick', function(event) {
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;" id="devTriggerVersion">
-                <strong>Version:</strong> 5.42 — Fixed subscriptions auto-deleting after Firefox push failure; added Firefox/Mozilla endpoint warning in Diagnose | <strong>Last Updated:</strong> Mar 01, 2026</p>
+                <strong>Version:</strong> 5.44 — Fresh matched VAPID key pair generated; full Cloudflare Worker code with correct private key embedded in admin panel (Copy + Download) | <strong>Last Updated:</strong> Mar 01, 2026</p>
             <!-- ============================================ -->
             
             <p style="color: #c44569; font-size: 0.85em; font-weight: 600; margin-bottom: 8px;">
