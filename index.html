@@ -34090,6 +34090,7 @@ v5.42 | Mar 01 2026 | Fixed notifications wiping themselves: stopped auto-deleti
 v5.43 | Mar 01 2026 | Fixed race condition: saveFcmToken now polls Firebase until write confirmed (up to 5s) before returning, so sendPushNotification always finds the token instead of falling back to localStorage
 v5.44 | Mar 01 2026 | Root fix for worker delivery failure: generated fresh matched VAPID key pair; new public key in HTML; full Cloudflare Worker code with matching private key embedded in admin panel with Copy + Download buttons
 v5.45 | Mar 01 2026 | Fixed InvalidAccessError: old VAPID public key was 64 bytes (invalid); replaced with fresh correctly-generated 65-byte key pair
+v5.46 | Mar 01 2026 | Fixed Worker Bad private key error: updated CF_WORKER_CODE template with new VAPID keys and correct x/y JWK coordinates
 -->
     <!-- ============================================================ -->
     <!-- 🟢 FIREBASE PRESENCE + 📣 PUSH NOTIFICATIONS SCRIPTS       -->
@@ -35611,8 +35612,8 @@ async function makeVapidHeaders(endpoint, subject, publicKeyB64, privateKeyB64) 
     const privKey = await crypto.subtle.importKey(
         'jwk',
         { kty: 'EC', crv: 'P-256', d: privateKeyB64,
-          x: 'twJAtYJ_UTPTamHoELvIj2-01vtmYvaDid-66345Rxg',
-          y: 'p_8g4Dn8SgookhtKhbLGXhYRsdwBVZ-yWGMlVSMnoNw', ext: true },
+          x: 'usNwDoIQVLGwrkmmFHHtikrH5pkW8TeOImDFiQy0iPY',
+          y: 'iVGNEII3pYoDmP6w3gUtEF9H2AI6Wm3TL5628_6iKTg', ext: true },
         { name: 'ECDSA', namedCurve: 'P-256' }, false, ['sign']
     );
     const sig = await crypto.subtle.sign(
@@ -35896,7 +35897,7 @@ export default {
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;" id="devTriggerVersion">
-                <strong>Version:</strong> 5.45 — Fixed InvalidAccessError: replaced malformed 64-byte VAPID public key with valid 65-byte key pair | <strong>Last Updated:</strong> Mar 01, 2026</p>
+                <strong>Version:</strong> 5.46 — Fixed Worker “Bad private key” error: CF_WORKER_CODE template now has correct VAPID keys and x/y JWK coordinates | <strong>Last Updated:</strong> Mar 01, 2026</p>
             <!-- ============================================ -->
             
             <p style="color: #c44569; font-size: 0.85em; font-weight: 600; margin-bottom: 8px;">
