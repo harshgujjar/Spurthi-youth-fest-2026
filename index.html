@@ -35201,27 +35201,44 @@ self.addEventListener('notificationclick', function(event) {
         const statusEl = document.getElementById('forceUpdateSWStatus');
         btn.disabled = true;
         btn.textContent = '⏳ Sending…';
+
+        let firebaseOk = false;
+        let localOk = false;
+
         try {
             const db = window.db || firebase.database();
             await db.ref('sw_force_update').set({ triggeredAt: Date.now(), triggeredBy: 'admin' });
-            // Also update own SW
+            firebaseOk = true;
+        } catch(err) {
+            console.warn('[ForceUpdateSW] Firebase write failed:', err.message);
+        }
+
+        try {
             if ('serviceWorker' in navigator) {
                 const reg = await navigator.serviceWorker.ready;
                 await reg.update();
+                localOk = true;
             }
-            statusEl.style.display = 'block';
+        } catch(err) {
+            console.warn('[ForceUpdateSW] Local SW update failed:', err.message);
+        }
+
+        statusEl.style.display = 'block';
+        if (firebaseOk) {
             statusEl.style.background = '#d4edda';
             statusEl.style.color = '#155724';
-            statusEl.textContent = '✅ Done! All online devices will reload their sw.js within seconds. Offline devices will update on next visit.';
-        } catch(err) {
-            statusEl.style.display = 'block';
-            statusEl.style.background = '#f8d7da';
-            statusEl.style.color = '#721c24';
-            statusEl.textContent = '❌ Failed: ' + err.message;
+            statusEl.textContent = '✅ Done! All online devices will reload sw.js within seconds.';
+        } else {
+            statusEl.style.background = '#fff3cd';
+            statusEl.style.color = '#856404';
+            statusEl.textContent = localOk
+                ? '⚠️ This device\'s SW updated, but couldn\'t signal others (Firebase rules block sw_force_update). Add ".read":true,".write":true for sw_force_update in Firebase Rules.'
+                : '❌ Firebase blocked. Add sw_force_update rule in Firebase Console → Rules.';
         }
+
         btn.disabled = false;
         btn.textContent = '🔄 Force Service Worker Update on All Devices';
-        setTimeout(() => { statusEl.style.display = 'none'; }, 8000);
+        setTimeout(() => { statusEl.style.display = 'none'; }, 15000);
     }
 
     async function forceResubscribeAll() {
@@ -35230,29 +35247,53 @@ self.addEventListener('notificationclick', function(event) {
         btn.disabled = true;
         btn.textContent = '⏳ Sending…';
         statusEl.style.display = 'none';
+
+        let firebaseOk = false;
+        let localOk = false;
+
+        // 1. Try Firebase signal (requires Firebase rules to allow write to push_force_resub)
         try {
             const db = window.db || firebase.database();
-            // Write Firebase flag — all online student devices listen and force re-subscribe
             await db.ref('push_force_resub').set({ triggeredAt: Date.now(), triggeredBy: 'admin' });
-            // Also force re-subscribe on this device
+            firebaseOk = true;
+        } catch(err) {
+            console.warn('[ForceResub] Firebase write failed (check rules):', err.message);
+        }
+
+        // 2. Always re-subscribe on THIS device regardless of Firebase result
+        try {
             if ('serviceWorker' in navigator && Notification.permission === 'granted') {
                 const reg = await navigator.serviceWorker.ready;
                 localStorage.removeItem('spurthi_push_subbed_v2');
                 await subscribeToPush(reg, true);
+                localOk = true;
             }
-            statusEl.style.display = 'block';
+        } catch(err) {
+            console.warn('[ForceResub] Local re-subscribe failed:', err.message);
+        }
+
+        statusEl.style.display = 'block';
+        if (firebaseOk && localOk) {
             statusEl.style.background = '#d4edda';
             statusEl.style.color = '#155724';
-            statusEl.textContent = '✅ Done! All online devices will drop old stale subscriptions and create fresh ones. Then send your notification — it should now arrive.';
-        } catch(err) {
-            statusEl.style.display = 'block';
+            statusEl.textContent = '✅ Done! Signal sent to all online devices + this device re-subscribed. Send a test notification now.';
+        } else if (localOk) {
+            statusEl.style.background = '#fff3cd';
+            statusEl.style.color = '#856404';
+            statusEl.textContent = '⚠️ This device re-subscribed successfully, but couldn\'t signal other devices (Firebase rules block push_force_resub). Add ".read": true, ".write": true for push_force_resub in Firebase Rules. Students who reload their page will re-subscribe automatically.';
+        } else if (firebaseOk) {
+            statusEl.style.background = '#d4edda';
+            statusEl.style.color = '#155724';
+            statusEl.textContent = '✅ Signal sent to all online devices. This device has no notification permission.';
+        } else {
             statusEl.style.background = '#f8d7da';
             statusEl.style.color = '#721c24';
-            statusEl.textContent = '❌ Failed: ' + err.message;
+            statusEl.textContent = '❌ Firebase blocked (add push_force_resub rule) and no local SW permission. Go to Firebase Console → Rules and add: "push_force_resub": {".read":true,".write":true}';
         }
+
         btn.disabled = false;
         btn.textContent = '🔁 Force Re-subscribe All Devices to Push';
-        setTimeout(() => { statusEl.style.display = 'none'; }, 10000);
+        setTimeout(() => { statusEl.style.display = 'none'; }, 20000);
     }
 
     function loadSwDebugLog() {
@@ -35480,7 +35521,7 @@ self.addEventListener('notificationclick', function(event) {
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;" id="devTriggerVersion">
-                <strong>Version:</strong> 5.36 — Fixed all JS syntax errors (missing IIFE, duplicate braces, missing function declarations); fresh VAPID key pair generated | <strong>Last Updated:</strong> Mar 01, 2026</p>
+                <strong>Version:</strong> 5.37 — Fixed all JS syntax errors (missing IIFE, duplicate braces, missing function declarations); fresh VAPID key pair generated | <strong>Last Updated:</strong> Mar 01, 2026</p>
             <!-- ============================================ -->
             
             <p style="color: #c44569; font-size: 0.85em; font-weight: 600; margin-bottom: 8px;">
