@@ -34075,6 +34075,7 @@ v5.34 | Mar 01 2026 | Root cause fixed: window.diagnosePushOnDevice= line was in
 v5.39 | Mar 01 2026 | Root fix for notifications not working: saveFcmToken verifies write + retries + shows page banner + localStorage fallback when Firebase Rules block; sendPushNotification uses localStorage fallback when 0 subscriptions in Firebase; Diagnose tests Firebase Rules write; new Check Firebase Rules button with copyable JSON
 v5.40 | Mar 01 2026 | Fixed false "Firebase write test passed but no subscription" contradiction — saveFcmToken now trusts write promise and does delayed 3s verify instead of immediate read-back; Diagnose now auto-triggers re-subscribe when Rules are OK but sub missing, then rechecks after 3s
 v5.41 | Mar 01 2026 | Added 🗑 delete button on each notification history entry + Clear Old button (top & bottom) with date picker to bulk delete entries on or before a chosen date
+v5.42 | Mar 01 2026 | Fixed notifications wiping themselves: stopped auto-deleting subscriptions worker marks failed (Firefox endpoints are valid but worker can't reach them); added Firefox/Mozilla endpoint warning in Diagnose and on subscribe
 -->
     <!-- ============================================================ -->
     <!-- 🟢 FIREBASE PRESENCE + 📣 PUSH NOTIFICATIONS SCRIPTS       -->
@@ -34419,6 +34420,11 @@ v5.41 | Mar 01 2026 | Added 🗑 delete button on each notification history entr
             localStorage.setItem('spurthi_push_subbed_v2', '1');
             await saveFcmToken(sub);
             console.log('[Push] Fresh subscription created and saved');
+            // Detect Firefox/Mozilla endpoint — warn that Cloudflare Worker must support Web Push
+            const endpoint = sub.endpoint || '';
+            if (endpoint.includes('mozilla') || endpoint.includes('firefox')) {
+                console.warn('[Push] ⚠️ Firefox/Mozilla push endpoint detected. Your Cloudflare Worker must use proper VAPID Web Push signing (not FCM-only) to deliver to Firefox. If notifications fail, try Chrome or Edge instead.');
+            }
         } catch (e) {
             console.warn('[Push] Subscribe failed:', e);
         }
@@ -34663,6 +34669,9 @@ self.addEventListener('notificationclick', function(event) {
                 const shortEp = endpoint.substring(0, 60) + '…';
                 lines.push(ok('Push subscription exists'));
                 lines.push(warn('Endpoint: ' + shortEp));
+                if (endpoint.includes('mozilla') || endpoint.includes('firefox')) {
+                    lines.push(warn('⚠️ Firefox/Mozilla endpoint — your Cloudflare Worker must support standard VAPID Web Push to reach Firefox. If notifications fail, test on Chrome or Edge instead.'));
+                }
                 const expiry = sub.expirationTime;
                 if (expiry && expiry < Date.now()) {
                     lines.push(err('Subscription EXPIRED — must re-subscribe'));
@@ -35128,20 +35137,13 @@ self.addEventListener('notificationclick', function(event) {
                     const result = await resp.json();
                     sentCount = result.sent || subscriptions.length;
                     failedCount = result.failed || 0;
-                    // Auto-cleanup: remove stale subscriptions from Firebase
-                    if (result.failedSids && result.failedSids.length > 0) {
-                        const cleanupUpdates = {};
-                        result.failedSids.forEach(sid => { cleanupUpdates['fcmTokens/' + sid + '/subscription'] = null; });
-                        db.ref().update(cleanupUpdates).then(() => {
-                            console.log('[FCM Push] Cleaned up', result.failedSids.length, 'stale subscriptions from Firebase');
-                        }).catch(() => {});
-                    } else if (failedCount > 0 && result.failedIndexes && result.failedIndexes.length > 0) {
-                        // Fallback: worker returns indexes instead of sids
-                        const cleanupUpdates = {};
-                        result.failedIndexes.forEach(idx => {
-                            if (tokenEntries[idx]) cleanupUpdates['fcmTokens/' + tokenEntries[idx][0] + '/subscription'] = null;
-                        });
-                        db.ref().update(cleanupUpdates).catch(() => {});
+                    // NOTE: Do NOT auto-delete failed subscriptions here.
+                    // A "failed" result from the worker often means the worker doesn't support
+                    // that browser's push endpoint (e.g. Firefox/Mozilla endpoints need proper
+                    // VAPID support in the worker). The subscription itself is still valid.
+                    // Use the manual "Clean Stale Subscriptions" button only when needed.
+                    if (failedCount > 0) {
+                        console.warn('[FCM Push] Worker reported', failedCount, 'failed — subscriptions NOT auto-deleted (may be Firefox/Mozilla endpoints that worker cannot handle)');
                     }
                 } else {
                     const errText = await resp.text().catch(() => resp.status);
@@ -35741,7 +35743,7 @@ self.addEventListener('notificationclick', function(event) {
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;" id="devTriggerVersion">
-                <strong>Version:</strong> 5.41 — Added 🗑 delete per notification entry + Clear Old button (top & bottom) with date picker for bulk delete | <strong>Last Updated:</strong> Mar 01, 2026</p>
+                <strong>Version:</strong> 5.42 — Fixed subscriptions auto-deleting after Firefox push failure; added Firefox/Mozilla endpoint warning in Diagnose | <strong>Last Updated:</strong> Mar 01, 2026</p>
             <!-- ============================================ -->
             
             <p style="color: #c44569; font-size: 0.85em; font-weight: 600; margin-bottom: 8px;">
