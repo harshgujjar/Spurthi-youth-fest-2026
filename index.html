@@ -34099,6 +34099,7 @@ v5.47 | Mar 01 2026 | Fixed root cause of push not delivering: Cloudflare Worker
 v5.48 | Mar 01 2026 16:08 IST | SW now registered from inline blob so push handler always present — custom notifications now work without DevTools Push trick
 v5.49 | Mar 01 2026 16:08 IST | Logged placeholder entries for v5.35–v5.38 in hidden comment block (changes made outside this conversation)
 v5.50 | Mar 01 2026 16:08 IST | Reverted blob SW — blob: origin cannot receive real push events; GitHub sw.js must have push handler
+v5.51 | Mar 01 2026 16:08 IST | Added console.log for CF Worker response (sent/failed counts) to diagnose why push not delivering
 -->
     <!-- ============================================================ -->
     <!-- 🟢 FIREBASE PRESENCE + 📣 PUSH NOTIFICATIONS SCRIPTS       -->
@@ -35156,6 +35157,7 @@ self.addEventListener('notificationclick', function(event) {
                 });
                 if (resp.ok) {
                     const result = await resp.json();
+                    console.log('[FCM Push] Worker response:', JSON.stringify(result));
                     sentCount = result.sent || subscriptions.length;
                     failedCount = result.failed || 0;
                     // NOTE: Do NOT auto-delete failed subscriptions here.
@@ -35999,7 +36001,7 @@ export default {
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;" id="devTriggerVersion">
-                <strong>Version:</strong> 5.50 — Reverted blob SW (blob: origin cannot receive real push events); sw.js on GitHub MUST have push handler — download it from admin panel and upload to GitHub | <strong>Last Updated:</strong> Mar 01, 2026, 4:08 PM IST</p>
+                <strong>Version:</strong> 5.51 — Added console.log for CF Worker response so we can see sent/failed counts after clicking Send | <strong>Last Updated:</strong> Mar 01, 2026, 4:08 PM IST</p>
             <!-- ============================================ -->
             
             <p style="color: #c44569; font-size: 0.85em; font-weight: 600; margin-bottom: 8px;">
