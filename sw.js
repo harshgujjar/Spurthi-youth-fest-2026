@@ -1,28 +1,33 @@
 // sw.js — Spurthi Youth Fest 2026
+const FIREBASE_URL = 'https://spurthi-youthfest-2026-default-rtdb.asia-southeast1.firebasedatabase.app';
+
 self.addEventListener('push', function(event) {
-  let data = {};
-  try {
-    data = event.data ? event.data.json() : {};
-  } catch(e) {
-    data = { title: 'Spurthi 2026', body: event.data ? event.data.text() : 'New notification' };
-  }
-
-  const title = data.title || data.notification?.title || 'Spurthi 2026';
-  const body  = data.body  || data.notification?.body  || 'New notification';
-
-  event.waitUntil(
-    self.registration.showNotification(title, {
-      body: body,
-      icon: '/Spurthi-youth-fest-2026/davan-logo.png',
-      badge: '/Spurthi-youth-fest-2026/davan-logo.png',
-      vibrate: [200, 100, 200]
-    })
-  );
+    event.waitUntil(
+        fetch(FIREBASE_URL + '/live_notifications/latest.json')
+            .then(r => r.json())
+            .then(data => {
+                const title = (data && data.title) ? data.title : 'Spurthi 2026';
+                const body  = (data && data.body)  ? data.body  : 'New notification';
+                return self.registration.showNotification(title, {
+                    body: body,
+                    icon: '/Spurthi-youth-fest-2026/davan-logo.png',
+                    badge: '/Spurthi-youth-fest-2026/davan-logo.png',
+                    vibrate: [200, 100, 200],
+                    data: { url: 'https://harshgujjar.github.io/Spurthi-youth-fest-2026/' }
+                });
+            })
+            .catch(() => {
+                return self.registration.showNotification('Spurthi 2026', {
+                    body: 'New notification',
+                    icon: '/Spurthi-youth-fest-2026/davan-logo.png'
+                });
+            })
+    );
 });
 
 self.addEventListener('notificationclick', function(event) {
-  event.notification.close();
-  event.waitUntil(
-    clients.openWindow('https://harshgujjar.github.io/Spurthi-youth-fest-2026/')
-  );
+    event.notification.close();
+    event.waitUntil(
+        clients.openWindow('https://harshgujjar.github.io/Spurthi-youth-fest-2026/')
+    );
 });
