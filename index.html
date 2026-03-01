@@ -6706,10 +6706,26 @@
             <div style="background:#fff;border-radius:14px;padding:24px;box-shadow:0 4px 15px rgba(0,0,0,0.15);margin-top:20px">
                 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
                     <h3 style="color:#6a1b9a;font-size:1.1em;margin:0">📜 Notification History</h3>
-                    <button onclick="loadPushLogs()" style="background:rgba(106,27,154,0.1);color:#6a1b9a;border:2px solid rgba(106,27,154,0.3);padding:6px 14px;border-radius:20px;cursor:pointer;font-size:0.8em;font-weight:700">🔄 Refresh</button>
+                    <div style="display:flex;gap:8px;align-items:center">
+                        <button onclick="loadPushLogs()" style="background:rgba(106,27,154,0.1);color:#6a1b9a;border:2px solid rgba(106,27,154,0.3);padding:6px 14px;border-radius:20px;cursor:pointer;font-size:0.8em;font-weight:700">🔄 Refresh</button>
+                        <button onclick="toggleClearOldPanel()" style="background:rgba(183,28,28,0.08);color:#b71c1c;border:2px solid rgba(183,28,28,0.25);padding:6px 14px;border-radius:20px;cursor:pointer;font-size:0.8em;font-weight:700">🗑 Clear Old</button>
+                    </div>
+                </div>
+                <div id="clearOldPanel" style="display:none;background:#fff3f3;border:1.5px solid #ffcdd2;border-radius:10px;padding:12px 16px;margin-bottom:14px">
+                    <p style="color:#b71c1c;font-size:12px;font-weight:700;margin:0 0 8px">Delete all notifications sent before:</p>
+                    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+                        <input type="date" id="clearOldDateInput" style="border:1.5px solid #ffcdd2;border-radius:8px;padding:5px 10px;font-size:13px;color:#333;background:#fff"/>
+                        <button onclick="clearOldLogs()" style="background:#b71c1c;color:#fff;border:none;padding:6px 16px;border-radius:16px;cursor:pointer;font-size:12px;font-weight:700">🗑 Delete</button>
+                        <button onclick="toggleClearOldPanel()" style="background:none;color:#888;border:1.5px solid #ddd;padding:6px 12px;border-radius:16px;cursor:pointer;font-size:12px">Cancel</button>
+                    </div>
+                    <div id="clearOldStatus" style="margin-top:8px;display:none;font-size:12px;font-weight:600"></div>
                 </div>
                 <div id="pushLogsContainer">
                     <p style="color:#aaa;font-size:13px;text-align:center;padding:20px 0">Loading…</p>
+                </div>
+                <!-- Clear Old button at bottom -->
+                <div style="margin-top:14px;border-top:1px solid #f0e6f8;padding-top:14px;display:flex;gap:8px;justify-content:flex-end">
+                    <button onclick="toggleClearOldPanel()" style="background:rgba(183,28,28,0.08);color:#b71c1c;border:2px solid rgba(183,28,28,0.25);padding:6px 14px;border-radius:20px;cursor:pointer;font-size:0.8em;font-weight:700">🗑 Clear Old Entries</button>
                 </div>
             </div>
 
@@ -34057,6 +34073,8 @@ v5.32 | Mar 01 2026 | Fixed Diagnose/Clear/Refresh buttons not clickable — inf
 v5.33 | Mar 01 2026 | Fixed buttons still not clickable — moved Diagnose/Clear/Refresh below description text (away from overlap zone); added overflow:hidden + z-index to Compose card
 v5.34 | Mar 01 2026 | Root cause fixed: window.diagnosePushOnDevice= line was inserted inside initPushNotifPanel body, breaking it — button wiring never ran, so onclick handlers were never attached
 v5.39 | Mar 01 2026 | Root fix for notifications not working: saveFcmToken verifies write + retries + shows page banner + localStorage fallback when Firebase Rules block; sendPushNotification uses localStorage fallback when 0 subscriptions in Firebase; Diagnose tests Firebase Rules write; new Check Firebase Rules button with copyable JSON
+v5.40 | Mar 01 2026 | Fixed false "Firebase write test passed but no subscription" contradiction — saveFcmToken now trusts write promise and does delayed 3s verify instead of immediate read-back; Diagnose now auto-triggers re-subscribe when Rules are OK but sub missing, then rechecks after 3s
+v5.41 | Mar 01 2026 | Added 🗑 delete button on each notification history entry + Clear Old button (top & bottom) with date picker to bulk delete entries on or before a chosen date
 -->
     <!-- ============================================================ -->
     <!-- 🟢 FIREBASE PRESENCE + 📣 PUSH NOTIFICATIONS SCRIPTS       -->
@@ -34415,37 +34433,26 @@ v5.39 | Mar 01 2026 | Root fix for notifications not working: saveFcmToken verif
             savedAt: Date.now()
         };
 
-        // Always store locally as fallback in case Firebase Rules block the write
+        // Always store locally as fallback
         try { localStorage.setItem('spurthi_push_sub_fallback', JSON.stringify(subscription)); } catch(e) {}
 
-        let saved = false;
-
-        // Attempt 1: update()
+        // Write to Firebase — trust the promise resolve (immediate read-back is unreliable due to propagation delay)
         try {
             await db.ref('fcmTokens/' + sid).update(payload);
-            const check = await db.ref('fcmTokens/' + sid + '/subscription').once('value');
-            if (check.exists()) { saved = true; console.log('[Push] ✅ Token saved to Firebase — verified'); }
-        } catch(e) { console.warn('[Push] update() threw:', e.message); }
-
-        // Attempt 2: set() if update() silently failed
-        if (!saved) {
-            try {
-                await db.ref('fcmTokens/' + sid).set(payload);
-                const check2 = await db.ref('fcmTokens/' + sid + '/subscription').once('value');
-                if (check2.exists()) { saved = true; console.log('[Push] ✅ Token saved to Firebase via set() — verified'); }
-            } catch(e) { console.warn('[Push] set() threw:', e.message); }
-        }
-
-        if (!saved) {
-            console.error('[Push] ❌ Firebase Rules are blocking writes to fcmTokens/ — notifications will not work until fixed.\nFix: Firebase Console → Realtime Database → Rules → add: "fcmTokens": {".read": true, ".write": true}');
-            // Show visible red banner on page
-            if (!document.getElementById('_pushRulesBanner')) {
-                const banner = document.createElement('div');
-                banner.id = '_pushRulesBanner';
-                banner.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:9999999;background:#c62828;color:#fff;padding:10px 16px;font-size:13px;font-weight:700;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,0.4)';
-                banner.innerHTML = '🔔 NOTIFICATIONS BROKEN: Firebase Rules are blocking token saves. Fix: Firebase Console → Realtime Database → Rules → add "fcmTokens":{".read":true,".write":true} <button onclick="document.getElementById(\'_pushRulesBanner\').remove()" style="margin-left:12px;background:rgba(255,255,255,0.2);border:none;color:#fff;padding:2px 8px;border-radius:4px;cursor:pointer">✕</button>';
-                document.body.prepend(banner);
-            }
+            console.log('[Push] ✅ Token written to Firebase');
+            // Delayed verify after 3s to confirm it actually landed
+            setTimeout(async () => {
+                try {
+                    const check = await db.ref('fcmTokens/' + sid + '/subscription').once('value');
+                    if (check.exists()) {
+                        console.log('[Push] ✅ Token confirmed in Firebase after 3s');
+                    } else {
+                        console.error('[Push] ❌ Token NOT found in Firebase after 3s — check Firebase Rules.');
+                    }
+                } catch(e) {}
+            }, 3000);
+        } catch(e) {
+            console.error('[Push] ❌ Token write threw error:', e.message);
         }
     }
 
@@ -34673,18 +34680,39 @@ self.addEventListener('notificationclick', function(event) {
                             const match = saved && saved.endpoint === endpoint;
                             lines.push(match ? ok('Firebase subscription matches browser') : err('Firebase subscription MISMATCH — browser has different sub than Firebase. Click Force Re-subscribe below!'));
                         } else {
-                            lines.push(err('No subscription saved in Firebase for this device — click Force Re-subscribe'));
-                            // Test if Firebase Rules are the problem
+                            // Write test to distinguish Rules block vs timing issue
+                            let rulesOk = false;
                             try {
                                 await window.db.ref('fcmTokens/' + sid + '/_ruletest').set(1);
                                 await window.db.ref('fcmTokens/' + sid + '/_ruletest').remove();
-                                lines.push(warn('Firebase write test passed — subscription should save. Try Force Re-subscribe again.'));
-                            } catch(ruleErr) {
-                                lines.push(err('🔴 FIREBASE RULES are BLOCKING WRITES to fcmTokens/ — this is why notifications are not working!'));
+                                rulesOk = true;
+                            } catch(ruleErr) { rulesOk = false; }
+
+                            if (rulesOk) {
+                                // Rules are fine — subscription just hasn't saved yet, trigger it now
+                                lines.push(warn('No subscription in Firebase yet — triggering re-subscribe now…'));
+                                el.innerHTML = lines.join('<br>');
+                                try {
+                                    const reg2 = await navigator.serviceWorker.ready;
+                                    localStorage.removeItem('spurthi_push_subbed_v2');
+                                    await subscribeToPush(reg2, true);
+                                    // Wait 3s then recheck
+                                    await new Promise(r => setTimeout(r, 3000));
+                                    const recheck = await window.db.ref('fcmTokens/' + sid + '/subscription').once('value');
+                                    if (recheck.exists()) {
+                                        lines.push(ok('Subscription now saved in Firebase ✅ — you can send notifications'));
+                                    } else {
+                                        lines.push(err('Still not saved after re-subscribe — check browser console for errors'));
+                                    }
+                                } catch(resubErr) {
+                                    lines.push(err('Re-subscribe failed: ' + resubErr.message));
+                                }
+                            } else {
+                                lines.push(err('🔴 FIREBASE RULES blocking writes to fcmTokens/ — this is why notifications fail!'));
                                 lines.push(err('Fix: Firebase Console → Realtime Database → Rules → add: "fcmTokens": {".read": true, ".write": true}'));
                             }
                             const fbSub = localStorage.getItem('spurthi_push_sub_fallback');
-                            if (fbSub) lines.push(warn('localStorage fallback subscription found — notifications may still work for this device only'));
+                            if (fbSub) lines.push(warn('localStorage fallback subscription found — push may still work for this device via fallback'));
                         }
                     } catch(readErr) {
                         lines.push(err('Firebase READ blocked (Rules deny fcmTokens reads) — add ".read":true to fcmTokens rule in Firebase Console'));
@@ -34896,13 +34924,14 @@ self.addEventListener('notificationclick', function(event) {
                             ${log.failed > 0 ? `<span style="background:#f8d7da;color:#721c24;padding:3px 10px;border-radius:12px;font-size:12px;font-weight:700;margin-left:5px">❌ ${log.failed} failed</span>` : ''}
                         </div>
                     </div>
-                    <div style="display:flex;gap:10px;margin-top:10px;flex-wrap:wrap">
+                    <div style="display:flex;gap:10px;margin-top:10px;flex-wrap:wrap;align-items:center">
                         <button onclick="showSeenDevices('${logId}')" style="background:rgba(106,27,154,0.08);color:#6a1b9a;border:1.5px solid rgba(106,27,154,0.25);padding:5px 12px;border-radius:16px;cursor:pointer;font-size:12px;font-weight:600">
                             👁 Seen: ${seenCount} / ${totalDevices}
                         </button>
                         <button onclick="showSentDevices('${logId}')" style="background:rgba(196,69,105,0.08);color:#c44569;border:1.5px solid rgba(196,69,105,0.25);padding:5px 12px;border-radius:16px;cursor:pointer;font-size:12px;font-weight:600">
                             📱 ${totalDevices} device(s) targeted
                         </button>
+                        <button onclick="deleteLogEntry('${logId}')" style="margin-left:auto;background:rgba(183,28,28,0.07);color:#b71c1c;border:1.5px solid rgba(183,28,28,0.2);padding:5px 10px;border-radius:16px;cursor:pointer;font-size:12px;font-weight:600" title="Delete this entry">🗑</button>
                     </div>
                 </div>`;
             }).join('');
@@ -35571,6 +35600,82 @@ self.addEventListener('notificationclick', function(event) {
         btn.disabled = false;
         btn.textContent = '🔍 Check Firebase Rules (Fix if Notifications Broken)';
     }
+    // ── NOTIFICATION HISTORY DELETION ────────────────────────────
+    function toggleClearOldPanel() {
+        const panel = document.getElementById('clearOldPanel');
+        if (!panel) return;
+        const isOpen = panel.style.display !== 'none';
+        panel.style.display = isOpen ? 'none' : 'block';
+        if (!isOpen) {
+            // Default date to today
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('clearOldDateInput').value = today;
+            document.getElementById('clearOldStatus').style.display = 'none';
+        }
+    }
+
+    async function deleteLogEntry(logId) {
+        if (!confirm('Delete this notification entry permanently?')) return;
+        try {
+            const db = window.db || firebase.database();
+            await db.ref('push_logs/' + logId).remove();
+            loadPushLogs();
+        } catch(e) {
+            alert('Failed to delete: ' + e.message);
+        }
+    }
+
+    async function clearOldLogs() {
+        const dateInput = document.getElementById('clearOldDateInput');
+        const statusEl = document.getElementById('clearOldStatus');
+        if (!dateInput || !dateInput.value) {
+            alert('Please pick a date first.');
+            return;
+        }
+        const cutoffDate = new Date(dateInput.value);
+        cutoffDate.setHours(23, 59, 59, 999); // end of selected day
+        const cutoffTs = cutoffDate.getTime();
+
+        if (!confirm(`Delete all notification history sent on or before ${dateInput.value}?`)) return;
+
+        statusEl.style.display = 'block';
+        statusEl.style.color = '#555';
+        statusEl.textContent = '⏳ Deleting…';
+
+        try {
+            const db = window.db || firebase.database();
+            const snap = await db.ref('push_logs').once('value');
+            if (!snap.exists()) {
+                statusEl.style.color = '#888';
+                statusEl.textContent = 'No entries found.';
+                return;
+            }
+            const logs = snap.val();
+            const toDelete = Object.entries(logs).filter(([, log]) => log.sentAt <= cutoffTs);
+            if (toDelete.length === 0) {
+                statusEl.style.color = '#856404';
+                statusEl.textContent = `No entries found on or before ${dateInput.value}.`;
+                return;
+            }
+            const updates = {};
+            toDelete.forEach(([logId]) => { updates['push_logs/' + logId] = null; });
+            await db.ref().update(updates);
+            statusEl.style.color = '#155724';
+            statusEl.textContent = `✅ Deleted ${toDelete.length} entr${toDelete.length === 1 ? 'y' : 'ies'}.`;
+            setTimeout(() => {
+                document.getElementById('clearOldPanel').style.display = 'none';
+                loadPushLogs();
+            }, 1500);
+        } catch(e) {
+            statusEl.style.color = '#b71c1c';
+            statusEl.textContent = '❌ Failed: ' + e.message;
+        }
+    }
+
+    window.toggleClearOldPanel = toggleClearOldPanel;
+    window.deleteLogEntry       = deleteLogEntry;
+    window.clearOldLogs         = clearOldLogs;
+
     window.checkAndShowFirebaseRulesFix = checkAndShowFirebaseRulesFix;
 
     window.sendPushNotification    = sendPushNotification;
@@ -35636,7 +35741,7 @@ self.addEventListener('notificationclick', function(event) {
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;" id="devTriggerVersion">
-                <strong>Version:</strong> 5.39 — Root fix for notifications: Firebase Rules checker + page banner + localStorage fallback so push works even if Firebase Rules block writes | <strong>Last Updated:</strong> Mar 01, 2026</p>
+                <strong>Version:</strong> 5.41 — Added 🗑 delete per notification entry + Clear Old button (top & bottom) with date picker for bulk delete | <strong>Last Updated:</strong> Mar 01, 2026</p>
             <!-- ============================================ -->
             
             <p style="color: #c44569; font-size: 0.85em; font-weight: 600; margin-bottom: 8px;">
