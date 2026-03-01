@@ -34102,6 +34102,7 @@ v5.50 | Mar 01 2026 16:08 IST | Reverted blob SW — blob: origin cannot receive
 v5.51 | Mar 01 2026 16:08 IST | Added console.log for CF Worker response (sent/failed counts) to diagnose why push not delivering
 v5.52 | Mar 01 2026 16:08 IST | Force-unregister stale cached SWs on every page load so new sw.js with push handler takes over immediately
 v5.53 | Mar 01 2026 17:47 IST | Live Now shows real student name instead of Guest/CR/Student — resolves actual identity from FCM token on login
+v5.54 | Mar 01 2026 17:47 IST | Notifications auto-subscribe all visitors on page open — auto-requests permission after 3s; re-subscribes anyone granted but missing subscription
 -->
     <!-- ============================================================ -->
     <!-- 🟢 FIREBASE PRESENCE + 📣 PUSH NOTIFICATIONS SCRIPTS       -->
@@ -34247,6 +34248,36 @@ v5.53 | Mar 01 2026 17:47 IST | Live Now shows real student name instead of Gues
 
         // Show notification permission banner if not yet decided (once per session)
         setTimeout(() => { if (window.maybeShowNotifBanner) maybeShowNotifBanner(); }, 800);
+
+        // Auto-subscribe anyone who already granted permission but has no subscription yet
+        // Also auto-request permission for anyone who hasn't decided yet (after 3s delay)
+        setTimeout(async () => {
+            try {
+                if (!('Notification' in window) || !('serviceWorker' in navigator)) return;
+                // If already granted — ensure they have a live subscription
+                if (Notification.permission === 'granted') {
+                    const reg = await navigator.serviceWorker.ready;
+                    const existing = await reg.pushManager.getSubscription();
+                    if (!existing) {
+                        console.log('[Push] Permission granted but no subscription — auto-subscribing');
+                        if (window.subscribeToPush) await window.subscribeToPush(reg, true);
+                    }
+                    return;
+                }
+                // If not yet decided — request permission automatically (works on most browsers)
+                if (Notification.permission === 'default') {
+                    const result = await Notification.requestPermission();
+                    if (result === 'granted') {
+                        const reg = await navigator.serviceWorker.ready;
+                        if (window.subscribeToPush) await window.subscribeToPush(reg, true);
+                        console.log('[Push] Auto-permission granted and subscribed');
+                        // Hide banner since permission is now granted
+                        const banner = document.getElementById('notifPermBanner');
+                        if (banner) banner.style.display = 'none';
+                    }
+                }
+            } catch(e) { console.log('[Push] Auto-subscribe error:', e.message); }
+        }, 3000);
 
         // Register service worker
         if ('serviceWorker' in navigator) {
@@ -35985,6 +36016,7 @@ export default {
     window.showSeenDevices         = showSeenDevices;
     window.dismissInAppToast       = dismissInAppToast;
     window.requestNotifPermission  = requestNotifPermission;
+    window.subscribeToPush          = subscribeToPush;
     window.dismissNotifBanner      = dismissNotifBanner;
     window.showSwJsCode            = showSwJsCode;
     window.copySwJs                = copySwJs;
@@ -36041,7 +36073,7 @@ export default {
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;" id="devTriggerVersion">
-                <strong>Version:</strong> 5.53 — Live Now shows real student name instead of Guest/CR/Student — resolves actual identity from FCM token on login | <strong>Last Updated:</strong> Mar 01, 2026, 5:47 PM IST</p>
+                <strong>Version:</strong> 5.54 — Notifications now auto-subscribe all visitors on page open — auto-requests permission after 3s and subscribes anyone already granted but missing subscription | <strong>Last Updated:</strong> Mar 01, 2026, 5:47 PM IST</p>
             <!-- ============================================ -->
             
             <p style="color: #c44569; font-size: 0.85em; font-weight: 600; margin-bottom: 8px;">
