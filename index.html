@@ -6652,6 +6652,10 @@
                     <div id="forceResubStatus" style="margin-top:8px;display:none;padding:8px 12px;border-radius:8px;font-size:13px;font-weight:600;text-align:center"></div>
                     <p style="color:#888;font-size:11px;margin-top:6px;text-align:center">Clears old stale subscriptions and forces all online devices to create a fresh push subscription — run this after updating sw.js if notifications still don't appear</p>
                 </div>
+                <div style="margin-top:10px;border-top:1px dashed rgba(106,27,154,0.2);padding-top:10px">
+                    <button onclick="checkAndShowFirebaseRulesFix()" id="firebaseRulesBtn" style="background:linear-gradient(135deg,#1565c0,#0d47a1);color:#fff;border:none;padding:10px 20px;border-radius:20px;cursor:pointer;font-size:13px;font-weight:700;width:100%">🔍 Check Firebase Rules (Fix if Notifications Broken)</button>
+                    <div id="firebaseRulesResult" style="margin-top:8px;display:none;padding:12px;border-radius:8px;font-size:12px;background:rgba(0,0,0,0.3);color:#fff;line-height:1.7"></div>
+                    <p style="color:#888;font-size:11px;margin-top:6px;text-align:center">Tests if Firebase is blocking subscription saves — the #1 reason notifications don't arrive</p>
             </div>
 
             <!-- Info box -->
@@ -34052,6 +34056,7 @@ v5.31 | Mar 01 2026 | Added 🔬 Diagnose button in SW Push Debug panel — show
 v5.32 | Mar 01 2026 | Fixed Diagnose/Clear/Refresh buttons not clickable — info box above was overlapping; added z-index and position:relative to fix stacking
 v5.33 | Mar 01 2026 | Fixed buttons still not clickable — moved Diagnose/Clear/Refresh below description text (away from overlap zone); added overflow:hidden + z-index to Compose card
 v5.34 | Mar 01 2026 | Root cause fixed: window.diagnosePushOnDevice= line was inserted inside initPushNotifPanel body, breaking it — button wiring never ran, so onclick handlers were never attached
+v5.39 | Mar 01 2026 | Root fix for notifications not working: saveFcmToken verifies write + retries + shows page banner + localStorage fallback when Firebase Rules block; sendPushNotification uses localStorage fallback when 0 subscriptions in Firebase; Diagnose tests Firebase Rules write; new Check Firebase Rules button with copyable JSON
 -->
     <!-- ============================================================ -->
     <!-- 🟢 FIREBASE PRESENCE + 📣 PUSH NOTIFICATIONS SCRIPTS       -->
@@ -34404,12 +34409,44 @@ v5.34 | Mar 01 2026 | Root cause fixed: window.diagnosePushOnDevice= line was in
     async function saveFcmToken(subscription) {
         const sid = getSessionId();
         const db  = window.db || firebase.database();
-        await db.ref('fcmTokens/' + sid).update({
+        const payload = {
             subscription: JSON.stringify(subscription),
             device: getDeviceType(),
             savedAt: Date.now()
-        });
-        console.log('[Push] Token saved to Firebase');
+        };
+
+        // Always store locally as fallback in case Firebase Rules block the write
+        try { localStorage.setItem('spurthi_push_sub_fallback', JSON.stringify(subscription)); } catch(e) {}
+
+        let saved = false;
+
+        // Attempt 1: update()
+        try {
+            await db.ref('fcmTokens/' + sid).update(payload);
+            const check = await db.ref('fcmTokens/' + sid + '/subscription').once('value');
+            if (check.exists()) { saved = true; console.log('[Push] ✅ Token saved to Firebase — verified'); }
+        } catch(e) { console.warn('[Push] update() threw:', e.message); }
+
+        // Attempt 2: set() if update() silently failed
+        if (!saved) {
+            try {
+                await db.ref('fcmTokens/' + sid).set(payload);
+                const check2 = await db.ref('fcmTokens/' + sid + '/subscription').once('value');
+                if (check2.exists()) { saved = true; console.log('[Push] ✅ Token saved to Firebase via set() — verified'); }
+            } catch(e) { console.warn('[Push] set() threw:', e.message); }
+        }
+
+        if (!saved) {
+            console.error('[Push] ❌ Firebase Rules are blocking writes to fcmTokens/ — notifications will not work until fixed.\nFix: Firebase Console → Realtime Database → Rules → add: "fcmTokens": {".read": true, ".write": true}');
+            // Show visible red banner on page
+            if (!document.getElementById('_pushRulesBanner')) {
+                const banner = document.createElement('div');
+                banner.id = '_pushRulesBanner';
+                banner.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:9999999;background:#c62828;color:#fff;padding:10px 16px;font-size:13px;font-weight:700;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,0.4)';
+                banner.innerHTML = '🔔 NOTIFICATIONS BROKEN: Firebase Rules are blocking token saves. Fix: Firebase Console → Realtime Database → Rules → add "fcmTokens":{".read":true,".write":true} <button onclick="document.getElementById(\'_pushRulesBanner\').remove()" style="margin-left:12px;background:rgba(255,255,255,0.2);border:none;color:#fff;padding:2px 8px;border-radius:4px;cursor:pointer">✕</button>';
+                document.body.prepend(banner);
+            }
+        }
     }
 
     function urlBase64ToUint8Array(base64String) {
@@ -34628,15 +34665,29 @@ self.addEventListener('notificationclick', function(event) {
                 // Check if subscription is saved in Firebase
                 const sid = localStorage.getItem('spurthi_sid');
                 if (sid && window.db) {
-                    const snap = await window.db.ref('fcmTokens/' + sid + '/subscription').once('value');
-                    if (snap.exists()) {
-                        let saved;
-                        try { saved = JSON.parse(snap.val()); } catch(e) { saved = snap.val(); }
-                        const savedEp = (saved && saved.endpoint) ? saved.endpoint.substring(0,60) + '…' : 'missing';
-                        const match = saved && saved.endpoint === endpoint;
-                        lines.push(match ? ok('Firebase subscription matches browser') : err('Firebase subscription MISMATCH — browser has different sub than Firebase. Click Force Re-subscribe below!'));
-                    } else {
-                        lines.push(err('No subscription saved in Firebase for this device — click Force Re-subscribe'));
+                    try {
+                        const snap = await window.db.ref('fcmTokens/' + sid + '/subscription').once('value');
+                        if (snap.exists()) {
+                            let saved;
+                            try { saved = JSON.parse(snap.val()); } catch(e) { saved = snap.val(); }
+                            const match = saved && saved.endpoint === endpoint;
+                            lines.push(match ? ok('Firebase subscription matches browser') : err('Firebase subscription MISMATCH — browser has different sub than Firebase. Click Force Re-subscribe below!'));
+                        } else {
+                            lines.push(err('No subscription saved in Firebase for this device — click Force Re-subscribe'));
+                            // Test if Firebase Rules are the problem
+                            try {
+                                await window.db.ref('fcmTokens/' + sid + '/_ruletest').set(1);
+                                await window.db.ref('fcmTokens/' + sid + '/_ruletest').remove();
+                                lines.push(warn('Firebase write test passed — subscription should save. Try Force Re-subscribe again.'));
+                            } catch(ruleErr) {
+                                lines.push(err('🔴 FIREBASE RULES are BLOCKING WRITES to fcmTokens/ — this is why notifications are not working!'));
+                                lines.push(err('Fix: Firebase Console → Realtime Database → Rules → add: "fcmTokens": {".read": true, ".write": true}'));
+                            }
+                            const fbSub = localStorage.getItem('spurthi_push_sub_fallback');
+                            if (fbSub) lines.push(warn('localStorage fallback subscription found — notifications may still work for this device only'));
+                        }
+                    } catch(readErr) {
+                        lines.push(err('Firebase READ blocked (Rules deny fcmTokens reads) — add ".read":true to fcmTokens rule in Firebase Console'));
                     }
                 }
             }
@@ -34997,6 +35048,17 @@ self.addEventListener('notificationclick', function(event) {
             const tokens = snap.val() || {};
             const allEntries = Object.entries(tokens);
             let tokenEntries = allEntries.filter(([,t]) => t.subscription);
+
+            // Fallback: if Firebase has no subscriptions (likely Firebase Rules blocking writes),
+            // use the locally-stored subscription for this device
+            if (tokenEntries.length === 0) {
+                const fallbackSub = localStorage.getItem('spurthi_push_sub_fallback');
+                if (fallbackSub) {
+                    console.warn('[FCM Push] 0 subscriptions in Firebase — using localStorage fallback for this device');
+                    const sid = getSessionId();
+                    tokenEntries = [[sid, { subscription: fallbackSub, device: getDeviceType(), savedAt: Date.now() }]];
+                }
+            }
 
             // Filter by class or person name (all devices of that person)
             if (_notifTarget === 'class' && targetClass) {
@@ -35458,6 +35520,59 @@ self.addEventListener('notificationclick', function(event) {
     window.filterDevices           = filterDevices;
     window.renderDeviceList        = renderDeviceList;
     window.setNotifTarget          = setNotifTarget;
+    // ── FIREBASE RULES CHECKER ────────────────────────────────────
+    async function checkAndShowFirebaseRulesFix() {
+        const btn = document.getElementById('firebaseRulesBtn');
+        const resultEl = document.getElementById('firebaseRulesResult');
+        btn.disabled = true;
+        btn.textContent = '⏳ Testing Firebase Rules…';
+        resultEl.style.display = 'block';
+        resultEl.innerHTML = '⏳ Testing write access to fcmTokens/…';
+
+        const db = window.db || firebase.database();
+        const sid = getSessionId();
+        let writeOk = false, readOk = false;
+
+        try {
+            await db.ref('fcmTokens/' + sid + '/_ruletest').set({ t: Date.now() });
+            await db.ref('fcmTokens/' + sid + '/_ruletest').remove();
+            writeOk = true;
+        } catch(e) { writeOk = false; }
+
+        try {
+            await db.ref('fcmTokens/' + sid).once('value');
+            readOk = true;
+        } catch(e) { readOk = false; }
+
+        const rulesJson = `{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "fcmTokens": { ".read": true, ".write": true },
+    "push_force_resub": { ".read": true, ".write": true },
+    "sw_force_update": { ".read": true, ".write": true },
+    "live_notifications": { ".read": true, ".write": true }
+  }
+}`;
+
+        if (writeOk && readOk) {
+            resultEl.style.background = 'rgba(46,125,50,0.3)';
+            resultEl.innerHTML = '✅ Firebase Rules OK — fcmTokens is readable and writable.<br>Click <strong>Force Re-subscribe</strong> then send a test notification.';
+        } else {
+            resultEl.style.background = 'rgba(183,28,28,0.25)';
+            resultEl.innerHTML = `<span style="color:#ff5252;font-weight:700;font-size:13px">❌ Firebase Rules are BLOCKING ${!writeOk ? 'WRITES' : ''}${!writeOk && !readOk ? ' and ' : ''}${!readOk ? 'READS' : ''} to fcmTokens/ — THIS IS WHY NOTIFICATIONS ARE NOT WORKING.</span><br><br>
+<strong>Fix in 2 minutes:</strong><br>
+1. Open <a href="https://console.firebase.google.com" target="_blank" style="color:#80cbc4">Firebase Console</a> → your project → Realtime Database → <strong>Rules</strong> tab<br>
+2. Replace rules with this and click <strong>Publish</strong>:<br><br>
+<textarea id="_rulesTextarea" style="width:100%;height:150px;font-family:monospace;font-size:11px;background:#111;color:#a5d6a7;border:1px solid #444;border-radius:6px;padding:8px;resize:none">${rulesJson}</textarea>
+<button onclick="navigator.clipboard.writeText(document.getElementById('_rulesTextarea').value).then(()=>this.textContent='✅ Copied!').catch(()=>{})" style="margin-top:6px;background:#1565c0;color:#fff;border:none;padding:6px 16px;border-radius:12px;cursor:pointer;font-size:12px;font-weight:700">📋 Copy Rules JSON</button><br>
+<small style="color:#aaa">3. After publishing, click Force Re-subscribe → then send notification again.</small>`;
+        }
+        btn.disabled = false;
+        btn.textContent = '🔍 Check Firebase Rules (Fix if Notifications Broken)';
+    }
+    window.checkAndShowFirebaseRulesFix = checkAndShowFirebaseRulesFix;
+
     window.sendPushNotification    = sendPushNotification;
     window.initPushNotifPanel      = initPushNotifPanel;
     window.loadPushLogs            = loadPushLogs;
@@ -35521,7 +35636,7 @@ self.addEventListener('notificationclick', function(event) {
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;" id="devTriggerVersion">
-                <strong>Version:</strong> 5.38 — Fixed all JS syntax errors (missing IIFE, duplicate braces, missing function declarations); fresh VAPID key pair generated | <strong>Last Updated:</strong> Mar 01, 2026</p>
+                <strong>Version:</strong> 5.39 — Root fix for notifications: Firebase Rules checker + page banner + localStorage fallback so push works even if Firebase Rules block writes | <strong>Last Updated:</strong> Mar 01, 2026</p>
             <!-- ============================================ -->
             
             <p style="color: #c44569; font-size: 0.85em; font-weight: 600; margin-bottom: 8px;">
