@@ -34091,6 +34091,7 @@ v5.43 | Mar 01 2026 | Fixed race condition: saveFcmToken now polls Firebase unti
 v5.44 | Mar 01 2026 | Root fix for worker delivery failure: generated fresh matched VAPID key pair; new public key in HTML; full Cloudflare Worker code with matching private key embedded in admin panel with Copy + Download buttons
 v5.45 | Mar 01 2026 | Fixed InvalidAccessError: old VAPID public key was 64 bytes (invalid); replaced with fresh correctly-generated 65-byte key pair
 v5.46 | Mar 01 2026 | Fixed Worker Bad private key error: updated CF_WORKER_CODE template with new VAPID keys and correct x/y JWK coordinates
+v5.47 | Mar 01 2026 | Fixed root cause of push not delivering: Cloudflare Worker now encrypts payload with RFC 8291 aes128gcm (AES-GCM + ECDH) so push services accept and deliver the notification
 -->
     <!-- ============================================================ -->
     <!-- 🟢 FIREBASE PRESENCE + 📣 PUSH NOTIFICATIONS SCRIPTS       -->
@@ -35628,16 +35629,114 @@ async function makeVapidHeaders(endpoint, subject, publicKeyB64, privateKeyB64) 
     };
 }
 
+// ── Web Push encryption (RFC 8291 / draft-ietf-webpush-encryption) ──────────
+async function encryptPayload(subscription, plaintext) {
+    const p256dh = subscription.keys.p256dh;
+    const auth   = subscription.keys.auth;
+
+    // Decode subscription keys
+    const receiverPub = base64urlToUint8Array(p256dh);
+    const authSecret  = base64urlToUint8Array(auth);
+    const plainBytes  = new TextEncoder().encode(plaintext);
+
+    // Generate ephemeral ECDH key pair on P-256
+    const ephemeral = await crypto.subtle.generateKey({ name: 'ECDH', namedCurve: 'P-256' }, true, ['deriveKey', 'deriveBits']);
+
+    // Import receiver public key
+    const receiverKey = await crypto.subtle.importKey(
+        'raw', receiverPub, { name: 'ECDH', namedCurve: 'P-256' }, true, []
+    );
+
+    // Derive shared ECDH secret (32 bytes)
+    const ecdhSecret = await crypto.subtle.deriveBits(
+        { name: 'ECDH', public: receiverKey }, ephemeral.privateKey, 256
+    );
+
+    // Export ephemeral public key (65 bytes uncompressed)
+    const senderPubRaw = await crypto.subtle.exportKey('raw', ephemeral.publicKey);
+    const senderPub = new Uint8Array(senderPubRaw);
+
+    // Random salt (16 bytes)
+    const salt = crypto.getRandomValues(new Uint8Array(16));
+
+    // HKDF for Content Encryption Key (CEK) and nonce using aes128gcm scheme
+    // PRK = HMAC-SHA256(auth_secret, ECDH_secret || "WebPush: info\0" || receiverPub || senderPub)
+    const authKey = await crypto.subtle.importKey('raw', authSecret, { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+
+    const encoder = new TextEncoder();
+    const infoPrefix = encoder.encode('WebPush: info\x00');
+    const ikm_info = new Uint8Array(infoPrefix.length + receiverPub.length + senderPub.length);
+    ikm_info.set(infoPrefix, 0);
+    ikm_info.set(receiverPub, infoPrefix.length);
+    ikm_info.set(senderPub, infoPrefix.length + receiverPub.length);
+
+    const prkHmac = await crypto.subtle.sign('HMAC', authKey, new Uint8Array([...new Uint8Array(ecdhSecret), ...ikm_info]));
+    const prk = await crypto.subtle.importKey('raw', prkHmac, { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+
+    // CEK = HKDF-Expand(PRK, "Content-Encoding: aes128gcm\0", 16)
+    const cekInfo = encoder.encode('Content-Encoding: aes128gcm\x00');
+    const cekHkdf = await crypto.subtle.sign('HMAC', prk, new Uint8Array([...new Uint8Array(await crypto.subtle.sign('HMAC', await crypto.subtle.importKey('raw', salt, {name:'HMAC',hash:'SHA-256'},false,['sign']), new Uint8Array(0))), ...cekInfo, 0x01]));
+    const cek = new Uint8Array(cekHkdf).slice(0, 16);
+
+    // Nonce = HKDF-Expand(PRK, "Content-Encoding: nonce\0", 12)
+    const nonceInfo = encoder.encode('Content-Encoding: nonce\x00');
+    const nonceHkdf = await crypto.subtle.sign('HMAC', prk, new Uint8Array([...new Uint8Array(await crypto.subtle.sign('HMAC', await crypto.subtle.importKey('raw', salt, {name:'HMAC',hash:'SHA-256'},false,['sign']), new Uint8Array(0))), ...nonceInfo, 0x01]));
+    const nonce = new Uint8Array(nonceHkdf).slice(0, 12);
+
+    // Encrypt with AES-128-GCM
+    const cryptoKey = await crypto.subtle.importKey('raw', cek, { name: 'AES-GCM' }, false, ['encrypt']);
+    // Padding: 2 bytes (uint16 = 0) + plaintext + no padding
+    const padded = new Uint8Array(2 + plainBytes.length);
+    padded[0] = 0; padded[1] = 0;
+    padded.set(plainBytes, 2);
+    const ciphertext = await crypto.subtle.encrypt({ name: 'AES-GCM', iv: nonce }, cryptoKey, padded);
+
+    // Build aes128gcm content (header + ciphertext)
+    // Header: salt(16) + rs(4, big-endian, = ciphertext.byteLength+16+2) + idlen(1) + senderPub(65)
+    const rs = ciphertext.byteLength;
+    const header = new Uint8Array(21 + senderPub.length);
+    header.set(salt, 0);
+    const rsView = new DataView(header.buffer, 16, 4);
+    rsView.setUint32(0, rs, false);
+    header[20] = senderPub.length;
+    header.set(senderPub, 21);
+
+    const encrypted = new Uint8Array(header.length + ciphertext.byteLength);
+    encrypted.set(header, 0);
+    encrypted.set(new Uint8Array(ciphertext), header.length);
+
+    return { encrypted, salt, senderPub };
+}
+
 async function sendPush(subscription, payload) {
     const endpoint = subscription.endpoint;
-    const headers = await makeVapidHeaders(endpoint, VAPID_SUBJECT, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY);
-    const body = new TextEncoder().encode(JSON.stringify(payload));
-    const resp = await fetch(endpoint, {
-        method: 'POST',
-        headers: { ...headers, 'Content-Type': 'application/json', 'Content-Length': body.length, 'TTL': '86400' },
-        body
-    });
-    return resp;
+    const vapidHeaders = await makeVapidHeaders(endpoint, VAPID_SUBJECT, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY);
+
+    if (subscription.keys && subscription.keys.p256dh && subscription.keys.auth) {
+        // Encrypted push (RFC 8291 aes128gcm)
+        const plaintext = JSON.stringify(payload);
+        const { encrypted } = await encryptPayload(subscription, plaintext);
+        const resp = await fetch(endpoint, {
+            method: 'POST',
+            headers: {
+                ...vapidHeaders,
+                'Content-Type': 'application/octet-stream',
+                'Content-Encoding': 'aes128gcm',
+                'TTL': '86400'
+            },
+            body: encrypted
+        });
+        return resp;
+    } else {
+        // No keys — send unencrypted (fallback, usually fails on modern push services)
+        const body = new TextEncoder().encode(JSON.stringify(payload));
+        const resp = await fetch(endpoint, {
+            method: 'POST',
+            headers: { ...vapidHeaders, 'Content-Type': 'application/json', 'TTL': '86400' },
+            body
+        });
+        return resp;
+    }
 }
 
 export default {
@@ -35897,7 +35996,7 @@ export default {
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;" id="devTriggerVersion">
-                <strong>Version:</strong> 5.46 — Fixed Worker “Bad private key” error: CF_WORKER_CODE template now has correct VAPID keys and x/y JWK coordinates | <strong>Last Updated:</strong> Mar 01, 2026</p>
+                <strong>Version:</strong> 5.47 — Fixed root cause of push not delivering: Cloudflare Worker now encrypts payload with RFC 8291 aes128gcm so push services accept and deliver the notification | <strong>Last Updated:</strong> Mar 01, 2026</p>
             <!-- ============================================ -->
             
             <p style="color: #c44569; font-size: 0.85em; font-weight: 600; margin-bottom: 8px;">
