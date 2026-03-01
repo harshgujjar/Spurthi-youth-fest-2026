@@ -34100,6 +34100,8 @@ v5.48 | Mar 01 2026 16:08 IST | SW now registered from inline blob so push handl
 v5.49 | Mar 01 2026 16:08 IST | Logged placeholder entries for v5.35–v5.38 in hidden comment block (changes made outside this conversation)
 v5.50 | Mar 01 2026 16:08 IST | Reverted blob SW — blob: origin cannot receive real push events; GitHub sw.js must have push handler
 v5.51 | Mar 01 2026 16:08 IST | Added console.log for CF Worker response (sent/failed counts) to diagnose why push not delivering
+v5.52 | Mar 01 2026 16:08 IST | Force-unregister stale cached SWs on every page load so new sw.js with push handler takes over immediately
+v5.53 | Mar 01 2026 17:47 IST | Live Now shows real student name instead of Guest/CR/Student — resolves actual identity from FCM token on login
 -->
     <!-- ============================================================ -->
     <!-- 🟢 FIREBASE PRESENCE + 📣 PUSH NOTIFICATIONS SCRIPTS       -->
@@ -34148,6 +34150,8 @@ v5.51 | Mar 01 2026 16:08 IST | Added console.log for CF Worker response (sent/f
 
         const sid = getSessionId();
         const presRef = db.ref('liveUsers/' + sid);
+        const genericNames = ['', 'guest', 'student', 'cr'];
+        const isGeneric = genericNames.includes((name || '').toLowerCase());
 
         const data = {
             name:   name      || 'Guest',
@@ -34156,15 +34160,42 @@ v5.51 | Mar 01 2026 16:08 IST | Added console.log for CF Worker response (sent/f
             since:  Date.now()
         };
 
-        // Write presence
+        // Write presence immediately
         presRef.set(data);
-
-        // Auto-remove when tab closes / connection drops
         presRef.onDisconnect().remove();
-
-        // Keep alive — clear any old interval so the NEW identity is used
         if (window._presenceInterval) clearInterval(window._presenceInterval);
         window._presenceInterval = setInterval(() => { presRef.set(data); }, 4 * 60 * 1000);
+
+        // If name is generic, try to resolve real name from FCM token identity
+        if (isGeneric) {
+            db.ref('fcmTokens/' + sid + '/identity').once('value').then(snap => {
+                const id = snap.val();
+                if (id && id.name && !genericNames.includes(id.name.toLowerCase())) {
+                    const upgraded = { name: id.name, class: id.class || className || '—', device: data.device, since: data.since };
+                    presRef.set(upgraded);
+                    clearInterval(window._presenceInterval);
+                    window._presenceInterval = setInterval(() => { presRef.set(upgraded); }, 4 * 60 * 1000);
+                } else {
+                    // Scan all tokens for newest real identity
+                    db.ref('fcmTokens').once('value').then(allSnap => {
+                        if (!allSnap.exists()) return;
+                        let best = null;
+                        allSnap.forEach(child => {
+                            const t = child.val();
+                            if (t && t.identity && t.identity.name && !genericNames.includes(t.identity.name.toLowerCase())) {
+                                if (!best || (t.savedAt || 0) > (best.savedAt || 0)) best = t;
+                            }
+                        });
+                        if (best) {
+                            const upgraded = { name: best.identity.name, class: best.identity.class || className || '—', device: data.device, since: data.since };
+                            presRef.set(upgraded);
+                            clearInterval(window._presenceInterval);
+                            window._presenceInterval = setInterval(() => { presRef.set(upgraded); }, 4 * 60 * 1000);
+                        }
+                    }).catch(() => {});
+                }
+            }).catch(() => {});
+        }
     }
 
     // Call registerPresence as soon as Firebase is ready
@@ -34217,13 +34248,22 @@ v5.51 | Mar 01 2026 16:08 IST | Added console.log for CF Worker response (sent/f
         // Show notification permission banner if not yet decided (once per session)
         setTimeout(() => { if (window.maybeShowNotifBanner) maybeShowNotifBanner(); }, 800);
 
-        // Register service worker — with inline blob fallback so push always works
+        // Register service worker
         if ('serviceWorker' in navigator) {
-            // IMPORTANT: SW must be registered from a real URL (not blob:) to receive push events.
-            // The push handler lives in sw.js on GitHub — keep that file up to date.
+            // First: unregister any stale SWs that don't match our sw.js path
+            // This forces browsers running old cached SWs to pick up the new one
+            navigator.serviceWorker.getRegistrations().then(regs => {
+                for (const r of regs) {
+                    if (!r.active || !r.active.scriptURL.includes('/Spurthi-youth-fest-2026/sw.js')) {
+                        console.log('[SW] Unregistering stale SW:', r.active ? r.active.scriptURL : 'unknown');
+                        r.unregister();
+                    }
+                }
+            });
             navigator.serviceWorker.register('/Spurthi-youth-fest-2026/sw.js')
                 .then(reg => {
                     console.log('[SW] Registered:', reg.scope);
+                    // Force browser to fetch latest sw.js from GitHub immediately
                     reg.update().then(() => { console.log('[SW] Update check triggered'); }).catch(() => {});
                     if (Notification.permission === 'granted') subscribeToPush(reg);
                 })
@@ -34231,7 +34271,7 @@ v5.51 | Mar 01 2026 16:08 IST | Added console.log for CF Worker response (sent/f
                     console.warn('[SW] sw.js registration failed:', err.message);
                 });
             navigator.serviceWorker.ready.then(reg => {
-                console.log('[SW] Ready. Active worker:', reg.active ? reg.active.state : 'none');
+                console.log('[SW] Ready. Active worker:', reg.active ? reg.active.scriptURL : 'none');
                 if (Notification.permission === 'granted') subscribeToPush(reg);
                 reg.update().catch(() => {});
             });
@@ -36001,7 +36041,7 @@ export default {
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;" id="devTriggerVersion">
-                <strong>Version:</strong> 5.51 — Added console.log for CF Worker response so we can see sent/failed counts after clicking Send | <strong>Last Updated:</strong> Mar 01, 2026, 4:08 PM IST</p>
+                <strong>Version:</strong> 5.53 — Live Now shows real student name instead of Guest/CR/Student — resolves actual identity from FCM token on login | <strong>Last Updated:</strong> Mar 01, 2026, 5:47 PM IST</p>
             <!-- ============================================ -->
             
             <p style="color: #c44569; font-size: 0.85em; font-weight: 600; margin-bottom: 8px;">
