@@ -6593,7 +6593,7 @@
             </div>
 
             <!-- Compose notification -->
-            <div style="background:#fff;border-radius:14px;padding:24px;box-shadow:0 4px 15px rgba(0,0,0,0.15)">
+            <div style="background:#fff;border-radius:14px;padding:24px;box-shadow:0 4px 15px rgba(0,0,0,0.15);overflow:hidden;position:relative;z-index:1">
                 <h3 style="color:#6a1b9a;margin-bottom:16px;font-size:1.1em">✏️ Compose Notification</h3>
 
                 <!-- Target selector -->
@@ -6655,7 +6655,7 @@
             </div>
 
             <!-- Info box -->
-            <div style="background:rgba(255,193,7,0.12);border:2px solid rgba(255,193,7,0.35);border-radius:10px;padding:14px 18px;margin-top:16px">
+            <div style="background:rgba(255,193,7,0.12);border:2px solid rgba(255,193,7,0.35);border-radius:10px;padding:14px 18px;margin-top:16px;position:relative;z-index:1;overflow:visible">
                 <p style="color:#ffd54f;font-size:12px;margin:0;line-height:1.6">
                     ⚙️ <strong>How it works:</strong> This sends via your <code style="background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px">fcm-push</code> Cloudflare Worker → Web Push API → registered devices via <code style="background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px">sw.js</code> service worker.<br>
                     <strong style="color:#ffcc02">⚠️ IMPORTANT:</strong> Your <code style="background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px">sw.js</code> file must have a <code style="background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px">push</code> event listener or notifications won't show even if "sent" succeeds.
@@ -6670,17 +6670,17 @@
             </div>
 
             <!-- SW Push Debug Panel -->
-            <div style="background:#1a0030;border-radius:14px;padding:18px;margin-top:16px">
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+            <div style="background:#1a0030;border-radius:14px;padding:18px;margin-top:16px;position:relative;z-index:2">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
                     <h3 style="color:#ffcc02;font-size:1em;margin:0">🔍 SW Push Debug Log</h3>
-                    <div style="display:flex;gap:8px">
-                        <button onclick="diagnosePushOnDevice()" style="background:rgba(0,200,83,0.2);color:#a8ff78;border:1px solid #a8ff78;padding:4px 12px;border-radius:12px;cursor:pointer;font-size:11px">🔬 Diagnose</button>
-                        <button onclick="clearSwDebugLog()" style="background:rgba(255,255,255,0.1);color:#aaa;border:1px solid #444;padding:4px 12px;border-radius:12px;cursor:pointer;font-size:11px">🗑 Clear</button>
-                        <button onclick="loadSwDebugLog()" style="background:rgba(255,204,2,0.15);color:#ffcc02;border:1px solid #ffcc02;padding:4px 12px;border-radius:12px;cursor:pointer;font-size:11px">↻ Refresh</button>
-                    </div>
+                </div>
+                <p style="color:#888;font-size:11px;margin:0 0 10px">Shows what happens inside sw.js when a push is delivered — updates live. Send a notification then watch here.</p>
+                <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap">
+                    <button onclick="diagnosePushOnDevice()" style="background:rgba(0,200,83,0.25);color:#a8ff78;border:1px solid #a8ff78;padding:6px 14px;border-radius:12px;cursor:pointer;font-size:11px;font-weight:700">🔬 Diagnose This Device</button>
+                    <button onclick="clearSwDebugLog()" style="background:rgba(255,255,255,0.1);color:#aaa;border:1px solid #444;padding:6px 14px;border-radius:12px;cursor:pointer;font-size:11px">🗑 Clear Log</button>
+                    <button onclick="loadSwDebugLog()" style="background:rgba(255,204,2,0.15);color:#ffcc02;border:1px solid #ffcc02;padding:6px 14px;border-radius:12px;cursor:pointer;font-size:11px">↻ Refresh</button>
                 </div>
                 <div id="swDiagnoseResult" style="display:none;background:#0d0d1a;border:1px solid #333;border-radius:8px;padding:10px;margin-bottom:10px;font-family:monospace;font-size:11px;color:#fff;line-height:1.7"></div>
-                <p style="color:#888;font-size:11px;margin:0 0 10px">Shows what happens inside sw.js when a push is delivered — updates live. Send a notification then watch here.</p>
                 <div id="swDebugLog" style="background:#0d0d1a;border-radius:8px;padding:12px;max-height:220px;overflow-y:auto;font-family:monospace;font-size:11px;color:#a8ff78">
                     <span style="color:#555">Waiting for push events…</span>
                 </div>
@@ -34049,11 +34049,15 @@ v5.28 | Mar 01 2026 12:59 IST | Added SW Push Debug Log panel — sw.js logs eve
 v5.29 | Mar 01 2026 | Added ⬇️ Download sw.js button + auto health-check that fetches live sw.js and warns if push handler is missing — root fix for "notification not going"
 v5.30 | Mar 01 2026 | Fixed stale push subscription — after SW update old sub no longer receives pushes; now forces fresh re-subscribe; added Force Re-subscribe All Devices admin button + Firebase listener on student side
 v5.31 | Mar 01 2026 | Added 🔬 Diagnose button in SW Push Debug panel — shows permission, SW state, subscription existence, Firebase match, and VAPID key to pinpoint exactly why notifications aren't arriving
+v5.32 | Mar 01 2026 | Fixed Diagnose/Clear/Refresh buttons not clickable — info box above was overlapping; added z-index and position:relative to fix stacking
+v5.33 | Mar 01 2026 | Fixed buttons still not clickable — moved Diagnose/Clear/Refresh below description text (away from overlap zone); added overflow:hidden + z-index to Compose card
+v5.34 | Mar 01 2026 | Root cause fixed: window.diagnosePushOnDevice= line was inserted inside initPushNotifPanel body, breaking it — button wiring never ran, so onclick handlers were never attached
 -->
     <!-- ============================================================ -->
     <!-- 🟢 FIREBASE PRESENCE + 📣 PUSH NOTIFICATIONS SCRIPTS       -->
     <!-- ============================================================ -->
     <script>
+    (function() {
     // ─── CONFIGURATION ───────────────────────────────────────────
     const VAPID_KEY = 'BJg-BcOEBrGpMtgD_WXXsf2NIimR3yjvfqnRiS86KRS85677lCSXjuuLUkOcnk_bDTrGiCrFFTf517YTRdnTTXY';
     // ⚠️ Replace this with your actual fcm-push Cloudflare Worker URL after deploying it
@@ -34299,12 +34303,6 @@ v5.31 | Mar 01 2026 | Added 🔬 Diagnose button in SW Push Debug panel — show
                         localStorage.removeItem('spurthi_push_subbed_v2');
                         subscribeToPush(reg, true).then(() => {
                             console.log('[Push] Admin triggered force re-subscribe — fresh subscription saved');
-                        }).catch(() => {});
-                    }).catch(() => {});
-                });
-            }
-        }, 500);
-    })();
                         }).catch(() => {});
                     }).catch(() => {});
                 });
@@ -34660,6 +34658,8 @@ self.addEventListener('notificationclick', function(event) {
     }
 
     window.diagnosePushOnDevice = diagnosePushOnDevice;
+
+    async function initPushNotifPanel() {
         await refreshDeviceCount();
         startSwDebugPolling();
         loadAllDevices();
@@ -35254,6 +35254,8 @@ self.addEventListener('notificationclick', function(event) {
         btn.textContent = '🔁 Force Re-subscribe All Devices to Push';
         setTimeout(() => { statusEl.style.display = 'none'; }, 10000);
     }
+
+    function loadSwDebugLog() {
         const el = document.getElementById('swDebugLog');
         if (!el) return;
         const db = window.db || firebase.database();
@@ -35406,6 +35408,7 @@ self.addEventListener('notificationclick', function(event) {
                 });
             }
         }, 500);
+    })();
     // ── EXPOSE ALL ONCLICK FUNCTIONS TO GLOBAL WINDOW SCOPE ──────────
     // This script runs inside an IIFE — functions must be assigned to window
     // for HTML onclick= handlers to find them
@@ -35477,7 +35480,7 @@ self.addEventListener('notificationclick', function(event) {
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;" id="devTriggerVersion">
-                <strong>Version:</strong> 5.31 — Added 🔬 Diagnose button in SW Debug panel — checks permission, SW state, subscription, Firebase match, and VAPID key to find exact push failure cause | <strong>Last Updated:</strong> Mar 01, 2026</p>
+                <strong>Version:</strong> 5.34 — Root cause fixed: broken initPushNotifPanel (window assignment inside function body) meant button wiring never ran — all onclick handlers now work | <strong>Last Updated:</strong> Mar 01, 2026</p>
             <!-- ============================================ -->
             
             <p style="color: #c44569; font-size: 0.85em; font-weight: 600; margin-bottom: 8px;">
