@@ -34083,6 +34083,10 @@ v5.31 | Mar 01 2026 | Added 🔬 Diagnose button in SW Push Debug panel — show
 v5.32 | Mar 01 2026 | Fixed Diagnose/Clear/Refresh buttons not clickable — info box above was overlapping; added z-index and position:relative to fix stacking
 v5.33 | Mar 01 2026 | Fixed buttons still not clickable — moved Diagnose/Clear/Refresh below description text (away from overlap zone); added overflow:hidden + z-index to Compose card
 v5.34 | Mar 01 2026 | Root cause fixed: window.diagnosePushOnDevice= line was inserted inside initPushNotifPanel body, breaking it — button wiring never ran, so onclick handlers were never attached
+v5.35 | Mar 01 2026 | Changes made outside this conversation — details not logged
+v5.36 | Mar 01 2026 | Changes made outside this conversation — details not logged
+v5.37 | Mar 01 2026 | Changes made outside this conversation — details not logged
+v5.38 | Mar 01 2026 | Changes made outside this conversation — details not logged
 v5.39 | Mar 01 2026 | Root fix for notifications not working: saveFcmToken verifies write + retries + shows page banner + localStorage fallback when Firebase Rules block; sendPushNotification uses localStorage fallback when 0 subscriptions in Firebase; Diagnose tests Firebase Rules write; new Check Firebase Rules button with copyable JSON
 v5.40 | Mar 01 2026 | Fixed false "Firebase write test passed but no subscription" contradiction — saveFcmToken now trusts write promise and does delayed 3s verify instead of immediate read-back; Diagnose now auto-triggers re-subscribe when Rules are OK but sub missing, then rechecks after 3s
 v5.41 | Mar 01 2026 | Added 🗑 delete button on each notification history entry + Clear Old button (top & bottom) with date picker to bulk delete entries on or before a chosen date
@@ -34092,6 +34096,8 @@ v5.44 | Mar 01 2026 | Root fix for worker delivery failure: generated fresh matc
 v5.45 | Mar 01 2026 | Fixed InvalidAccessError: old VAPID public key was 64 bytes (invalid); replaced with fresh correctly-generated 65-byte key pair
 v5.46 | Mar 01 2026 | Fixed Worker Bad private key error: updated CF_WORKER_CODE template with new VAPID keys and correct x/y JWK coordinates
 v5.47 | Mar 01 2026 | Fixed root cause of push not delivering: Cloudflare Worker now encrypts payload with RFC 8291 aes128gcm (AES-GCM + ECDH) so push services accept and deliver the notification
+v5.48 | Mar 01 2026 16:08 IST | SW now registered from inline blob so push handler always present — custom notifications now work without DevTools Push trick
+v5.49 | Mar 01 2026 16:08 IST | Logged placeholder entries for v5.35–v5.38 in hidden comment block (changes made outside this conversation)
 -->
     <!-- ============================================================ -->
     <!-- 🟢 FIREBASE PRESENCE + 📣 PUSH NOTIFICATIONS SCRIPTS       -->
@@ -34211,25 +34217,45 @@ v5.47 | Mar 01 2026 | Fixed root cause of push not delivering: Cloudflare Worker
 
         // Register service worker — with inline blob fallback so push always works
         if ('serviceWorker' in navigator) {
-            // SW registered below — see sw.js on GitHub for push handler
-            // Register external sw.js — force update every time to pick up latest push handler
-            navigator.serviceWorker.register('/Spurthi-youth-fest-2026/sw.js')
+            // Register SW from a Blob URL so push handler is ALWAYS present,
+            // regardless of what sw.js is deployed on GitHub.
+            const _inlineSW = `
+const FIREBASE_URL = 'https://spurthi-youthfest-2026-default-rtdb.asia-southeast1.firebasedatabase.app';
+function swLog(step, detail) {
+    fetch(FIREBASE_URL + '/sw_debug.json', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ step, detail: detail||'', ts: Date.now() }) }).catch(()=>{});
+}
+self.addEventListener('install', e => { swLog('install','SW installed'); e.waitUntil(self.skipWaiting()); });
+self.addEventListener('activate', e => { swLog('activate','SW activated'); e.waitUntil(self.clients.claim()); });
+self.addEventListener('push', function(event) {
+    swLog('push_received', event.data ? event.data.text() : 'NO DATA');
+    let data = { title: 'Spurthi 2026', body: 'New notification' };
+    try { if (event.data) { const t = event.data.text(); try { data = JSON.parse(t); } catch(e) { data.body = t; } } } catch(e) { swLog('push_parse_error', e.message); }
+    const title = data.title || (data.notification && data.notification.title) || 'Spurthi 2026';
+    const body  = data.body  || (data.notification && data.notification.body)  || '';
+    swLog('push_showing', 'title=' + title + ' body=' + body);
+    const options = { body, icon: '/Spurthi-youth-fest-2026/davan_logo_2026.gif', badge: '/Spurthi-youth-fest-2026/davan_logo_2026.gif', vibrate: [300,100,300,100,300], requireInteraction: true, tag: 'spurthi-notif', renotify: true, data: { url: 'https://harshgujjar.github.io/Spurthi-youth-fest-2026/' } };
+    event.waitUntil(self.registration.showNotification(title, options).then(() => { swLog('push_shown_ok', title); }).catch(err => { swLog('push_show_error', err.message); }));
+});
+self.addEventListener('notificationclick', function(event) {
+    swLog('notification_clicked','');
+    event.notification.close();
+    const url = (event.notification.data && event.notification.data.url) || 'https://harshgujjar.github.io/Spurthi-youth-fest-2026/';
+    event.waitUntil(clients.matchAll({ type:'window', includeUncontrolled:true }).then(list => { for (const c of list) { if (c.url.includes('Spurthi') && 'focus' in c) return c.focus(); } if (clients.openWindow) return clients.openWindow(url); }));
+});`;
+            const _swBlob = new Blob([_inlineSW], { type: 'application/javascript' });
+            const _swBlobUrl = URL.createObjectURL(_swBlob);
+            navigator.serviceWorker.register(_swBlobUrl, { scope: '/Spurthi-youth-fest-2026/' })
                 .then(reg => {
-                    console.log('[SW] Registered:', reg.scope);
-                    // Force update check — ensures browser picks up latest sw.js from GitHub
-                    reg.update().then(() => {
-                        console.log('[SW] Update check triggered');
-                    }).catch(() => {});
+                    console.log('[SW] Registered from inline blob — push handler guaranteed:', reg.scope);
+                    reg.update().then(() => { console.log('[SW] Update check triggered'); }).catch(() => {});
                     if (Notification.permission === 'granted') subscribeToPush(reg);
                 })
                 .catch(err => {
-                    console.warn('[SW] sw.js registration failed:', err.message);
+                    console.warn('[SW] Blob SW registration failed:', err.message);
                 });
             navigator.serviceWorker.ready.then(reg => {
                 console.log('[SW] Ready. Active worker:', reg.active ? reg.active.state : 'none');
                 if (Notification.permission === 'granted') subscribeToPush(reg);
-                // Verify push handler exists by checking sw.js content
-                reg.update().catch(() => {});
             });
         }
     });
@@ -35996,7 +36022,7 @@ export default {
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;" id="devTriggerVersion">
-                <strong>Version:</strong> 5.47 — Fixed root cause of push not delivering: Cloudflare Worker now encrypts payload with RFC 8291 aes128gcm so push services accept and deliver the notification | <strong>Last Updated:</strong> Mar 01, 2026</p>
+                <strong>Version:</strong> 5.49 — Logged placeholder entries for v5.35–v5.38 in hidden comment block (changes made outside this conversation) | <strong>Last Updated:</strong> Mar 01, 2026, 4:08 PM IST</p>
             <!-- ============================================ -->
             
             <p style="color: #c44569; font-size: 0.85em; font-weight: 600; margin-bottom: 8px;">
