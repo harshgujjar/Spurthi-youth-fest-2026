@@ -3180,6 +3180,10 @@
                                     <option value="D">D</option>
                                 </select>
                             </div>
+                            <div class="form-group">
+                                <label>📖 Explanation <span style="color:#999;font-weight:400;font-size:0.88em">(Optional — shown to students after they submit)</span></label>
+                                <textarea id="quiz_q1McqExplanation" rows="2" placeholder="e.g. The correct answer is A because…"></textarea>
+                            </div>
                             </div>
                             
                             <!-- Text Input Answer Section -->
@@ -3255,6 +3259,10 @@
                                     <option value="C">C</option>
                                     <option value="D">D</option>
                                 </select>
+                            </div>
+                            <div class="form-group">
+                                <label>📖 Explanation <span style="color:#999;font-weight:400;font-size:0.88em">(Optional — shown to students after they submit)</span></label>
+                                <textarea id="quiz_q2McqExplanation" rows="2" placeholder="e.g. The correct answer is B because…"></textarea>
                             </div>
                             </div>
                             
@@ -21971,6 +21979,8 @@ Davan Institute Team`;
                     document.getElementById('quiz_q1OptC').value = data.q1.options.C || '';
                     document.getElementById('quiz_q1OptD').value = data.q1.options.D || '';
                     document.getElementById('quiz_q1Correct').value = data.q1.correct || '';
+                    const q1McqExpEl = document.getElementById('quiz_q1McqExplanation');
+                    if (q1McqExpEl) q1McqExpEl.value = data.q1.explanation || '';
                     } else if (q1type === 'text') {
                         document.getElementById('quiz_q1TextAnswer').value = data.q1.textAnswer || '';
                         document.getElementById('quiz_q1TextExplanation').value = data.q1.explanation || '';
@@ -21986,6 +21996,8 @@ Davan Institute Team`;
                     document.getElementById('quiz_q2OptC').value = data.q2.options.C || '';
                     document.getElementById('quiz_q2OptD').value = data.q2.options.D || '';
                     document.getElementById('quiz_q2Correct').value = data.q2.correct || '';
+                    const q2McqExpEl = document.getElementById('quiz_q2McqExplanation');
+                    if (q2McqExpEl) q2McqExpEl.value = data.q2.explanation || '';
                     } else if (q2type === 'text' && data.q2) {
                         document.getElementById('quiz_q2TextAnswer').value = data.q2.textAnswer || '';
                         document.getElementById('quiz_q2TextExplanation').value = data.q2.explanation || '';
@@ -21998,7 +22010,7 @@ Davan Institute Team`;
                     console.log('No quiz found for this date, clearing form');
                     
                     // Clear form for new quiz
-                    ['quiz_q1Text','quiz_q1OptA','quiz_q1OptB','quiz_q1OptC','quiz_q1OptD','quiz_q1Correct','quiz_q2Text','quiz_q2OptA','quiz_q2OptB','quiz_q2OptC','quiz_q2OptD','quiz_q2Correct','quiz_q1TextAnswer','quiz_q1TextExplanation','quiz_q2TextAnswer','quiz_q2TextExplanation'].forEach(id => {
+                    ['quiz_q1Text','quiz_q1OptA','quiz_q1OptB','quiz_q1OptC','quiz_q1OptD','quiz_q1Correct','quiz_q1McqExplanation','quiz_q2Text','quiz_q2OptA','quiz_q2OptB','quiz_q2OptC','quiz_q2OptD','quiz_q2Correct','quiz_q2McqExplanation','quiz_q1TextAnswer','quiz_q1TextExplanation','quiz_q2TextAnswer','quiz_q2TextExplanation'].forEach(id => {
                         const el = document.getElementById(id);
                         if (el) el.value = '';
                     });
@@ -22456,6 +22468,8 @@ Davan Institute Team`;
                 }
                 q1Data.options = {A:q1OptA, B:q1OptB, C:q1OptC, D:q1OptD};
                 q1Data.correct = q1Correct;
+                const q1McqExp = document.getElementById('quiz_q1McqExplanation').value.trim();
+                if (q1McqExp) q1Data.explanation = q1McqExp;
             } else {
                 const q1Ans = document.getElementById('quiz_q1TextAnswer').value.trim();
                 const q1Exp = document.getElementById('quiz_q1TextExplanation').value.trim();
@@ -22483,6 +22497,8 @@ Davan Institute Team`;
                 }
                 q2Data.options = {A:q2OptA, B:q2OptB, C:q2OptC, D:q2OptD};
                 q2Data.correct = q2Correct;
+                const q2McqExp = document.getElementById('quiz_q2McqExplanation').value.trim();
+                if (q2McqExp) q2Data.explanation = q2McqExp;
             } else {
                 const q2Ans = document.getElementById('quiz_q2TextAnswer').value.trim();
                 const q2Exp = document.getElementById('quiz_q2TextExplanation').value.trim();
@@ -34401,6 +34417,7 @@ v5.87 | Mar 02 2026 16:04 IST | Fixed chime always playing 1 note (now reads liv
 v5.88 | Mar 02 2026 16:04 IST | Fixed white box above push panel — zoom animation replaced with slide-down bounce (zoom breaks on fixed full-width element)
 v5.89 | Mar 02 2026 16:04 IST | Fixed white box above Push Notifications heading — missing closing div in compose card
 v5.90 | Mar 02 2026 16:04 IST | Fixed white box on Live Now and Notifications tabs — adminContentBox now transparent on these tabs like Leaderboard
+v5.91 | Mar 02 2026 16:42 IST | MCQ quiz questions now support optional Explanation field — saved, loaded on edit, shown to students after submission
 -->
     <!-- ============================================================ -->
     <!-- 🟢 FIREBASE PRESENCE + 📣 PUSH NOTIFICATIONS SCRIPTS       -->
@@ -36635,7 +36652,7 @@ export default {
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;" id="devTriggerVersion">
-                <strong>Version:</strong> 5.90 — Fixed white box on Live Now and Notifications tabs — adminContentBox now goes transparent on these tabs like Leaderboard | <strong>Last Updated:</strong> Mar 02, 2026, 04:04 PM IST</p>
+                <strong>Version:</strong> 5.91 — MCQ quiz questions now support optional Explanation field — saved, loaded on edit, shown to students after submission | <strong>Last Updated:</strong> Mar 02, 2026, 04:42 PM IST</p>
             <!-- ============================================ -->
             
             <p style="color: #c44569; font-size: 0.85em; font-weight: 600; margin-bottom: 8px;">
