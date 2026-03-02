@@ -13239,17 +13239,20 @@
         }
 
         // -- CR: Handle participant select --
-        function podcastOnParticipantSelect() {
+        async function podcastOnParticipantSelect() {
             const sel  = document.getElementById('podcastParticipantSelect');
             const opt  = sel ? sel.options[sel.selectedIndex] : null;
             const disp = document.getElementById('podcastSelectedDisplay');
             const info = document.getElementById('podcastSelectedInfo');
             const nameEl  = document.getElementById('podcastMemberName');
             const topicEl = document.getElementById('podcastMemberTopic');
+            // Reset edit key whenever selection changes
+            window._podcastEditKey = null;
             if (!opt || !opt.value) {
                 if (disp) disp.style.display = 'none';
                 if (nameEl)  nameEl.value = '';
                 if (topicEl) topicEl.value = '';
+                clearPodcastFormFields();
                 return;
             }
             const name  = opt.dataset.name  || '';
@@ -13262,7 +13265,54 @@
                     (subT ? ' &nbsp;🔖 <span style="background:#e3f2fd;color:#1565c0;border-radius:6px;padding:1px 6px;font-size:0.9em">' + subT + '</span>' : '<span style="color:#aaa;font-size:0.85em"> &nbsp;(Sub-topic not assigned yet)</span>');
             }
             if (disp) disp.style.display = 'block';
+
+            // Check if this participant already has a submission — if so, pre-fill for editing
+            const cls = (window.currentCRClass || crClass || '').trim();
+            try {
+                const snap = await db.ref('podcastChallenge').orderByChild('classYear').equalTo(cls).once('value');
+                let existing = null;
+                if (snap.exists()) snap.forEach(ch => { if (ch.val().memberName === name) { existing = { key: ch.key, ...ch.val() }; } });
+                if (existing) {
+                    // Pre-fill fields with existing submission
+                    window._podcastEditKey = existing.key;
+                    const linkEl = document.getElementById('podcastLink');
+                    const titleEl = document.getElementById('podcastTitle');
+                    const durEl = document.getElementById('podcastDuration');
+                    if (linkEl)  { linkEl.value  = existing.link  || ''; linkEl.removeAttribute('readonly');  linkEl.style.borderColor = '#1db954'; }
+                    if (titleEl) { titleEl.value = existing.episodeTitle || ''; titleEl.removeAttribute('readonly'); titleEl.style.borderColor = '#1db954'; }
+                    if (durEl)   { durEl.value   = existing.duration || ''; durEl.removeAttribute('readonly');  durEl.style.borderColor = '#1db954'; }
+                    const submitBtn = document.getElementById('podcastSubmitBtn');
+                    if (submitBtn) { submitBtn.textContent = '🎙️ Update Podcast Link'; submitBtn.disabled = false; }
+                    const podInfoEl = document.getElementById('podcastSubmittedInfo');
+                    const podDtEl   = document.getElementById('podcastSubmittedDateTime');
+                    if (podInfoEl) podInfoEl.style.display = 'block';
+                    if (podDtEl && existing.submittedAt) {
+                        const d = new Date(existing.submittedAt);
+                        podDtEl.textContent = d.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}) + ' at ' + d.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
+                    }
+                    const msg = document.getElementById('podcastSubmitMsg');
+                    if (msg) { msg.style.display='block'; msg.style.background='#e8f5e9'; msg.style.color='#1b5e20'; msg.style.border='1px solid #a5d6a7'; msg.textContent='✏️ Existing submission loaded. Edit fields and click "Update Podcast Link".'; }
+                } else {
+                    // New participant — clear fields
+                    window._podcastEditKey = null;
+                    clearPodcastFormFields();
+                    const submitBtn = document.getElementById('podcastSubmitBtn');
+                    if (submitBtn) { submitBtn.textContent = '🎙️ Submit Podcast Link'; submitBtn.disabled = false; }
+                    const podInfoEl = document.getElementById('podcastSubmittedInfo');
+                    if (podInfoEl) podInfoEl.style.display = 'none';
+                    const msg = document.getElementById('podcastSubmitMsg');
+                    if (msg) msg.style.display = 'none';
+                }
+            } catch(e) { console.warn('podcastOnParticipantSelect check error:', e); }
         }
+
+        function clearPodcastFormFields() {
+            ['podcastLink','podcastTitle','podcastDuration'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) { el.value = ''; el.removeAttribute('readonly'); el.style.borderColor = ''; }
+            });
+        }
+
 
         // -- CR: Submit podcast entry --
         async function submitPodcastEntry() {
@@ -13303,12 +13353,12 @@
                 const existing = [];
                 if (snap.exists()) snap.forEach(ch => existing.push({ key: ch.key, ...ch.val() }));
 
-                if (existing.length >= 3) {
+                if (existing.length >= 3 && !window._podcastEditKey) {
                     showMsg('❌ Your class already has 3 submissions. No more slots available.', false); return;
                 }
                 const alreadySubmitted = existing.find(e => e.memberName === name);
-                if (alreadySubmitted) {
-                    showMsg('❌ ' + name + ' has already submitted a podcast. Only one submission per participant.', false); return;
+                if (alreadySubmitted && !window._podcastEditKey) {
+                    showMsg('❌ ' + name + ' has already submitted a podcast. Select their name to edit it.', false); return;
                 }
 
                 const entry = {
@@ -13329,8 +13379,18 @@
                 };
 
                 btnEl.textContent = '⏳ Saving…';
-                await db.ref('podcastChallenge').push(entry);
-                showMsg('✅ Podcast submitted! ' + name + ' — "' + title + '" registered successfully. Awaiting Chandan\'s approval.', true);
+                if (window._podcastEditKey) {
+                    await db.ref('podcastChallenge/' + window._podcastEditKey).update({
+                        link         : entry.link,
+                        episodeTitle : entry.episodeTitle,
+                        duration     : entry.duration,
+                        updatedAt    : new Date().toISOString(),
+                    });
+                    showMsg('✅ Updated! ' + name + ' — "' + title + '" saved successfully.', true);
+                } else {
+                    await db.ref('podcastChallenge').push(entry);
+                    showMsg('✅ Podcast submitted! ' + name + ' — "' + title + '" registered. Awaiting Chandan\'s approval.', true);
+                }
                 // Show submitted date/time
                 const podNow = new Date();
                 const podFmted = podNow.toLocaleDateString('en-IN', {day:'2-digit',month:'short',year:'numeric'}) + ' at ' + podNow.toLocaleTimeString('en-IN', {hour:'2-digit',minute:'2-digit'});
@@ -34208,6 +34268,7 @@ v5.76 | Mar 02 2026 13:18 IST | Fixed puzzle tiles not moving on mobile + made L
 v5.77 | Mar 02 2026 13:18 IST | Added /*- bypass to sscLogin, shLogin, juryLogin, ytAdJuryLogin, vlogJuryLogin, nukkadJuryLogin, facultyLogin
 v5.78 | Mar 02 2026 13:18 IST | Fixed syntax error — const pwd changed to let pwd in facultyLogin so /*- bypass reassignment works
 v5.79 | Mar 02 2026 13:18 IST | Fixed broken try blocks in sscLogin, shLogin, ytAdJuryLogin, nukkadJuryLogin — /*- insertion had removed original try{} lines
+v5.80 | Mar 02 2026 13:18 IST | Podcast edit fixed — selecting submitted participant pre-fills fields and Update saves to existing record not new push
 -->
     <!-- ============================================================ -->
     <!-- 🟢 FIREBASE PRESENCE + 📣 PUSH NOTIFICATIONS SCRIPTS       -->
@@ -36178,7 +36239,7 @@ export default {
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;" id="devTriggerVersion">
-                <strong>Version:</strong> 5.79 — Fixed broken try blocks in sscLogin, shLogin, ytAdJuryLogin, nukkadJuryLogin — /*- insertion had removed original try{} lines | <strong>Last Updated:</strong> Mar 02, 2026, 01:18 PM IST</p>
+                <strong>Version:</strong> 5.80 — Podcast edit fixed — selecting submitted participant pre-fills fields and Update saves to existing record not new push | <strong>Last Updated:</strong> Mar 02, 2026, 01:18 PM IST</p>
             <!-- ============================================ -->
             
             <p style="color: #c44569; font-size: 0.85em; font-weight: 600; margin-bottom: 8px;">
