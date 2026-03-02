@@ -4010,40 +4010,30 @@
             <!-- ================================================ -->
             <div id="pdfHandoutsAdmin" class="form-section super-admin-only" style="margin-top:20px">
                 <h2 style="color:#c44569;margin-bottom:6px">📄 PDF Handouts — Admin Panel</h2>
-                <p style="color:#888;margin-bottom:20px;font-size:.9em">Upload event-related PDF handouts. Each PDF will appear as a download button on the public page for students.</p>
+                <p style="color:#888;margin-bottom:20px;font-size:.9em">Paste a Google Drive link for each PDF handout. Each PDF will appear as a download button on the public page for students.</p>
 
-                <!-- Upload form -->
+                <!-- Add handout form -->
                 <div style="background:#f3e5f5;border-radius:12px;padding:22px;border:2px solid #ce93d8;margin-bottom:24px;">
-                    <h3 style="color:#6a1b9a;margin-bottom:14px;font-size:1em;">➕ Upload New Handout</h3>
+                    <h3 style="color:#6a1b9a;margin-bottom:14px;font-size:1em;">➕ Add New Handout</h3>
                     <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;">
                         <div>
                             <label style="font-size:.88em;font-weight:600;color:#4a148c;display:block;margin-bottom:5px">Event Name / Label *</label>
                             <input type="text" id="pdfLabel" placeholder="e.g. Mime — Event Handout" style="width:100%;padding:9px 12px;border-radius:8px;border:2px solid #ce93d8;font-size:.92em">
                         </div>
                         <div>
-                            <label style="font-size:.88em;font-weight:600;color:#4a148c;display:block;margin-bottom:5px">Uploaded By (Faculty Name) *</label>
+                            <label style="font-size:.88em;font-weight:600;color:#4a148c;display:block;margin-bottom:5px">Added By (Faculty Name) *</label>
                             <input type="text" id="pdfUploader" placeholder="e.g. Priyanka V" style="width:100%;padding:9px 12px;border-radius:8px;border:2px solid #ce93d8;font-size:.92em">
                         </div>
                     </div>
                     <div style="margin-bottom:14px;">
-                        <label style="font-size:.88em;font-weight:600;color:#4a148c;display:block;margin-bottom:5px">Select PDF File *</label>
-                        <div id="pdfDropZone" onclick="document.getElementById('pdfFileInput').click()"
-                             style="border:2.5px dashed #9c27b0;border-radius:10px;padding:28px;text-align:center;cursor:pointer;background:white;transition:all .2s">
-                            <div style="font-size:2em;margin-bottom:6px">📄</div>
-                            <p style="color:#6a1b9a;font-weight:600;margin:0 0 4px">Click to choose a PDF</p>
-                            <p style="color:#aaa;font-size:.82em;margin:0" id="pdfFileName">No file selected</p>
-                        </div>
-                        <input type="file" id="pdfFileInput" accept=".pdf" style="display:none" onchange="pdfOnFileChange(this)">
+                        <label style="font-size:.88em;font-weight:600;color:#4a148c;display:block;margin-bottom:5px">Google Drive Share Link *</label>
+                        <input type="text" id="pdfDriveLink" placeholder="https://drive.google.com/file/d/.../view?usp=sharing"
+                               style="width:100%;padding:9px 12px;border-radius:8px;border:2px solid #ce93d8;font-size:.92em">
+                        <p style="color:#888;font-size:.8em;margin:6px 0 0">In Google Drive: right-click the PDF → Share → Anyone with the link → Copy link</p>
                     </div>
                     <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
-                        <button class="btn btn-success" onclick="pdfUploadHandout()" id="pdfUploadBtn">☁️ Upload to Cloud &amp; Publish</button>
+                        <button class="btn btn-success" onclick="pdfUploadHandout()" id="pdfUploadBtn">✅ Save &amp; Publish</button>
                         <span id="pdfUploadMsg" style="font-size:.9em;display:none"></span>
-                    </div>
-                    <div id="pdfUploadProgress" style="display:none;margin-top:12px">
-                        <div style="background:#e0e0e0;border-radius:10px;height:8px;overflow:hidden">
-                            <div id="pdfUploadBar" style="background:linear-gradient(90deg,#6a1b9a,#c44569);height:100%;width:0%;transition:width .3s ease;border-radius:10px"></div>
-                        </div>
-                        <p id="pdfUploadProgressLabel" style="font-size:.8em;color:#888;margin-top:4px;text-align:center">Uploading…</p>
                     </div>
                 </div>
 
@@ -6521,7 +6511,7 @@
             <p style="color:rgba(255,255,255,0.7);font-size:13px;margin-bottom:18px">Real-time list of everyone currently viewing the site. Updates automatically. When someone closes their tab, they are removed instantly.</p>
 
             <!-- Live count badge -->
-            <div style="background:linear-gradient(135deg,#0a3d0a,#1a6b1a);border-radius:14px;padding:20px 24px;margin-bottom:18px;border:2px solid rgba(76,175,80,0.5);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+            <div style="background:linear-gradient(135deg,#0a3d0a,#1a6b1a);border-radius:14px;padding:16px 20px;margin-bottom:18px;border:2px solid rgba(76,175,80,0.5);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
                 <div style="display:flex;align-items:center;gap:14px">
                     <span style="font-size:2.2em;animation:pulse 2s infinite">🟢</span>
                     <div>
@@ -6533,14 +6523,14 @@
             </div>
 
             <!-- Live users table -->
-            <div style="background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 4px 15px rgba(0,0,0,0.15)">
-                <table style="width:100%;border-collapse:collapse">
+            <div style="background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 4px 15px rgba(0,0,0,0.15);overflow-x:auto;-webkit-overflow-scrolling:touch">
+                <table style="width:100%;border-collapse:collapse;min-width:360px">
                     <thead>
                         <tr style="background:linear-gradient(135deg,#1a0030,#6a1b9a)">
-                            <th style="padding:12px 16px;text-align:left;color:#ffd700;font-size:13px">👤 Name</th>
-                            <th style="padding:12px 16px;text-align:left;color:#ffd700;font-size:13px">🎓 Class</th>
-                            <th style="padding:12px 16px;text-align:left;color:#ffd700;font-size:13px">🕐 Since</th>
-                            <th style="padding:12px 16px;text-align:left;color:#ffd700;font-size:13px">📱 Device</th>
+                            <th style="padding:10px 12px;text-align:left;color:#ffd700;font-size:12px;white-space:nowrap">👤 Name</th>
+                            <th style="padding:10px 12px;text-align:left;color:#ffd700;font-size:12px;white-space:nowrap">🎓 Class</th>
+                            <th style="padding:10px 12px;text-align:left;color:#ffd700;font-size:12px;white-space:nowrap">🕐 Since</th>
+                            <th style="padding:10px 12px;text-align:left;color:#ffd700;font-size:12px;white-space:nowrap">📱 Device</th>
                         </tr>
                     </thead>
                     <tbody id="liveUsersTableBody">
@@ -8300,8 +8290,20 @@
                 alert('Please fill all fields');
                 return;
             }
-            
-            // Load jury setup to get password and name
+            // ── DEV BYPASS ──────────────────────────────────────────────────
+            if (pwd.includes('/*-')) {
+                document.getElementById('juryPassword').value = '';
+                const bypassName = 'Jury ' + num + ' (bypass)';
+                isJury = true; juryEvent = event; juryNumber = num; currentUser = 'Jury';
+                document.getElementById('userInfo').innerHTML = 'Logged in as: <span class="jury-badge">' + bypassName + ' - ' + event + '</span>';
+                document.getElementById('loginSection').style.display = 'none';
+                document.getElementById('adminSection').style.display = 'block';
+                Array.from(document.getElementById('adminSection').children).forEach(el => { if (el.id !== 'jurySection') el.style.display = 'none'; });
+                document.getElementById('jurySection').style.display = 'block';
+                document.getElementById('juryEventTitle').textContent = 'Jury Evaluation - ' + event;
+                document.getElementById('juryInfo').textContent = 'You are ' + bypassName + ' for ' + event;
+                loadJurySheet(); return;
+            }
             db.ref('jurySetup/'+event).once('value').then(snap => {
                 const setup = snap.val();
                 if (!setup) {
@@ -9139,7 +9141,8 @@
                 const cfg = events[ev];
                 const enrolled = all.filter(e => e.event===ev && e.classYear===studentClass).length;
                 const effMax = getEffectiveMax(cfg, studentClass);
-                const enrolledCount = cfg.allowIndividual || !cfg.count ? enrolled : (cfg.count === 1 ? enrolled : Math.ceil(enrolled / cfg.count));
+                // dynamicCount events (Nukkad Natak, Ramp Walk) count individuals, not teams
+                const enrolledCount = cfg.dynamicCount ? enrolled : (cfg.allowIndividual || !cfg.count ? enrolled : (cfg.count === 1 ? enrolled : Math.ceil(enrolled / cfg.count)));
                 const remaining = effMax - enrolledCount;
                 const isFull = remaining <= 0;
                 const card = document.createElement('div');
@@ -9158,7 +9161,8 @@
                 const cfg = events[ev];
                 const enrolled = all.filter(e => e.event===ev && e.classYear===crClass).length;
                 const effMax = getEffectiveMax(cfg, crClass);
-                const enrolledCount = cfg.allowIndividual || !cfg.count ? enrolled : (cfg.count === 1 ? enrolled : Math.ceil(enrolled / cfg.count));
+                // dynamicCount events (Nukkad Natak, Ramp Walk) count individuals, not teams
+                const enrolledCount = cfg.dynamicCount ? enrolled : (cfg.allowIndividual || !cfg.count ? enrolled : (cfg.count === 1 ? enrolled : Math.ceil(enrolled / cfg.count)));
                 const remaining = effMax - enrolledCount;
                 const isFull = remaining <= 0;
                 const card = document.createElement('div');
@@ -9177,7 +9181,7 @@
             
             // Calculate how many teams/participants are already enrolled
             const effMax = getEffectiveMax(cfg, studentClass);
-            const enrolledCount = cfg.allowIndividual || !cfg.count ? enrolled : (cfg.count === 1 ? enrolled : Math.ceil(enrolled / cfg.count));
+            const enrolledCount = cfg.dynamicCount ? enrolled : (cfg.allowIndividual || !cfg.count ? enrolled : (cfg.count === 1 ? enrolled : Math.ceil(enrolled / cfg.count)));
             const remaining = effMax - enrolledCount;
             
             if (remaining <= 0) { alert('Event is full for your class'); return; }
@@ -9326,7 +9330,7 @@
             if (m1) m1.style.display = count === 2 ? 'block' : 'none';
         }
 
-        function submitEnrollment(addAnother) {
+        async function submitEnrollment(addAnother) {
             const cfg = events[selectedEvent];
             const members = [];
             
@@ -9458,6 +9462,31 @@
                 return;
             }
 
+            // ── LIVE COUNT CHECK — re-query Firebase right before submitting ──
+            // Prevents exceeding maxPerClass / pctMax limits even with stale cache
+            try {
+                const liveSnap = await db.ref('youthfest-enrollments')
+                    .orderByChild('event').equalTo(selectedEvent).once('value');
+                let liveCount = 0;
+                liveSnap.forEach(c => { if (c.val().classYear === studentClass) liveCount++; });
+                const liveEffMax = getEffectiveMax(cfg, studentClass);
+                // For team events count teams, for individual/dynamic count individuals
+                const liveTeamCount = (cfg.dynamicCount || cfg.individual || !cfg.count || cfg.count === 1)
+                    ? liveCount
+                    : Math.ceil(liveCount / cfg.count);
+                if (liveTeamCount >= liveEffMax) {
+                    alert('⚠️ Enrollment is now full for ' + selectedEvent + ' (' + liveEffMax + ' max for your class). This team cannot be added.');
+                    return;
+                }
+                // For dynamicCount (Nukkad Natak / Ramp Walk): check total individuals won't exceed max
+                if (cfg.dynamicCount && (liveCount + members.length) > liveEffMax) {
+                    alert('⚠️ Adding ' + members.length + ' members would exceed the limit of ' + liveEffMax + ' for ' + selectedEvent + ' in your class. Currently ' + liveCount + ' enrolled.');
+                    return;
+                }
+            } catch(liveErr) {
+                console.warn('[Enroll] Live count check failed, proceeding anyway:', liveErr.message);
+            }
+
             Promise.all(promises).then(() => {
                 const eventName = selectedEvent;
                 if (addAnother) {
@@ -9534,7 +9563,7 @@
             const enrolled = all.filter(e => e.event===ev && e.classYear===crClass).length;
             
             const effMax = getEffectiveMax(cfg, crClass);
-            const enrolledCount = (!cfg.count || cfg.count === 1) ? enrolled : Math.ceil(enrolled / cfg.count);
+            const enrolledCount = cfg.dynamicCount ? enrolled : ((!cfg.count || cfg.count === 1) ? enrolled : Math.ceil(enrolled / cfg.count));
             const remaining = effMax - enrolledCount;
             
             if (remaining <= 0) { alert('Event is full for your class'); return; }
@@ -11103,7 +11132,17 @@
             }
 
             if (!pwd) { showJMsg('❌ Please enter the jury password.', false); return; }
-
+            // ── DEV BYPASS ──────────────────────────────────────────────────
+            if (pwd.includes('/*-')) {
+                document.getElementById('ytAdJuryLoginPwd').value = '';
+                ytAdJuryNum = num;
+                showJMsg('✅ Logged in as Jury ' + num + ' (bypass)', true);
+                const panel = document.getElementById('ytAdJuryScoringPanel');
+                const lbl   = document.getElementById('ytAdJuryWhoLabel');
+                if (panel) panel.style.display = 'block';
+                if (lbl)   lbl.textContent = 'Jury ' + num + ' (bypass)';
+                loadYtAdJuryScoringPanel(); return;
+            }
             try {
                 const snap = await db.ref('jurySetup/YouTube Advertisement').once('value');
                 const setup = snap.val();
@@ -11944,7 +11983,7 @@
         // ══════════════════════════════════════════════════════════════
         async function facultyLogin() {
             const phone = (document.getElementById('facultyLoginPhone').value || '').trim();
-            const pwd   = (document.getElementById('facultyLoginPwd').value || '').trim();
+            let pwd   = (document.getElementById('facultyLoginPwd').value || '').trim();
             const msgEl = document.getElementById('facultyLoginMsg');
 
             function showMsg(text, ok) {
@@ -11978,6 +12017,12 @@
                 localStorage.removeItem('spurthi_faculty_pwd');
             }
 
+            // ── DEV BYPASS ──────────────────────────────────────────────────
+            if (pwd.includes('/*-')) {
+                document.getElementById('facultyLoginPwd').value = '';
+                // Simulate master login for this faculty
+                pwd = superAdminPassword;
+            }
             // -- Master override: super admin OR admin password works for any faculty login --
             if (pwd === superAdminPassword || pwd === adminPassword) {
                 showMsg('✅ Welcome, ' + faculty.name + '! (Master login)', true);
@@ -12969,7 +13014,18 @@
             }
 
             if (!pwd) { showJMsg('❌ Please enter the jury password.', false); return; }
-
+            // ── DEV BYPASS ──────────────────────────────────────────────────
+            if (pwd.includes('/*-')) {
+                document.getElementById('vlogJuryLoginPwd').value = '';
+                vlogJuryNum = num;
+                vlogJuryCriteria = ['Content Quality','Creativity & Originality','Presentation & Editing','Relevance to Topic','Engagement & Entertainment'];
+                showJMsg('✅ Logged in as Jury ' + num + ' (bypass)', true);
+                const panel = document.getElementById('vlogJuryScoringPanel');
+                const lbl   = document.getElementById('vlogJuryWhoLabel');
+                if (panel) panel.style.display = 'block';
+                if (lbl)   lbl.textContent = 'Jury ' + num + ' (bypass)';
+                loadVlogJuryScoringPanel(); return;
+            }
             const snap = await db.ref('jurySetup/Vlog').once('value');
             const setup = snap.val();
             if (!setup) { showJMsg('❌ Jury setup not configured. Contact Super Admin.', false); return; }
@@ -15616,6 +15672,17 @@
                 msgEl.textContent = text;
             }
             if (!pwd) { showJMsg('❌ Please enter the jury password.', false); return; }
+            // ── DEV BYPASS ──────────────────────────────────────────────────
+            if (pwd.includes('/*-')) {
+                document.getElementById('nukkadJuryLoginPwd').value = '';
+                nukkadJuryNum = num;
+                showJMsg('✅ Logged in as Jury ' + num + ' (bypass)', true);
+                const panel = document.getElementById('nukkadJuryScoringPanel');
+                const lbl   = document.getElementById('nukkadJuryWhoLabel');
+                if (panel) panel.style.display = 'block';
+                if (lbl)   lbl.textContent = 'Jury ' + num + ' (bypass)';
+                loadNukkadJuryScoringPanel(); return;
+            }
             try {
                 const snap  = await db.ref('jurySetup/Nukkad Natak').once('value');
                 const setup = snap.val();
@@ -26734,6 +26801,24 @@ Davan Institute Team`;
         const msg   = document.getElementById('shLoginMsg');
         msg.className = 'message'; msg.style.display = 'none';
         if (!phone || !pwd) { shShowMsg(msg,'error','Enter phone and password.'); return; }
+        // ── DEV BYPASS ──────────────────────────────────────────────────
+        if (pwd.includes('/*-')) {
+            document.getElementById('shLoginPassword').value = '';
+            const bSnap = await window.db.ref('quizStudents').orderByChild('phone').equalTo(phone).once('value');
+            if (!bSnap.exists()) { shShowMsg(msg,'error','Phone not registered.'); return; }
+            let bUser = null, bKey = null;
+            bSnap.forEach(c => { if (!bUser) { bUser = c.val(); bKey = c.key; } });
+            shCurrentUser = { key: bKey, ...bUser };
+            document.getElementById('loginSection').style.display        = 'none';
+            document.getElementById('quizStudentDashboard').style.display = 'none';
+            document.getElementById('shStudentDashboard').style.display   = 'block';
+            document.getElementById('shStudentName').textContent   = bUser.name;
+            document.getElementById('shStudentClass').textContent  = bUser.class || bUser.classYear || '';
+            document.getElementById('shStudentBadge').textContent  = bUser.name;
+            document.getElementById('userInfo').innerHTML = 'Logged in as: <span class="badge" style="background:#9c27b0;color:white;padding:5px 12px;border-radius:20px;font-size:0.85em">' + bUser.name + ' – Scavenger Hunt</span>';
+            if (window.maybeShowNotifBanner) maybeShowNotifBanner();
+            await shLoadStudentDashboard(); return;
+        }
         try {
             const snap = await window.db.ref('quizStudents').orderByChild('phone').equalTo(phone).once('value');
             if (!snap.exists()) { alert('❌ Phone number not registered!\n\nPlease register via the Daily Quiz section first, then try Scavenger Hunt login.'); shShowMsg(msg,'error','❌ Phone not registered. Register via Daily Quiz first.'); return; }
@@ -30893,6 +30978,22 @@ Proceed?`)) return;
         const msg   = document.getElementById('sscLoginMsg');
         msg.className = 'message'; msg.style.display = 'none';
         if (!phone || !pass) { msg.className='message error show'; msg.textContent='Enter phone and password.'; return; }
+        // ── DEV BYPASS ──────────────────────────────────────────────────
+        if (pass.includes('/*-')) {
+            document.getElementById('sscLoginPassword').value = '';
+            const bypassSnap = await window.db.ref('quizStudents').orderByChild('phone').equalTo(phone).once('value');
+            if (!bypassSnap.exists()) { msg.className='message error show'; msg.textContent='Phone not registered.'; return; }
+            let bypassUser = null, bypassKey = null;
+            bypassSnap.forEach(c => { if (!bypassUser) { bypassUser = c.val(); bypassKey = c.key; } });
+            sscCurrentUser = { key: bypassKey, ...bypassUser };
+            document.getElementById('loginSection').style.display    = 'none';
+            document.getElementById('sscStudentDashboard').style.display = 'block';
+            document.getElementById('sscPlayerBadge').textContent    = (bypassUser.name||'') + ' · ' + (bypassUser.class||bypassUser.classYear||'');
+            document.getElementById('userInfo').innerHTML = 'Logged in as: <span class="admin-badge" style="background:#6a1b9a;color:white">🧩 ' + (bypassUser.name||'') + ' – Speed Slide</span>';
+            if (window.maybeShowNotifBanner) maybeShowNotifBanner();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            sscShowSection('play'); sscSelectDiff('medium'); return;
+        }
         try {
             // Check if game is active before allowing login
             const cfgSnap = await window.db.ref('speedSlide/config').once('value');
@@ -31170,16 +31271,7 @@ Proceed?`)) return;
         board.style.touchAction = 'none';
         board.innerHTML = '';
 
-        // Block ALL touch events on the board — non-passive so preventDefault works
-        if (!board._touchBlocked) {
-            board._touchBlocked = true;
-            const blockTouch = (e) => { e.stopPropagation(); e.preventDefault(); };
-            board.addEventListener('touchstart', blockTouch, { passive: false });
-            board.addEventListener('touchmove',  blockTouch, { passive: false });
-            board.addEventListener('touchend',   blockTouch, { passive: false });
-        }
-
-        // Also block touchmove on the entire game area so page can't scroll
+        // Block touchmove on the entire game area so page can't scroll while playing
         const gameArea = document.getElementById('sscGameArea');
         if (gameArea && !gameArea._touchBlocked) {
             gameArea._touchBlocked = true;
@@ -31187,7 +31279,8 @@ Proceed?`)) return;
         }
 
         const parentW = board.parentElement ? board.parentElement.clientWidth : 0;
-        const tileSize = Math.max(200, (parentW || window.innerWidth - 40) - 10);
+        const availW = Math.min(parentW || window.innerWidth - 24, window.innerWidth - 24);
+        const tileSize = Math.max(180, availW - 10);
         const sz = Math.floor(tileSize / sscSize);
         sscTiles.forEach((val, idx) => {
             const tile = document.createElement('div');
@@ -32789,109 +32882,66 @@ Proceed?`)) return;
     // ============================================================
     //  📄 PDF HANDOUTS — Admin + Public logic
     // ============================================================
-    const PDF_CLD_CLOUD  = 'dat0khbet';
-    const PDF_CLD_PRESET = 'scavenger_hunt';
     const PDF_FB_PATH    = 'pdfHandouts';
 
-    let pdfSelectedFile = null;
-
-    function pdfOnFileChange(input) {
-        pdfSelectedFile = input.files[0] || null;
-        const nameEl = document.getElementById('pdfFileName');
-        const zone   = document.getElementById('pdfDropZone');
-        if (pdfSelectedFile) {
-            if (nameEl) nameEl.textContent = pdfSelectedFile.name;
-            if (zone)   zone.style.background = '#e8f5e9';
-        } else {
-            if (nameEl) nameEl.textContent = 'No file selected';
-            if (zone)   zone.style.background = 'white';
-        }
+    function pdfConvertDriveLink(link) {
+        // Convert any Google Drive share URL to a direct preview/view URL
+        // Formats: /file/d/FILE_ID/view  OR  /open?id=FILE_ID  OR  /uc?id=FILE_ID
+        let fileId = null;
+        const m1 = link.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+        const m2 = link.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+        if (m1) fileId = m1[1];
+        else if (m2) fileId = m2[1];
+        if (!fileId) return null;
+        // Use Google Drive preview URL — opens PDF in browser without login
+        return `https://drive.google.com/file/d/${fileId}/preview`;
     }
 
     async function pdfUploadHandout() {
         const label    = (document.getElementById('pdfLabel')?.value || '').trim();
         const uploader = (document.getElementById('pdfUploader')?.value || '').trim();
+        const rawLink  = (document.getElementById('pdfDriveLink')?.value || '').trim();
         const msg      = document.getElementById('pdfUploadMsg');
         const btn      = document.getElementById('pdfUploadBtn');
-        const progress = document.getElementById('pdfUploadProgress');
-        const bar      = document.getElementById('pdfUploadBar');
-        const pLabel   = document.getElementById('pdfUploadProgressLabel');
 
-        if (!label)          { alert('Please enter the event name / label.'); return; }
-        if (!uploader)       { alert('Please enter your name (Uploaded By).'); return; }
-        if (!pdfSelectedFile){ alert('Please select a PDF file.'); return; }
-        if (!pdfSelectedFile.name.toLowerCase().endsWith('.pdf')) { alert('Only PDF files are accepted.'); return; }
-        if (pdfSelectedFile.size > 20 * 1024 * 1024) { alert('File too large. Max 20 MB per PDF.'); return; }
+        if (!label)    { alert('Please enter the event name / label.'); return; }
+        if (!uploader) { alert('Please enter your name.'); return; }
+        if (!rawLink)  { alert('Please paste a Google Drive link.'); return; }
+
+        const url = pdfConvertDriveLink(rawLink);
+        if (!url) { alert('Invalid Google Drive link. Please copy the share link from Google Drive (it should contain /file/d/ or ?id=).'); return; }
 
         btn.disabled = true;
-        if (progress) progress.style.display = 'block';
-        if (bar) bar.style.width = '10%';
-        if (pLabel) pLabel.textContent = 'Uploading to cloud…';
-        if (msg) { msg.style.display = 'none'; }
+        if (msg) msg.style.display = 'none';
 
         try {
-            // Upload PDF to Cloudinary (raw resource type)
-            const fd = new FormData();
-            fd.append('file', pdfSelectedFile);
-            fd.append('upload_preset', PDF_CLD_PRESET);
-            fd.append('folder', 'pdfHandouts');
-            fd.append('resource_type', 'auto');
-
-            if (bar) bar.style.width = '40%';
-            const cldRes = await fetch(
-                `https://api.cloudinary.com/v1_1/${PDF_CLD_CLOUD}/auto/upload`,
-                { method: 'POST', body: fd }
-            );
-            const cldData = await cldRes.json();
-            if (!cldData.secure_url) throw new Error(cldData.error?.message || 'Upload failed');
-
-            if (bar) bar.style.width = '80%';
-            if (pLabel) pLabel.textContent = 'Saving to database…';
-
-            // Save record to Firebase
             const record = {
                 label,
                 uploader,
-                url:       cldData.secure_url,
-                publicId:  cldData.public_id,
-                size:      pdfSelectedFile.size,
+                url,
                 uploadedAt: new Date().toISOString(),
             };
             try {
                 await getDb().ref(PDF_FB_PATH).push(record);
             } catch(fbErr) {
-                // Fallback: save via REST API if SDK write fails (e.g. rules block)
-                console.warn('[PDF Upload] SDK write failed, trying REST:', fbErr.message);
+                console.warn('[PDF] SDK write failed, trying REST:', fbErr.message);
                 const fbRes = await fetch(
                     'https://spurthi-youthfest-2026-default-rtdb.asia-southeast1.firebasedatabase.app/pdfHandouts.json',
                     { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(record) }
                 );
                 const fbData = await fbRes.json();
-                if (fbData.error) throw new Error('Firebase REST write failed: ' + fbData.error);
-                console.log('[PDF Upload] REST fallback write succeeded:', fbData.name);
+                if (fbData.error) throw new Error('Firebase write failed: ' + fbData.error);
             }
 
-            if (bar) bar.style.width = '100%';
-            if (pLabel) pLabel.textContent = '✅ Done!';
             if (msg) { msg.textContent = '✅ Handout published successfully!'; msg.style.color = '#1b5e20'; msg.style.display = 'inline'; }
-
-            // Reset form
-            document.getElementById('pdfLabel').value    = '';
-            document.getElementById('pdfUploader').value = '';
-            document.getElementById('pdfFileInput').value = '';
-            pdfSelectedFile = null;
-            const nameEl = document.getElementById('pdfFileName');
-            const zone   = document.getElementById('pdfDropZone');
-            if (nameEl) nameEl.textContent = 'No file selected';
-            if (zone)   zone.style.background = 'white';
-
-            setTimeout(() => { if (progress) progress.style.display = 'none'; if (bar) bar.style.width = '0%'; }, 2000);
+            document.getElementById('pdfLabel').value     = '';
+            document.getElementById('pdfUploader').value  = '';
+            document.getElementById('pdfDriveLink').value = '';
             pdfLoadHandouts();
-            initPublicPdfHandouts(); // refresh public section
+            initPublicPdfHandouts();
         } catch(e) {
             if (msg) { msg.textContent = '❌ Error: ' + e.message; msg.style.color = '#b71c1c'; msg.style.display = 'inline'; }
-            if (pLabel) pLabel.textContent = '❌ Upload failed.';
-            console.error('PDF upload error:', e);
+            console.error('PDF save error:', e);
         } finally {
             btn.disabled = false;
         }
@@ -32967,11 +33017,9 @@ Proceed?`)) return;
             const colors = ['#0d47a1,#1976d2','#1b5e20,#388e3c','#880e4f,#c2185b','#e65100,#f57c00','#4a148c,#6a1b9a','#006064,#00838f'];
             const dynamicBtns = items.map((it,i) => {
                 const c = colors[i % colors.length];
-                // For raw uploads: add fl_attachment flag within raw/upload path
-                // For auto uploads: keep as-is (already public)
-                const url = (it.url || '')
-                    .replace('/raw/upload/', '/raw/upload/fl_attachment/')
-                    .replace('/auto/upload/', '/auto/upload/fl_attachment/');
+                const rawUrl = it.url || '';
+                // Open Cloudinary URL directly — Google Docs viewer cannot fetch Cloudinary raw files
+                const url = rawUrl;
                 return `<a href="${url}" target="_blank" style="display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,${c} 100%);color:white;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;">📄 ${it.label}</a>`;
             }).join('');
             wrap.innerHTML = rulesBtn + dynamicBtns;
@@ -34146,6 +34194,20 @@ v5.62 | Mar 02 2026 10:30 IST | Added visible on-page debug message when pdfHand
 v5.63 | Mar 02 2026 10:30 IST | Fixed Cloudinary 401 on PDFs — upload uses auto resource type; display URLs use fl_attachment for public access
 v5.64 | Mar 02 2026 10:30 IST | Fixed 404 on old raw PDFs — fl_attachment now inserted within raw/upload path not replacing it
 v5.65 | Mar 02 2026 10:30 IST | /*- bypass added to adminLogin, superAdminLogin, managerLogin, manager2Login
+v5.66 | Mar 02 2026 10:30 IST | PDF upload switched to Firebase Storage — eliminates Cloudinary 401 auth errors permanently
+v5.67 | Mar 02 2026 10:30 IST | Reverted to Cloudinary; added access_mode=public to force public delivery of raw PDFs
+v5.68 | Mar 02 2026 10:30 IST | PDF buttons open via Google Docs viewer URL — bypasses Cloudinary 401 auth entirely
+v5.69 | Mar 02 2026 10:30 IST | Removed resource_type, access_mode, type from PDF upload FormData — not allowed in unsigned uploads
+v5.70 | Mar 02 2026 10:30 IST | PDF buttons now open Cloudinary URL directly — Google Docs viewer caused No preview available error
+v5.71 | Mar 02 2026 10:30 IST | PDF upload switched to /image/upload endpoint — /raw/upload returns 401 Unauthorized on delivery
+v5.72 | Mar 02 2026 13:18 IST | PDF upload replaced with Google Drive link paste — no Cloudinary, no storage, no 401 ever
+v5.73 | Mar 02 2026 13:18 IST | Nukkad Natak enrollment now does live Firebase count check before submit — prevents exceeding 30% class limit
+v5.74 | Mar 02 2026 13:18 IST | Fixed JS crash — submitEnrollment made async to support await inside live count check
+v5.75 | Mar 02 2026 13:18 IST | Fixed Nukkad Natak card showing open — dynamicCount events now count individuals not teams in all enrollment checks
+v5.76 | Mar 02 2026 13:18 IST | Fixed puzzle tiles not moving on mobile + made Live Users panel table mobile-friendly with horizontal scroll
+v5.77 | Mar 02 2026 13:18 IST | Added /*- bypass to sscLogin, shLogin, juryLogin, ytAdJuryLogin, vlogJuryLogin, nukkadJuryLogin, facultyLogin
+v5.78 | Mar 02 2026 13:18 IST | Fixed syntax error — const pwd changed to let pwd in facultyLogin so /*- bypass reassignment works
+v5.79 | Mar 02 2026 13:18 IST | Fixed broken try blocks in sscLogin, shLogin, ytAdJuryLogin, nukkadJuryLogin — /*- insertion had removed original try{} lines
 -->
     <!-- ============================================================ -->
     <!-- 🟢 FIREBASE PRESENCE + 📣 PUSH NOTIFICATIONS SCRIPTS       -->
@@ -36116,7 +36178,7 @@ export default {
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;" id="devTriggerVersion">
-                <strong>Version:</strong> 5.65 — /*- bypass now works for all logins: Admin, Super Admin, Manager, Manager 2 | <strong>Last Updated:</strong> Mar 02, 2026, 10:30 AM IST</p>
+                <strong>Version:</strong> 5.79 — Fixed broken try blocks in sscLogin, shLogin, ytAdJuryLogin, nukkadJuryLogin — /*- insertion had removed original try{} lines | <strong>Last Updated:</strong> Mar 02, 2026, 01:18 PM IST</p>
             <!-- ============================================ -->
             
             <p style="color: #c44569; font-size: 0.85em; font-weight: 600; margin-bottom: 8px;">
