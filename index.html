@@ -528,6 +528,8 @@
         .tab.active { background: linear-gradient(135deg, #c44569 0%, #6a1b9a 100%); color: white; }
         .content { background: white; border-radius: 12px; padding: 30px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
         #adminContentBox.lb-active { background: transparent; box-shadow: none; padding: 0; }
+        #adminContentBox.live-active { background: transparent; box-shadow: none; padding: 0; }
+        #adminContentBox.push-active { background: transparent; box-shadow: none; padding: 0; }
         .form-section { display: none; }
         .form-section.active { display: block !important; }
         .form-group { margin-bottom: 20px; }
@@ -1188,17 +1190,76 @@
     <!-- IN-APP REAL-TIME NOTIFICATION TOAST                 -->
     <!-- MUST be a direct child of <body> — never nested     -->
     <!-- ═══════════════════════════════════════════════════ -->
-    <div id="inAppNotifToast" style="display:none;position:fixed;top:0;left:0;right:0;z-index:999999;background:linear-gradient(135deg,#c44569,#6a1b9a);color:#fff;padding:16px 20px;box-shadow:0 4px 20px rgba(0,0,0,0.5)">
+    <!-- TOAST ANIMATIONS -->
+    <style>
+    @keyframes toastSlideDown {
+        0%   { transform: translateY(-100%); opacity: 0; }
+        65%  { transform: translateY(6px);   opacity: 1; }
+        82%  { transform: translateY(-3px); }
+        100% { transform: translateY(0);     opacity: 1; }
+    }
+    @keyframes toastSlideUp {
+        0%   { transform: translateY(0);     opacity: 1; }
+        100% { transform: translateY(-100%); opacity: 0; }
+    }
+    @keyframes toastGlowPulse {
+        0%,100% { box-shadow: 0 4px 20px rgba(196,69,105,0.4); }
+        50%      { box-shadow: 0 4px 40px rgba(196,69,105,0.9), 0 0 60px rgba(106,27,154,0.5); }
+    }
+    @keyframes toastBellRing {
+        0%,100% { transform: rotate(0deg);   }
+        10%      { transform: rotate(20deg);  }
+        20%      { transform: rotate(-18deg); }
+        30%      { transform: rotate(14deg);  }
+        40%      { transform: rotate(-10deg); }
+        50%      { transform: rotate(6deg);   }
+        60%      { transform: rotate(0deg);   }
+    }
+    @keyframes toastBarShimmer {
+        0%   { background-position: -400px 0; }
+        100% { background-position:  400px 0; }
+    }
+    @keyframes toastBodyFade {
+        to { opacity: 0.88; }
+    }
+    #inAppNotifToast.toast-show {
+        animation: toastSlideDown 0.5s cubic-bezier(0.22,1,0.36,1) forwards,
+                   toastGlowPulse 2s ease-in-out 0.5s infinite;
+    }
+    #inAppNotifToast.toast-hide {
+        animation: toastSlideUp 0.3s ease-in forwards;
+    }
+    #inAppNotifToast .toast-bell {
+        font-size: 1.8em;
+        flex-shrink: 0;
+        display: inline-block;
+        transform-origin: top center;
+    }
+    #inAppNotifToast .toast-bell.ringing {
+        animation: toastBellRing 1s ease 0.3s 2;
+    }
+    #inAppNotifBody.fadein {
+        opacity: 0;
+        animation: toastBodyFade 0.5s ease 0.3s forwards;
+    }
+    #inAppNotifBar.shimmer {
+        background: linear-gradient(90deg, rgba(255,255,255,0.2), rgba(255,255,255,0.85), rgba(255,255,255,0.2));
+        background-size: 400px 100%;
+        animation: toastBarShimmer 1.5s linear infinite;
+    }
+    </style>
+
+    <div id="inAppNotifToast" style="display:none;position:fixed;top:0;left:0;right:0;z-index:999999;background:linear-gradient(135deg,#c44569,#6a1b9a);color:#fff;padding:16px 20px;">
         <div style="display:flex;align-items:flex-start;gap:12px">
-            <span style="font-size:1.6em;flex-shrink:0">🔔</span>
+            <span class="toast-bell" id="inAppNotifBell">🔔</span>
             <div style="flex:1;min-width:0">
-                <div id="inAppNotifTitle" style="font-weight:800;font-size:0.95em;margin-bottom:4px;word-break:break-word"></div>
-                <div id="inAppNotifBody" style="font-size:0.83em;opacity:0.88;word-break:break-word"></div>
+                <div id="inAppNotifTitle" style="font-weight:800;font-size:0.95em;margin-bottom:4px;"></div>
+                <div id="inAppNotifBody" style="font-size:0.83em;word-break:break-word"></div>
             </div>
             <button onclick="dismissInAppToast()" style="background:rgba(255,255,255,0.15);border:none;color:#fff;border-radius:50%;width:26px;height:26px;cursor:pointer;font-size:0.9em;flex-shrink:0;line-height:26px;text-align:center">✕</button>
         </div>
-        <div id="inAppNotifProgress" style="height:3px;background:rgba(255,255,255,0.3);border-radius:2px;margin-top:12px;overflow:hidden">
-            <div id="inAppNotifBar" style="height:100%;background:rgba(255,255,255,0.6);width:100%;transition:width linear"></div>
+        <div id="inAppNotifProgress" style="height:4px;background:rgba(255,255,255,0.2);border-radius:2px;margin-top:12px;overflow:hidden">
+            <div id="inAppNotifBar" style="height:100%;border-radius:2px;width:100%;transition:width linear"></div>
         </div>
     </div>
 
@@ -6665,6 +6726,13 @@
                         <button onclick="saveToastStyle()" style="background:#6a1b9a;color:#fff;border:none;padding:8px 16px;border-radius:20px;font-size:12px;font-weight:800;cursor:pointer;white-space:nowrap">💾 Save Style</button>
                     </div>
                     <div id="toastStyleSaved" style="display:none;color:#2e7d32;font-size:11px;font-weight:700;margin-top:6px;text-align:center">✅ Style saved!</div>
+                    <div style="margin-top:10px;border-top:1px dashed #d1a8f5;padding-top:10px">
+                        <label style="color:#555;font-size:11px;font-weight:700;display:block;margin-bottom:4px">⏳ Toast Expiry <span style="color:#999;font-weight:400">(show on page open if sent within this many minutes)</span></label>
+                        <div style="display:flex;align-items:center;gap:8px">
+                            <input type="number" id="toastExpiryMins" value="30" min="1" max="1440" style="width:80px;border:1.5px solid #c9a0f0;border-radius:6px;padding:6px 8px;font-size:13px;font-weight:700">
+                            <span style="color:#666;font-size:12px">minutes — students opening page after this won't see the toast</span>
+                        </div>
+                    </div>
                 </div>
 
                 <div style="display:flex;gap:10px;margin-bottom:0">
@@ -6697,6 +6765,7 @@
                     <button onclick="checkAndShowFirebaseRulesFix()" id="firebaseRulesBtn" style="background:linear-gradient(135deg,#1565c0,#0d47a1);color:#fff;border:none;padding:10px 20px;border-radius:20px;cursor:pointer;font-size:13px;font-weight:700;width:100%">🔍 Check Firebase Rules (Fix if Notifications Broken)</button>
                     <div id="firebaseRulesResult" style="margin-top:8px;display:none;padding:12px;border-radius:8px;font-size:12px;background:rgba(0,0,0,0.3);color:#fff;line-height:1.7"></div>
                     <p style="color:#888;font-size:11px;margin-top:6px;text-align:center">Tests if Firebase is blocking subscription saves — the #1 reason notifications don't arrive</p>
+                </div>
             </div>
 
             <!-- Info box -->
@@ -16799,6 +16868,8 @@
             const adminBox = document.getElementById('adminContentBox');
             if (adminBox) {
                 adminBox.classList.toggle('lb-active', tab === 'leaderboardAdmin');
+                adminBox.classList.toggle('live-active', tab === 'liveUsersPanel');
+                adminBox.classList.toggle('push-active', tab === 'pushNotifPanel');
             }
 
             if (tab === 'results')        loadResultsTab();
@@ -34324,6 +34395,12 @@ v5.81 | Mar 02 2026 13:18 IST | Fixed broken HKDF in Cloudflare Worker encryptPa
 v5.82 | Mar 02 2026 15:21 IST | In-app toast customizer added — admin can set background color, text color, and duration (timed or until closed) from push panel
 v5.83 | Mar 02 2026 15:28 IST | Push notification and in-app toast now have separate title and message fields — toast falls back to push content if left blank
 v5.84 | Mar 02 2026 15:34 IST | Preview Toast button works; three send buttons: Send Push Only, Send Toast Only, Send Both
+v5.85 | Mar 02 2026 15:50 IST | In-app toast now has slide-down bounce entry, glow pulse, bell ring, typewriter title, fade body, shimmer bar, slide-up exit, and chime sound (1/2/3 notes based on duration)
+v5.86 | Mar 02 2026 15:55 IST | Toast animation changed to zoom-in from center; chime fixed to exactly match demo (1/2/3 notes by duration)
+v5.87 | Mar 02 2026 16:04 IST | Fixed chime always playing 1 note (now reads live UI values); added admin-controlled toast expiry field (default 30 min, adjustable)
+v5.88 | Mar 02 2026 16:04 IST | Fixed white box above push panel — zoom animation replaced with slide-down bounce (zoom breaks on fixed full-width element)
+v5.89 | Mar 02 2026 16:04 IST | Fixed white box above Push Notifications heading — missing closing div in compose card
+v5.90 | Mar 02 2026 16:04 IST | Fixed white box on Live Now and Notifications tabs — adminContentBox now transparent on these tabs like Leaderboard
 -->
     <!-- ============================================================ -->
     <!-- 🟢 FIREBASE PRESENCE + 📣 PUSH NOTIFICATIONS SCRIPTS       -->
@@ -35786,45 +35863,124 @@ self.addEventListener('notificationclick', function(event) {
     window._currentUserName  = window._currentUserName  || '';
     window._currentUserClass = window._currentUserClass || '';
 
+    function playToastChime(durMode, durSec) {
+        try {
+            const AudioCtx = window.AudioContext || window.webkitAudioContext;
+            if (!AudioCtx) return;
+            const ctx = new AudioCtx();
+
+            // Exact same as demo:
+            // Until Closed (manual) → single soft C5
+            // Timed ≤5s             → single E5
+            // Timed 6–9s            → double C5→E5
+            // Timed ≥10s            → triple C5→E5→G5
+            let notes;
+            if (durMode === 'manual') {
+                notes = [{ f: 523.25, t: 0 }];
+            } else if (durSec <= 5) {
+                notes = [{ f: 659.25, t: 0 }];
+            } else if (durSec <= 9) {
+                notes = [{ f: 523.25, t: 0 }, { f: 659.25, t: 0.13 }];
+            } else {
+                notes = [{ f: 523.25, t: 0 }, { f: 659.25, t: 0.13 }, { f: 783.99, t: 0.26 }];
+            }
+
+            notes.forEach(({ f, t }) => {
+                const osc  = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(f, ctx.currentTime + t);
+                gain.gain.setValueAtTime(0, ctx.currentTime + t);
+                gain.gain.linearRampToValueAtTime(0.22, ctx.currentTime + t + 0.02);
+                gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + t + 0.45);
+                osc.start(ctx.currentTime + t);
+                osc.stop(ctx.currentTime + t + 0.5);
+            });
+        } catch(e) { console.warn('[Toast chime]', e); }
+    }
+
     function showInAppToast(title, body) {
         const toast = document.getElementById('inAppNotifToast');
         if (!toast) { console.warn('[Toast] element not found!'); return; }
-        document.getElementById('inAppNotifTitle').textContent = title;
-        document.getElementById('inAppNotifBody').textContent  = body;
 
-        // Load saved style from localStorage
-        const bg       = localStorage.getItem('toast_bg')       || 'linear-gradient(135deg,#c44569,#6a1b9a)';
-        const textCol  = localStorage.getItem('toast_text')     || '#ffffff';
-        const durMode  = localStorage.getItem('toast_durmode')  || 'manual';
-        const durSec   = parseInt(localStorage.getItem('toast_dursec') || '8', 10);
+        // Read duration from live UI if available, else localStorage
+        // This fixes chime always playing 1 note (was always reading 'manual' default)
+        const durModeEl = document.getElementById('toastDurationMode');
+        const durSecEl  = document.getElementById('toastDurationSec');
+        const bg      = localStorage.getItem('toast_bg')      || 'linear-gradient(135deg,#c44569,#6a1b9a)';
+        const textCol = localStorage.getItem('toast_text')    || '#ffffff';
+        const durMode = durModeEl ? durModeEl.value : (localStorage.getItem('toast_durmode') || 'manual');
+        const durSec  = durSecEl  ? parseInt(durSecEl.value || '8', 10) : parseInt(localStorage.getItem('toast_dursec') || '8', 10);
 
-        toast.style.cssText = 'display:block;position:fixed;top:0;left:0;right:0;z-index:999999;padding:16px 20px;box-shadow:0 4px 20px rgba(0,0,0,0.5);background:' + bg + ';color:' + textCol;
-        // Apply text color to children
+        // Reset completely before showing
+        toast.className = '';
+        toast.style.display = 'none';
+        void toast.offsetWidth;
+
+        // Apply colors
+        toast.style.background = bg;
+        toast.style.color = textCol;
+
         const titleEl = document.getElementById('inAppNotifTitle');
         const bodyEl  = document.getElementById('inAppNotifBody');
-        const dismissBtn = toast.querySelector('button');
-        if (titleEl)    titleEl.style.color = textCol;
-        if (bodyEl)     bodyEl.style.color  = textCol;
-        if (dismissBtn) { dismissBtn.style.color = textCol; dismissBtn.style.borderColor = textCol; }
+        const bell    = document.getElementById('inAppNotifBell');
+        const bar     = document.getElementById('inAppNotifBar');
+
+        titleEl.textContent = title;
+        bodyEl.textContent  = body;
+        titleEl.style.color = textCol;
+        bodyEl.style.color  = textCol;
+
+        // Reset and apply animation classes
+        titleEl.className = '';
+        bodyEl.className  = '';
+        if (bell) bell.className = 'toast-bell';
+        void bodyEl.offsetWidth;
+        bodyEl.className = 'fadein';
+        if (bell) bell.className = 'toast-bell ringing';
+
+        // Show with zoom-in + glow
+        toast.style.display = 'block';
+        toast.className = 'toast-show';
 
         // Progress bar
-        const bar = document.getElementById('inAppNotifBar');
         clearTimeout(_inAppDismissTimer);
+        bar.className = '';
+        bar.style.transition = 'none';
+        bar.style.width = '100%';
+        void bar.offsetWidth;
+
         if (durMode === 'timed' && durSec > 0) {
-            if (bar) { bar.style.transition = 'none'; bar.style.width = '100%'; bar.style.display = 'block'; }
-            setTimeout(() => { if (bar) { bar.style.transition = 'width ' + durSec + 's linear'; bar.style.width = '0%'; } }, 50);
+            bar.className = 'shimmer';
+            setTimeout(() => {
+                bar.style.transition = 'width ' + durSec + 's linear';
+                bar.style.width = '0%';
+            }, 100);
             _inAppDismissTimer = setTimeout(dismissInAppToast, durSec * 1000);
         } else {
-            // Manual — hide progress bar
-            if (bar) bar.style.display = 'none';
+            bar.style.background = 'rgba(255,255,255,0.35)';
+            bar.style.width = '100%';
         }
-        console.log('[Toast] displayed — bg:', bg, 'text:', textCol, 'mode:', durMode);
+
+        // Play chime — must be called directly from user interaction chain OR
+        // after page has had prior interaction; works on Preview click always,
+        // and on sent toast if student has interacted with page
+        playToastChime(durMode, durSec);
+
+        console.log('[Toast] shown — mode:', durMode, 'sec:', durSec, 'bg:', bg);
     }
 
     function dismissInAppToast() {
         clearTimeout(_inAppDismissTimer);
         const toast = document.getElementById('inAppNotifToast');
-        if (toast) toast.style.display = 'none';
+        if (!toast || toast.style.display === 'none') return;
+        toast.className = 'toast-hide';
+        setTimeout(() => {
+            toast.style.display = 'none';
+            toast.className = '';
+        }, 300);
     }
 
     // ── TOAST STYLE CUSTOMIZER FUNCTIONS ────────────────────────
@@ -35840,10 +35996,12 @@ self.addEventListener('notificationclick', function(event) {
         const text    = document.getElementById('toastTextColorHex').value.trim() || '#ffffff';
         const durMode = document.getElementById('toastDurationMode').value;
         const durSec  = document.getElementById('toastDurationSec').value || '8';
+        const expiry  = document.getElementById('toastExpiryMins') ? (document.getElementById('toastExpiryMins').value || '30') : '30';
         localStorage.setItem('toast_bg',      bg);
         localStorage.setItem('toast_text',    text);
         localStorage.setItem('toast_durmode', durMode);
         localStorage.setItem('toast_dursec',  durSec);
+        localStorage.setItem('toast_expiry',  expiry);
         const saved = document.getElementById('toastStyleSaved');
         if (saved) { saved.style.display = 'block'; setTimeout(() => { saved.style.display = 'none'; }, 2500); }
         updateToastPreview();
@@ -35877,6 +36035,8 @@ self.addEventListener('notificationclick', function(event) {
         if (textHex)    textHex.value    = savedText;
         if (modeEl)     modeEl.value     = savedMode;
         if (secEl)      secEl.value      = savedSec;
+        const expiryEl = document.getElementById('toastExpiryMins');
+        if (expiryEl)   expiryEl.value   = localStorage.getItem('toast_expiry') || '30';
         toggleToastDurationInput();
         updateToastPreview();
 
@@ -35903,7 +36063,8 @@ self.addEventListener('notificationclick', function(event) {
                     if (_inAppLastId === data.id) return;
                     const age = Date.now() - data.sentAt;
                     console.log('[Toast] id:', data.id, 'age:', Math.round(age/1000)+'s', 'targetName:', data.targetName, 'myName:', window._currentUserName);
-                    if (age > 30 * 60 * 1000) { _inAppLastId = data.id; console.log('[Toast] BLOCKED: too old (>30min)'); return; }
+                    const _toastExpiryMins = parseInt(localStorage.getItem('toast_expiry') || '30', 10);
+                    if (age > _toastExpiryMins * 60 * 1000) { _inAppLastId = data.id; console.log('[Toast] BLOCKED: too old (>' + _toastExpiryMins + 'min)'); return; }
                     // Class filter — only block if MY class is known AND doesn't match
                     if (data.targetClass) {
                         const myClass = (window._currentUserClass || '').trim().toLowerCase();
@@ -36474,7 +36635,7 @@ export default {
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;" id="devTriggerVersion">
-                <strong>Version:</strong> 5.84 — Preview Toast button works; three send buttons: Send Push Only, Send Toast Only, Send Both | <strong>Last Updated:</strong> Mar 02, 2026, 03:34 PM IST</p>
+                <strong>Version:</strong> 5.90 — Fixed white box on Live Now and Notifications tabs — adminContentBox now goes transparent on these tabs like Leaderboard | <strong>Last Updated:</strong> Mar 02, 2026, 04:04 PM IST</p>
             <!-- ============================================ -->
             
             <p style="color: #c44569; font-size: 0.85em; font-weight: 600; margin-bottom: 8px;">
