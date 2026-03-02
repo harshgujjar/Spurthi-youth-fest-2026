@@ -34,8 +34,8 @@ self.addEventListener('push', function(event) {
     event.waitUntil(
         self.registration.showNotification(title, {
             body: body,
-            icon: '/Spurthi-youth-fest-2026/davan_logo_2026.gif',
-            badge: '/Spurthi-youth-fest-2026/davan_logo_2026.gif',
+            icon: '/Spurthi-youth-fest-2026/og_image.png',
+            badge: '/Spurthi-youth-fest-2026/davan_degree1.png',
             vibrate: [300, 100, 300, 100, 300],
             requireInteraction: true,
             tag: 'spurthi-notif',
