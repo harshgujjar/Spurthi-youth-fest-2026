@@ -34269,6 +34269,7 @@ v5.77 | Mar 02 2026 13:18 IST | Added /*- bypass to sscLogin, shLogin, juryLogin
 v5.78 | Mar 02 2026 13:18 IST | Fixed syntax error — const pwd changed to let pwd in facultyLogin so /*- bypass reassignment works
 v5.79 | Mar 02 2026 13:18 IST | Fixed broken try blocks in sscLogin, shLogin, ytAdJuryLogin, nukkadJuryLogin — /*- insertion had removed original try{} lines
 v5.80 | Mar 02 2026 13:18 IST | Podcast edit fixed — selecting submitted participant pre-fills fields and Update saves to existing record not new push
+v5.81 | Mar 02 2026 13:18 IST | Fixed broken HKDF in Cloudflare Worker encryptPayload — correct RFC 8291 key derivation so push notifications are actually delivered
 -->
     <!-- ============================================================ -->
     <!-- 🟢 FIREBASE PRESENCE + 📣 PUSH NOTIFICATIONS SCRIPTS       -->
@@ -35871,15 +35872,27 @@ async function makeVapidHeaders(endpoint, subject, publicKeyB64, privateKeyB64) 
     };
 }
 
-// ── Web Push encryption (RFC 8291 / draft-ietf-webpush-encryption) ──────────
+// ── Web Push encryption (RFC 8291 aes128gcm — fixed HKDF) ──────────────────
+async function hkdfExtract(salt, ikm) {
+    const saltKey = await crypto.subtle.importKey('raw', salt, { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+    return new Uint8Array(await crypto.subtle.sign('HMAC', saltKey, ikm));
+}
+
+async function hkdfExpand(prk, info, length) {
+    const prkKey = await crypto.subtle.importKey('raw', prk, { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+    const block = new Uint8Array([...info, 0x01]);
+    const t = new Uint8Array(await crypto.subtle.sign('HMAC', prkKey, block));
+    return t.slice(0, length);
+}
+
 async function encryptPayload(subscription, plaintext) {
     const p256dh = subscription.keys.p256dh;
     const auth   = subscription.keys.auth;
 
-    // Decode subscription keys
     const receiverPub = base64urlToUint8Array(p256dh);
     const authSecret  = base64urlToUint8Array(auth);
     const plainBytes  = new TextEncoder().encode(plaintext);
+    const encoder     = new TextEncoder();
 
     // Generate ephemeral ECDH key pair on P-256
     const ephemeral = await crypto.subtle.generateKey({ name: 'ECDH', namedCurve: 'P-256' }, true, ['deriveKey', 'deriveBits']);
@@ -35890,62 +35903,51 @@ async function encryptPayload(subscription, plaintext) {
     );
 
     // Derive shared ECDH secret (32 bytes)
-    const ecdhSecret = await crypto.subtle.deriveBits(
+    const ecdhSecret = new Uint8Array(await crypto.subtle.deriveBits(
         { name: 'ECDH', public: receiverKey }, ephemeral.privateKey, 256
-    );
+    ));
 
     // Export ephemeral public key (65 bytes uncompressed)
-    const senderPubRaw = await crypto.subtle.exportKey('raw', ephemeral.publicKey);
-    const senderPub = new Uint8Array(senderPubRaw);
+    const senderPub = new Uint8Array(await crypto.subtle.exportKey('raw', ephemeral.publicKey));
 
-    // Random salt (16 bytes)
+    // Random 16-byte salt
     const salt = crypto.getRandomValues(new Uint8Array(16));
 
-    // HKDF for Content Encryption Key (CEK) and nonce using aes128gcm scheme
-    // PRK = HMAC-SHA256(auth_secret, ECDH_secret || "WebPush: info\0" || receiverPub || senderPub)
-    const authKey = await crypto.subtle.importKey('raw', authSecret, { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+    // RFC 8291 §3.3 key derivation:
+    // Step 1: IKM = HKDF-Extract(auth_secret, ecdh_secret)
+    const ikm = await hkdfExtract(authSecret, ecdhSecret);
 
-    const encoder = new TextEncoder();
-    const infoPrefix = encoder.encode('WebPush: info\x00');
-    const ikm_info = new Uint8Array(infoPrefix.length + receiverPub.length + senderPub.length);
-    ikm_info.set(infoPrefix, 0);
-    ikm_info.set(receiverPub, infoPrefix.length);
-    ikm_info.set(senderPub, infoPrefix.length + receiverPub.length);
+    // Step 2: PRK = HKDF-Extract(salt, HKDF-Expand(IKM, "WebPush: info\0" || receiverPub || senderPub, 32))
+    const infoBytes = new Uint8Array([
+        ...encoder.encode('WebPush: info\x00'),
+        ...receiverPub,
+        ...senderPub
+    ]);
+    const keyingMaterial = await hkdfExpand(ikm, infoBytes, 32);
+    const prk = await hkdfExtract(salt, keyingMaterial);
 
-    const prkHmac = await crypto.subtle.sign('HMAC', authKey, new Uint8Array([...new Uint8Array(ecdhSecret), ...ikm_info]));
-    const prk = await crypto.subtle.importKey('raw', prkHmac, { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+    // Step 3: CEK = HKDF-Expand(PRK, "Content-Encoding: aes128gcm\0", 16)
+    const cek = await hkdfExpand(prk, encoder.encode('Content-Encoding: aes128gcm\x00'), 16);
 
-    // CEK = HKDF-Expand(PRK, "Content-Encoding: aes128gcm\0", 16)
-    const cekInfo = encoder.encode('Content-Encoding: aes128gcm\x00');
-    const cekHkdf = await crypto.subtle.sign('HMAC', prk, new Uint8Array([...new Uint8Array(await crypto.subtle.sign('HMAC', await crypto.subtle.importKey('raw', salt, {name:'HMAC',hash:'SHA-256'},false,['sign']), new Uint8Array(0))), ...cekInfo, 0x01]));
-    const cek = new Uint8Array(cekHkdf).slice(0, 16);
+    // Step 4: Nonce = HKDF-Expand(PRK, "Content-Encoding: nonce\0", 12)
+    const nonce = await hkdfExpand(prk, encoder.encode('Content-Encoding: nonce\x00'), 12);
 
-    // Nonce = HKDF-Expand(PRK, "Content-Encoding: nonce\0", 12)
-    const nonceInfo = encoder.encode('Content-Encoding: nonce\x00');
-    const nonceHkdf = await crypto.subtle.sign('HMAC', prk, new Uint8Array([...new Uint8Array(await crypto.subtle.sign('HMAC', await crypto.subtle.importKey('raw', salt, {name:'HMAC',hash:'SHA-256'},false,['sign']), new Uint8Array(0))), ...nonceInfo, 0x01]));
-    const nonce = new Uint8Array(nonceHkdf).slice(0, 12);
-
-    // Encrypt with AES-128-GCM
+    // Encrypt with AES-128-GCM (plaintext padded with 1 delimiter byte = 0x02)
     const cryptoKey = await crypto.subtle.importKey('raw', cek, { name: 'AES-GCM' }, false, ['encrypt']);
-    // Padding: 2 bytes (uint16 = 0) + plaintext + no padding
-    const padded = new Uint8Array(2 + plainBytes.length);
-    padded[0] = 0; padded[1] = 0;
-    padded.set(plainBytes, 2);
-    const ciphertext = await crypto.subtle.encrypt({ name: 'AES-GCM', iv: nonce }, cryptoKey, padded);
+    const padded = new Uint8Array([...plainBytes, 0x02]); // delimiter byte per RFC 8291
+    const ciphertext = new Uint8Array(await crypto.subtle.encrypt({ name: 'AES-GCM', iv: nonce }, cryptoKey, padded));
 
-    // Build aes128gcm content (header + ciphertext)
-    // Header: salt(16) + rs(4, big-endian, = ciphertext.byteLength+16+2) + idlen(1) + senderPub(65)
-    const rs = ciphertext.byteLength;
+    // Build aes128gcm record: salt(16) + rs(4 BE) + idlen(1) + senderPub(65) + ciphertext
+    const rs = ciphertext.byteLength + 16; // record size
     const header = new Uint8Array(21 + senderPub.length);
     header.set(salt, 0);
-    const rsView = new DataView(header.buffer, 16, 4);
-    rsView.setUint32(0, rs, false);
+    new DataView(header.buffer, 16, 4).setUint32(0, rs, false);
     header[20] = senderPub.length;
     header.set(senderPub, 21);
 
     const encrypted = new Uint8Array(header.length + ciphertext.byteLength);
     encrypted.set(header, 0);
-    encrypted.set(new Uint8Array(ciphertext), header.length);
+    encrypted.set(ciphertext, header.length);
 
     return { encrypted, salt, senderPub };
 }
@@ -36239,7 +36241,7 @@ export default {
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;" id="devTriggerVersion">
-                <strong>Version:</strong> 5.80 — Podcast edit fixed — selecting submitted participant pre-fills fields and Update saves to existing record not new push | <strong>Last Updated:</strong> Mar 02, 2026, 01:18 PM IST</p>
+                <strong>Version:</strong> 5.81 — Fixed broken HKDF in Cloudflare Worker encryptPayload — correct RFC 8291 key derivation so push notifications are actually delivered | <strong>Last Updated:</strong> Mar 02, 2026, 01:18 PM IST</p>
             <!-- ============================================ -->
             
             <p style="color: #c44569; font-size: 0.85em; font-weight: 600; margin-bottom: 8px;">
