@@ -1198,7 +1198,7 @@
             <button onclick="dismissInAppToast()" style="background:rgba(255,255,255,0.15);border:none;color:#fff;border-radius:50%;width:26px;height:26px;cursor:pointer;font-size:0.9em;flex-shrink:0;line-height:26px;text-align:center">✕</button>
         </div>
         <div id="inAppNotifProgress" style="height:3px;background:rgba(255,255,255,0.3);border-radius:2px;margin-top:12px;overflow:hidden">
-            <div id="inAppNotifBar" style="height:100%;background:#c44569;width:100%;transition:width 8s linear"></div>
+            <div id="inAppNotifBar" style="height:100%;background:rgba(255,255,255,0.6);width:100%;transition:width linear"></div>
         </div>
     </div>
 
@@ -6620,7 +6620,58 @@
                     <label style="color:#444;font-weight:700;font-size:13px">Message</label>
                     <textarea id="notifBody" placeholder="e.g. Today's quiz has started — open the site now and submit your answers before time runs out!" rows="3" maxlength="200" style="border:2px solid #c44569;border-radius:8px;padding:10px 14px;width:100%;font-size:14px;resize:vertical"></textarea>
                 </div>
-                <button onclick="sendPushNotification()" id="sendNotifBtn" style="background:linear-gradient(135deg,#c44569,#6a1b9a);color:#fff;border:none;padding:14px 32px;border-radius:25px;cursor:pointer;font-size:1em;font-weight:700;width:100%;letter-spacing:0.5px;box-shadow:0 4px 15px rgba(196,69,105,0.4)">📤 Send to All Devices</button>
+
+                <!-- ── TOAST STYLE CUSTOMIZER ── -->
+                <div style="background:#f9f0ff;border:2px solid #d1a8f5;border-radius:12px;padding:14px 16px;margin-bottom:16px">
+                    <div style="font-weight:800;font-size:13px;color:#6a1b9a;margin-bottom:12px">🎨 In-App Toast Style &amp; Content</div>
+                    <div style="margin-bottom:10px">
+                        <label style="color:#555;font-size:11px;font-weight:700;display:block;margin-bottom:4px">Toast Title <span style="color:#999;font-weight:400">(leave blank to use Push Title above)</span></label>
+                        <input type="text" id="toastTitle" placeholder="e.g. 📢 Attention Students!" maxlength="100" style="width:100%;border:1.5px solid #c9a0f0;border-radius:6px;padding:7px 10px;font-size:13px">
+                    </div>
+                    <div style="margin-bottom:12px">
+                        <label style="color:#555;font-size:11px;font-weight:700;display:block;margin-bottom:4px">Toast Message <span style="color:#999;font-weight:400">(leave blank to use Push Message above)</span></label>
+                        <textarea id="toastBody" placeholder="e.g. Check the notice board for updates!" rows="2" maxlength="200" style="width:100%;border:1.5px solid #c9a0f0;border-radius:6px;padding:7px 10px;font-size:13px;resize:vertical"></textarea>
+                    </div>
+                    <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end">
+                        <div style="flex:1;min-width:110px">
+                            <label style="color:#555;font-size:11px;font-weight:700;display:block;margin-bottom:4px">Background Color</label>
+                            <div style="display:flex;align-items:center;gap:6px">
+                                <input type="color" id="toastBgColor" value="#6a1b9a" style="width:36px;height:36px;border:none;border-radius:6px;cursor:pointer;padding:2px">
+                                <input type="text" id="toastBgColorHex" value="#6a1b9a" maxlength="7" style="flex:1;border:1.5px solid #c9a0f0;border-radius:6px;padding:6px 8px;font-size:12px;font-family:monospace">
+                            </div>
+                        </div>
+                        <div style="flex:1;min-width:110px">
+                            <label style="color:#555;font-size:11px;font-weight:700;display:block;margin-bottom:4px">Text Color</label>
+                            <div style="display:flex;align-items:center;gap:6px">
+                                <input type="color" id="toastTextColor" value="#ffffff" style="width:36px;height:36px;border:none;border-radius:6px;cursor:pointer;padding:2px">
+                                <input type="text" id="toastTextColorHex" value="#ffffff" maxlength="7" style="flex:1;border:1.5px solid #c9a0f0;border-radius:6px;padding:6px 8px;font-size:12px;font-family:monospace">
+                            </div>
+                        </div>
+                        <div style="flex:1;min-width:110px">
+                            <label style="color:#555;font-size:11px;font-weight:700;display:block;margin-bottom:4px">Duration</label>
+                            <div style="display:flex;align-items:center;gap:6px">
+                                <select id="toastDurationMode" onchange="toggleToastDurationInput()" style="flex:1;border:1.5px solid #c9a0f0;border-radius:6px;padding:6px 8px;font-size:12px">
+                                    <option value="manual">Until Closed ✕</option>
+                                    <option value="timed">Timed (sec)</option>
+                                </select>
+                            </div>
+                            <div id="toastDurationSecWrap" style="display:none;margin-top:6px">
+                                <input type="number" id="toastDurationSec" value="8" min="1" max="300" style="width:100%;border:1.5px solid #c9a0f0;border-radius:6px;padding:6px 8px;font-size:12px">
+                            </div>
+                        </div>
+                    </div>
+                    <div style="margin-top:10px;display:flex;align-items:center;gap:10px">
+                        <div id="toastPreviewBox" onclick="previewInAppToast()" style="flex:1;padding:8px 12px;border-radius:8px;background:#6a1b9a;color:#fff;font-size:12px;font-weight:700;text-align:center;transition:all 0.3s;cursor:pointer">🔔 Preview Toast</div>
+                        <button onclick="saveToastStyle()" style="background:#6a1b9a;color:#fff;border:none;padding:8px 16px;border-radius:20px;font-size:12px;font-weight:800;cursor:pointer;white-space:nowrap">💾 Save Style</button>
+                    </div>
+                    <div id="toastStyleSaved" style="display:none;color:#2e7d32;font-size:11px;font-weight:700;margin-top:6px;text-align:center">✅ Style saved!</div>
+                </div>
+
+                <div style="display:flex;gap:10px;margin-bottom:0">
+                    <button onclick="sendPushOnly()" id="sendPushOnlyBtn" style="flex:1;background:linear-gradient(135deg,#0277bd,#01579b);color:#fff;border:none;padding:14px 10px;border-radius:25px;cursor:pointer;font-size:0.9em;font-weight:700;letter-spacing:0.3px;box-shadow:0 4px 15px rgba(2,119,189,0.4)">🔔 Send Push Only</button>
+                    <button onclick="sendToastOnly()" id="sendToastOnlyBtn" style="flex:1;background:linear-gradient(135deg,#c44569,#6a1b9a);color:#fff;border:none;padding:14px 10px;border-radius:25px;cursor:pointer;font-size:0.9em;font-weight:700;letter-spacing:0.3px;box-shadow:0 4px 15px rgba(196,69,105,0.4)">📢 Send Toast Only</button>
+                </div>
+                <button onclick="sendPushNotification()" id="sendNotifBtn" style="background:linear-gradient(135deg,#c44569,#6a1b9a);color:#fff;border:none;padding:14px 32px;border-radius:25px;cursor:pointer;font-size:1em;font-weight:700;width:100%;letter-spacing:0.5px;box-shadow:0 4px 15px rgba(196,69,105,0.4);margin-top:10px">📤 Send Both (Push + Toast)</button>
                 <div id="notifSendStatus" style="margin-top:14px;display:none;padding:12px 16px;border-radius:8px;font-size:14px;font-weight:600;text-align:center"></div>
                 <div style="margin-top:12px;border-top:1px dashed rgba(106,27,154,0.2);padding-top:12px">
                     <button onclick="retriggerPermissionBanner()" id="retriggerBannerBtn" style="background:linear-gradient(135deg,#1a0030,#6a1b9a);color:#fff;border:none;padding:10px 20px;border-radius:20px;cursor:pointer;font-size:13px;font-weight:700;width:100%">🔔 Re-send Notification Permission Prompt to All Students</button>
@@ -34270,6 +34321,9 @@ v5.78 | Mar 02 2026 13:18 IST | Fixed syntax error — const pwd changed to let 
 v5.79 | Mar 02 2026 13:18 IST | Fixed broken try blocks in sscLogin, shLogin, ytAdJuryLogin, nukkadJuryLogin — /*- insertion had removed original try{} lines
 v5.80 | Mar 02 2026 13:18 IST | Podcast edit fixed — selecting submitted participant pre-fills fields and Update saves to existing record not new push
 v5.81 | Mar 02 2026 13:18 IST | Fixed broken HKDF in Cloudflare Worker encryptPayload — correct RFC 8291 key derivation so push notifications are actually delivered
+v5.82 | Mar 02 2026 15:21 IST | In-app toast customizer added — admin can set background color, text color, and duration (timed or until closed) from push panel
+v5.83 | Mar 02 2026 15:28 IST | Push notification and in-app toast now have separate title and message fields — toast falls back to push content if left blank
+v5.84 | Mar 02 2026 15:34 IST | Preview Toast button works; three send buttons: Send Push Only, Send Toast Only, Send Both
 -->
     <!-- ============================================================ -->
     <!-- 🟢 FIREBASE PRESENCE + 📣 PUSH NOTIFICATIONS SCRIPTS       -->
@@ -35308,6 +35362,12 @@ self.addEventListener('notificationclick', function(event) {
         const statusEl = document.getElementById('notifSendStatus');
         const btn = document.getElementById('sendNotifBtn');
 
+        // Toast-specific content (falls back to push title/body if left blank)
+        const toastTitleRaw = document.getElementById('toastTitle') ? document.getElementById('toastTitle').value.trim() : '';
+        const toastBodyRaw  = document.getElementById('toastBody')  ? document.getElementById('toastBody').value.trim()  : '';
+        const toastTitle = toastTitleRaw || title;
+        const toastBody  = toastBodyRaw  || body;
+
         if (!title || !body) {
             statusEl.style.display = 'block';
             statusEl.style.background = '#fff3cd';
@@ -35331,7 +35391,7 @@ self.addEventListener('notificationclick', function(event) {
 
             // ── STEP 1: Write to Firebase for in-app real-time toast ──
             const notifPayload = {
-                title, body,
+                title: toastTitle, body: toastBody,
                 sentAt: Date.now(),
                 id: Date.now().toString(),
                 targetClass: targetClass || null,
@@ -35731,15 +35791,34 @@ self.addEventListener('notificationclick', function(event) {
         if (!toast) { console.warn('[Toast] element not found!'); return; }
         document.getElementById('inAppNotifTitle').textContent = title;
         document.getElementById('inAppNotifBody').textContent  = body;
-        toast.style.cssText = 'display:block;position:fixed;top:0;left:0;right:0;z-index:999999;background:linear-gradient(135deg,#c44569,#6a1b9a);color:#fff;padding:16px 20px;box-shadow:0 4px 20px rgba(0,0,0,0.5)';
-        // Reset and start progress bar
+
+        // Load saved style from localStorage
+        const bg       = localStorage.getItem('toast_bg')       || 'linear-gradient(135deg,#c44569,#6a1b9a)';
+        const textCol  = localStorage.getItem('toast_text')     || '#ffffff';
+        const durMode  = localStorage.getItem('toast_durmode')  || 'manual';
+        const durSec   = parseInt(localStorage.getItem('toast_dursec') || '8', 10);
+
+        toast.style.cssText = 'display:block;position:fixed;top:0;left:0;right:0;z-index:999999;padding:16px 20px;box-shadow:0 4px 20px rgba(0,0,0,0.5);background:' + bg + ';color:' + textCol;
+        // Apply text color to children
+        const titleEl = document.getElementById('inAppNotifTitle');
+        const bodyEl  = document.getElementById('inAppNotifBody');
+        const dismissBtn = toast.querySelector('button');
+        if (titleEl)    titleEl.style.color = textCol;
+        if (bodyEl)     bodyEl.style.color  = textCol;
+        if (dismissBtn) { dismissBtn.style.color = textCol; dismissBtn.style.borderColor = textCol; }
+
+        // Progress bar
         const bar = document.getElementById('inAppNotifBar');
-        if (bar) { bar.style.transition = 'none'; bar.style.width = '100%'; }
-        setTimeout(() => { if (bar) { bar.style.transition = 'width 8s linear'; bar.style.width = '0%'; } }, 50);
-        // Auto dismiss after 8s
         clearTimeout(_inAppDismissTimer);
-        _inAppDismissTimer = setTimeout(dismissInAppToast, 8000);
-        console.log('[Toast] displayed successfully');
+        if (durMode === 'timed' && durSec > 0) {
+            if (bar) { bar.style.transition = 'none'; bar.style.width = '100%'; bar.style.display = 'block'; }
+            setTimeout(() => { if (bar) { bar.style.transition = 'width ' + durSec + 's linear'; bar.style.width = '0%'; } }, 50);
+            _inAppDismissTimer = setTimeout(dismissInAppToast, durSec * 1000);
+        } else {
+            // Manual — hide progress bar
+            if (bar) bar.style.display = 'none';
+        }
+        console.log('[Toast] displayed — bg:', bg, 'text:', textCol, 'mode:', durMode);
     }
 
     function dismissInAppToast() {
@@ -35747,6 +35826,70 @@ self.addEventListener('notificationclick', function(event) {
         const toast = document.getElementById('inAppNotifToast');
         if (toast) toast.style.display = 'none';
     }
+
+    // ── TOAST STYLE CUSTOMIZER FUNCTIONS ────────────────────────
+    function toggleToastDurationInput() {
+        const mode = document.getElementById('toastDurationMode');
+        const wrap = document.getElementById('toastDurationSecWrap');
+        if (!mode || !wrap) return;
+        wrap.style.display = mode.value === 'timed' ? 'block' : 'none';
+    }
+
+    function saveToastStyle() {
+        const bg      = document.getElementById('toastBgColorHex').value.trim()   || '#6a1b9a';
+        const text    = document.getElementById('toastTextColorHex').value.trim() || '#ffffff';
+        const durMode = document.getElementById('toastDurationMode').value;
+        const durSec  = document.getElementById('toastDurationSec').value || '8';
+        localStorage.setItem('toast_bg',      bg);
+        localStorage.setItem('toast_text',    text);
+        localStorage.setItem('toast_durmode', durMode);
+        localStorage.setItem('toast_dursec',  durSec);
+        const saved = document.getElementById('toastStyleSaved');
+        if (saved) { saved.style.display = 'block'; setTimeout(() => { saved.style.display = 'none'; }, 2500); }
+        updateToastPreview();
+    }
+
+    function updateToastPreview() {
+        const preview = document.getElementById('toastPreviewBox');
+        if (!preview) return;
+        const bg   = document.getElementById('toastBgColorHex')   ? document.getElementById('toastBgColorHex').value   : '#6a1b9a';
+        const text = document.getElementById('toastTextColorHex') ? document.getElementById('toastTextColorHex').value : '#ffffff';
+        preview.style.background = bg;
+        preview.style.color      = text;
+    }
+
+    // Sync color picker ↔ hex input
+    document.addEventListener('DOMContentLoaded', function() {
+        // Load saved values into UI
+        const savedBg   = localStorage.getItem('toast_bg')      || '#6a1b9a';
+        const savedText = localStorage.getItem('toast_text')    || '#ffffff';
+        const savedMode = localStorage.getItem('toast_durmode') || 'manual';
+        const savedSec  = localStorage.getItem('toast_dursec')  || '8';
+        const bgPicker   = document.getElementById('toastBgColor');
+        const bgHex      = document.getElementById('toastBgColorHex');
+        const textPicker = document.getElementById('toastTextColor');
+        const textHex    = document.getElementById('toastTextColorHex');
+        const modeEl     = document.getElementById('toastDurationMode');
+        const secEl      = document.getElementById('toastDurationSec');
+        if (bgPicker)   bgPicker.value   = savedBg.startsWith('#') ? savedBg : '#6a1b9a';
+        if (bgHex)      bgHex.value      = savedBg.startsWith('#') ? savedBg : '#6a1b9a';
+        if (textPicker) textPicker.value = savedText;
+        if (textHex)    textHex.value    = savedText;
+        if (modeEl)     modeEl.value     = savedMode;
+        if (secEl)      secEl.value      = savedSec;
+        toggleToastDurationInput();
+        updateToastPreview();
+
+        // Color picker → hex sync
+        if (bgPicker && bgHex) {
+            bgPicker.addEventListener('input', function() { bgHex.value = bgPicker.value; updateToastPreview(); });
+            bgHex.addEventListener('input',    function() { if (/^#[0-9a-fA-F]{6}$/.test(bgHex.value)) { bgPicker.value = bgHex.value; updateToastPreview(); } });
+        }
+        if (textPicker && textHex) {
+            textPicker.addEventListener('input', function() { textHex.value = textPicker.value; updateToastPreview(); });
+            textHex.addEventListener('input',    function() { if (/^#[0-9a-fA-F]{6}$/.test(textHex.value)) { textPicker.value = textHex.value; updateToastPreview(); } });
+        }
+    });
 
     // Start listening as soon as Firebase is ready
     (function startInAppNotifListener() {
@@ -36183,6 +36326,96 @@ export default {
     window.showSentDevices         = showSentDevices;
     window.showSeenDevices         = showSeenDevices;
     window.dismissInAppToast       = dismissInAppToast;
+    window.toggleToastDurationInput = toggleToastDurationInput;
+    window.saveToastStyle           = saveToastStyle;
+    window.updateToastPreview       = updateToastPreview;
+    window.previewInAppToast        = previewInAppToast;
+    window.sendPushOnly             = sendPushOnly;
+    window.sendToastOnly            = sendToastOnly;
+
+    function previewInAppToast() {
+        const t = (document.getElementById('toastTitle') && document.getElementById('toastTitle').value.trim()) || '🔔 Preview Title';
+        const b = (document.getElementById('toastBody')  && document.getElementById('toastBody').value.trim())  || 'This is how your toast will look!';
+        showInAppToast(t, b);
+    }
+
+    async function sendPushOnly() {
+        // Send only the OS push notification — no in-app toast
+        const title = document.getElementById('notifTitle').value.trim();
+        const body  = document.getElementById('notifBody').value.trim();
+        const statusEl = document.getElementById('notifSendStatus');
+        const btn = document.getElementById('sendPushOnlyBtn');
+        if (!title || !body) { statusEl.style.display='block'; statusEl.style.background='#fff3cd'; statusEl.style.color='#856404'; statusEl.textContent='⚠️ Please fill in Push Title and Message.'; return; }
+        const targetClass = (_notifTarget === 'class')  ? (document.getElementById('notifTargetClass').value  || '') : '';
+        const targetName  = (_notifTarget === 'person') ? (document.getElementById('notifTargetPerson').value || '') : '';
+        if (_notifTarget === 'class'  && !targetClass) { statusEl.style.display='block'; statusEl.style.background='#fff3cd'; statusEl.style.color='#856404'; statusEl.textContent='⚠️ Please select a class.'; return; }
+        if (_notifTarget === 'person' && !targetName)  { statusEl.style.display='block'; statusEl.style.background='#fff3cd'; statusEl.style.color='#856404'; statusEl.textContent='⚠️ Please select a person.'; return; }
+        btn.disabled = true; btn.textContent = '⏳ Sending…';
+        statusEl.style.display = 'none';
+        try {
+            const db = window.db || firebase.database();
+            const snap = await db.ref('fcmTokens').once('value');
+            const tokens = snap.val() || {};
+            const allEntries = Object.entries(tokens);
+            let tokenEntries = allEntries.filter(([,t]) => t.subscription);
+            if (tokenEntries.length === 0) {
+                const fallbackSub = localStorage.getItem('spurthi_push_sub_fallback');
+                if (fallbackSub) { const sid = getSessionId(); tokenEntries = [[sid, { subscription: fallbackSub, device: getDeviceType(), savedAt: Date.now() }]]; }
+            }
+            if (_notifTarget === 'class'  && targetClass) tokenEntries = tokenEntries.filter(([,t]) => (t.identity && t.identity.class) === targetClass);
+            if (_notifTarget === 'person' && targetName)  tokenEntries = tokenEntries.filter(([,t]) => (t.identity && t.identity.name)  === targetName);
+            const subscriptions = tokenEntries.map(([,t]) => { try { return typeof t.subscription === 'string' ? JSON.parse(t.subscription) : t.subscription; } catch(e) { return null; } }).filter(Boolean);
+            if (subscriptions.length === 0) { statusEl.style.display='block'; statusEl.style.background='#fff3cd'; statusEl.style.color='#856404'; statusEl.textContent='⚠️ 0 push-enabled devices found for this target.'; btn.disabled=false; btn.textContent='🔔 Send Push Only'; return; }
+            const resp = await fetch(FCM_WORKER_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ title, body, subscriptions, sids: tokenEntries.map(([sid]) => sid) }) });
+            if (resp.ok) {
+                const result = await resp.json();
+                statusEl.style.display='block'; statusEl.style.background='#d4edda'; statusEl.style.color='#155724';
+                statusEl.textContent = '✅ Push sent! ' + (result.sent||subscriptions.length) + '/' + subscriptions.length + ' delivered.';
+            } else {
+                const errText = await resp.text().catch(() => resp.status);
+                statusEl.style.display='block'; statusEl.style.background='#f8d7da'; statusEl.style.color='#721c24';
+                statusEl.textContent = '❌ Worker error ' + resp.status + ': ' + errText;
+            }
+        } catch(err) {
+            statusEl.style.display='block'; statusEl.style.background='#f8d7da'; statusEl.style.color='#721c24';
+            statusEl.textContent = '❌ Failed: ' + err.message;
+        }
+        btn.disabled = false; btn.textContent = '🔔 Send Push Only';
+        loadPushLogs();
+    }
+
+    async function sendToastOnly() {
+        // Send only the in-app toast via Firebase — no OS push
+        const pushTitle = document.getElementById('notifTitle').value.trim();
+        const pushBody  = document.getElementById('notifBody').value.trim();
+        const toastTitleRaw = document.getElementById('toastTitle') ? document.getElementById('toastTitle').value.trim() : '';
+        const toastBodyRaw  = document.getElementById('toastBody')  ? document.getElementById('toastBody').value.trim()  : '';
+        const toastTitle = toastTitleRaw || pushTitle;
+        const toastBody  = toastBodyRaw  || pushBody;
+        const statusEl = document.getElementById('notifSendStatus');
+        const btn = document.getElementById('sendToastOnlyBtn');
+        if (!toastTitle || !toastBody) { statusEl.style.display='block'; statusEl.style.background='#fff3cd'; statusEl.style.color='#856404'; statusEl.textContent='⚠️ Please fill in Toast Title and Message (or Push Title/Message as fallback).'; return; }
+        const targetClass = (_notifTarget === 'class')  ? (document.getElementById('notifTargetClass').value  || '') : '';
+        const targetName  = (_notifTarget === 'person') ? (document.getElementById('notifTargetPerson').value || '') : '';
+        if (_notifTarget === 'class'  && !targetClass) { statusEl.style.display='block'; statusEl.style.background='#fff3cd'; statusEl.style.color='#856404'; statusEl.textContent='⚠️ Please select a class.'; return; }
+        if (_notifTarget === 'person' && !targetName)  { statusEl.style.display='block'; statusEl.style.background='#fff3cd'; statusEl.style.color='#856404'; statusEl.textContent='⚠️ Please select a person.'; return; }
+        btn.disabled = true; btn.textContent = '⏳ Sending…';
+        statusEl.style.display = 'none';
+        try {
+            const db = window.db || firebase.database();
+            await db.ref('live_notifications/latest').set({
+                title: toastTitle, body: toastBody,
+                sentAt: Date.now(), id: Date.now().toString(),
+                targetClass: targetClass || null, targetName: targetName || null
+            });
+            statusEl.style.display='block'; statusEl.style.background='#d4edda'; statusEl.style.color='#155724';
+            statusEl.textContent = '✅ In-app toast sent to all online students!';
+        } catch(err) {
+            statusEl.style.display='block'; statusEl.style.background='#f8d7da'; statusEl.style.color='#721c24';
+            statusEl.textContent = '❌ Failed: ' + err.message;
+        }
+        btn.disabled = false; btn.textContent = '📢 Send Toast Only';
+    }
     window.requestNotifPermission  = requestNotifPermission;
     window.subscribeToPush          = subscribeToPush;
     window.dismissNotifBanner      = dismissNotifBanner;
@@ -36241,7 +36474,7 @@ export default {
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;" id="devTriggerVersion">
-                <strong>Version:</strong> 5.81 — Fixed broken HKDF in Cloudflare Worker encryptPayload — correct RFC 8291 key derivation so push notifications are actually delivered | <strong>Last Updated:</strong> Mar 02, 2026, 01:18 PM IST</p>
+                <strong>Version:</strong> 5.84 — Preview Toast button works; three send buttons: Send Push Only, Send Toast Only, Send Both | <strong>Last Updated:</strong> Mar 02, 2026, 03:34 PM IST</p>
             <!-- ============================================ -->
             
             <p style="color: #c44569; font-size: 0.85em; font-weight: 600; margin-bottom: 8px;">
