@@ -2874,6 +2874,7 @@
                 <button class="tab active" onclick="showTab('master')">Master List</button>
                 <button class="tab" onclick="showTab('events')">By Events</button>
                 <button class="tab super-admin-only" onclick="showTab('jurySetup')">Jury Setup</button>
+                <button class="tab super-admin-only" onclick="showTab('jurySummaryReport');loadJurySummaryReport()" id="jurySummaryReportTab">📊 Jury Summary</button>
                 <button class="tab super-admin-only" onclick="showTab('juryLiveMonitor');startLiveJuryMonitor()">📡 Jury Live Monitor</button>
                 <button class="tab" onclick="showTab('results')" id="resultsTab">Results</button>
                 <button class="tab super-admin-only" onclick="showTab('quizManagement')" id="quizManagementTab">📝 Quiz Management</button>
@@ -2892,7 +2893,7 @@
                 <button class="tab super-admin-only" onclick="showTab('thAdminPanel');loadThAdminPanel()" id="thAdminPanelTab">🎭 TH Admin</button>
                 <button class="tab super-admin-only" onclick="showTab('ytAdAdminPanel');loadYtAdAdminPanel()" id="ytAdAdminPanelTab">📺 YT Ad Admin</button>
                 <button class="tab" onclick="showTab('facultyAdminPanel');loadFacultyAdminPanel()" id="facultyAdminPanelTab">👩‍🏫 Faculty</button>
-                <button class="tab super-admin-only" onclick="showTab('pdfHandoutsAdmin')" id="pdfHandoutsAdminTab">📄 PDF Handouts</button>
+                <button class="tab super-admin-only" onclick="showTab('pdfHandoutsAdmin');loadRulesRegPdfAdmin()" id="pdfHandoutsAdminTab">📄 PDF Handouts</button>
                 <button class="tab super-admin-only" onclick="showTab('paymentApprovalAdmin');paLoadPending()" id="paymentApprovalAdminTab">💳 Payment Approval</button>
                 <button class="tab super-admin-only" onclick="showTab('eventScheduleAdmin');esLoadEvents()" id="eventScheduleAdminTab">📅 Event Schedule</button>
                 <button class="tab super-admin-only" onclick="showTab('allEventsOverview');loadAllEventsOverview()" id="allEventsOverviewTab">📊 All Events Overview</button>
@@ -3036,6 +3037,21 @@
                         <p style="color:#aaa;font-size:0.85em;text-align:center;padding:20px">Select Vlog event above to load score calculations.</p>
                     </div>
                 </div>
+                <!-- =============================================  -->
+                <!-- 📊 JURY SUMMARY REPORT PANEL                  -->
+                <!-- =============================================  -->
+                <div id="jurySummaryReport" class="form-section super-admin-only" style="margin-top:20px">
+                    <h2 style="color:#c44569;margin-bottom:6px">📊 Jury Summary Report</h2>
+                    <p style="color:#888;margin-bottom:18px;font-size:.9em">All events with jury names, passwords, and event date/time pulled from Jury Setup + Event Schedule. Use this as a quick reference sheet.</p>
+                    <div style="display:flex;gap:10px;align-items:center;margin-bottom:18px;flex-wrap:wrap">
+                        <button class="btn btn-info" onclick="loadJurySummaryReport()">🔄 Refresh</button>
+                        <button class="btn btn-small" onclick="printJurySummary()" style="background:#1b5e20;color:white;border:none">🖨️ Print / Save PDF</button>
+                    </div>
+                    <div id="jurySummaryContainer">
+                        <p style="color:#aaa;text-align:center;padding:30px">Loading…</p>
+                    </div>
+                </div>
+
                 <div id="juryLiveMonitor" class="form-section super-admin-only">
                     <h2 style="color:#c44569;margin-bottom:20px">📡 Live Jury Marks Monitor</h2>
                     <div class="form-group">
@@ -4080,6 +4096,29 @@
             <div id="pdfHandoutsAdmin" class="form-section super-admin-only" style="margin-top:20px">
                 <h2 style="color:#c44569;margin-bottom:6px">📄 PDF Handouts — Admin Panel</h2>
                 <p style="color:#888;margin-bottom:20px;font-size:.9em">Paste a Google Drive link for each PDF handout. Each PDF will appear as a download button on the public page for students.</p>
+
+                <!-- Rules & Regulations PDF — Google Drive link -->
+                <div style="background:#fff3e0;border-radius:12px;padding:18px 20px;border:2px solid #ffcc02;margin-bottom:20px">
+                    <h3 style="color:#e65100;margin:0 0 10px;font-size:0.97em">📋 Complete Rules &amp; Regulations PDF</h3>
+                    <p style="color:#777;font-size:.82em;margin:0 0 10px">This appears as the first button on the public Rules page. Paste a Google Drive share link below.</p>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+                        <div>
+                            <label style="font-size:.88em;font-weight:600;color:#bf360c;display:block;margin-bottom:5px">Button Label (name shown to students)</label>
+                            <input type="text" id="rulesRegPdfLabel" placeholder="e.g. Complete Rules & Regulations PDF"
+                                   style="width:100%;padding:9px 12px;border-radius:8px;border:2px solid #ffcc02;font-size:.92em;box-sizing:border-box">
+                        </div>
+                        <div>
+                            <label style="font-size:.88em;font-weight:600;color:#bf360c;display:block;margin-bottom:5px">Google Drive Share Link</label>
+                            <input type="text" id="rulesRegPdfInput" placeholder="https://drive.google.com/file/d/.../view?usp=sharing"
+                                   style="width:100%;padding:9px 12px;border-radius:8px;border:2px solid #ffcc02;font-size:.92em;box-sizing:border-box">
+                        </div>
+                    </div>
+                    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+                        <button class="btn btn-success" onclick="saveRulesRegPdfLink()" style="background:#e65100;border-color:#e65100;white-space:nowrap">💾 Save</button>
+                        <span id="rulesRegPdfMsg" style="font-size:.88em;display:none"></span>
+                    </div>
+                    <div id="rulesRegPdfPreview" style="margin-top:10px;font-size:.82em;color:#555"></div>
+                </div>
 
                 <!-- Add handout form -->
                 <div style="background:#f3e5f5;border-radius:12px;padding:22px;border:2px solid #ce93d8;margin-bottom:24px;">
@@ -16918,7 +16957,7 @@
             // Clear only direct-child form-sections of adminContentBox (NOT scavenger inner panels)
             document.querySelectorAll('#adminContentBox > .form-section').forEach(s => s.classList.remove('active'));
             // Also hide the 3 extra panels that live outside adminContentBox
-            ['pdfHandoutsAdmin','paymentApprovalAdmin','eventScheduleAdmin','liveUsersPanel','pushNotifPanel'].forEach(id => {
+            ['pdfHandoutsAdmin','paymentApprovalAdmin','eventScheduleAdmin','liveUsersPanel','pushNotifPanel','jurySummaryReport'].forEach(id => {
                 const el = document.getElementById(id);
                 if (el) el.classList.remove('active');
             });
@@ -17570,6 +17609,186 @@
                 showSetupMessage('Error: '+err.message, 'error');
             });
         }
+
+        // ── Jury Summary Report ──────────────────────────────────────
+        // ── Jury Summary Report ──────────────────────────────────────────
+        async function loadJurySummaryReport() {
+            const container = document.getElementById('jurySummaryContainer');
+            if (!container) return;
+            container.innerHTML = '<p style="color:#aaa;text-align:center;padding:24px">Loading jury data and event schedule…</p>';
+            try {
+                const [jurySnap, schedSnap] = await Promise.all([
+                    db.ref('jurySetup').once('value'),
+                    db.ref('eventSchedule').once('value')
+                ]);
+
+                const juryData     = jurySnap.exists()  ? jurySnap.val()  : {};
+                const scheduleData = schedSnap.exists() ? schedSnap.val() : {};
+
+                const schedMap = {};
+                Object.values(scheduleData).forEach(ev => {
+                    if (ev.name) schedMap[ev.name.toLowerCase().trim()] = ev;
+                });
+
+                const events = Object.keys(juryData).sort();
+                if (!events.length) {
+                    container.innerHTML = '<p style="color:#999;text-align:center;padding:30px">No jury setups found. Configure jury in Jury Setup tab first.</p>';
+                    return;
+                }
+
+                // Helper: encode event name safely for HTML attr
+                function safeEvt(n) { return encodeURIComponent(n); }
+
+                // Helper: editable cell — shows value + ✏️ pencil; click pencil → inline input + 💾
+                function editCell(eventName, field, value, bgColor, textColor) {
+                    const safeVal  = (value || '').replace(/'/g, '&#39;').replace(/"/g, '&quot;');
+                    const safeEvtEnc = safeEvt(eventName);
+                    const fieldId  = 'jsr_' + safeEvtEnc + '_' + field;
+                    const displayId = fieldId + '_display';
+                    const editId    = fieldId + '_edit';
+                    const inputId   = fieldId + '_input';
+                    const msgId     = fieldId + '_msg';
+                    const isPwd     = field.includes('Password');
+                    return `<div id="${displayId}" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+                                <span id="${fieldId}_val" style="${isPwd ? 'font-family:monospace;background:'+bgColor+';color:'+textColor+';padding:2px 8px;border-radius:5px;font-size:.88em' : 'font-weight:700;color:#333'}">${value || '—'}</span>
+                                <button onclick="jsrStartEdit('${safeEvtEnc}','${field}')" title="Edit" style="background:none;border:none;cursor:pointer;color:#aaa;font-size:.85em;padding:1px 4px;border-radius:4px;line-height:1" onmouseover="this.style.color='#6a1b9a'" onmouseout="this.style.color='#aaa'">✏️</button>
+                            </div>
+                            <div id="${editId}" style="display:none;align-items:center;gap:5px;flex-wrap:nowrap">
+                                <input id="${inputId}" type="text" value="${safeVal}"
+                                    style="padding:4px 8px;border:2px solid #ce93d8;border-radius:6px;font-size:.88em;width:130px;${isPwd?'font-family:monospace':''}"
+                                    onkeydown="if(event.key==='Enter')jsrSave('${safeEvtEnc}','${field}');if(event.key==='Escape')jsrCancelEdit('${safeEvtEnc}','${field}')">
+                                <button onclick="jsrSave('${safeEvtEnc}','${field}')" style="background:#6a1b9a;color:white;border:none;border-radius:6px;padding:4px 9px;font-size:.8em;cursor:pointer;white-space:nowrap">💾 Save</button>
+                                <button onclick="jsrCancelEdit('${safeEvtEnc}','${field}')" style="background:#eee;color:#555;border:none;border-radius:6px;padding:4px 7px;font-size:.8em;cursor:pointer">✕</button>
+                                <span id="${msgId}" style="font-size:.78em;display:none"></span>
+                            </div>`;
+                }
+
+                const rows = events.map((eventName, i) => {
+                    const setup = juryData[eventName] || {};
+                    const sch   = schedMap[eventName.toLowerCase().trim()] || {};
+                    const j1name = setup.jury1Name     || '';
+                    const j1pwd  = setup.jury1Password || '';
+                    const j2name = setup.jury2Name     || '';
+                    const j2pwd  = setup.jury2Password || '';
+                    const startDate = sch.startDate || '—';
+                    const startTime = sch.startTime || '—';
+                    const endDate   = sch.endDate   || '—';
+                    const endTime   = sch.endTime   || '—';
+                    const stageBadge = sch.stageType
+                        ? `<span style="background:${sch.stageType==='On stage'?'#e3f2fd':'#fff3e0'};color:${sch.stageType==='On stage'?'#1565c0':'#e65100'};border-radius:8px;padding:2px 8px;font-size:.75em;font-weight:700;white-space:nowrap;margin-left:6px">${sch.stageType}</span>`
+                        : '';
+                    const rowBg = i % 2 === 0 ? '#fafafa' : 'white';
+                    return `<tr style="background:${rowBg};border-bottom:1px solid #eee">
+                        <td style="padding:10px 12px;font-weight:700;color:#6a1b9a;white-space:nowrap;vertical-align:top">${eventName}${stageBadge}</td>
+                        <td style="padding:10px 12px;vertical-align:top;min-width:170px">
+                            ${editCell(eventName, 'jury1Name',     j1name, '#f3e5f5', '#6a1b9a')}
+                            <div style="margin-top:5px">
+                            ${editCell(eventName, 'jury1Password', j1pwd,  '#f3e5f5', '#6a1b9a')}
+                            </div>
+                        </td>
+                        <td style="padding:10px 12px;vertical-align:top;min-width:170px">
+                            ${editCell(eventName, 'jury2Name',     j2name, '#e8f5e9', '#1b5e20')}
+                            <div style="margin-top:5px">
+                            ${editCell(eventName, 'jury2Password', j2pwd,  '#e8f5e9', '#1b5e20')}
+                            </div>
+                        </td>
+                        <td style="padding:10px 12px;font-size:.88em;color:#0d47a1;text-align:center;vertical-align:top">
+                            ${startDate !== '—' ? '<div style="font-weight:700">'+startDate+'</div>' : '<span style="color:#bbb">—</span>'}
+                            ${startTime !== '—' ? '<div style="color:#1565c0;font-size:.9em">'+startTime+'</div>' : ''}
+                        </td>
+                        <td style="padding:10px 12px;font-size:.88em;color:#880e4f;text-align:center;vertical-align:top">
+                            ${endDate !== '—' ? '<div style="font-weight:700">'+endDate+'</div>' : '<span style="color:#bbb">—</span>'}
+                            ${endTime !== '—' ? '<div style="color:#ad1457;font-size:.9em">'+endTime+'</div>' : ''}
+                        </td>
+                    </tr>`;
+                }).join('');
+
+                container.innerHTML = `
+                <div style="overflow-x:auto;border-radius:12px;border:2px solid #ce93d8;box-shadow:0 2px 12px rgba(0,0,0,0.07)">
+                <table id="jurySummaryTable" style="width:100%;border-collapse:collapse;font-size:.88em;background:white">
+                    <thead>
+                        <tr style="background:linear-gradient(135deg,#6a1b9a,#c44569);color:white">
+                            <th style="padding:11px 14px;text-align:left;font-size:.85em">Event</th>
+                            <th style="padding:11px 14px;text-align:left;font-size:.85em">Jury 1 — Name &amp; Password</th>
+                            <th style="padding:11px 14px;text-align:left;font-size:.85em">Jury 2 — Name &amp; Password</th>
+                            <th style="padding:11px 14px;text-align:center;font-size:.85em">Start Date / Time</th>
+                            <th style="padding:11px 14px;text-align:center;font-size:.85em">End Date / Time</th>
+                        </tr>
+                    </thead>
+                    <tbody>${rows}</tbody>
+                </table>
+                </div>
+                <p style="color:#aaa;font-size:.78em;margin-top:10px">✏️ Click the pencil icon next to any name or password to edit inline. Changes save directly to Firebase — Jury Setup tab reflects the same values.</p>`;
+
+            } catch(err) {
+                container.innerHTML = '<p style="color:#c62828;text-align:center;padding:20px">❌ Error: ' + err.message + '</p>';
+            }
+        }
+
+        // ── Inline edit helpers for Jury Summary ──
+        function jsrStartEdit(safeEvtEnc, field) {
+            const fieldId   = 'jsr_' + safeEvtEnc + '_' + field;
+            const displayEl = document.getElementById(fieldId + '_display');
+            const editEl    = document.getElementById(fieldId + '_edit');
+            const inputEl   = document.getElementById(fieldId + '_input');
+            if (displayEl) displayEl.style.display = 'none';
+            if (editEl)    { editEl.style.display = 'flex'; editEl.style.alignItems = 'center'; }
+            if (inputEl)   { inputEl.focus(); inputEl.select(); }
+        }
+        function jsrCancelEdit(safeEvtEnc, field) {
+            const fieldId   = 'jsr_' + safeEvtEnc + '_' + field;
+            document.getElementById(fieldId + '_display').style.display = 'flex';
+            document.getElementById(fieldId + '_display').style.alignItems = 'center';
+            document.getElementById(fieldId + '_edit').style.display    = 'none';
+        }
+        async function jsrSave(safeEvtEnc, field) {
+            const eventName = decodeURIComponent(safeEvtEnc);
+            const fieldId   = 'jsr_' + safeEvtEnc + '_' + field;
+            const inputEl   = document.getElementById(fieldId + '_input');
+            const msgEl     = document.getElementById(fieldId + '_msg');
+            const valEl     = document.getElementById(fieldId + '_val');
+            if (!inputEl) return;
+            const newVal = inputEl.value.trim();
+            if (!newVal) { alert('Value cannot be empty.'); inputEl.focus(); return; }
+            // Show saving
+            if (msgEl) { msgEl.textContent = '…'; msgEl.style.color = '#888'; msgEl.style.display = 'inline'; }
+            try {
+                await db.ref('jurySetup/' + eventName + '/' + field).set(newVal);
+                // Update display value
+                if (valEl)  valEl.textContent = newVal;
+                if (msgEl) { msgEl.textContent = '✅'; msgEl.style.color = '#1b5e20'; }
+                setTimeout(() => jsrCancelEdit(safeEvtEnc, field), 600);
+            } catch(e) {
+                if (msgEl) { msgEl.textContent = '❌ ' + e.message; msgEl.style.color = '#c62828'; msgEl.style.display = 'inline'; }
+            }
+        }
+
+        function printJurySummary() {
+            const table = document.getElementById('jurySummaryTable');
+            if (!table) { alert('Load the report first.'); return; }
+            // Clone table — strip edit controls for clean print
+            const clone = table.cloneNode(true);
+            clone.querySelectorAll('[id*="_edit"]').forEach(el => el.remove());
+            clone.querySelectorAll('button').forEach(el => el.remove());
+            const w = window.open('', '_blank');
+            w.document.write('<html><head><title>Jury Summary — Spurthi Youth Fest 2026</title>');
+            w.document.write('<style>body{font-family:Arial,sans-serif;padding:20px}table{width:100%;border-collapse:collapse;font-size:13px}th{background:#6a1b9a;color:white;padding:9px 12px;text-align:left}td{padding:9px 12px;border-bottom:1px solid #eee}tr:nth-child(even){background:#f9f9f9}h1{color:#c44569}</style>');
+            w.document.write('</head><body>');
+            w.document.write('<h1>📊 Jury Summary Report — Spurthi Youth Fest 2026</h1>');
+            w.document.write('<p style="color:#888;font-size:12px">Generated: ' + new Date().toLocaleString('en-IN') + '</p>');
+            w.document.write(clone.outerHTML);
+            w.document.write('<br><p style="color:#aaa;font-size:11px">Passwords are jury login passwords. Keep confidential.</p>');
+            w.document.write('</body></html>');
+            w.document.close();
+            w.print();
+        }
+
+        window.loadJurySummaryReport = loadJurySummaryReport;
+        window.printJurySummary      = printJurySummary;
+        window.jsrStartEdit          = jsrStartEdit;
+        window.jsrCancelEdit         = jsrCancelEdit;
+        window.jsrSave               = jsrSave;
+        // ── End Jury Summary Report ──────────────────────────────────────
 
         function publishResults() {
             const event = document.getElementById('resultsEventSelect').value;
@@ -33198,6 +33417,43 @@ Proceed?`)) return;
         }
     }
 
+    // ── Rules & Regulations PDF link admin ──
+    async function saveRulesRegPdfLink() {
+        const raw   = (document.getElementById('rulesRegPdfInput')?.value || '').trim();
+        const label = (document.getElementById('rulesRegPdfLabel')?.value || '').trim();
+        const msg   = document.getElementById('rulesRegPdfMsg');
+        if (!raw) { alert('Please paste a Google Drive link.'); return; }
+        const url = pdfConvertDriveLink(raw);
+        if (!url) { alert('Invalid Google Drive link. Must contain /file/d/ or ?id='); return; }
+        try {
+            await getDb().ref('siteSettings/rulesRegPdf').set({ url, label: label || 'Complete Rules & Regulations PDF' });
+            // Keep legacy key in sync for backwards compat
+            await getDb().ref('siteSettings/rulesRegPdfLink').set(url);
+            if (msg) { msg.textContent = '✅ Saved!'; msg.style.color = '#1b5e20'; msg.style.display = 'inline'; setTimeout(()=>{ if(msg) msg.style.display='none'; }, 3000); }
+            document.getElementById('rulesRegPdfPreview').innerHTML = '<a href="' + url + '" target="_blank" style="color:#0d47a1;font-weight:700">🔗 Preview saved link</a>';
+            initPublicPdfHandouts();
+        } catch(e) {
+            if (msg) { msg.textContent = '❌ Error: ' + e.message; msg.style.color = '#b71c1c'; msg.style.display = 'inline'; }
+        }
+    }
+    async function loadRulesRegPdfAdmin() {
+        try {
+            const snap = await getDb().ref('siteSettings/rulesRegPdf').once('value');
+            const data = snap.val();
+            if (data && data.url) {
+                document.getElementById('rulesRegPdfInput').value = data.url;
+                if (data.label) document.getElementById('rulesRegPdfLabel').value = data.label;
+                document.getElementById('rulesRegPdfPreview').innerHTML = '<a href="' + data.url + '" target="_blank" style="color:#0d47a1;font-weight:700">🔗 Current link (click to verify)</a>';
+            } else {
+                // fallback: check legacy key
+                const legSnap = await getDb().ref('siteSettings/rulesRegPdfLink').once('value');
+                const url = legSnap.val();
+                if (url) document.getElementById('rulesRegPdfInput').value = url;
+            }
+        } catch(e) {}
+    }
+    window.saveRulesRegPdfLink = saveRulesRegPdfLink;
+
     async function pdfLoadHandouts() {
         const wrap = document.getElementById('pdfHandoutsList');
         if (!wrap) return;
@@ -33253,29 +33509,38 @@ Proceed?`)) return;
         const wrap = document.getElementById('publicPdfHandouts');
         if (!wrap) return;
 
-        const rulesBtn = `<a href="rules.pdf" target="_blank" style="display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,#c44569 0%,#6a1b9a 100%);color:white;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;">📄 Complete Rules &amp; Regulations PDF (Coming Soon)</a>`;
-
         try {
-            // Use REST API directly — no need to wait for Firebase SDK init
-            const res = await fetch('https://spurthi-youthfest-2026-default-rtdb.asia-southeast1.firebasedatabase.app/pdfHandouts.json');
-            const val = await res.json();
-            console.log('[PDF] Firebase REST result:', JSON.stringify(val));
-            if (!val || typeof val !== 'object') {
-                wrap.innerHTML = rulesBtn + '<p style="color:#c00;font-size:12px;margin-top:8px">⚠️ No PDFs found in database (val=' + JSON.stringify(val) + ')</p>';
-                return;
+            // Fetch rules PDF link + event handouts in parallel
+            const [rulesRes, handoutsRes] = await Promise.all([
+                fetch('https://spurthi-youthfest-2026-default-rtdb.asia-southeast1.firebasedatabase.app/siteSettings/rulesRegPdf.json'),
+                fetch('https://spurthi-youthfest-2026-default-rtdb.asia-southeast1.firebasedatabase.app/pdfHandouts.json')
+            ]);
+            const rulesData = await rulesRes.json();
+            const val       = await handoutsRes.json();
+
+            // Rules & Regulations button — label + link both from Firebase
+            let rulesBtn;
+            const rulesUrl   = rulesData && rulesData.url   ? rulesData.url   : null;
+            const rulesLabel = rulesData && rulesData.label ? rulesData.label : 'Complete Rules & Regulations PDF';
+            if (rulesUrl && rulesUrl.includes('drive.google.com')) {
+                rulesBtn = `<a href="${rulesUrl}" target="_blank" style="display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,#c44569 0%,#6a1b9a 100%);color:white;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;">📄 ${rulesLabel}</a>`;
+            } else {
+                rulesBtn = `<span style="display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,#aaa 0%,#888 100%);color:white;padding:12px 24px;border-radius:8px;font-weight:600;cursor:default;opacity:0.7">📄 ${rulesLabel} (Coming Soon)</span>`;
             }
-            const items = Object.values(val).sort((a,b) => new Date(a.uploadedAt) - new Date(b.uploadedAt));
-            const colors = ['#0d47a1,#1976d2','#1b5e20,#388e3c','#880e4f,#c2185b','#e65100,#f57c00','#4a148c,#6a1b9a','#006064,#00838f'];
-            const dynamicBtns = items.map((it,i) => {
-                const c = colors[i % colors.length];
-                const rawUrl = it.url || '';
-                // Open Cloudinary URL directly — Google Docs viewer cannot fetch Cloudinary raw files
-                const url = rawUrl;
-                return `<a href="${url}" target="_blank" style="display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,${c} 100%);color:white;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;">📄 ${it.label}</a>`;
-            }).join('');
+
+            // Event handout buttons
+            let dynamicBtns = '';
+            if (val && typeof val === 'object') {
+                const items = Object.values(val).sort((a,b) => new Date(a.uploadedAt) - new Date(b.uploadedAt));
+                const colors = ['#0d47a1,#1976d2','#1b5e20,#388e3c','#880e4f,#c2185b','#e65100,#f57c00','#4a148c,#6a1b9a','#006064,#00838f'];
+                dynamicBtns = items.map((it,i) => {
+                    const c = colors[i % colors.length];
+                    return `<a href="${it.url||'#'}" target="_blank" style="display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,${c} 100%);color:white;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;">📄 ${it.label}</a>`;
+                }).join('');
+            }
             wrap.innerHTML = rulesBtn + dynamicBtns;
         } catch(e) {
-            wrap.innerHTML = rulesBtn;
+            wrap.innerHTML = `<span style="display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,#aaa,#888);color:white;padding:12px 24px;border-radius:8px;font-weight:600;opacity:0.7">📄 Complete Rules &amp; Regulations PDF (Coming Soon)</span>`;
         }
     }
 
@@ -33893,10 +34158,7 @@ Proceed?`)) return;
             <!-- ============================================ -->
             <!-- Dynamic PDF handouts loaded from Firebase by initPublicPdfHandouts() -->
             <div id="publicPdfHandouts" style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-bottom:20px;">
-                <a href="rules.pdf" target="_blank" style="display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,#c44569 0%,#6a1b9a 100%);color:white;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;">
-                    📄 Complete Rules &amp; Regulations PDF (Coming Soon)
-                </a>
-                <!-- Faculty-uploaded handouts appear here automatically after admin uploads them -->
+                <!-- Rules PDF + Faculty-uploaded handouts loaded from Firebase by initPublicPdfHandouts() -->
             </div>
             <p style="font-size:.82em;color:#888;margin-top:-10px;margin-bottom:10px;">
                 📌 <em>PDFs are uploaded by respective event in-charges. Contact your faculty for the latest handout.</em>
@@ -34472,6 +34734,9 @@ v5.89 | Mar 02 2026 16:04 IST | Fixed white box above Push Notifications heading
 v5.90 | Mar 02 2026 16:04 IST | Fixed white box on Live Now and Notifications tabs — adminContentBox now transparent on these tabs like Leaderboard
 v5.91 | Mar 02 2026 16:42 IST | MCQ quiz questions now support optional Explanation field — saved, loaded on edit, shown to students after submission
 v5.92 | Mar 03 2026 12:40 IST | Notification One Person: live search by name | Podcast: filter+search+sort by class | auto-refresh paused while editing input
+v5.93 | Mar 03 2026 13:00 IST | Jury Summary Report tab | Rules & Regulations PDF from Google Drive via Firebase siteSettings/rulesRegPdfLink
+v5.94 | Mar 03 2026 13:15 IST | Rules & Regulations PDF button label also editable from admin panel
+v5.95 | Mar 03 2026 13:30 IST | Jury Summary Report: inline edit jury name + password, saves to Firebase jurySetup, syncs with Jury Setup form
 -->
     <!-- ============================================================ -->
     <!-- 🟢 FIREBASE PRESENCE + 📣 PUSH NOTIFICATIONS SCRIPTS       -->
@@ -36747,7 +37012,7 @@ export default {
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;" id="devTriggerVersion">
-                <strong>Version:</strong> 5.92 — Notification One Person: live search by name | Podcast: filter/search/sort by class | Podcast: auto-refresh paused while editing sub-topic input | <strong>Last Updated:</strong> Mar 03, 2026, 12:40 PM IST</p>
+                <strong>Version:</strong> 5.95 — Jury Summary Report: inline edit jury name &amp; password — saves directly to Firebase, syncs with Jury Setup | <strong>Last Updated:</strong> Mar 03, 2026, 01:30 PM IST</p>
             <!-- ============================================ -->
             
             <p style="color: #c44569; font-size: 0.85em; font-weight: 600; margin-bottom: 8px;">
