@@ -6676,9 +6676,14 @@
                 <!-- Person selector (hidden by default) -->
                 <div id="notifPersonRow" style="display:none;margin-bottom:14px">
                     <label style="color:#444;font-weight:700;font-size:13px">Person</label>
-                    <select id="notifTargetPerson" style="width:100%;padding:10px 14px;border:2px solid #6a1b9a;border-radius:8px;font-size:14px;margin-top:4px">
-                        <option value="">— Loading devices… —</option>
-                    </select>
+                    <div style="position:relative;margin-top:4px">
+                        <input type="text" id="notifPersonSearch" placeholder="Type name to search..." autocomplete="off"
+                            oninput="filterNotifPersonList(this.value)"
+                            style="width:100%;padding:10px 14px;border:2px solid #6a1b9a;border-radius:8px;font-size:14px;box-sizing:border-box">
+                        <div id="notifPersonDropdown" style="display:none;position:absolute;top:100%;left:0;right:0;background:#fff;border:2px solid #6a1b9a;border-top:none;border-radius:0 0 8px 8px;max-height:200px;overflow-y:auto;z-index:9999;box-shadow:0 6px 16px rgba(0,0,0,0.15)"></div>
+                    </div>
+                    <input type="hidden" id="notifTargetPerson" value="">
+                    <div id="notifPersonSelected" style="display:none;margin-top:6px;background:#e8d5f5;color:#6a1b9a;padding:6px 12px;border-radius:6px;font-size:13px;font-weight:700"></div>
                 </div>
 
                 <div class="form-group" style="margin-bottom:14px">
@@ -13625,6 +13630,8 @@
         function startPodAutoRefresh() {
             stopPodAutoRefresh();
             _podAutoRefreshTimer = setInterval(() => {
+                // Skip refresh if faculty is actively typing in any input (Fix 3)
+                if (window._podInputFocused) return;
                 // Auto-refresh Chandan/Hemavathi panel
                 if (document.getElementById('chandanPodcastPanel') && document.getElementById('chandanPodcastPanel').style.display !== 'none') {
                     loadChandanPodcastPanel(true);
@@ -13821,7 +13828,26 @@
                     </div>
                 </div>`;
 
-                listEl.innerHTML = overviewHtml + '<div style="margin-top:8px;margin-bottom:8px;font-weight:700;color:#555;font-size:0.88em">🎙️ Individual Cards — Sub-topic & Approval</div>' + cards.map((item, i) => {
+                // Sort by class then name (Fix 2)
+                cards.sort((a, b) => {
+                    const ca = (a.enr && (a.enr.classYear||a.enr.class)) || (a.sub && a.sub.classYear) || '';
+                    const cb = (b.enr && (b.enr.classYear||b.enr.class)) || (b.sub && b.sub.classYear) || '';
+                    if (ca !== cb) return ca.localeCompare(cb);
+                    const na = (a.enr && (a.enr.memberName||a.enr.name)) || '';
+                    const nb = (b.enr && (b.enr.memberName||b.enr.name)) || '';
+                    return na.localeCompare(nb);
+                });
+                const podClassSet = [...new Set(cards.map(c => (c.enr && (c.enr.classYear||c.enr.class)) || (c.sub && c.sub.classYear) || '').filter(Boolean))].sort();
+                const filterBarHtml = '<div id="podFilterBar" style="background:#f0f4ff;border-radius:10px;padding:10px 14px;margin-bottom:12px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;border:1.5px solid #c5cae9">' +
+                    '<input type="text" id="podSearchInput" placeholder="Search by name..." oninput="podApplyFilters()" onfocus="window._podInputFocused=true" onblur="window._podInputFocused=false" style="flex:1;min-width:150px;padding:7px 12px;border:1.5px solid #9fa8da;border-radius:7px;font-size:13px">' +
+                    '<select id="podClassFilter" onchange="podApplyFilters()" style="padding:7px 10px;border:1.5px solid #9fa8da;border-radius:7px;font-size:13px;background:#fff"><option value="">All Classes</option>' +
+                    podClassSet.map(c => '<option value="' + c + '">' + c + '</option>').join('') + '</select>' +
+                    '<select id="podStatusFilter" onchange="podApplyFilters()" style="padding:7px 10px;border:1.5px solid #9fa8da;border-radius:7px;font-size:13px;background:#fff">' +
+                    '<option value="">All Statuses</option><option value="approved">Approved</option><option value="rejected">Rejected</option>' +
+                    '<option value="pending">Pending</option><option value="submitted">Link Submitted</option><option value="awaiting">Awaiting Link</option></select>' +
+                    '<span id="podFilterCount" style="color:#666;font-size:12px;font-weight:700;white-space:nowrap"></span></div>';
+
+                const cardsHtml = cards.map((item, i) => {
                     const enr = item.enr || {};
                     const sub = item.sub || {};
                     const entryId    = sub.id || '';
@@ -13848,10 +13874,10 @@
                         ? `<span id="podStDisplay_${entryId}_${enrollKey}" style="background:#e3f2fd;color:#1565c0;border-radius:7px;padding:4px 10px;font-size:0.82em;font-weight:700;white-space:nowrap">🔖 ${subtopic}</span>
                            <button onclick="podToggleSubtopicEdit('${entryId}','${enrollKey}')" style="background:#7b1fa2;color:white;border:none;border-radius:7px;padding:4px 10px;font-size:0.75em;font-weight:700;cursor:pointer">✏️ Edit</button>
                            <span id="podStEdit_${entryId}_${enrollKey}" style="display:none;display:none;align-items:center;gap:6px">
-                               <input type="text" id="podSubtopic_${entryId}_${enrollKey}" value="${subtopic}" placeholder="Enter sub-topic…" style="flex:1;min-width:100px;padding:4px 8px;border:1.5px solid #ce93d8;border-radius:7px;font-size:0.82em;outline:none">
+                               <input type="text" id="podSubtopic_${entryId}_${enrollKey}" value="${subtopic}" placeholder="Enter sub-topic..." style="flex:1;min-width:100px;padding:4px 8px;border:1.5px solid #ce93d8;border-radius:7px;font-size:0.82em;outline:none" onfocus="window._podInputFocused=true" onblur="window._podInputFocused=false">
                                <button id="podSubtopicBtn_${entryId}_${enrollKey}" onclick="savePodSubtopic('${entryId}','${enrollKey}')" style="background:#7b1fa2;color:white;border:none;border-radius:7px;padding:4px 10px;font-size:0.75em;font-weight:700;cursor:pointer">💾 Save</button>
                            </span>`
-                        : `<input type="text" id="podSubtopic_${entryId}_${enrollKey}" value="" placeholder="Enter sub-topic…" style="flex:1;min-width:120px;padding:4px 8px;border:1.5px solid #ce93d8;border-radius:7px;font-size:0.82em;outline:none">
+                        : `<input type="text" id="podSubtopic_${entryId}_${enrollKey}" value="" placeholder="Enter sub-topic..." style="flex:1;min-width:120px;padding:4px 8px;border:1.5px solid #ce93d8;border-radius:7px;font-size:0.82em;outline:none" onfocus="window._podInputFocused=true" onblur="window._podInputFocused=false">
                            <button id="podSubtopicBtn_${entryId}_${enrollKey}" onclick="savePodSubtopic('${entryId}','${enrollKey}')" style="background:#7b1fa2;color:white;border:none;border-radius:7px;padding:4px 10px;font-size:0.75em;font-weight:700;cursor:pointer">💾 Save</button>`;
 
                     // Approve/Reject — ALWAYS shown (not gated by link submission)
@@ -13867,7 +13893,9 @@
                             : '<span style="color:#aaa;font-size:0.75em;font-style:italic">⏳ No link yet</span>'}
                     </div>`;
 
-                    return `<div style="background:white;border-radius:12px;border:2px solid ${borderColor};padding:14px 16px;box-shadow:0 2px 8px rgba(0,0,0,0.05)">
+                    const rawApprovalStr = rawApproval;
+                    const hasLinkStr = String(hasSubmitted);
+                    return `<div class="podCard" data-name="${name.toLowerCase()}" data-class="${cls}" data-status="${rawApprovalStr}" data-haslink="${hasLinkStr}" style="display:block"><div style="background:white;border-radius:12px;border:2px solid ${borderColor};padding:14px 16px;box-shadow:0 2px 8px rgba(0,0,0,0.05)">
 
                         <!-- Header row -->
                         <div style="display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:10px">
@@ -13903,11 +13931,36 @@
                         </div>` : ''}
 
                         <div id="chandanPodMsg_${entryId}_${enrollKey}" style="display:none;margin-top:6px;font-size:0.8em;font-weight:600;padding:5px 10px;border-radius:6px"></div>
-                    </div>`;
+                    </div></div>`;
                 }).join('');
 
+                listEl.innerHTML = overviewHtml +
+                    '<div style="margin-top:8px;margin-bottom:4px;font-weight:700;color:#555;font-size:0.88em">🎤️ Individual Cards — Sub-topic & Approval</div>' +
+                    filterBarHtml +
+                    '<div id="podCardsContainer" style="display:flex;flex-direction:column;gap:12px">' + cardsHtml + '</div>';
+
+                window.podApplyFilters = function() {
+                    var search = (document.getElementById('podSearchInput') ? document.getElementById('podSearchInput').value : '').toLowerCase().trim();
+                    var cls2   = (document.getElementById('podClassFilter')  ? document.getElementById('podClassFilter').value  : '').toLowerCase();
+                    var st2    = (document.getElementById('podStatusFilter') ? document.getElementById('podStatusFilter').value : '').toLowerCase();
+                    var visible = 0, total = cards.length;
+                    document.querySelectorAll('#podCardsContainer .podCard').forEach(function(card) {
+                        var nm = !search || card.dataset.name.includes(search);
+                        var cm = !cls2   || card.dataset.class.toLowerCase() === cls2;
+                        var sm = true;
+                        if (st2 === 'submitted')     sm = card.dataset.haslink === 'true';
+                        else if (st2 === 'awaiting') sm = card.dataset.haslink === 'false';
+                        else if (st2)               sm = card.dataset.status === st2;
+                        card.style.display = (nm && cm && sm) ? 'block' : 'none';
+                        if (nm && cm && sm) visible++;
+                    });
+                    var ce = document.getElementById('podFilterCount');
+                    if (ce) ce.textContent = 'Showing ' + visible + ' of ' + total;
+                };
+                window.podApplyFilters();
+
             } catch(err) {
-                listEl.innerHTML = `<div style="padding:20px;color:#c62828">❌ Error: \${err.message}</div>`;
+                listEl.innerHTML = '<div style="padding:20px;color:#c62828">❌ Error: ' + err.message + '</div>';
             }
         }
 
@@ -34418,6 +34471,7 @@ v5.88 | Mar 02 2026 16:04 IST | Fixed white box above push panel — zoom animat
 v5.89 | Mar 02 2026 16:04 IST | Fixed white box above Push Notifications heading — missing closing div in compose card
 v5.90 | Mar 02 2026 16:04 IST | Fixed white box on Live Now and Notifications tabs — adminContentBox now transparent on these tabs like Leaderboard
 v5.91 | Mar 02 2026 16:42 IST | MCQ quiz questions now support optional Explanation field — saved, loaded on edit, shown to students after submission
+v5.92 | Mar 03 2026 12:40 IST | Notification One Person: live search by name | Podcast: filter+search+sort by class | auto-refresh paused while editing input
 -->
     <!-- ============================================================ -->
     <!-- 🟢 FIREBASE PRESENCE + 📣 PUSH NOTIFICATIONS SCRIPTS       -->
@@ -35443,8 +35497,9 @@ self.addEventListener('notificationclick', function(event) {
                         if (name && name !== 'Guest' && !nameMap[name]) nameMap[name] = cls;
                     });
                     const people = Object.entries(nameMap).sort((a,b) => a[0].localeCompare(b[0]));
-                    const sel = document.getElementById('notifTargetPerson');
-                    sel.innerHTML = '<option value="">— Select person —</option>' + people.map(([name, cls]) => `<option value="${name}">${name} · ${cls}</option>`).join('');
+                    window._notifPersonList = people;
+                    const srch = document.getElementById('notifPersonSearch');
+                    if (srch) srch.placeholder = 'Search from ' + people.length + ' people...';
                 }
             });
         }
@@ -36133,6 +36188,46 @@ self.addEventListener('notificationclick', function(event) {
     window.filterDevices           = filterDevices;
     window.renderDeviceList        = renderDeviceList;
     window.setNotifTarget          = setNotifTarget;
+
+    // ── Notification: Person search helpers ──
+    window._notifPersonList = [];
+    function filterNotifPersonList(q) {
+        const query = (q || '').toLowerCase().trim();
+        const dropdown = document.getElementById('notifPersonDropdown');
+        const people = window._notifPersonList || [];
+        // Clear selected if user changed text
+        document.getElementById('notifTargetPerson').value = '';
+        const selDiv = document.getElementById('notifPersonSelected');
+        if (selDiv) selDiv.style.display = 'none';
+        if (!query) { dropdown.style.display = 'none'; return; }
+        const matches = people.filter(([n]) => n.toLowerCase().includes(query)).slice(0, 30);
+        if (!matches.length) {
+            dropdown.innerHTML = '<div style="padding:10px 14px;color:#999;font-size:13px">No match found</div>';
+        } else {
+            dropdown.innerHTML = matches.map(([n, c]) =>
+                '<div onclick="selectNotifPerson(\'' + n.replace(/'/g,"\\'") + '\',\'' + c.replace(/'/g,"\\'") + '\')" ' +
+                'style="padding:9px 14px;cursor:pointer;font-size:13px;border-bottom:1px solid #f0e6ff">' +
+                '<strong>' + n + '</strong> <span style="color:#888;font-size:0.85em">· ' + c + '</span></div>'
+            ).join('');
+        }
+        dropdown.style.display = 'block';
+    }
+    function selectNotifPerson(name, cls) {
+        document.getElementById('notifTargetPerson').value = name;
+        document.getElementById('notifPersonSearch').value = name;
+        document.getElementById('notifPersonDropdown').style.display = 'none';
+        const sel = document.getElementById('notifPersonSelected');
+        if (sel) { sel.textContent = 'Selected: ' + name + ' · ' + cls; sel.style.display = 'block'; }
+    }
+    document.addEventListener('click', function(e) {
+        const row = document.getElementById('notifPersonRow');
+        if (row && !row.contains(e.target)) {
+            const dd = document.getElementById('notifPersonDropdown');
+            if (dd) dd.style.display = 'none';
+        }
+    });
+    window.filterNotifPersonList = filterNotifPersonList;
+    window.selectNotifPerson     = selectNotifPerson;
     // ── CLOUDFLARE WORKER CODE TEMPLATE ──────────────────────────
     const CF_WORKER_CODE = `// fcm-push Cloudflare Worker
 // Deploy at: https://dash.cloudflare.com → Workers → Create Worker
@@ -36652,7 +36747,7 @@ export default {
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;" id="devTriggerVersion">
-                <strong>Version:</strong> 5.91 — MCQ quiz questions now support optional Explanation field — saved, loaded on edit, shown to students after submission | <strong>Last Updated:</strong> Mar 02, 2026, 04:42 PM IST</p>
+                <strong>Version:</strong> 5.92 — Notification One Person: live search by name | Podcast: filter/search/sort by class | Podcast: auto-refresh paused while editing sub-topic input | <strong>Last Updated:</strong> Mar 03, 2026, 12:40 PM IST</p>
             <!-- ============================================ -->
             
             <p style="color: #c44569; font-size: 0.85em; font-weight: 600; margin-bottom: 8px;">
