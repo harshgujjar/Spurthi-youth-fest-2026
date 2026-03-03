@@ -1314,6 +1314,17 @@
         <div class="content" id="loginSection">
             <h2 id="devTriggerLogin" style="text-align:center;color:#c44569;margin-bottom:20px;font-size:1.5em;letter-spacing:1px">🔐 Login Portal</h2>
 
+            <!-- Refundable Payment Notice — shown once payment is approved -->
+            <div id="paRefundBanner" style="display:none;background:linear-gradient(135deg,#e8f5e9,#f1f8e9);border-radius:12px;padding:14px 18px;margin-bottom:16px;border:2px solid #4caf50;box-shadow:0 2px 8px rgba(76,175,80,0.15)">
+                <div style="display:flex;align-items:flex-start;gap:12px;flex-wrap:wrap">
+                    <span style="font-size:1.6em;flex-shrink:0">💰</span>
+                    <div style="flex:1">
+                        <div style="font-weight:800;color:#1b5e20;font-size:0.95em;margin-bottom:5px">Spurthi Youth Fest 2026 — Class Registration Payment Status</div>
+                        <div id="paRefundBannerList" style="display:flex;flex-direction:column;gap:5px"></div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Student Login at Top -->
             <div id="studentLogin" style="background:linear-gradient(135deg,#e8f5e9,#f3e5f5);border-radius:14px;padding:16px 18px;margin-bottom:16px;border:2px solid #ce93d8">
                 <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
@@ -3050,6 +3061,20 @@
                     <div id="jurySummaryContainer">
                         <p style="color:#aaa;text-align:center;padding:30px">Loading…</p>
                     </div>
+
+                    <!-- ── Quiz Final Results — Super Admin publish panel ── -->
+                    <div style="margin-top:28px;background:linear-gradient(135deg,#f3e5f5,#ede7f6);border-radius:14px;padding:20px;border:2px solid #ce93d8">
+                        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:14px">
+                            <div>
+                                <h3 style="color:#4a148c;margin:0 0 4px;font-size:1.05em">🧠 Quiz — Final Round Results</h3>
+                                <p style="color:#666;margin:0;font-size:0.83em">View scores entered by Quiz Master (Smitha). Publish winner &amp; runner-up to the leaderboard when ready.</p>
+                            </div>
+                            <button onclick="loadQuizFinalAdminPanel()" style="background:#6a1b9a;color:white;border:none;border-radius:8px;padding:8px 18px;font-size:0.85em;font-weight:700;cursor:pointer">🔄 Load / Refresh</button>
+                        </div>
+                        <div id="quizFinalAdminContainer">
+                            <p style="color:#aaa;text-align:center;padding:20px;font-size:0.88em">Click "Load / Refresh" to view current Quiz Final Round scores.</p>
+                        </div>
+                    </div>
                 </div>
 
                 <div id="juryLiveMonitor" class="form-section super-admin-only">
@@ -4192,15 +4217,15 @@
                 </div>
                 <!-- Stats bar -->
                 <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px;">
-                    <div style="background:linear-gradient(135deg,#fff8e1,#ffe082);border-radius:10px;padding:14px;text-align:center;border:2px solid #ffc107">
+                    <div onclick="document.getElementById('paFilterStatus').value='pending';paLoadPending()" style="background:linear-gradient(135deg,#fff8e1,#ffe082);border-radius:10px;padding:14px;text-align:center;border:2px solid #ffc107;cursor:pointer" title="Click to filter Pending">
                         <div style="font-size:1.8em;font-weight:800;color:#f57f17" id="paStatPending">—</div>
                         <div style="font-size:.8em;color:#795548;font-weight:600">⏳ Pending</div>
                     </div>
-                    <div style="background:linear-gradient(135deg,#e8f5e9,#a5d6a7);border-radius:10px;padding:14px;text-align:center;border:2px solid #4caf50">
+                    <div onclick="document.getElementById('paFilterStatus').value='approved';paLoadPending()" style="background:linear-gradient(135deg,#e8f5e9,#a5d6a7);border-radius:10px;padding:14px;text-align:center;border:2px solid #4caf50;cursor:pointer" title="Click to filter Approved">
                         <div style="font-size:1.8em;font-weight:800;color:#1b5e20" id="paStatApproved">—</div>
                         <div style="font-size:.8em;color:#388e3c;font-weight:600">✅ Approved</div>
                     </div>
-                    <div style="background:linear-gradient(135deg,#fce4ec,#f48fb1);border-radius:10px;padding:14px;text-align:center;border:2px solid #e91e63">
+                    <div onclick="document.getElementById('paFilterStatus').value='rejected';paLoadPending()" style="background:linear-gradient(135deg,#fce4ec,#f48fb1);border-radius:10px;padding:14px;text-align:center;border:2px solid #e91e63;cursor:pointer" title="Click to filter Rejected">
                         <div style="font-size:1.8em;font-weight:800;color:#880e4f" id="paStatRejected">—</div>
                         <div style="font-size:.8em;color:#c2185b;font-weight:600">❌ Rejected</div>
                     </div>
@@ -4210,7 +4235,7 @@
                 <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;align-items:center">
                     <select id="paFilterStatus" onchange="paLoadPending()" style="padding:9px 12px;border-radius:8px;border:2px solid #ddd;flex:1;min-width:140px">
                         <option value="">All Status</option>
-                        <option value="pending" selected>⏳ Pending</option>
+                        <option value="pending">⏳ Pending</option>
                         <option value="approved">✅ Approved</option>
                         <option value="rejected">❌ Rejected</option>
                     </select>
@@ -4226,13 +4251,25 @@
                 <!-- Manual Class Entry form -->
                 <div style="background:#e8f5e9;border-radius:12px;padding:20px;border:2px solid #4caf50;margin-top:24px">
                     <h3 style="color:#1b5e20;margin-bottom:12px;font-size:1em">➕ Manually Add Class Registration (Admin Entry)</h3>
-                    <p style="font-size:.83em;color:#388e3c;margin-bottom:12px">Use this if a class paid in person and you want to record &amp; approve them directly.</p>
-                    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px;flex-wrap:wrap">
-                        <select id="paManualName" style="padding:9px 12px;border-radius:8px;border:2px solid #a5d6a7">
-                            <option value="">Select Class *</option>
-                        </select>
-                        <input type="text" id="paManualPhone" placeholder="Captain / Rep Phone *" style="padding:9px 12px;border-radius:8px;border:2px solid #a5d6a7">
-                        <input type="text" id="paManualClass" placeholder="No. of students in class *" style="padding:9px 12px;border-radius:8px;border:2px solid #a5d6a7">
+                    <p style="font-size:.83em;color:#388e3c;margin-bottom:10px">Use this if a class paid in person and you want to record &amp; approve them directly.</p>
+                    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:10px;flex-wrap:wrap">
+                        <div>
+                            <select id="paManualName" onchange="paManualClassChanged()" style="width:100%;padding:9px 12px;border-radius:8px;border:2px solid #a5d6a7;box-sizing:border-box">
+                                <option value="">Select Class *</option>
+                            </select>
+                        </div>
+                        <div>
+                            <input type="tel" id="paManualPhone" placeholder="Captain / Rep Phone *" maxlength="10" inputmode="numeric" oninput="paLookupCaptainName(this.value)" style="width:100%;padding:9px 12px;border-radius:8px;border:2px solid #a5d6a7;box-sizing:border-box">
+                            <div id="paPhoneHint" style="font-size:0.75em;color:#1b5e20;margin-top:3px;display:none"></div>
+                            <div id="paCaptainNameHint" style="font-size:0.82em;color:#1565c0;margin-top:4px;display:none;background:#e3f2fd;border-radius:6px;padding:5px 9px;font-weight:700"></div>
+                        </div>
+                        <div>
+                            <input type="text" id="paManualClass" placeholder="No. of students in class *" style="width:100%;padding:9px 12px;border-radius:8px;border:2px solid #a5d6a7;box-sizing:border-box">
+                            <div id="paStudentHint" style="font-size:0.75em;color:#1b5e20;margin-top:3px;display:none"></div>
+                        </div>
+                    </div>
+                    <div id="paInchargeStrip" style="display:none;background:#f1f8e9;border-radius:8px;padding:7px 12px;margin-bottom:10px;font-size:0.82em;color:#33691e;border-left:3px solid #7cb342">
+                        👩‍🏫 <span id="paInchargeText">—</span>
                     </div>
                     <div style="display:flex;gap:10px;flex-wrap:wrap">
                         <select id="paManualStatus" style="padding:9px 12px;border-radius:8px;border:2px solid #a5d6a7">
@@ -6101,17 +6138,19 @@
                     <!-- ── YouTube Advertisement — Social Score Monitor (Roopa M C & Smitha M) ── -->
                     <div id="roopaSmitraYtAdPanel" style="display:none;margin-top:24px">
                         <div style="background:linear-gradient(135deg,#fce4ec,#fff3e0);border-radius:14px;padding:18px;border:2px solid #ffcdd2;margin-bottom:16px">
-                            <h3 style="color:#c62828;margin:0 0 6px;font-size:1.05em">📺 YouTube Advertisement — Social Score Monitor</h3>
-                            <p style="color:#555;font-size:0.82em;margin:0 0 8px">Check each class's YouTube video and enter the <strong>Views, Likes, and Original Comments</strong> (verify manually — exclude spam/bots). The score is auto-calculated based on the formula set by Super Admin.</p>
-                            <div style="background:#fff3cd;border-radius:8px;padding:8px 12px;font-size:0.8em;color:#856404">
-                                ⚠️ <strong>Important:</strong> Only count <em>genuine original comments</em>. Ignore spam, bot comments, and repeated phrases. Quality over quantity.
+                            <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:10px">
+                                <div>
+                                    <h3 style="color:#c62828;margin:0 0 6px;font-size:1.05em">📺 YouTube Advertisement — Social Score Monitor</h3>
+                                    <p style="color:#555;font-size:0.82em;margin:0 0 8px">Check each class's YouTube video and enter the <strong>Views, Likes, and Original Comments</strong> (verify manually — exclude spam/bots). The score is auto-calculated based on the formula set by Super Admin.</p>
+                                    <div style="background:#fff3cd;border-radius:8px;padding:8px 12px;font-size:0.8em;color:#856404">
+                                        ⚠️ <strong>Important:</strong> Only count <em>genuine original comments</em>. Ignore spam, bot comments, and repeated phrases. Quality over quantity.
+                                    </div>
+                                </div>
+                                <button class="btn btn-secondary" onclick="loadYtAdMonitorPanel()" style="font-size:0.85em;white-space:nowrap;flex-shrink:0">🔄 Refresh All Classes</button>
                             </div>
                         </div>
                         <div id="ytAdMonitorList" style="display:flex;flex-direction:column;gap:16px">
                             <div style="text-align:center;color:#aaa;padding:30px">Loading YouTube Ad submissions…</div>
-                        </div>
-                        <div style="margin-top:16px;text-align:center">
-                            <button class="btn btn-secondary" onclick="loadYtAdMonitorPanel()" style="font-size:0.88em">🔄 Refresh All Classes</button>
                         </div>
                     </div>
 
@@ -6241,6 +6280,20 @@
                         <div id="danceInchargeList" style="display:flex;flex-direction:column;gap:14px">
                             <div style="text-align:center;color:#aaa;padding:30px">Loading dance story submissions…</div>
                         </div>
+                    </div>
+
+                    <!-- ── Quiz Final Round Panel — Smitha M (Quiz Master) ── -->
+                    <div id="smithaQuizPanel" style="display:none;margin-top:24px">
+                        <div style="background:linear-gradient(135deg,#f3e5f5,#ede7f6);border-radius:14px;padding:18px;border:2px solid #ce93d8;margin-bottom:16px">
+                            <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+                                <div>
+                                    <h3 style="color:#4a148c;margin:0 0 4px;font-size:1.05em">🧠 Quiz — Final Round Panel</h3>
+                                    <p style="color:#555;font-size:0.82em;margin:0">Select 5 finalist teams, mark 2 qualifiers per team, then score all 5 teams across 5 rounds.</p>
+                                </div>
+                                <button onclick="loadQuizFinalRoundPanel()" style="background:#6a1b9a;color:white;border:none;border-radius:8px;padding:7px 16px;font-size:0.83em;font-weight:700;cursor:pointer">🔄 Reload</button>
+                            </div>
+                        </div>
+                        <div id="smithaQuizContainer"></div>
                     </div>
 
                     <!-- ── Generic Event Incharge Panel — shown for every faculty who has assigned events ── -->
@@ -6928,7 +6981,7 @@
                 
                 <div id="jurySheetContainer"></div>
                 
-                <div style="margin-top:30px;text-align:center">
+                <div style="margin-top:30px;text-align:center" id="juryStdFooterBtns">
                     <button class="btn btn-success" onclick="saveMarks()">💾 Save Marks</button>
                     <button class="btn btn-info" onclick="markAsCompleted()" style="margin-left:10px">✅ Mark as Completed</button>
                 </div>
@@ -7490,6 +7543,7 @@
             console.error('Firebase error:', e);
             // Show user-visible warning without breaking the page
             document.addEventListener('DOMContentLoaded', function() {
+        setTimeout(function() { if(typeof paLoadRefundBanner==='function') paLoadRefundBanner(); if(typeof paLoadInchargeBanner==='function') paLoadInchargeBanner(); }, 2500);
                 const warn = document.createElement('div');
                 warn.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#c62828;color:white;text-align:center;padding:10px;font-weight:700;z-index:99999;font-size:14px';
                 warn.innerHTML = '⚠️ Database connection error. Please refresh the page. If the problem persists, contact support.';
@@ -11907,7 +11961,7 @@
             { sl:1,  name:'Priyanka V',             class:'I BCA',   phone:'8088783099' },
             { sl:2,  name:'Roopa M.C',              class:'I BCA',   phone:'9449683234' },
             { sl:3,  name:'Smitha',                 class:'II BCA A', phone:'9972442555' },
-            { sl:4,  name:'Kotrappa K',              class:'II BCA B', phone:'9731067467' },
+            { sl:4,  name:'Kotrappa K',             class:'II BCA B', phone:'9731067467' },
             { sl:5,  name:'Anitha N',               class:'III BCA A',phone:'9164505025' },
             { sl:6,  name:'Pooja C',                class:'III BCA B',phone:'9632736954' },
             { sl:7,  name:'Anitha N',               class:'III BCA C',phone:'9164505025' },
@@ -11917,6 +11971,8 @@
             { sl:11, name:'Hemavathi Desai',        class:'II BBA',   phone:'8197909244' },
             { sl:12, name:'Shankar B C',            class:'III BBA',  phone:'9972652501' }
         ];
+        // Expose globally so other <script> blocks (e.g. Payment Approval) can access it
+        window.FACULTY_LIST = FACULTY_LIST;
 
         // Define faculty roles (used in cards + dashboard)
         const FACULTY_ROLES = {
@@ -12209,6 +12265,7 @@
                 document.getElementById('thAttendancePanel').style.display   = 'none';
                 document.getElementById('danceInchargePanel').style.display  = 'none';
                 document.getElementById('genericInchargePanel').style.display = 'none';
+                document.getElementById('smithaQuizPanel').style.display     = 'none';
                 document.getElementById('facultyComingSoon').style.display   = 'none';
                 document.getElementById('facultyDashboard').style.display = 'block';
                 document.getElementById('facultyDashName').textContent  = faculty.name;
@@ -12232,6 +12289,7 @@
                 const hasHandwriting   = isKotrappa || isAnitha;
                 const hasTalentHunt    = isAnitha || isPooja;
                 const hasDanceAccess   = isAnitha || isPooja;
+                const hasQuizMaster    = isSmitha;
                 document.getElementById('chandanSocialPanel').style.display   = hasVlogAccess    ? 'block' : 'none';
                 document.getElementById('chandanPodcastPanel').style.display  = hasPodcastAccess ? 'block' : 'none';
                 document.getElementById('shankarBowPanel').style.display      = hasBowAccess     ? 'block' : 'none';
@@ -12241,7 +12299,8 @@
                 document.getElementById('hwAttendancePanel').style.display    = hasHandwriting   ? 'block' : 'none';
                 document.getElementById('thAttendancePanel').style.display    = hasTalentHunt    ? 'block' : 'none';
                 document.getElementById('danceInchargePanel').style.display   = hasDanceAccess   ? 'block' : 'none';
-                const hasAnySpecial = hasVlogAccess || hasPodcastAccess || hasBowAccess || hasYtAdAccess || hasNukkadPre || hasNukkadPost || hasHandwriting || hasTalentHunt || hasDanceAccess;
+                document.getElementById('smithaQuizPanel').style.display      = hasQuizMaster    ? 'block' : 'none';
+                const hasAnySpecial = hasVlogAccess || hasPodcastAccess || hasBowAccess || hasYtAdAccess || hasNukkadPre || hasNukkadPost || hasHandwriting || hasTalentHunt || hasDanceAccess || hasQuizMaster;
                 const hasInchargeEvents = (FACULTY_EVENT_MAP[faculty.name] || []).length > 0;
                 document.getElementById('genericInchargePanel').style.display = hasInchargeEvents ? 'block' : 'none';
                 document.getElementById('facultyComingSoon').style.display    = (!hasAnySpecial && !hasInchargeEvents) ? 'block' : 'none';
@@ -12257,6 +12316,7 @@
                 if (hasHandwriting)   loadHwAttendancePanel();
                 if (hasTalentHunt)    loadThAttendancePanel();
                 if (hasInchargeEvents) loadGenericInchargePanel(faculty.name);
+                if (hasQuizMaster)    loadQuizFinalRoundPanel();
                 return;
             }
 
@@ -12296,6 +12356,7 @@
                 document.getElementById('hwAttendancePanel').style.display   = 'none';
                 document.getElementById('thAttendancePanel').style.display   = 'none';
                 document.getElementById('genericInchargePanel').style.display = 'none';
+                document.getElementById('smithaQuizPanel').style.display     = 'none';
                 document.getElementById('facultyComingSoon').style.display   = 'none';
                 document.getElementById('facultyDashboard').style.display = 'block';
                 document.getElementById('facultyDashName').textContent  = faculty.name;
@@ -12320,6 +12381,7 @@
                 const hasHandwriting   = isKotrappa || isAnitha;
                 const hasTalentHunt    = isAnitha || isPooja;
                 const hasDanceAccess   = isAnitha || isPooja;
+                const hasQuizMaster    = isSmitha;
                 document.getElementById('chandanSocialPanel').style.display   = hasVlogAccess    ? 'block' : 'none';
                 document.getElementById('chandanPodcastPanel').style.display  = hasPodcastAccess ? 'block' : 'none';
                 document.getElementById('shankarBowPanel').style.display      = hasBowAccess     ? 'block' : 'none';
@@ -12329,7 +12391,8 @@
                 document.getElementById('hwAttendancePanel').style.display    = hasHandwriting   ? 'block' : 'none';
                 document.getElementById('thAttendancePanel').style.display    = hasTalentHunt    ? 'block' : 'none';
                 document.getElementById('danceInchargePanel').style.display   = hasDanceAccess   ? 'block' : 'none';
-                const hasAnySpecial = hasVlogAccess || hasPodcastAccess || hasBowAccess || hasYtAdAccess || hasNukkadPre || hasNukkadPost || hasHandwriting || hasTalentHunt || hasDanceAccess;
+                document.getElementById('smithaQuizPanel').style.display      = hasQuizMaster    ? 'block' : 'none';
+                const hasAnySpecial = hasVlogAccess || hasPodcastAccess || hasBowAccess || hasYtAdAccess || hasNukkadPre || hasNukkadPost || hasHandwriting || hasTalentHunt || hasDanceAccess || hasQuizMaster;
                 const hasInchargeEvents = (FACULTY_EVENT_MAP[faculty.name] || []).length > 0;
                 document.getElementById('genericInchargePanel').style.display = hasInchargeEvents ? 'block' : 'none';
                 document.getElementById('facultyComingSoon').style.display    = (!hasAnySpecial && !hasInchargeEvents) ? 'block' : 'none';
@@ -12346,6 +12409,7 @@
                 if (hasTalentHunt)    loadThAttendancePanel();
                 if (hasDanceAccess)   loadDanceInchargePanel();
                 if (hasInchargeEvents) loadGenericInchargePanel(faculty.name);
+                if (hasQuizMaster)    loadQuizFinalRoundPanel();
 
             } catch(err) {
                 showMsg('❌ Error: ' + err.message, false);
@@ -12364,7 +12428,7 @@
             const msg = document.getElementById('facultyLoginMsg');
             if (msg) msg.style.display = 'none';
             // Reset all functional panels
-            const resetIds = ['chandanSocialPanel','chandanPodcastPanel','shankarBowPanel','roopaSmitraYtAdPanel','nukkadPrePanel','nukkadPostPanel','hwAttendancePanel','thAttendancePanel','danceInchargePanel','genericInchargePanel','facultyComingSoon'];
+            const resetIds = ['chandanSocialPanel','chandanPodcastPanel','shankarBowPanel','roopaSmitraYtAdPanel','nukkadPrePanel','nukkadPostPanel','hwAttendancePanel','thAttendancePanel','danceInchargePanel','smithaQuizPanel','genericInchargePanel','facultyComingSoon'];
             resetIds.forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
         }
 
@@ -17788,6 +17852,186 @@
         window.jsrStartEdit          = jsrStartEdit;
         window.jsrCancelEdit         = jsrCancelEdit;
         window.jsrSave               = jsrSave;
+
+        // ── Quiz Final Admin Panel (Super Admin only) ─────────────────────────
+        async function loadQuizFinalAdminPanel() {
+            const container = document.getElementById('quizFinalAdminContainer');
+            if (!container) return;
+            container.innerHTML = '<p style="color:#aaa;text-align:center;padding:20px;font-size:0.88em">Loading…</p>';
+            try {
+                const [stateSnap, jurySetupSnap] = await Promise.all([
+                    db.ref('quizFinalRound').once('value'),
+                    db.ref('jurySetup/Quiz').once('value')
+                ]);
+
+                const state     = stateSnap.exists()     ? stateSnap.val()     : {};
+                const jurySetup = jurySetupSnap.exists() ? jurySetupSnap.val() : {};
+                const phase     = state.phase     || 'prelim';
+                const finalists = state.finalists  || [];
+                const scores    = state.scores     || {};
+                const published = jurySetup.resultsPublished === true;
+
+                if (phase !== 'final' || finalists.length !== 5) {
+                    container.innerHTML = `
+                    <div style="background:#fff3cd;border-radius:10px;padding:16px;text-align:center;color:#856404">
+                        <strong>⏳ Preliminary stage not completed yet.</strong><br>
+                        <span style="font-size:0.88em">Quiz Master (Smitha) must first select 5 finalist teams and move to the Final Round before scores appear here.</span>
+                    </div>`;
+                    return;
+                }
+
+                // Compute totals
+                const totals = finalists.map(f => {
+                    const sc = scores[f.classYear] || [];
+                    return { classYear: f.classYear, qualifiers: f.qualifiers || [], total: sc.reduce((s,v) => s + (parseFloat(v)||0), 0), sc };
+                });
+                totals.sort((a,b) => b.total - a.total);
+                const winner   = totals[0];
+                const runnerUp = totals[1];
+                const anyScores = totals.some(t => t.total > 0);
+
+                let html = '';
+
+                if (published) {
+                    html += `<div style="background:#e8f5e9;border-radius:10px;padding:12px 16px;margin-bottom:14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+                        <span style="font-size:1.1em">✅</span>
+                        <span style="font-weight:700;color:#2e7d32">Quiz results are currently PUBLISHED to the leaderboard.</span>
+                    </div>`;
+                }
+
+                // Score table
+                html += `<div style="overflow-x:auto;margin-bottom:16px">
+                <table style="width:100%;border-collapse:collapse;font-size:0.88em;background:white;border-radius:10px;overflow:hidden;box-shadow:0 1px 8px rgba(0,0,0,0.08);min-width:400px">
+                    <thead>
+                        <tr style="background:linear-gradient(135deg,#4a148c,#7b1fa2)">
+                            <th style="padding:10px 12px;color:white;text-align:left">Rank</th>
+                            <th style="padding:10px 12px;color:white;text-align:left">Team</th>
+                            <th style="padding:10px 12px;color:rgba(255,255,255,0.85);text-align:left;font-size:0.85em">Qualifiers</th>
+                            <th style="padding:10px 8px;color:white;text-align:center;font-size:0.83em">R1</th>
+                            <th style="padding:10px 8px;color:white;text-align:center;font-size:0.83em">R2</th>
+                            <th style="padding:10px 8px;color:white;text-align:center;font-size:0.83em">R3</th>
+                            <th style="padding:10px 8px;color:white;text-align:center;font-size:0.83em">R4</th>
+                            <th style="padding:10px 8px;color:white;text-align:center;font-size:0.83em">R5</th>
+                            <th style="padding:10px 10px;color:#ffd700;text-align:center;background:#311b92">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>`;
+                totals.forEach((t, ri) => {
+                    const rankLabel = ri === 0 ? '🥇' : ri === 1 ? '🥈' : (ri+1)+'';
+                    const rowBg = ri === 0 ? '#fff9c4' : ri === 1 ? '#f0f4ff' : (ri%2===0?'#fafafa':'white');
+                    html += `<tr style="background:${rowBg};border-bottom:1px solid #eee">
+                        <td style="padding:9px 12px;font-weight:700;font-size:1em;text-align:center">${rankLabel}</td>
+                        <td style="padding:9px 12px;font-weight:700;color:${ri===0?'#e65100':'#333'}">${t.classYear}</td>
+                        <td style="padding:9px 12px;color:#666;font-size:0.83em">${t.qualifiers.join('<br>')}</td>`;
+                    for (let r = 0; r < 5; r++) {
+                        html += `<td style="padding:9px 8px;text-align:center;color:#555">${(t.sc[r] !== undefined && t.sc[r] !== '') ? parseFloat(t.sc[r]).toFixed(1) : '—'}</td>`;
+                    }
+                    html += `<td style="padding:9px 10px;text-align:center;font-weight:800;color:${ri===0?'#e65100':'#6a1b9a'};font-size:1.05em">${t.total.toFixed(1)}</td>
+                    </tr>`;
+                });
+                html += `</tbody></table></div>`;
+
+                if (!anyScores) {
+                    html += `<div style="background:#fff3cd;border-radius:8px;padding:12px;text-align:center;color:#856404;font-size:0.88em;margin-bottom:14px">
+                        ⏳ Quiz Master has not entered any scores yet. Scores will appear here once Smitha saves them.
+                    </div>`;
+                }
+
+                // Winner + Runner-up cards
+                if (anyScores) {
+                    html += `
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
+                        <div style="background:linear-gradient(135deg,#ffd700,#ffb300);border-radius:10px;padding:12px 14px;text-align:center">
+                            <div style="font-size:1.3em">🥇</div>
+                            <div style="font-weight:800;color:#5d4037;font-size:0.95em">${winner.classYear}</div>
+                            <div style="font-size:0.8em;color:#6d4c41;margin-top:2px">${winner.qualifiers.join(' &amp; ')}</div>
+                            <div style="font-weight:700;color:#bf360c;margin-top:4px">${winner.total.toFixed(1)} pts</div>
+                        </div>
+                        <div style="background:linear-gradient(135deg,#e8eaf6,#c5cae9);border-radius:10px;padding:12px 14px;text-align:center">
+                            <div style="font-size:1.3em">🥈</div>
+                            <div style="font-weight:800;color:#283593;font-size:0.95em">${runnerUp.classYear}</div>
+                            <div style="font-size:0.8em;color:#3949ab;margin-top:2px">${runnerUp.qualifiers.join(' &amp; ')}</div>
+                            <div style="font-weight:700;color:#1a237e;margin-top:4px">${runnerUp.total.toFixed(1)} pts</div>
+                        </div>
+                    </div>`;
+                }
+
+                // Publish / Unpublish buttons
+                if (!published) {
+                    html += `
+                    <div style="background:#fff8e1;border-radius:10px;padding:12px 14px;margin-bottom:12px;font-size:0.83em;color:#795548;line-height:1.6">
+                        ⚠️ <strong>Publish</strong> will write winner &amp; runner-up marks to the leaderboard engine in the standard format. The leaderboard engine will automatically award winner &amp; runner-up points to the respective classes.<br>
+                        Review scores carefully before publishing.
+                    </div>
+                    <div style="text-align:center;display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+                        <button onclick="quizAdminPublish()" ${!anyScores ? 'disabled' : ''}
+                            style="background:${anyScores ? 'linear-gradient(135deg,#e65100,#ff6f00)' : '#bdbdbd'};color:white;border:none;border-radius:10px;padding:11px 28px;font-size:0.93em;font-weight:700;cursor:${anyScores?'pointer':'not-allowed'};box-shadow:${anyScores?'0 3px 10px rgba(230,81,0,0.4)':'none'}">
+                            🚀 Publish Winner &amp; Runner-Up to Leaderboard
+                        </button>
+                    </div>`;
+                } else {
+                    html += `
+                    <div style="text-align:center;display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+                        <button onclick="quizAdminUnpublish()" style="background:#9e9e9e;color:white;border:none;border-radius:10px;padding:10px 22px;font-size:0.88em;font-weight:600;cursor:pointer">
+                            ↩️ Unpublish from Leaderboard
+                        </button>
+                    </div>`;
+                }
+
+                container.innerHTML = html;
+                window._qfAdminTotals = totals;
+
+            } catch(err) {
+                container.innerHTML = '<p style="color:#c62828;text-align:center;padding:20px">❌ Error: ' + err.message + '</p>';
+            }
+        }
+
+        async function quizAdminPublish() {
+            const totals = window._qfAdminTotals;
+            if (!totals || totals.length < 2) { alert('Score data not loaded. Please click Refresh first.'); return; }
+            const winner   = totals[0];
+            const runnerUp = totals[1];
+            if (!confirm('Publish Quiz results to leaderboard?\n\n🥇 Winner: ' + winner.classYear + ' (' + winner.total.toFixed(1) + ' pts)\n🥈 Runner-Up: ' + runnerUp.classYear + ' (' + runnerUp.total.toFixed(1) + ' pts)\n\nThis will award leaderboard points to both classes.')) return;
+
+            // Write to juryMarks/Quiz/jury1 in standard class-based format.
+            // The leaderboard engine sums marks[] per class and picks the highest as winner, second as runner-up.
+            const jury1Data = {};
+            totals.forEach(t => {
+                const safeKey = t.classYear.replace(/[.\[\]#$\/\s]/g, '_');
+                jury1Data[safeKey] = {
+                    originalClassName: t.classYear,
+                    marks: t.sc.map(v => parseFloat(v) || 0),
+                    completed: true
+                };
+            });
+
+            try {
+                await Promise.all([
+                    db.ref('juryMarks/Quiz/jury1').set(jury1Data),
+                    db.ref('jurySetup/Quiz/resultsPublished').set(true),
+                    db.ref('jurySetup/Quiz/eventType').set('class')
+                ]);
+                showSetupMessage('🏆 Quiz results published! Leaderboard will reflect winner & runner-up points.', 'success');
+                loadQuizFinalAdminPanel();
+            } catch(err) {
+                alert('Publish failed: ' + err.message);
+            }
+        }
+
+        async function quizAdminUnpublish() {
+            if (!confirm('Unpublish Quiz results from leaderboard?\n\nLeaderboard points for Quiz winner & runner-up will be removed.')) return;
+            try {
+                await db.ref('jurySetup/Quiz/resultsPublished').set(false);
+                showSetupMessage('Quiz results unpublished from leaderboard.', 'success');
+                loadQuizFinalAdminPanel();
+            } catch(err) {
+                alert('Error: ' + err.message);
+            }
+        }
+
+        window.loadQuizFinalAdminPanel = loadQuizFinalAdminPanel;
+        window.quizAdminPublish        = quizAdminPublish;
+        window.quizAdminUnpublish      = quizAdminUnpublish;
         // ── End Jury Summary Report ──────────────────────────────────────
 
         function publishResults() {
@@ -17861,6 +18105,430 @@
         }
 
         // Jury Functions
+        // ══════════════════════════════════════════════════════════════════════
+        // QUIZ FINAL ROUND PANEL
+        // Jury (Smitha) flow:
+        //   Phase 1 (prelim) — pick 5 finalist teams from all enrolled,
+        //                      pick 2 qualifiers per team from their 6 members
+        //   Phase 2 (final)  — score 5 teams × 5 rounds; save scores any time
+        //                      NO publish button here — Super Admin publishes
+        // Firebase paths:
+        //   quizFinalRound/phase          'prelim' | 'final'
+        //   quizFinalRound/finalists      [{classYear, qualifiers:[name,name]}, ...]
+        //   quizFinalRound/scores         { sanitisedClass: [r1,r2,r3,r4,r5] }
+        // Leaderboard publish (Super Admin only) writes to:
+        //   juryMarks/Quiz/jury1          standard format — leaderboard engine reads it
+        //   jurySetup/Quiz/resultsPublished  true/false
+        // ══════════════════════════════════════════════════════════════════════
+
+        async function loadQuizFinalRoundPanel() {
+            // Hide standard Save / Mark-as-Completed buttons — not used for Quiz
+            const stdBtns = document.getElementById('juryStdFooterBtns');
+            if (stdBtns) stdBtns.style.display = 'none';
+
+            const container = _getQuizContainer();
+            container.innerHTML = '<p style="text-align:center;padding:40px;color:#666">Loading Quiz data…</p>';
+
+            try {
+                const [enrollSnap, stateSnap] = await Promise.all([
+                    db.ref('youthfest-enrollments').orderByChild('event').equalTo('Quiz').once('value'),
+                    db.ref('quizFinalRound').once('value')
+                ]);
+
+                // Build team map: classYear → { classYear, members:[] }
+                const teamMap = {};
+                if (enrollSnap.exists()) {
+                    enrollSnap.forEach(ch => {
+                        const e = ch.val();
+                        const cls = e.classYear || e.class || 'Unknown';
+                        if (!teamMap[cls]) teamMap[cls] = { classYear: cls, members: [] };
+                        teamMap[cls].members.push({ id: ch.key, name: e.memberName || e.name || 'Member', role: e.role || '' });
+                    });
+                }
+                const allTeams = Object.values(teamMap).sort((a,b) => a.classYear.localeCompare(b.classYear));
+
+                const state   = stateSnap.exists() ? stateSnap.val() : {};
+                const phase   = state.phase || 'prelim';
+                const finalists  = state.finalists  || [];
+                const scores     = state.scores     || {};
+
+                if (phase === 'final' && finalists.length === 5) {
+                    _quizRenderFinalRound(finalists, scores, allTeams);
+                } else {
+                    _quizRenderPrelim(allTeams, finalists, scores);
+                }
+
+            } catch(err) {
+                _getQuizContainer().innerHTML =
+                    '<p style="color:red;text-align:center;padding:30px">❌ Error loading Quiz data: ' + err.message + '</p>';
+            }
+        }
+
+        // Returns the correct container: smithaQuizContainer when in faculty context, else jurySheetContainer
+        function _getQuizContainer() {
+            const smithaPanel = document.getElementById('smithaQuizPanel');
+            const smithaBox   = document.getElementById('smithaQuizContainer');
+            if (smithaPanel && smithaBox && smithaPanel.style.display !== 'none') return smithaBox;
+            return document.getElementById('jurySheetContainer');
+        }
+
+        // ── Phase 1: Preliminary ─────────────────────────────────────────────
+        function _quizRenderPrelim(allTeams, savedFinalists, savedScores) {
+            const container = _getQuizContainer();
+
+            const savedFinalistClasses = savedFinalists.map(f => f.classYear);
+            const savedQualMap = {};
+            savedFinalists.forEach(f => { savedQualMap[f.classYear] = f.qualifiers || []; });
+
+            // ── SECTION 1: Team selection ────────────────────────────────────
+            let html = `
+            <div style="background:linear-gradient(135deg,#e8f5e9,#e0f7fa);border-radius:14px;padding:16px 20px;margin-bottom:16px;border:2px solid #80cbc4">
+                <h3 style="color:#00695c;margin:0 0 5px;font-size:1.05em">📋 Step 1 — Select 5 Finalist Teams</h3>
+                <p style="margin:0;color:#444;font-size:0.85em;line-height:1.6">Check a team to expand and pick <strong>2 qualifiers</strong>. The Final Round table below updates live as you select.</p>
+            </div>`;
+
+            if (allTeams.length === 0) {
+                html += `<div style="background:#fff3cd;padding:20px;border-radius:10px;text-align:center;color:#856404"><strong>⏳ No Quiz teams enrolled yet.</strong></div>`;
+                container.innerHTML = html;
+                return;
+            }
+
+            html += `<div style="display:grid;gap:10px;margin-bottom:14px" id="quizPrelimGrid">`;
+            allTeams.forEach((team, ti) => {
+                const isSelected = savedFinalistClasses.includes(team.classYear);
+                const quals      = savedQualMap[team.classYear] || [];
+                html += `
+                <div id="qpTeamCard_${ti}" style="background:white;border-radius:12px;padding:12px 16px;border:2px solid ${isSelected ? '#00897b' : '#e0e0e0'};transition:border 0.2s">
+                    <label style="display:flex;align-items:center;gap:10px;cursor:pointer">
+                        <input type="checkbox" id="qpCheck_${ti}" value="${ti}" data-class="${team.classYear}"
+                            ${isSelected ? 'checked' : ''}
+                            onchange="quizPrelimToggle(this,${ti})"
+                            style="width:18px;height:18px;accent-color:#00897b;flex-shrink:0">
+                        <span style="font-weight:700;color:#00695c;font-size:0.93em">${team.classYear}</span>
+                        <span style="background:#e0f2f1;color:#004d40;border-radius:20px;padding:2px 9px;font-size:0.75em;font-weight:600;margin-left:auto">${team.members.length} members</span>
+                    </label>
+                    <div id="qpMembers_${ti}" style="display:${isSelected ? 'block' : 'none'};margin-top:10px;padding-top:10px;border-top:1px solid #f0f0f0">
+                        <p style="margin:0 0 7px;font-size:0.81em;color:#555">Pick <strong>2 qualifiers</strong> for the Final Round:</p>
+                        <div style="display:flex;flex-wrap:wrap;gap:7px">`;
+                team.members.forEach(m => {
+                    const checked = quals.includes(m.name);
+                    html += `
+                            <label style="display:flex;align-items:center;gap:5px;padding:5px 10px;border-radius:8px;cursor:pointer;background:${checked?'#e0f7fa':'#f5f5f5'};border:1.5px solid ${checked?'#00acc1':'#e0e0e0'}">
+                                <input type="checkbox" name="qpQual_${ti}" value="${m.name}"
+                                    ${checked ? 'checked' : ''}
+                                    onchange="quizPrelimQualToggle(this,${ti})"
+                                    style="width:13px;height:13px;accent-color:#00acc1">
+                                <span style="font-size:0.84em;color:#333;font-weight:600">${m.name}</span>
+                                ${m.role ? '<span style="font-size:0.72em;color:#999;margin-left:2px">('+m.role+')</span>' : ''}
+                            </label>`;
+                });
+                html += `
+                        </div>
+                        <div id="qpQualCount_${ti}" style="margin-top:6px;font-size:0.79em;font-weight:600;color:${quals.length===2?'#2e7d32':'#c62828'}">
+                            ${quals.length===2 ? '✅ 2 qualifiers selected' : '⚠️ Select exactly 2 qualifiers ('+quals.length+' selected)'}
+                        </div>
+                    </div>
+                </div>`;
+            });
+            html += `</div>`;
+
+            const initCount = savedFinalistClasses.length;
+            html += `
+            <div style="background:#f3e5f5;border-radius:10px;padding:11px 16px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+                <span style="font-weight:700;color:#6a1b9a;font-size:0.93em">🏆 Teams selected: <span id="qpFinalistCount">${initCount}</span> / 5</span>
+                <span style="color:#888;font-size:0.81em">Select exactly 5 teams to save</span>
+            </div>
+            <div style="text-align:center;margin-bottom:28px">
+                <button onclick="quizPrelimSave()" style="background:linear-gradient(135deg,#6a1b9a,#c44569);color:white;border:none;border-radius:10px;padding:11px 30px;font-size:0.95em;font-weight:700;cursor:pointer;box-shadow:0 4px 12px rgba(106,27,154,0.3)">
+                    💾 Save Finalists &amp; Lock Final Round →
+                </button>
+            </div>`;
+
+            // ── SECTION 2: Live Final Round table (always visible) ────────────
+            html += `
+            <div style="background:linear-gradient(135deg,#4a148c,#c44569);border-radius:14px;padding:14px 20px;margin-bottom:14px;color:white">
+                <h3 style="margin:0 0 3px;font-size:1.05em">🏆 Step 2 — Final Round Scoring</h3>
+                <p style="margin:0;font-size:0.83em;opacity:0.88">Quiz Master: <strong>Smitha M</strong> · Teams appear here as you select them above · 5 Rounds</p>
+            </div>
+            <div style="overflow-x:auto;margin-bottom:16px">
+            <table style="width:100%;border-collapse:collapse;background:white;border-radius:12px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.1);min-width:540px">
+                <thead>
+                    <tr style="background:linear-gradient(135deg,#4a148c,#7b1fa2)">
+                        <th style="padding:11px 12px;color:white;text-align:left;font-size:0.86em;min-width:130px">Team</th>
+                        <th style="padding:11px 10px;color:rgba(255,255,255,0.8);text-align:left;font-size:0.77em;min-width:110px">Qualifiers</th>
+                        <th style="padding:11px 8px;color:white;text-align:center;font-size:0.84em;min-width:68px">Round 1</th>
+                        <th style="padding:11px 8px;color:white;text-align:center;font-size:0.84em;min-width:68px">Round 2</th>
+                        <th style="padding:11px 8px;color:white;text-align:center;font-size:0.84em;min-width:68px">Round 3</th>
+                        <th style="padding:11px 8px;color:white;text-align:center;font-size:0.84em;min-width:68px">Round 4</th>
+                        <th style="padding:11px 8px;color:white;text-align:center;font-size:0.84em;min-width:68px">Round 5</th>
+                        <th style="padding:11px 10px;color:#ffd700;text-align:center;font-size:0.86em;min-width:65px;background:#311b92">Total</th>
+                    </tr>
+                </thead>
+                <tbody id="qfLiveTableBody">`;
+
+            const selectedNow = allTeams.filter(t => savedFinalistClasses.includes(t.classYear));
+            selectedNow.forEach((team, si) => {
+                const quals = savedQualMap[team.classYear] || [];
+                const sc    = savedScores[team.classYear] || [];
+                html += _quizLiveTableRow(si, team.classYear, quals, sc);
+            });
+            for (let s = selectedNow.length; s < 5; s++) {
+                html += `<tr id="qfLiveRow_empty_${s}" style="background:#fafafa;border-bottom:1px solid #eee">
+                    <td colspan="8" style="padding:10px 14px;color:#bbb;font-style:italic;font-size:0.85em">— Slot ${s+1}: select a team above —</td>
+                </tr>`;
+            }
+            html += `</tbody></table></div>`;
+
+            html += `
+            <div style="background:#f3e5f5;border-radius:10px;padding:12px 16px;margin-bottom:8px;font-size:0.83em;color:#4a148c;text-align:center;line-height:1.6">
+                💾 Use <strong>Save Scores</strong> to save at any time — scores are NOT published until the Super Admin publishes results.
+            </div>
+            <div style="text-align:center;display:flex;flex-wrap:wrap;gap:10px;justify-content:center">
+                <button onclick="quizFinalSaveScores()" style="background:linear-gradient(135deg,#1b5e20,#388e3c);color:white;border:none;border-radius:10px;padding:11px 28px;font-size:0.93em;font-weight:700;cursor:pointer;box-shadow:0 3px 10px rgba(27,94,32,0.35)">
+                    💾 Save Scores
+                </button>
+            </div>`;
+
+            container.innerHTML = html;
+            window._qpAllTeams    = allTeams;
+            window._qpSavedScores = savedScores;
+            _quizRebuildLiveFinalists();
+        }
+
+        function _quizLiveTableRow(rowIdx, classYear, qualifiers, scores) {
+            let row = `<tr id="qfLiveRow_${rowIdx}" style="background:${rowIdx%2===0?'#fafafa':'white'};border-bottom:1px solid #eee">
+                <td style="padding:10px 12px;font-weight:700;color:#333;font-size:0.86em">${classYear}</td>
+                <td style="padding:10px;font-size:0.75em;color:#666;line-height:1.5">${qualifiers.length ? qualifiers.join('<br>') : '<span style="color:#bbb;font-style:italic">—</span>'}</td>`;
+            for (let ri = 0; ri < 5; ri++) {
+                const v = scores[ri] !== undefined ? scores[ri] : '';
+                row += `<td style="padding:7px 5px;text-align:center">
+                    <input type="number" min="0" max="100" step="0.5"
+                        id="qfInp_${rowIdx}_${ri}" value="${v}"
+                        oninput="quizFinalUpdateTotal(${rowIdx})"
+                        data-class="${classYear}"
+                        style="width:58px;padding:5px 3px;border:2px solid #ce93d8;border-radius:8px;text-align:center;font-size:0.93em;font-weight:700;color:#4a148c;outline:none;background:#fdf6ff">
+                </td>`;
+            }
+            const tot = Array.isArray(scores) ? scores.reduce((s,v)=>s+(parseFloat(v)||0),0).toFixed(1) : '0.0';
+            row += `<td style="padding:10px;text-align:center;font-weight:800;color:#6a1b9a;font-size:1.02em" id="qfTotal_${rowIdx}">${tot}</td></tr>`;
+            return row;
+        }
+
+        function _quizRebuildLiveFinalists() {
+            const allTeams = window._qpAllTeams || [];
+            const finalists = [];
+            allTeams.forEach((team, ti) => {
+                const cb = document.getElementById('qpCheck_' + ti);
+                if (!cb || !cb.checked) return;
+                const qcbs = document.querySelectorAll('input[name="qpQual_' + ti + '"]:checked');
+                finalists.push({ classYear: team.classYear, qualifiers: Array.from(qcbs).map(q => q.value) });
+            });
+            window._qfFinalists = finalists;
+        }
+
+        function quizPrelimToggle(cb, ti) {
+            document.getElementById('qpTeamCard_' + ti).style.border = cb.checked ? '2px solid #00897b' : '2px solid #e0e0e0';
+            document.getElementById('qpMembers_' + ti).style.display = cb.checked ? 'block' : 'none';
+            if (!cb.checked) {
+                document.querySelectorAll('input[name="qpQual_' + ti + '"]').forEach(q => {
+                    q.checked = false;
+                    q.closest('label').style.background = '#f5f5f5';
+                    q.closest('label').style.border = '1.5px solid #e0e0e0';
+                });
+                const countEl = document.getElementById('qpQualCount_' + ti);
+                if (countEl) { countEl.textContent = '⚠️ Select exactly 2 qualifiers (0 selected)'; countEl.style.color = '#c62828'; }
+            }
+            document.getElementById('qpFinalistCount').textContent =
+                document.querySelectorAll('input[id^="qpCheck_"]:checked').length;
+            _quizRebuildLiveFinalists();
+            _quizRefreshLiveTable();
+        }
+
+        function quizPrelimQualToggle(cb, ti) {
+            const checked = document.querySelectorAll('input[name="qpQual_' + ti + '"]:checked');
+            if (checked.length > 2) { cb.checked = false; return; }
+            cb.closest('label').style.background = cb.checked ? '#e0f7fa' : '#f5f5f5';
+            cb.closest('label').style.border = '1.5px solid ' + (cb.checked ? '#00acc1' : '#e0e0e0');
+            const n = document.querySelectorAll('input[name="qpQual_' + ti + '"]:checked').length;
+            const el = document.getElementById('qpQualCount_' + ti);
+            el.textContent = n === 2 ? '✅ 2 qualifiers selected' : '⚠️ Select exactly 2 qualifiers (' + n + ' selected)';
+            el.style.color  = n === 2 ? '#2e7d32' : '#c62828';
+            _quizRebuildLiveFinalists();
+            _quizRefreshLiveTable();
+        }
+
+        function _quizRefreshLiveTable() {
+            const tbody = document.getElementById('qfLiveTableBody');
+            if (!tbody) return;
+            const finalists   = window._qfFinalists   || [];
+            const savedScores = window._qpSavedScores || {};
+            const currentScores = {};
+            finalists.forEach((f, fi) => {
+                currentScores[f.classYear] = [];
+                for (let ri = 0; ri < 5; ri++) {
+                    const inp = document.getElementById('qfInp_' + fi + '_' + ri);
+                    currentScores[f.classYear][ri] = inp ? (parseFloat(inp.value) || 0) : (savedScores[f.classYear] ? (parseFloat(savedScores[f.classYear][ri]) || 0) : 0);
+                }
+            });
+            let html = '';
+            finalists.forEach((f, si) => {
+                html += _quizLiveTableRow(si, f.classYear, f.qualifiers, currentScores[f.classYear] || []);
+            });
+            for (let s = finalists.length; s < 5; s++) {
+                html += `<tr id="qfLiveRow_empty_${s}" style="background:#fafafa;border-bottom:1px solid #eee">
+                    <td colspan="8" style="padding:10px 14px;color:#bbb;font-style:italic;font-size:0.85em">— Slot ${s+1}: select a team above —</td>
+                </tr>`;
+            }
+            tbody.innerHTML = html;
+        }
+
+        async function quizPrelimSave() {
+            const checks = document.querySelectorAll('input[id^="qpCheck_"]:checked');
+            if (checks.length !== 5) { alert('Please select exactly 5 finalist teams (currently ' + checks.length + ' selected).'); return; }
+            const finalists = [];
+            let ok = true;
+            checks.forEach(cb => {
+                const ti   = cb.id.replace('qpCheck_', '');
+                const cls  = cb.dataset.class;
+                const qcbs = document.querySelectorAll('input[name="qpQual_' + ti + '"]:checked');
+                if (qcbs.length !== 2) { alert('Team "' + cls + '" needs exactly 2 qualifiers selected.'); ok = false; return; }
+                finalists.push({ classYear: cls, qualifiers: [qcbs[0].value, qcbs[1].value] });
+            });
+            if (!ok || finalists.length !== 5) return;
+            try {
+                await db.ref('quizFinalRound').update({ phase: 'final', finalists: finalists });
+                showJuryMessage('✅ Finalists saved! Final Round is now locked in.', 'success');
+                loadQuizFinalRoundPanel();
+            } catch(err) {
+                alert('Save failed: ' + err.message);
+            }
+        }
+
+        // ── Phase 2: Final Round (locked) ─────────────────────────────────────
+        function _quizRenderFinalRound(finalists, scores, allTeams) {
+            const container = _getQuizContainer();
+            const ROUNDS = 5;
+
+            function getTotal(cls) {
+                const sc = scores[cls] || [];
+                return sc.reduce((s,v) => s + (parseFloat(v) || 0), 0);
+            }
+
+            const ranked    = finalists.slice().sort((a,b) => getTotal(b.classYear) - getTotal(a.classYear));
+            const leaderCls = getTotal(ranked[0].classYear) > 0 ? ranked[0].classYear : null;
+
+            let html = `
+            <div style="background:linear-gradient(135deg,#4a148c,#c44569);border-radius:14px;padding:14px 20px;margin-bottom:16px;color:white">
+                <h3 style="margin:0 0 3px;font-size:1.05em">🏆 Quiz — Final Round Scoring</h3>
+                <p style="margin:0;font-size:0.83em;opacity:0.88">Quiz Master: <strong>Smitha M</strong> &nbsp;·&nbsp; 5 Finalist Teams &nbsp;·&nbsp; 5 Rounds</p>
+            </div>`;
+
+            if (leaderCls) {
+                const leaderF = finalists.find(f => f.classYear === leaderCls);
+                html += `
+                <div style="background:linear-gradient(135deg,#ffd700,#ffb300);border-radius:12px;padding:12px 20px;margin-bottom:14px;text-align:center;box-shadow:0 4px 14px rgba(255,193,7,0.45)">
+                    <div style="font-size:1.05em;font-weight:800;color:#5d4037">🥇 Current Leader: ${leaderCls}</div>
+                    <div style="color:#6d4c41;font-size:0.83em;margin-top:3px">Qualifiers: ${leaderF.qualifiers.join(' &amp; ')} &nbsp;|&nbsp; Total: <strong>${getTotal(leaderCls).toFixed(1)}</strong> pts</div>
+                </div>`;
+            }
+
+            html += `<div style="overflow-x:auto;margin-bottom:16px">
+            <table style="width:100%;border-collapse:collapse;background:white;border-radius:12px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.1);min-width:540px">
+                <thead>
+                    <tr style="background:linear-gradient(135deg,#4a148c,#7b1fa2)">
+                        <th style="padding:11px 12px;color:white;text-align:left;font-size:0.86em;min-width:130px">Team</th>
+                        <th style="padding:11px 10px;color:rgba(255,255,255,0.8);text-align:left;font-size:0.77em;min-width:110px">Qualifiers</th>`;
+            for (let r = 1; r <= ROUNDS; r++) html += `<th style="padding:11px 8px;color:white;text-align:center;font-size:0.84em;min-width:68px">Round ${r}</th>`;
+            html += `<th style="padding:11px 10px;color:#ffd700;text-align:center;font-size:0.86em;min-width:65px;background:#311b92">Total</th></tr>
+                </thead>
+                <tbody>`;
+
+            finalists.forEach((f, fi) => {
+                const sc    = scores[f.classYear] || [];
+                const total = getTotal(f.classYear);
+                const isLead = (f.classYear === leaderCls);
+                html += `<tr style="background:${isLead?'#fff9c4':fi%2===0?'#fafafa':'white'};border-bottom:1px solid #eee">
+                    <td style="padding:10px 12px;font-weight:700;color:${isLead?'#e65100':'#333'};font-size:0.86em">${isLead?'🥇 ':''} ${f.classYear}</td>
+                    <td style="padding:10px;font-size:0.75em;color:#666;line-height:1.5">${f.qualifiers.join('<br>')}</td>`;
+                for (let ri = 0; ri < ROUNDS; ri++) {
+                    const v = sc[ri] !== undefined ? sc[ri] : '';
+                    html += `<td style="padding:7px 5px;text-align:center">
+                        <input type="number" min="0" max="100" step="0.5"
+                            id="qfInp_${fi}_${ri}" value="${v}"
+                            oninput="quizFinalUpdateTotal(${fi})"
+                            style="width:58px;padding:5px 3px;border:2px solid #ce93d8;border-radius:8px;text-align:center;font-size:0.93em;font-weight:700;color:#4a148c;outline:none;background:#fdf6ff">
+                    </td>`;
+                }
+                html += `<td style="padding:10px;text-align:center;font-weight:800;color:${isLead?'#e65100':'#6a1b9a'};font-size:1.02em" id="qfTotal_${fi}">${total.toFixed(1)}</td></tr>`;
+            });
+
+            html += `</tbody></table></div>
+            <div style="background:#f3e5f5;border-radius:10px;padding:12px 16px;margin-bottom:10px;font-size:0.83em;color:#4a148c;text-align:center;line-height:1.6">
+                💾 Use <strong>Save Scores</strong> to save at any time — Super Admin will publish winner &amp; runner-up to the leaderboard.
+            </div>
+            <div style="text-align:center;display:flex;flex-wrap:wrap;gap:10px;justify-content:center">
+                <button onclick="quizFinalSaveScores()" style="background:linear-gradient(135deg,#1b5e20,#388e3c);color:white;border:none;border-radius:10px;padding:11px 28px;font-size:0.93em;font-weight:700;cursor:pointer;box-shadow:0 3px 10px rgba(27,94,32,0.35)">
+                    💾 Save Scores
+                </button>
+                <button onclick="quizFinalBackToPrelim()" style="background:#9e9e9e;color:white;border:none;border-radius:10px;padding:10px 20px;font-size:0.84em;font-weight:600;cursor:pointer">
+                    ← Edit Finalists
+                </button>
+            </div>`;
+
+            window._qfFinalists = finalists;
+            container.innerHTML = html;
+        }
+
+        function quizFinalUpdateTotal(fi) {
+            let total = 0;
+            for (let ri = 0; ri < 5; ri++) {
+                const el = document.getElementById('qfInp_' + fi + '_' + ri);
+                if (el) total += parseFloat(el.value) || 0;
+            }
+            const totEl = document.getElementById('qfTotal_' + fi);
+            if (totEl) totEl.textContent = total.toFixed(1);
+        }
+
+        async function quizFinalSaveScores() {
+            const finalists = window._qfFinalists || [];
+            if (!finalists.length) { alert('No finalist data. Please reload.'); return; }
+            const scores = {};
+            finalists.forEach((f, fi) => {
+                const sc = [];
+                for (let ri = 0; ri < 5; ri++) {
+                    const el = document.getElementById('qfInp_' + fi + '_' + ri);
+                    sc.push(el ? (parseFloat(el.value) || 0) : 0);
+                }
+                scores[f.classYear] = sc;
+            });
+            try {
+                await db.ref('quizFinalRound/scores').set(scores);
+                showJuryMessage('✅ Scores saved successfully!', 'success');
+            } catch(err) {
+                showJuryMessage('❌ Save failed: ' + err.message, 'error');
+            }
+        }
+
+        async function quizFinalBackToPrelim() {
+            if (!confirm('Go back to edit finalists? Scores will be preserved.')) return;
+            try {
+                await db.ref('quizFinalRound/phase').set('prelim');
+                loadQuizFinalRoundPanel();
+            } catch(err) {
+                alert('Error: ' + err.message);
+            }
+        }
+
+        window.loadQuizFinalRoundPanel   = loadQuizFinalRoundPanel;
+        window.quizPrelimToggle          = quizPrelimToggle;
+        window.quizPrelimQualToggle      = quizPrelimQualToggle;
+        window.quizPrelimSave            = quizPrelimSave;
+        window.quizFinalUpdateTotal      = quizFinalUpdateTotal;
+        window.quizFinalSaveScores       = quizFinalSaveScores;
+        window.quizFinalBackToPrelim     = quizFinalBackToPrelim;
+        window._quizRefreshLiveTable     = _quizRefreshLiveTable;
+        window._quizRebuildLiveFinalists = _quizRebuildLiveFinalists;
+
         function loadJurySheet() {
             console.log('=== LOADING JURY SHEET ===');
             console.log('juryEvent:', juryEvent);
@@ -17876,6 +18544,12 @@
             const isBOW      = (juryEvent === 'Best out of Waste');
             const isPodCast  = (juryEvent === 'Pod Casting');
             const isYTAd     = (juryEvent === 'YouTube Advertisement');
+
+            // -- QUIZ: fully custom final-round panel (Quiz Master = Smitha) ------
+            if (juryEvent === 'Quiz') {
+                loadQuizFinalRoundPanel();
+                return;
+            }
 
             // -- YOUTUBE ADVERTISEMENT: separate path + class-based ---------------
             if (isYTAd) {
@@ -33549,7 +34223,168 @@ Proceed?`)) return;
     // ============================================================
     const PA_FB_PATH = 'paymentRegistrations';
 
-    async function paLoadPending() {
+    // ── paManualClassChanged: auto-fill enrollment count, incharge, phone ──
+    async function paManualClassChanged() {
+        var className = (document.getElementById('paManualName') ? document.getElementById('paManualName').value : '').trim();
+        var hintEl    = document.getElementById('paStudentHint');
+        var phoneHint = document.getElementById('paPhoneHint');
+        var strip     = document.getElementById('paInchargeStrip');
+        var inchEl    = document.getElementById('paInchargeText');
+        var countInp  = document.getElementById('paManualClass');
+        var phoneInp  = document.getElementById('paManualPhone');
+
+        if (!className) {
+            if (hintEl)  hintEl.style.display  = 'none';
+            if (phoneHint) phoneHint.style.display = 'none';
+            if (strip)   strip.style.display   = 'none';
+            return;
+        }
+
+        // 1. Count enrolled students for this class from youthfest-enrollments
+        try {
+            var enrSnap = await getDb().ref('youthfest-enrollments').orderByChild('classYear').equalTo(className).once('value');
+            var count = 0;
+            if (enrSnap.exists()) { enrSnap.forEach(function() { count++; }); }
+            if (hintEl) {
+                hintEl.style.display = 'block';
+                hintEl.textContent = count > 0 ? ('✅ ' + count + ' students enrolled for Spurthi from this class') : '⚠️ No enrollments found for this class yet';
+            }
+            if (countInp && !countInp.value && count > 0) countInp.value = count;
+        } catch(e) {
+            if (hintEl) { hintEl.style.display = 'block'; hintEl.textContent = 'Could not load enrollment count'; }
+        }
+
+        // 2. Show incharge faculty name from FACULTY_LIST (match by class)
+        var inchNames = [];
+        var _FL = (typeof FACULTY_LIST !== 'undefined' ? FACULTY_LIST : null) || window.FACULTY_LIST || [];
+        if (_FL.length) {
+            _FL.forEach(function(f) {
+                var fc = (f.class || '').toLowerCase().replace(/\s+/g,'');
+                var cn = className.toLowerCase().replace(/\s+/g,'');
+                if (fc === cn || fc.includes(cn) || cn.includes(fc)) {
+                    if (inchNames.indexOf(f.name) === -1) inchNames.push(f.name);
+                }
+            });
+        }
+        if (strip && inchEl) {
+            if (inchNames.length) {
+                strip.style.display = 'block';
+                inchEl.textContent  = 'Event Incharge: ' + inchNames.join(', ');
+            } else {
+                strip.style.display = 'none';
+            }
+        }
+
+        // 3. Look up existing captain phone from paymentRegistrations
+        try {
+            var paSnap = await getDb().ref(PA_FB_PATH).orderByChild('classYear').equalTo(className).once('value');
+            if (!paSnap.exists()) {
+                paSnap = await getDb().ref(PA_FB_PATH).orderByChild('name').equalTo(className).once('value');
+            }
+            var foundPhone = '';
+            if (paSnap.exists()) {
+                paSnap.forEach(function(ch) {
+                    var d = ch.val();
+                    if (d.phone && !foundPhone) foundPhone = d.phone;
+                });
+            }
+            if (phoneInp && !phoneInp.value && foundPhone) phoneInp.value = foundPhone;
+            if (phoneHint) {
+                if (foundPhone) {
+                    phoneHint.style.display = 'block';
+                    phoneHint.textContent = '📋 Previously recorded: ' + foundPhone;
+                } else {
+                    phoneHint.style.display = 'none';
+                }
+            }
+        } catch(e) {
+            // silent
+        }
+    }
+
+    // ── paLookupCaptainName: show student name when captain phone is typed ───
+    var _paCaptainLookupTimer = null;
+    async function paLookupCaptainName(rawVal) {
+        var hint = document.getElementById('paCaptainNameHint');
+        if (!hint) return;
+        var phone = (rawVal || '').replace(/\D/g,'');
+        if (phone.startsWith('91') && phone.length === 12) phone = phone.slice(2);
+        if (phone.length !== 10) { hint.style.display = 'none'; return; }
+        // Debounce
+        clearTimeout(_paCaptainLookupTimer);
+        _paCaptainLookupTimer = setTimeout(async function() {
+            hint.style.display = 'block';
+            hint.style.color   = '#888';
+            hint.textContent   = '🔍 Looking up…';
+            try {
+                var snap = await getDb().ref('quizStudents').orderByChild('phone').equalTo(phone).once('value');
+                if (!snap.exists()) snap = await getDb().ref('quizStudents').orderByChild('phone').equalTo('0'+phone).once('value');
+                if (snap.exists()) {
+                    var d = null;
+                    snap.forEach(function(ch) { if (!d) d = ch.val(); });
+                    var nameStr = d.name || d.studentName || '';
+                    var clsStr  = d.class || d.classYear || '';
+                    hint.style.color = '#1565c0';
+                    hint.textContent = '👤 ' + (nameStr || 'Name not found') + (clsStr ? '  •  ' + clsStr : '');
+                } else {
+                    hint.style.color = '#b71c1c';
+                    hint.textContent = '⚠️ No student found with this phone in quiz registrations';
+                }
+            } catch(e) {
+                hint.style.color = '#888';
+                hint.textContent = 'Could not look up name';
+            }
+        }, 600);
+    }
+
+    // ── paLoadRefundBanner: show payment status on main login page ───────────
+    async function paLoadRefundBanner() {
+        var banner  = document.getElementById('paRefundBanner');
+        var listEl  = document.getElementById('paRefundBannerList');
+        if (!banner || !listEl) return;
+        try {
+            var snap = await getDb().ref(PA_FB_PATH).once('value');
+            if (!snap.exists()) return;
+            var items = [];
+            snap.forEach(function(ch) { items.push(ch.val()); });
+            var approved = items.filter(function(i) { return i.status === 'approved'; });
+            if (!approved.length) return;
+            banner.style.display = 'block';
+            listEl.innerHTML = approved.map(function(it) {
+                var dt = it.reviewedAt ? new Date(it.reviewedAt).toLocaleDateString('en-IN', {day:'2-digit',month:'short',year:'numeric'}) : '';
+                return '<div style="background:white;border-radius:8px;padding:7px 12px;border-left:3px solid #4caf50;font-size:0.85em;color:#1b5e20">'
+                    + '<strong>' + (it.name || it.classYear || 'Class') + '</strong>'
+                    + ' — Registration fee of <strong>₹1,500</strong> received and approved.'
+                    + (dt ? ' <span style="color:#888;font-size:0.9em">(' + dt + ')</span>' : '')
+                    + (it.note ? ' <em style="color:#666;font-size:0.88em">Note: ' + it.note + '</em>' : '')
+                    + '</div>';
+            }).join('');
+        } catch(e) {
+            // silent — banner stays hidden
+        }
+    }
+
+    // ── paLoadInchargeBanner: show class incharge faculty list above footer ──
+    function paLoadInchargeBanner() {
+        var banner = document.getElementById('classInchargeBanner');
+        var listEl = document.getElementById('classInchargeBannerList');
+        var _fl = (typeof FACULTY_LIST !== 'undefined' ? FACULTY_LIST : null) || window.FACULTY_LIST || [];
+        if (!banner || !listEl) return;
+        if (!_fl.length) return;
+        var html = _fl.map(function(f) {
+            return '<div style="background:rgba(255,255,255,0.12);border-radius:8px;padding:6px 12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">'
+                + '<span style="color:white;font-weight:700;font-size:0.88em">' + (f.name||'') + '</span>'
+                + '<span style="color:#9fa8da;font-size:0.8em">—</span>'
+                + '<span style="color:#c5cae9;font-size:0.82em">' + (f.class||'') + '</span>'
+                + '</div>';
+        }).join('');
+        listEl.innerHTML = html;
+        banner.style.display = 'block';
+        // Trigger animation
+        setTimeout(function() { banner.classList.add('banner-visible'); }, 50);
+    }
+
+        async function paLoadPending() {
         const wrap       = document.getElementById('paRegistrationList');
         const filterSel  = document.getElementById('paFilterStatus');
         const searchEl   = document.getElementById('paSearch');
@@ -34737,6 +35572,14 @@ v5.92 | Mar 03 2026 12:40 IST | Notification One Person: live search by name | P
 v5.93 | Mar 03 2026 13:00 IST | Jury Summary Report tab | Rules & Regulations PDF from Google Drive via Firebase siteSettings/rulesRegPdfLink
 v5.94 | Mar 03 2026 13:15 IST | Rules & Regulations PDF button label also editable from admin panel
 v5.95 | Mar 03 2026 13:30 IST | Jury Summary Report: inline edit jury name + password, saves to Firebase jurySetup, syncs with Jury Setup form
+v5.96 | Mar 03 2026 02:45 PM IST | Quiz jury: custom 2-phase final round panel — prelim selects 5/11 finalists + 2 qualifiers each; Smitha scores 5 teams × 5 rounds; Super Admin publishes winner+runner-up to leaderboard
+v5.97 | Mar 03 2026 02:45 PM IST | Quiz Final Round panel moved to Smitha Faculty login (smithaQuizPanel); loadQuizFinalRoundPanel routes to smithaQuizContainer when in faculty context
+v5.98 | Mar 03 2026 02:45 PM IST | Fix: _getQuizContainer() helper ensures render functions always write to correct container; catch block also fixed
+v5.99 | Mar 03 2026 02:45 PM IST | Quiz prelim + final round shown on one page; final table always visible with live slot updates as teams are selected
+v6.00 | Mar 03 2026 02:45 PM IST | YT Ad panel: Refresh All Classes moved into header — no longer floats between YT Ad and Quiz panels
+v6.01 | Mar 03 2026 02:45 PM IST | Payment Approval: auto-fill enrollment count + incharge faculty + captain phone; refundable payment banner on login page
+v6.02 | Mar 03 2026 03:30 PM IST | Manual Add: captain name shown on phone input; class incharge strip on class select; incharge faculty banner above footer
+v6.03 | Mar 03 2026 03:30 PM IST | Fix: FACULTY_LIST exposed on window so incharge shows in Manual Add & banner; stat cards clickable; default filter changed to All
 -->
     <!-- ============================================================ -->
     <!-- 🟢 FIREBASE PRESENCE + 📣 PUSH NOTIFICATIONS SCRIPTS       -->
@@ -36994,6 +37837,28 @@ export default {
     })();
     </script>
 
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- CLASS INCHARGE FACULTY BANNER — slides up just above footer    -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <div id="classInchargeBanner" style="display:none;background:linear-gradient(135deg,#1a237e,#283593,#3949ab);border-radius:14px;padding:16px 22px;margin:0 0 20px;box-shadow:0 6px 24px rgba(26,35,126,0.25);border:2px solid #5c6bc0;overflow:hidden">
+        <div style="display:flex;align-items:flex-start;gap:14px;flex-wrap:wrap">
+            <div style="font-size:2em;line-height:1">👩‍‍🏫</div>
+            <div style="flex:1;min-width:220px">
+                <div style="color:#c5cae9;font-size:0.76em;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:5px">Class Incharge Faculty — Spurthi Youth Festival 2026</div>
+                <div id="classInchargeBannerList" style="display:flex;flex-direction:column;gap:6px"></div>
+            </div>
+        </div>
+    </div>
+    <style>
+    @keyframes slideUpBanner {
+        from { opacity:0; transform:translateY(40px); }
+        to   { opacity:1; transform:translateY(0); }
+    }
+    #classInchargeBanner.banner-visible {
+        animation: slideUpBanner 0.55s ease-out forwards;
+    }
+    </style>
+
     <footer style="background: white; border-radius: 12px; padding: 25px; margin-top: 30px; box-shadow: 0 4px 20px rgba(0,0,0,0.1);">
         <div style="text-align: center;">
             
@@ -37012,7 +37877,7 @@ export default {
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;" id="devTriggerVersion">
-                <strong>Version:</strong> 5.95 — Jury Summary Report: inline edit jury name &amp; password — saves directly to Firebase, syncs with Jury Setup | <strong>Last Updated:</strong> Mar 03, 2026, 01:30 PM IST</p>
+                <strong>Version:</strong> 6.03 — Fix: FACULTY_LIST exposed on window so incharge shows in Manual Add & banner; stat cards clickable; default filter changed to All<strong>Last Updated:</strong> Mar 03, 2026, 03:30 PM IST</p>
             <!-- ============================================ -->
             
             <p style="color: #c44569; font-size: 0.85em; font-weight: 600; margin-bottom: 8px;">
