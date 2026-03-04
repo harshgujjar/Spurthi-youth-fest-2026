@@ -686,7 +686,7 @@
         .firebase-status {
             position: fixed;
             bottom: 20px;
-            right: 20px;
+            right: 90px;
             background: white;
             padding: 12px 20px;
             border-radius: 25px;
@@ -1248,6 +1248,7 @@
         animation: toastBarShimmer 1.5s linear infinite;
     }
     </style>
+
 
     <div id="inAppNotifToast" style="display:none;position:fixed;top:0;left:0;right:0;z-index:999999;background:linear-gradient(135deg,#c44569,#6a1b9a);color:#fff;padding:16px 20px;">
         <div style="display:flex;align-items:flex-start;gap:12px">
@@ -2888,6 +2889,7 @@
                 <button class="tab super-admin-only" onclick="showTab('dbInspector')" id="dbInspectorTab">🔍 DB Inspector</button>
                 <button class="tab super-admin-only" onclick="showTab('cloudinaryInspector')" id="cloudinaryInspectorTab">☁️ Cloudinary</button>
                 <button class="tab super-admin-only" onclick="showTab('firebaseDownloadMonitor')" id="firebaseDownloadMonitorTab">🔥 Download Monitor</button>
+                <button class="tab super-admin-only" onclick="showTab('chatInboxPanel');chatAdminLoadInbox();chatLoadPermToggles()" id="chatInboxPanelTab">💬 Chat Inbox <span id="chatInboxTabBadge"></span></button>
                 <button class="tab super-admin-only" onclick="showTab('managerPermissionsPanel')" id="managerPermissionsPanelTab">👔 Manager Permissions</button>
                 <button class="tab super-admin-only" onclick="showTab('vlogAdminPanel');loadVlogAdminPanel()" id="vlogAdminPanelTab">📹 Vlog Admin</button>
                 <button class="tab super-admin-only" onclick="showTab('podcastAdminPanel');loadPodcastAdminPanel()" id="podcastAdminPanelTab">🎙️ Podcast Admin</button>
@@ -4637,6 +4639,82 @@
                         <button onclick="deactivateFeedback()" id="btnDeactivateFeedback" style="background:white;color:#c62828;border:2px solid #f44336;border-radius:10px;padding:12px 24px;font-size:1em;font-weight:700;cursor:pointer">⛔ Deactivate Feedback</button>
                         <a href="feedback_preview.html" target="_blank" style="display:inline-flex;align-items:center;gap:7px;background:linear-gradient(135deg,#00695c,#26a69a);color:white;text-decoration:none;border-radius:10px;padding:12px 24px;font-size:1em;font-weight:700;box-shadow:0 3px 10px rgba(0,105,92,0.35)">🔗 Open Preview Page</a>
                     </div>
+
+                    <!-- ── SHOW ON — custom trigger mode ── -->
+                    <div style="background:#fff3f6;border:2px solid #f8bbd0;border-radius:12px;padding:18px 20px;margin-bottom:16px">
+                        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:6px">
+                            <div>
+                                <strong style="color:#880e4f;font-size:0.95em">📍 Show Feedback On</strong>
+                                <p style="color:#888;font-size:0.8em;margin:3px 0 0">Choose exactly which users see the popup and when. Only one mode active at a time.</p>
+                            </div>
+                            <span id="fbShowOnCurrentBadge" style="background:#880e4f;color:white;border-radius:20px;padding:5px 16px;font-size:0.78em;font-weight:700">Loading…</span>
+                        </div>
+
+                        <!-- Group: Broad audience -->
+                        <p style="font-size:0.75em;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.8px;margin:14px 0 8px">🌍 Broad Audience</p>
+                        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px;margin-bottom:4px">
+                            <label id="fbShowOnBtn_login_page" onclick="fbSetShowOn('login_page')" style="display:flex;align-items:flex-start;gap:10px;padding:11px 14px;border-radius:10px;border:2px solid #e0e0e0;cursor:pointer;background:white;transition:all .15s">
+                                <span style="font-size:1.3em;line-height:1.2">🔐</span>
+                                <span><strong style="display:block;font-size:0.86em;color:#333">On Login Page</strong><span style="font-size:0.74em;color:#888">Anyone who opens the site — before any login</span></span>
+                            </label>
+                            <label id="fbShowOnBtn_both" onclick="fbSetShowOn('both')" style="display:flex;align-items:flex-start;gap:10px;padding:11px 14px;border-radius:10px;border:2px solid #e0e0e0;cursor:pointer;background:white;transition:all .15s">
+                                <span style="font-size:1.3em;line-height:1.2">🌐</span>
+                                <span><strong style="display:block;font-size:0.86em;color:#333">Everyone (Login + After login)</strong><span style="font-size:0.74em;color:#888">All visitors see it — before and after login</span></span>
+                            </label>
+                        </div>
+
+                        <!-- Group: Role-based -->
+                        <p style="font-size:0.75em;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.8px;margin:14px 0 8px">👤 Role-Based (After Login)</p>
+                        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px;margin-bottom:4px">
+                            <label id="fbShowOnBtn_after_login" onclick="fbSetShowOn('after_login')" style="display:flex;align-items:flex-start;gap:10px;padding:11px 14px;border-radius:10px;border:2px solid #e0e0e0;cursor:pointer;background:white;transition:all .15s">
+                                <span style="font-size:1.3em;line-height:1.2">🎓</span>
+                                <span><strong style="display:block;font-size:0.86em;color:#333">Students Only</strong><span style="font-size:0.74em;color:#888">Only quiz-registered students after login</span></span>
+                            </label>
+                            <label id="fbShowOnBtn_students_cr" onclick="fbSetShowOn('students_cr')" style="display:flex;align-items:flex-start;gap:10px;padding:11px 14px;border-radius:10px;border:2px solid #e0e0e0;cursor:pointer;background:white;transition:all .15s">
+                                <span style="font-size:1.3em;line-height:1.2">📋</span>
+                                <span><strong style="display:block;font-size:0.86em;color:#333">Students & CRs</strong><span style="font-size:0.74em;color:#888">Students and Class Representatives, not admins</span></span>
+                            </label>
+                            <label id="fbShowOnBtn_cr_only" onclick="fbSetShowOn('cr_only')" style="display:flex;align-items:flex-start;gap:10px;padding:11px 14px;border-radius:10px;border:2px solid #e0e0e0;cursor:pointer;background:white;transition:all .15s">
+                                <span style="font-size:1.3em;line-height:1.2">🪪</span>
+                                <span><strong style="display:block;font-size:0.86em;color:#333">CR Login Only</strong><span style="font-size:0.74em;color:#888">Only Class Representatives after CR login</span></span>
+                            </label>
+                            <label id="fbShowOnBtn_admin_only" onclick="fbSetShowOn('admin_only')" style="display:flex;align-items:flex-start;gap:10px;padding:11px 14px;border-radius:10px;border:2px solid #e0e0e0;cursor:pointer;background:white;transition:all .15s">
+                                <span style="font-size:1.3em;line-height:1.2">🛡️</span>
+                                <span><strong style="display:block;font-size:0.86em;color:#333">Admin Only</strong><span style="font-size:0.74em;color:#888">Super Admin and Admin logins only</span></span>
+                            </label>
+                            <label id="fbShowOnBtn_jury_only" onclick="fbSetShowOn('jury_only')" style="display:flex;align-items:flex-start;gap:10px;padding:11px 14px;border-radius:10px;border:2px solid #e0e0e0;cursor:pointer;background:white;transition:all .15s">
+                                <span style="font-size:1.3em;line-height:1.2">⚖️</span>
+                                <span><strong style="display:block;font-size:0.86em;color:#333">Jury Only</strong><span style="font-size:0.74em;color:#888">Only jury members after jury login</span></span>
+                            </label>
+                        </div>
+
+                        <!-- Group: Event/Game specific -->
+                        <p style="font-size:0.75em;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.8px;margin:14px 0 8px">🎮 Event / Game Specific (After Login)</p>
+                        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px;margin-bottom:4px">
+                            <label id="fbShowOnBtn_quiz_only" onclick="fbSetShowOn('quiz_only')" style="display:flex;align-items:flex-start;gap:10px;padding:11px 14px;border-radius:10px;border:2px solid #e0e0e0;cursor:pointer;background:white;transition:all .15s">
+                                <span style="font-size:1.3em;line-height:1.2">🧠</span>
+                                <span><strong style="display:block;font-size:0.86em;color:#333">Quiz Login Only</strong><span style="font-size:0.74em;color:#888">Shows only after a student logs into the daily quiz</span></span>
+                            </label>
+                            <label id="fbShowOnBtn_scavenger_only" onclick="fbSetShowOn('scavenger_only')" style="display:flex;align-items:flex-start;gap:10px;padding:11px 14px;border-radius:10px;border:2px solid #e0e0e0;cursor:pointer;background:white;transition:all .15s">
+                                <span style="font-size:1.3em;line-height:1.2">🗺️</span>
+                                <span><strong style="display:block;font-size:0.86em;color:#333">Scavenger Hunt Login Only</strong><span style="font-size:0.74em;color:#888">Only after Scavenger Hunt login</span></span>
+                            </label>
+                            <label id="fbShowOnBtn_speedslide_only" onclick="fbSetShowOn('speedslide_only')" style="display:flex;align-items:flex-start;gap:10px;padding:11px 14px;border-radius:10px;border:2px solid #e0e0e0;cursor:pointer;background:white;transition:all .15s">
+                                <span style="font-size:1.3em;line-height:1.2">🧩</span>
+                                <span><strong style="display:block;font-size:0.86em;color:#333">Speed Slide Challenge Only</strong><span style="font-size:0.74em;color:#888">Only after Speed Slide login</span></span>
+                            </label>
+                            <label id="fbShowOnBtn_any_game" onclick="fbSetShowOn('any_game')" style="display:flex;align-items:flex-start;gap:10px;padding:11px 14px;border-radius:10px;border:2px solid #e0e0e0;cursor:pointer;background:white;transition:all .15s">
+                                <span style="font-size:1.3em;line-height:1.2">🎯</span>
+                                <span><strong style="display:block;font-size:0.86em;color:#333">Any Game Login</strong><span style="font-size:0.74em;color:#888">Quiz, Scavenger Hunt, or Speed Slide — any one</span></span>
+                            </label>
+                        </div>
+
+                        <div style="margin-top:16px;display:flex;align-items:center;flex-wrap:wrap;gap:10px">
+                            <button onclick="fbSaveShowOn()" style="background:linear-gradient(135deg,#c2185b,#880e4f);color:white;border:none;border-radius:9px;padding:10px 24px;font-size:0.92em;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(194,24,91,0.35)">💾 Save Show-On Setting</button>
+                            <span id="fbShowOnSaveToast" style="display:none;background:#d4edda;color:#155724;padding:9px 16px;border-radius:9px;font-weight:700;font-size:0.85em;border:2px solid #c3e6cb">✅ Saved!</span>
+                        </div>
+                    </div>
+
                         <!-- Activation history bar — populated by loadFeedbackAdmin() -->
                         <div id="fbActivationHistory" style="display:none;margin-top:12px;padding:12px 16px;border-radius:10px;font-size:0.83em;line-height:1.9;border:1.5px solid #e0e0e0;background:#fafafa;width:100%"></div>
                 </div>
@@ -5133,6 +5211,73 @@
             <!-- TO ADD A NEW PERMISSION: copy a toggle row, change id & label,    -->
             <!-- then add matching code in managerPermissions & applyManagerPermissions() -->
             <!-- ══════════════════════════════════════════════════════════════════ -->
+            <!-- ═══════════════════════════════════════════════════
+                 CHAT INBOX PANEL (Super Admin / Manager with permission)
+                 ═══════════════════════════════════════════════════ -->
+            <div id="chatInboxPanel" class="form-section super-admin-only" style="margin-top:20px">
+                <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:6px">
+                    <h2 style="color:#c44569;margin:0">💬 Chat Inbox</h2>
+                    <span id="chatInboxTotalBadge" style="display:none;background:#e53935;color:white;border-radius:20px;padding:4px 14px;font-size:0.82em;font-weight:700"></span>
+                </div>
+                <p style="color:#888;font-size:0.85em;margin-bottom:10px">All student and guest conversations. Click a conversation to reply.</p>
+
+                <!-- ── Guest Permissions Bar ── -->
+                <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:12px;background:#fff8e1;padding:10px 16px;border-radius:10px;border:1.5px solid #ffe082">
+                    <span style="font-size:.82em;font-weight:700;color:#795548;margin-right:4px">⚙️ Guest Permissions:</span>
+                    <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:.82em;font-weight:600;color:#555">
+                        <input type="checkbox" id="chatPermEdit" onchange="chatSavePermissions()" style="accent-color:#c44569;width:15px;height:15px"> ✏️ Allow Edit
+                    </label>
+                    <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:.82em;font-weight:600;color:#555">
+                        <input type="checkbox" id="chatPermDelete" onchange="chatSavePermissions()" style="accent-color:#c44569;width:15px;height:15px"> 🗑️ Allow Delete
+                    </label>
+                    <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:.82em;font-weight:600;color:#555">
+                        <input type="checkbox" id="chatPermRecall" onchange="chatSavePermissions()" style="accent-color:#c44569;width:15px;height:15px"> 🚫 Allow Recall
+                    </label>
+                    <span id="chatPermSaveStatus" style="font-size:.75em;color:#4caf50;font-weight:700;margin-left:4px;display:none">✅ Saved</span>
+                </div>
+
+                <!-- ── Search & Filter toolbar ── -->
+                <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px;background:#f9f0ff;padding:12px 16px;border-radius:12px;border:1.5px solid #e0d0f0">
+                    <input id="chatSearchInput" type="text" placeholder="🔍 Search by name or message…"
+                        oninput="chatAdminApplyFilters()"
+                        style="flex:1;min-width:180px;padding:8px 14px;border:1.5px solid #d0b8f0;border-radius:8px;font-size:0.88em;outline:none;font-family:inherit">
+                    <select id="chatFilterType" onchange="chatAdminApplyFilters()" style="padding:8px 12px;border:1.5px solid #d0b8f0;border-radius:8px;font-size:0.88em;outline:none;cursor:pointer;background:white">
+                        <option value="all">All Types</option>
+                        <option value="guest">🟠 Guest Only</option>
+                        <option value="student">🔵 Student Only</option>
+                    </select>
+                    <select id="chatFilterStatus" onchange="chatAdminApplyFilters()" style="padding:8px 12px;border:1.5px solid #d0b8f0;border-radius:8px;font-size:0.88em;outline:none;cursor:pointer;background:white">
+                        <option value="all">All Status</option>
+                        <option value="open">● Open</option>
+                        <option value="resolved">✅ Resolved</option>
+                        <option value="unread">🔴 Unread</option>
+                    </select>
+                    <button onclick="chatAdminApplyFilters(true)" style="background:white;color:#c44569;border:1.5px solid #e0d0f0;border-radius:8px;padding:8px 14px;font-size:0.82em;font-weight:700;cursor:pointer">↺ Reset</button>
+                </div>
+
+                <!-- Inbox list -->
+                <div id="chatAdminInboxList" style="background:white;border-radius:12px;border:1.5px solid #e0d0f0;overflow:hidden;min-height:80px">
+                    <div style="color:#aaa;text-align:center;padding:28px;font-size:0.88em">Loading conversations…</div>
+                </div>
+
+                <!-- Reply panel (hidden until conversation selected) -->
+                <div id="chatAdminReplyPanel" style="display:none;margin-top:18px;background:white;border-radius:12px;border:1.5px solid #e0d0f0;padding:18px">
+                    <button class="chat-admin-back-btn" onclick="chatAdminBackToInbox()">← Back to Inbox</button>
+                    <div id="chatAdminConvInfo" style="margin-bottom:12px;padding:10px 14px;background:#f9f0ff;border-radius:8px;font-size:0.85em;color:#4a0080"></div>
+                    <div class="chat-admin-messages" id="chatAdminMsgArea"></div>
+                    <div class="chat-admin-input-row">
+                        <textarea id="chatAdminReplyText" placeholder="Type your reply…"
+                            onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();chatAdminSendReply();}"></textarea>
+                        <button class="chat-admin-send-btn" onclick="chatAdminSendReply()">Send ➤</button>
+                    </div>
+                    <div style="margin-top:10px;display:flex;gap:10px;flex-wrap:wrap">
+                        <button id="chatAdminResolveBtn" class="chat-resolve-btn" onclick="chatAdminResolve()">✅ Mark as Resolved</button>
+                        <button id="chatAdminReopenBtn" onclick="chatAdminReopenConv()" style="background:#e8f5e9;color:#1b5e20;border:1.5px solid #a5d6a7;padding:7px 16px;border-radius:8px;cursor:pointer;font-weight:700;font-size:.82em">🔄 Reopen &amp; Continue</button>
+                        <button onclick="chatAdminDeleteConv()" style="background:#fce4ec;color:#880e4f;border:1.5px solid #f48fb1;padding:7px 16px;border-radius:8px;cursor:pointer;font-weight:700;font-size:0.82em">🗑️ Delete Conv</button>
+                    </div>
+                </div>
+            </div>
+
             <div id="managerPermissionsPanel" class="form-section super-admin-only" style="margin-top:20px">
                 <h2 style="color:#2196F3;margin-bottom:8px">👔 Manager Permissions</h2>
                 <p style="color:#555;font-size:13px;margin-bottom:20px;background:#e3f2fd;padding:12px 16px;border-radius:8px;border-left:4px solid #2196F3">
@@ -5196,6 +5341,12 @@
                             <div><strong style="color:#333">📅 Event Schedule Editor</strong>
                             <p style="color:#777;font-size:12px;margin:3px 0 0">Add, edit and delete events in the Spurthi Youth Fest timetable</p></div>
                             <input type="checkbox" id="mperm_eventSchedule" style="width:20px;height:20px;accent-color:#2196F3;cursor:pointer">
+                        </div>
+
+                        <div style="display:grid;grid-template-columns:1fr auto;align-items:center;padding:16px 0">
+                            <div><strong style="color:#333">💬 Chat Inbox Access</strong>
+                            <p style="color:#777;font-size:12px;margin:3px 0 0">View and reply to student/guest chat conversations</p></div>
+                            <input type="checkbox" id="mperm_chatInbox" style="width:20px;height:20px;accent-color:#2196F3;cursor:pointer">
                         </div>
 
                     </div>
@@ -7699,6 +7850,7 @@
             pdfHandouts:       true,   // 📄 PDF Handouts — upload event PDFs
             paymentApproval:   true,   // 💳 Payment Approval — approve/reject registrations
             eventSchedule:     true,   // 📅 Event Schedule — add/edit/delete events
+            chatInbox:         false,  // 💬 Chat Inbox — view and reply to student/guest chats
         };
 
         // Load saved permissions from localStorage on page load
@@ -8309,6 +8461,15 @@
             isSuperAdmin = true;
             currentUser = 'Super Admin';
             document.getElementById('userInfo').innerHTML = 'Logged in as: <span class="super-admin-badge">Super Admin</span>';
+            // ── Tag this device as super admin in fcmTokens ──
+            (function() {
+                try {
+                    var _db = window.db || (window.firebase && window.firebase.database());
+                    if (!_db) return;
+                    var _sid = (typeof getSessionId === 'function') ? getSessionId() : localStorage.getItem('sc_session_id') || localStorage.getItem('push_sid');
+                    if (_sid) _db.ref('fcmTokens/' + _sid + '/role').set('superadmin').catch(function(){});
+                } catch(e) {}
+            })();
             document.getElementById('loginSection').style.display = 'none';
             document.getElementById('adminSection').style.display = 'block';
             
@@ -8483,6 +8644,11 @@
             if (esTab) esTab.style.display = managerPermissions.eventSchedule ? 'inline-block' : 'none';
             const esPanel = document.getElementById('eventScheduleAdmin');
             if (esPanel) esPanel.style.removeProperty('display');
+
+            const chatTab = document.getElementById('chatInboxPanelTab');
+            if (chatTab) chatTab.style.display = managerPermissions.chatInbox ? 'inline-block' : 'none';
+            const chatPanel = document.getElementById('chatInboxPanel');
+            if (chatPanel) chatPanel.style.removeProperty('display');
         }
 
         // ─────────────────────────────────────────────────────────────────────────
@@ -8497,6 +8663,7 @@
             managerPermissions.pdfHandouts       = document.getElementById('mperm_pdfHandouts').checked;
             managerPermissions.paymentApproval   = document.getElementById('mperm_paymentApproval').checked;
             managerPermissions.eventSchedule     = document.getElementById('mperm_eventSchedule').checked;
+            managerPermissions.chatInbox          = document.getElementById('mperm_chatInbox') ? document.getElementById('mperm_chatInbox').checked : false;
 
             localStorage.setItem('spurthi_manager_perms', JSON.stringify(managerPermissions));
             alert('✅ Manager permissions saved!\nThese apply the next time Manager logs in.');
@@ -9341,8 +9508,8 @@
             document.getElementById('quizPage').style.display = 'none';
             document.getElementById('shStudentDashboard').style.display  = 'none';
             document.getElementById('sscStudentDashboard').style.display = 'none';
-            shCurrentUser = null;
-            sscCurrentUser = null;
+            shCurrentUser = null; window.shCurrentUser = null;
+            sscCurrentUser = null; window.sscCurrentUser = null;
             clearInterval(sscTimerRef);
             if (typeof shAdminStopSubmissionsListener === 'function') shAdminStopSubmissionsListener();
             document.getElementById('userType').value = '';
@@ -17142,6 +17309,7 @@
                 document.getElementById('mperm_pdfHandouts').checked      = managerPermissions.pdfHandouts;
                 document.getElementById('mperm_paymentApproval').checked  = managerPermissions.paymentApproval;
                 document.getElementById('mperm_eventSchedule').checked    = managerPermissions.eventSchedule;
+                if (document.getElementById('mperm_chatInbox')) document.getElementById('mperm_chatInbox').checked = managerPermissions.chatInbox;
             }
         }
 
@@ -21912,6 +22080,8 @@ Davan Institute Team`;
                         const fbSnap = await db.ref('feedbackSettings').once('value');
                         const fbData = fbSnap.val();
                         if (!fbData || !fbData.active) return;           // feedback off — nothing to do
+                        // ── Respect showOn — after quiz login check ──
+                        if (!fbShowOnAllowed(fbData.showOn || 'both')) return;
                         const submitted = await db.ref('feedbackSubmitted/students/' + studentKey).once('value');
                         if (submitted.exists()) return;                  // already submitted — skip
                         fbAlreadySubmitted = false;                      // clear any stale localStorage flag
@@ -28014,7 +28184,7 @@ Davan Institute Team`;
             if (!bSnap.exists()) { shShowMsg(msg,'error','Phone not registered.'); return; }
             let bUser = null, bKey = null;
             bSnap.forEach(c => { if (!bUser) { bUser = c.val(); bKey = c.key; } });
-            shCurrentUser = { key: bKey, ...bUser };
+            shCurrentUser = { key: bKey, ...bUser }; window.shCurrentUser = shCurrentUser;
             document.getElementById('loginSection').style.display        = 'none';
             document.getElementById('quizStudentDashboard').style.display = 'none';
             document.getElementById('shStudentDashboard').style.display   = 'block';
@@ -28043,7 +28213,7 @@ Davan Institute Team`;
                 localStorage.removeItem('spurthi_sh_remember');
             }
 
-            shCurrentUser = { key: foundKey, ...found };
+            shCurrentUser = { key: foundKey, ...found }; window.shCurrentUser = shCurrentUser;
             document.getElementById('loginSection').style.display        = 'none';
             document.getElementById('quizStudentDashboard').style.display = 'none';
             document.getElementById('shStudentDashboard').style.display   = 'block';
@@ -28052,6 +28222,13 @@ Davan Institute Team`;
             document.getElementById('shStudentBadge').textContent  = found.name;
             document.getElementById('userInfo').innerHTML = 'Logged in as: <span class="badge" style="background:#9c27b0;color:white;padding:5px 12px;border-radius:20px;font-size:0.85em">' + found.name + ' – Scavenger Hunt</span>';
             if (window.maybeShowNotifBanner) maybeShowNotifBanner();
+            // Re-check feedback showOn for scavenger/any_game modes
+            (async () => { try {
+                const fbSnap = await db.ref('feedbackSettings').once('value');
+                const fbData = fbSnap.val();
+                if (fbData && fbData.active && typeof fbShowOnAllowed === 'function' && fbShowOnAllowed(fbData.showOn||'both') && !fbAlreadySubmitted)
+                    setTimeout(() => showFeedbackPopup(fbData), 1200);
+            } catch(e){} })();
             setTimeout(() => {
                 const shDash = document.getElementById('shStudentDashboard');
                 if (shDash) {
@@ -30720,7 +30897,59 @@ Proceed?`)) return;
     ];
 
     // On page load — listen for feedback trigger from Firebase
-    async function initFeedbackSystem() {
+    // ── fbShowOnAllowed: central gate for all showOn modes ─────────────
+    function fbShowOnAllowed(mode) {
+        var cu  = window.currentUser  || '';   // 'Student','CR','Admin','Super Admin','Manager','Manager 2','Jury',null
+        var qcu = window.quizCurrentUser;      // set after quiz login
+        var shc = window.shCurrentUser;        // set after scavenger hunt login
+        var ssc = window.sscCurrentUser;       // set after speed slide login
+        var loggedIn = !!(cu || qcu || shc || ssc);
+
+        switch (mode) {
+            case 'login_page':
+                // Only before any login
+                return !loggedIn;
+
+            case 'both':
+                // Always — login page AND after any login
+                return true;
+
+            case 'after_login':
+                // Only quiz-registered students after login
+                return !!(qcu && qcu.key);
+
+            case 'students_cr':
+                // Students and CRs — not admins/managers/jury
+                if (!loggedIn) return false;
+                return (cu === 'Student' || cu === 'CR' || !!(qcu && qcu.key));
+
+            case 'cr_only':
+                return cu === 'CR';
+
+            case 'admin_only':
+                return cu === 'Admin' || cu === 'Super Admin';
+
+            case 'jury_only':
+                return cu === 'Jury';
+
+            case 'quiz_only':
+                return !!(qcu && qcu.key);
+
+            case 'scavenger_only':
+                return !!(shc && shc.key);
+
+            case 'speedslide_only':
+                return !!(ssc && ssc.key);
+
+            case 'any_game':
+                return !!(qcu && qcu.key) || !!(shc && shc.key) || !!(ssc && ssc.key);
+
+            default:
+                return true; // unknown mode — show by default
+        }
+    }
+
+        async function initFeedbackSystem() {
         try {
             fbDismissCount = parseInt(localStorage.getItem('spurthi_fb_dismiss') || '0');
             if (!fbListenerAttached) {
@@ -30753,6 +30982,8 @@ Proceed?`)) return;
                         if (subKey === 'yes') { fbAlreadySubmitted = true; return; }
                     }
                     if (fbAlreadySubmitted) return;
+                    // ── Respect showOn setting ──
+                    if (!fbShowOnAllowed(data.showOn || 'both')) return;
                     showFeedbackPopup(data);
                 });
             }
@@ -30848,35 +31079,48 @@ Proceed?`)) return;
         overlay.style.display = 'flex';
         overlay.style.alignItems = 'flex-start';
         document.body.style.overflow = 'hidden';
-        // Apply custom question layouts from saved labels
-        const fbLbl = window._fbCustomLabels || fbCurrentLabels || FB_DEFAULT_QUESTION_LABELS;
-        // Q7
-        const q7wrap = document.getElementById('fbCustomQ7Wrap');
-        if (q7wrap) q7wrap.style.display = fbLbl.customQ7Enabled ? 'block' : 'none';
-        if (fbLbl.customQ7Enabled) {
-            if (document.getElementById('fbCustomQ7Label')) {
-                document.getElementById('fbCustomQ7Label').innerHTML = '🎨 ' + (fbLbl.customQ7 || 'Q7') + (fbLbl.customQ7Req === 'required' ? ' <span style="color:#c2185b">*</span>' : '');
+        // Always fetch fresh labels from Firebase so enabled/disabled state is current
+        (async function applyFreshCustomQs() {
+            let fbLbl;
+            try {
+                const snap = await db.ref('feedbackSettings/questionLabels').once('value');
+                fbLbl = snap.exists()
+                    ? { ...FB_DEFAULT_QUESTION_LABELS, ...snap.val() }
+                    : { ...FB_DEFAULT_QUESTION_LABELS };
+            } catch(e) {
+                fbLbl = window._fbCustomLabels || fbCurrentLabels || FB_DEFAULT_QUESTION_LABELS;
             }
-            fbApplyCustomQLayout(7, fbLbl.customQ7Type || 'rate3');
-        }
-        // Q8
-        const q8wrap = document.getElementById('fbCustomQ8Wrap');
-        if (q8wrap) q8wrap.style.display = fbLbl.customQ8Enabled ? 'block' : 'none';
-        if (fbLbl.customQ8Enabled) {
-            if (document.getElementById('fbCustomQ8Label')) {
-                document.getElementById('fbCustomQ8Label').innerHTML = '🔢 ' + (fbLbl.customQ8 || 'Q8') + (fbLbl.customQ8Req === 'required' ? ' <span style="color:#c2185b">*</span>' : '');
+            // Also update fbCurrentLabels so submit validation is in sync
+            fbCurrentLabels = fbLbl;
+            window._fbCustomLabels = fbLbl;
+            // Q7
+            const q7wrap = document.getElementById('fbCustomQ7Wrap');
+            if (q7wrap) q7wrap.style.display = fbLbl.customQ7Enabled ? 'block' : 'none';
+            if (fbLbl.customQ7Enabled) {
+                if (document.getElementById('fbCustomQ7Label')) {
+                    document.getElementById('fbCustomQ7Label').innerHTML = '🎨 ' + (fbLbl.customQ7 || 'Q7') + (fbLbl.customQ7Req === 'required' ? ' <span style="color:#c2185b">*</span>' : '');
+                }
+                fbApplyCustomQLayout(7, fbLbl.customQ7Type || 'rate3');
             }
-            fbApplyCustomQLayout(8, fbLbl.customQ8Type || 'score10');
-        }
-        // Q9
-        const q9wrap = document.getElementById('fbCustomQ9Wrap');
-        if (q9wrap) q9wrap.style.display = fbLbl.customQ9Enabled ? 'block' : 'none';
-        if (fbLbl.customQ9Enabled) {
-            if (document.getElementById('fbCustomQ9Label')) {
-                document.getElementById('fbCustomQ9Label').innerHTML = '📝 ' + (fbLbl.customQ9 || 'Q9') + (fbLbl.customQ9Req === 'required' ? ' <span style="color:#c2185b">*</span>' : '');
+            // Q8
+            const q8wrap = document.getElementById('fbCustomQ8Wrap');
+            if (q8wrap) q8wrap.style.display = fbLbl.customQ8Enabled ? 'block' : 'none';
+            if (fbLbl.customQ8Enabled) {
+                if (document.getElementById('fbCustomQ8Label')) {
+                    document.getElementById('fbCustomQ8Label').innerHTML = '🔢 ' + (fbLbl.customQ8 || 'Q8') + (fbLbl.customQ8Req === 'required' ? ' <span style="color:#c2185b">*</span>' : '');
+                }
+                fbApplyCustomQLayout(8, fbLbl.customQ8Type || 'score10');
             }
-            fbApplyCustomQLayout(9, fbLbl.customQ9Type || 'textarea');
-        }
+            // Q9
+            const q9wrap = document.getElementById('fbCustomQ9Wrap');
+            if (q9wrap) q9wrap.style.display = fbLbl.customQ9Enabled ? 'block' : 'none';
+            if (fbLbl.customQ9Enabled) {
+                if (document.getElementById('fbCustomQ9Label')) {
+                    document.getElementById('fbCustomQ9Label').innerHTML = '📝 ' + (fbLbl.customQ9 || 'Q9') + (fbLbl.customQ9Req === 'required' ? ' <span style="color:#c2185b">*</span>' : '');
+                }
+                fbApplyCustomQLayout(9, fbLbl.customQ9Type || 'textarea');
+            }
+        })();
     }
 
     async function loadFeedbackEventRatings() {
@@ -31518,6 +31762,11 @@ Proceed?`)) return;
             const total = Object.keys(responses).length;
             document.getElementById('fbStatTotal').textContent = total;
             document.getElementById('fbStatActive').textContent = settings.active ? '✅ ON' : '❌ OFF';
+            // Load showOn setting
+            if (typeof fbRenderShowOnBadge === 'function') {
+                fbRenderShowOnBadge(settings.showOn || 'both');
+                _fbShowOnSelected = settings.showOn || 'both';
+            }
             if (total > 0) {
                 const vals = Object.values(responses);
                 const avgScore = (vals.reduce((s,r) => s + (r.overallScore||0), 0) / total).toFixed(1);
@@ -31695,14 +31944,36 @@ Proceed?`)) return;
     }
 
     async function activateFeedback() {
-        if (!confirm('🚀 Activate feedback popup for ALL visitors now?\n\nEveryone on the page will see it.')) return;
+        var showOn = _fbShowOnSelected || 'both';
+        var modeLabel = (_fbShowOnLabels && _fbShowOnLabels[showOn]) ? _fbShowOnLabels[showOn] : showOn;
+        var audienceMap = {
+            login_page:      'Anyone who opens the site (before login)',
+            both:            'All visitors (before + after login)',
+            after_login:     'Quiz-registered students after login',
+            students_cr:     'Students and CRs after login',
+            cr_only:         'Class Representatives only',
+            admin_only:      'Admin and Super Admin only',
+            jury_only:       'Jury members only',
+            quiz_only:       'Students after Quiz login',
+            scavenger_only:  'Participants after Scavenger Hunt login',
+            speedslide_only: 'Players after Speed Slide login',
+            any_game:        'Anyone after Quiz / Scavenger / Speed Slide login'
+        };
+        var audience = audienceMap[showOn] || 'Selected visitors';
+        if (!confirm('Activate feedback popup? Show On: ' + modeLabel + ' | Audience: ' + audience)) return;
         const msg = document.getElementById('feedbackAdminMsg');
         if (msg) msg.innerHTML = '<p style="color:#666">⏳ Activating...</p>';
         try {
             const eventsSnap = await db.ref('feedbackSettings/events').once('value');
             const events = eventsSnap.val() || FB_DEFAULT_EVENTS;
-            await db.ref('feedbackSettings').update({ active: true, activatedAt: new Date().toISOString(), activatedBy: 'Super Admin', events });
-            if (msg) msg.innerHTML = '<p style="color:#28a745;background:#d4edda;padding:10px 14px;border-radius:8px;font-weight:600">🚀 Feedback is now LIVE for all visitors!</p>';
+            await db.ref('feedbackSettings').update({
+                active: true,
+                showOn: showOn,
+                activatedAt: new Date().toISOString(),
+                activatedBy: 'Super Admin',
+                events
+            });
+            if (msg) msg.innerHTML = '<p style="color:#28a745;background:#d4edda;padding:10px 14px;border-radius:8px;font-weight:600">🚀 Feedback is now LIVE — ' + modeLabel + '</p>';
             await loadFeedbackAdmin();
         } catch(e) {
             if (msg) msg.innerHTML = '<p style="color:#c62828;background:#fde8e8;padding:10px 14px;border-radius:8px">❌ Error: ' + e.message + '</p>';
@@ -31721,6 +31992,55 @@ Proceed?`)) return;
             if (msg) msg.innerHTML = '<p style="color:#c62828;background:#fde8e8;padding:10px 14px;border-radius:8px">❌ Error: ' + e.message + '</p>';
         }
     }
+
+    // ── fbShowOn: custom trigger mode ─────────────────────────────────
+    var _fbShowOnSelected = 'both'; // local selection before save
+
+    var _fbShowOnModes = [
+        'login_page','both',
+        'after_login','students_cr','cr_only','admin_only','jury_only',
+        'quiz_only','scavenger_only','speedslide_only','any_game'
+    ];
+
+    var _fbShowOnLabels = {
+        login_page:      '🔐 Login Page',
+        both:            '🌐 Everyone',
+        after_login:     '🎓 Students Only',
+        students_cr:     '📋 Students & CRs',
+        cr_only:         '🪪 CR Only',
+        admin_only:      '🛡️ Admin Only',
+        jury_only:       '⚖️ Jury Only',
+        quiz_only:       '🧠 Quiz Only',
+        scavenger_only:  '🗺️ Scavenger Only',
+        speedslide_only: '🧩 Speed Slide Only',
+        any_game:        '🎯 Any Game'
+    };
+
+    function fbSetShowOn(mode) {
+        _fbShowOnSelected = mode;
+        _fbShowOnModes.forEach(function(m) {
+            var el = document.getElementById('fbShowOnBtn_'+m);
+            if (!el) return;
+            el.style.border = m === mode ? '2px solid #c2185b' : '2px solid #e0e0e0';
+            el.style.background = m === mode ? '#fff3f6' : 'white';
+        });
+    }
+
+    async function fbSaveShowOn() {
+        try {
+            await db.ref('feedbackSettings').update({ showOn: _fbShowOnSelected });
+            var toast = document.getElementById('fbShowOnSaveToast');
+            if (toast) { toast.style.display='inline'; setTimeout(function(){toast.style.display='none';},2500); }
+            fbRenderShowOnBadge(_fbShowOnSelected);
+        } catch(e) { alert('Error saving: '+e.message); }
+    }
+
+    function fbRenderShowOnBadge(mode) {
+        var el = document.getElementById('fbShowOnCurrentBadge');
+        if (el) el.textContent = _fbShowOnLabels[mode] || mode;
+        fbSetShowOn(mode);
+    }
+
 
     async function loadFeedbackResponses() {
         const container = document.getElementById('fbResponsesContainer');
@@ -32191,12 +32511,19 @@ Proceed?`)) return;
             if (!bypassSnap.exists()) { msg.className='message error show'; msg.textContent='Phone not registered.'; return; }
             let bypassUser = null, bypassKey = null;
             bypassSnap.forEach(c => { if (!bypassUser) { bypassUser = c.val(); bypassKey = c.key; } });
-            sscCurrentUser = { key: bypassKey, ...bypassUser };
+            sscCurrentUser = { key: bypassKey, ...bypassUser }; window.sscCurrentUser = sscCurrentUser;
             document.getElementById('loginSection').style.display    = 'none';
             document.getElementById('sscStudentDashboard').style.display = 'block';
             document.getElementById('sscPlayerBadge').textContent    = (bypassUser.name||'') + ' · ' + (bypassUser.class||bypassUser.classYear||'');
             document.getElementById('userInfo').innerHTML = 'Logged in as: <span class="admin-badge" style="background:#6a1b9a;color:white">🧩 ' + (bypassUser.name||'') + ' – Speed Slide</span>';
             if (window.maybeShowNotifBanner) maybeShowNotifBanner();
+            // Re-check feedback showOn for speedslide/any_game modes
+            (async () => { try {
+                const fbSnap = await db.ref('feedbackSettings').once('value');
+                const fbData = fbSnap.val();
+                if (fbData && fbData.active && typeof fbShowOnAllowed === 'function' && fbShowOnAllowed(fbData.showOn||'both') && !fbAlreadySubmitted)
+                    setTimeout(() => showFeedbackPopup(fbData), 1200);
+            } catch(e){} })();
             window.scrollTo({ top: 0, behavior: 'smooth' });
             sscShowSection('play'); sscSelectDiff('medium'); return;
         }
@@ -32224,7 +32551,7 @@ Proceed?`)) return;
                 localStorage.removeItem('ssc_ph');
                 localStorage.removeItem('ssc_pw');
             }
-            sscCurrentUser = { key: foundKey, ...found };
+            sscCurrentUser = { key: foundKey, ...found }; window.sscCurrentUser = sscCurrentUser;
             document.getElementById('loginSection').style.display    = 'none';
             document.getElementById('sscStudentDashboard').style.display = 'block';
             document.getElementById('sscPlayerBadge').textContent    = (found.name||'') + ' · ' + (found.class||found.classYear||'');
@@ -36590,15 +36917,16 @@ self.addEventListener('push', function(event) {
     const title = data.title || (data.notification && data.notification.title) || 'Spurthi 2026';
     const body  = data.body  || (data.notification && data.notification.body)  || '';
     swLog('push_showing', 'title=' + title + ' body=' + body);
+    const notifUrl = data.url || 'https://harshgujjar.github.io/Spurthi-youth-fest-2026/';
     const options = {
         body: body,
         icon: '/Spurthi-youth-fest-2026/davan_logo_2026.gif',
         badge: '/Spurthi-youth-fest-2026/davan_logo_2026.gif',
         vibrate: [300, 100, 300, 100, 300],
         requireInteraction: true,
-        tag: 'spurthi-notif',
+        tag: 'spurthi-chat-' + (data.convId || 'msg'),
         renotify: true,
-        data: { url: 'https://harshgujjar.github.io/Spurthi-youth-fest-2026/' }
+        data: { url: notifUrl, convId: data.convId || '' }
     };
     event.waitUntil(
         self.registration.showNotification(title, options)
@@ -36610,12 +36938,22 @@ self.addEventListener('push', function(event) {
 self.addEventListener('notificationclick', function(event) {
     swLog('notification_clicked', '');
     event.notification.close();
-    const url = (event.notification.data && event.notification.data.url)
-                || 'https://harshgujjar.github.io/Spurthi-youth-fest-2026/';
+    const data   = event.notification.data || {};
+    const convId = data.convId || '';
+    const base   = data.url || 'https://harshgujjar.github.io/Spurthi-youth-fest-2026/';
+    const url    = convId ? (base.split('?')[0] + '?openChat=' + convId) : base;
+    swLog('notification_open_url', url);
     event.waitUntil(
         clients.matchAll({ type: 'window', includeUncontrolled: true }).then(list => {
             for (const c of list) {
-                if (c.url.includes('Spurthi') && 'focus' in c) return c.focus();
+                if (c.url.includes('Spurthi')) {
+                    if ('focus' in c) {
+                        c.focus();
+                        // Post message to already-open page to navigate to conversation
+                        c.postMessage({ type: 'OPEN_CHAT_CONV', convId: convId });
+                        return;
+                    }
+                }
             }
             if (clients.openWindow) return clients.openWindow(url);
         })
@@ -38031,7 +38369,7 @@ export default {
         let body;
         try { body = await request.json(); } catch(e) { return new Response('Invalid JSON', { status: 400, headers: corsHeaders }); }
 
-        const { title, body: msgBody, subscriptions, sids } = body;
+        const { title, body: msgBody, subscriptions, sids, url: notifUrl, convId: notifConvId } = body;
         if (!title || !msgBody || !subscriptions || !subscriptions.length) {
             return new Response('Missing fields', { status: 400, headers: corsHeaders });
         }
@@ -38041,7 +38379,13 @@ export default {
         for (let i = 0; i < subscriptions.length; i++) {
             const sub = subscriptions[i];
             try {
-                const resp = await sendPush(sub, { title, body: msgBody, notification: { title, body: msgBody } });
+                const pushPayload = {
+                    title, body: msgBody,
+                    notification: { title, body: msgBody },
+                    url: notifUrl || '',
+                    convId: notifConvId || ''
+                };
+                const resp = await sendPush(sub, pushPayload);
                 if (resp.ok || resp.status === 201) { sent++; }
                 else { failed++; if (sids && sids[i]) failedSids.push(sids[i]); }
             } catch(e) { failed++; if (sids && sids[i]) failedSids.push(sids[i]); }
@@ -38388,7 +38732,7 @@ export default {
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;" id="devTriggerVersion">
-                <strong>Version:</strong> 6.18 — Class logo thumbnail shown in registration table Class Name column<strong>Last Updated:</strong> Mar 04, 2026, (IST)</p>
+                <strong>Version:</strong> 6.38 — Fix: extra } in scResumeSession caused scToggle not defined crash; Reopen &amp; Continue button fixed; Firebase allowGuestEdit/Delete/Recall paths<strong>Last Updated:</strong> Mar 04, 2026, 10:58 PM IST</p>
             <!-- ============================================ -->
             
             <p style="color: #c44569; font-size: 0.85em; font-weight: 600; margin-bottom: 8px;">
@@ -38404,6 +38748,1008 @@ export default {
 
         </div>
     </footer>
+
+<!-- ═══════════════════════════════════════════════════════════
+     SPURTHI LIVE CHAT — CSS + HTML + JS  (complete, self-contained)
+     ═══════════════════════════════════════════════════════════ -->
+<style>
+/* ── Floating bubble ── */
+#sChatBubble {
+    position: fixed !important;
+    bottom: 80px !important;
+    right: 24px !important;
+    width: 58px;
+    height: 58px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #c44569, #6a1b9a);
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-size: 26px;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 20px rgba(106,27,154,0.55);
+    z-index: 999990 !important;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+#sChatBubble:hover { transform: scale(1.1); box-shadow: 0 6px 28px rgba(106,27,154,0.65); }
+#sChatBadge {
+    position: absolute;
+    top: -4px; right: -4px;
+    background: #e53935;
+    color: white;
+    border-radius: 50%;
+    min-width: 20px; height: 20px;
+    font-size: 11px; font-weight: 700;
+    display: none;
+    align-items: center; justify-content: center;
+    padding: 0 4px;
+    border: 2px solid white;
+}
+/* ── Chat window ── */
+#sChatWin {
+    position: fixed !important;
+    bottom: 148px !important;
+    right: 24px !important;
+    width: 350px;
+    max-height: 520px;
+    background: #fff;
+    border-radius: 18px;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.22);
+    z-index: 999989 !important;
+    display: none;
+    flex-direction: column;
+    overflow: hidden;
+    border: 1.5px solid #e0d0f0;
+}
+#sChatWin.scOpen { display: flex !important; }
+@media (max-width: 500px) {
+    #sChatWin { bottom:0!important; right:0!important; left:0!important; width:100%!important; max-height:80vh!important; border-radius:18px 18px 0 0; }
+    #sChatBubble { bottom:70px!important; right:16px!important; }
+}
+.scHead {
+    background: linear-gradient(135deg,#c44569,#6a1b9a);
+    color: white; padding: 13px 16px;
+    display: flex; align-items: center; gap: 10px; flex-shrink: 0;
+}
+.scHeadAv {
+    width:36px; height:36px; border-radius:50%;
+    background:rgba(255,255,255,0.25);
+    display:flex; align-items:center; justify-content:center; font-size:18px;
+}
+.scHeadInfo { flex:1; }
+.scHeadInfo strong { font-size:.95em; display:block; }
+.scHeadInfo small { font-size:.75em; opacity:.85; }
+.scCloseBtn {
+    background:rgba(255,255,255,0.2); border:none; color:white;
+    width:28px; height:28px; border-radius:50%; cursor:pointer;
+    font-size:16px; display:flex; align-items:center; justify-content:center;
+}
+/* Guest form */
+#scGuestForm { padding:18px; display:flex; flex-direction:column; gap:10px; }
+#scGuestForm h4 { color:#6a1b9a; margin:0 0 2px; font-size:.95em; }
+#scGuestForm p { color:#777; font-size:.82em; margin:0; }
+.scInput {
+    border:2px solid #e0d0f0; border-radius:8px;
+    padding:9px 12px; font-size:.9em; outline:none;
+    transition:border-color .2s; font-family:inherit; width:100%; box-sizing:border-box;
+}
+.scInput:focus { border-color:#c44569; }
+#scStartBtn {
+    background:linear-gradient(135deg,#c44569,#6a1b9a);
+    color:white; border:none; padding:10px; border-radius:8px;
+    cursor:pointer; font-weight:700; font-size:.9em;
+}
+/* Messages */
+#scMsgs {
+    flex:1; overflow-y:auto; padding:12px 12px 6px;
+    display:flex; flex-direction:column; gap:7px; min-height:180px;
+}
+.scBub {
+    max-width:82%; padding:8px 12px; border-radius:14px;
+    font-size:.875em; line-height:1.45; word-break:break-word;
+}
+.scBub.scSent {
+    background:linear-gradient(135deg,#c44569,#6a1b9a);
+    color:white; align-self:flex-end; border-bottom-right-radius:4px;
+}
+.scBub.scRecv {
+    background:#f3e5f5; color:#2d0050;
+    align-self:flex-start; border-bottom-left-radius:4px;
+}
+.scBub.scSys {
+    background:#f5f5f5; color:#888;
+    align-self:center; font-size:.76em; border-radius:10px;
+    padding:4px 12px; max-width:92%; text-align:center;
+}
+.scTime { font-size:.68em; opacity:.6; display:block; margin-top:2px; text-align:right; }
+.scBub.scRecv .scTime { text-align:left; }
+/* Resolved bar */
+#scResolvedBar {
+    background:#e8f5e9; color:#2e7d32; text-align:center;
+    padding:10px; font-size:.82em; font-weight:600; flex-shrink:0; display:none;
+}
+/* Input bar */
+#scInputBar {
+    display:none; gap:8px; padding:9px 11px;
+    border-top:1px solid #f0e8f8; flex-shrink:0; background:#fdfaff;
+}
+#scInputBar.scShow { display:flex; }
+#scTextInp {
+    flex:1; border:2px solid #e0d0f0; border-radius:10px;
+    padding:8px 11px; font-size:.875em; resize:none;
+    height:40px; max-height:100px; outline:none;
+    font-family:inherit; line-height:1.4;
+}
+#scTextInp:focus { border-color:#c44569; }
+#scSendBtn {
+    background:linear-gradient(135deg,#c44569,#6a1b9a);
+    color:white; border:none; width:40px; height:40px;
+    border-radius:50%; cursor:pointer; font-size:18px;
+    flex-shrink:0; display:flex; align-items:center; justify-content:center;
+}
+/* Admin inbox CSS */
+#chatInboxTabBadge {
+    background:#e53935; color:white; border-radius:10px;
+    padding:1px 6px; font-size:.72em; font-weight:700;
+    margin-left:5px; display:none;
+}
+.chat-inbox-conv {
+    display:flex; align-items:center; gap:12px;
+    padding:11px 14px; border-bottom:1px solid #f0e8f8;
+    cursor:pointer; transition:background .15s; border-radius:8px;
+}
+.chat-inbox-conv:hover { background:#fdf4ff; }
+.chat-inbox-conv.unread { background:#f9f0ff; }
+.chat-inbox-avatar {
+    width:40px; height:40px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    font-size:18px; flex-shrink:0; color:white; font-weight:700;
+}
+.chat-inbox-avatar.guest-avatar { background:linear-gradient(135deg,#ff8a65,#e64a19); }
+.chat-inbox-avatar.student-avatar { background:linear-gradient(135deg,#42a5f5,#1565c0); }
+.chat-inbox-body { flex:1; min-width:0; }
+.chat-inbox-name { font-weight:700; font-size:.9em; color:#2d0050; }
+.chat-inbox-preview { font-size:.78em; color:#888; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-top:2px; }
+.chat-inbox-meta { text-align:right; flex-shrink:0; }
+.chat-inbox-time { font-size:.72em; color:#aaa; }
+.chat-inbox-badge { background:#e53935; color:white; border-radius:10px; padding:2px 7px; font-size:.72em; font-weight:700; display:inline-block; margin-top:4px; }
+.chat-tag-guest { background:#fff3e0;color:#e65100;border:1px solid #ffcc80;padding:2px 7px;border-radius:8px;font-size:.7em;font-weight:700;margin-left:6px; }
+.chat-tag-student { background:#e3f2fd;color:#0d47a1;border:1px solid #90caf9;padding:2px 7px;border-radius:8px;font-size:.7em;font-weight:700;margin-left:6px; }
+.chat-admin-back-btn { background:#f3e5f5;color:#6a1b9a;border:none;padding:7px 16px;border-radius:8px;cursor:pointer;font-weight:700;font-size:.85em;margin-bottom:12px;display:inline-flex;align-items:center;gap:6px; }
+.chat-admin-messages { max-height:320px;overflow-y:auto;background:#fdfaff;border-radius:12px;padding:12px;border:1.5px solid #e0d0f0;display:flex;flex-direction:column;gap:8px;margin-bottom:12px; }
+.chat-admin-input-row { display:flex;gap:8px;align-items:flex-end; }
+.chat-admin-input-row textarea { flex:1;border:2px solid #e0d0f0;border-radius:10px;padding:9px 12px;font-size:.875em;resize:none;height:44px;max-height:120px;outline:none;font-family:inherit; }
+.chat-admin-input-row textarea:focus { border-color:#c44569; }
+.chat-admin-send-btn { background:linear-gradient(135deg,#c44569,#6a1b9a);color:white;border:none;padding:9px 18px;border-radius:10px;cursor:pointer;font-weight:700;font-size:.875em;white-space:nowrap; }
+.chat-resolve-btn { background:#e8f5e9;color:#2e7d32;border:1.5px solid #a5d6a7;padding:7px 16px;border-radius:8px;cursor:pointer;font-weight:700;font-size:.82em; }
+/* Message action buttons */
+.scMsgActions { display:none; gap:4px; margin-top:4px; justify-content:flex-end; }
+.scBub:hover .scMsgActions { display:flex; }
+.scMsgActBtn { background:rgba(255,255,255,0.85); border:1px solid #ddd; border-radius:6px; padding:2px 7px; font-size:.7em; cursor:pointer; color:#555; font-weight:600; transition:background .15s; }
+.scMsgActBtn:hover { background:#f3e5f5; color:#6a1b9a; border-color:#ce93d8; }
+.scMsgActBtn.danger:hover { background:#fce4ec; color:#c62828; border-color:#ef9a9a; }
+/* Tick indicators */
+.scTick { font-size:.72em; margin-left:4px; }
+.scTick.sent     { color:#aaa; }
+.scTick.delivered{ color:#aaa; }
+.scTick.read     { color:#29b6f6; }
+/* Recalled ghost bubble */
+.scRecalled { opacity:.55; font-style:italic; color:#888 !important; background:#f5f5f5 !important; border:1px dashed #ccc !important; }
+.scRecalled::before { content:'🚫 '; }
+/* Edited label */
+.scEdited { font-size:.68em; color:#aaa; margin-left:5px; font-style:italic; }
+/* Edit input inline */
+.scEditInput { width:100%; border:1.5px solid #ce93d8; border-radius:8px; padding:5px 8px; font-size:.875em; font-family:inherit; resize:none; margin-top:4px; outline:none; }
+
+</style>
+
+<!-- Floating Chat Bubble -->
+<button id="sChatBubble" title="Chat with Support" onclick="scToggle()">
+    💬
+    <span id="sChatBadge"></span>
+</button>
+
+<!-- Chat Window -->
+<div id="sChatWin">
+    <div class="scHead">
+        <div class="scHeadAv">🎓</div>
+        <div class="scHeadInfo">
+            <strong>Spurthi Support</strong>
+            <small id="scHeadSub">Spurthi Youth Fest 2026</small>
+        </div>
+        <button class="scCloseBtn" onclick="scToggle()">✕</button>
+    </div>
+    <div id="scGuestForm">
+        <h4>👋 Welcome to Spurthi Support!</h4>
+        <p>Enter your phone number to start chatting.</p>
+        <input class="scInput" type="tel" id="scPhone" placeholder="Phone Number *" maxlength="10" inputmode="numeric" oninput="scPhoneLookup(this.value)">
+        <div id="scLookupHint" style="font-size:.78em;margin:-6px 0 6px 2px;min-height:18px;color:#6a1b9a;font-weight:600;display:none"></div>
+        <input class="scInput" type="text" id="scName" placeholder="Your Name *" maxlength="60">
+        <button id="scStartBtn" onclick="scStart()">Start Chat →</button>
+    </div>
+    <div id="scMsgs" style="display:none"></div>
+    <div id="scResolvedBar">
+        <span>✅ Chat closed by support. Thank you!</span>
+        <button id="scContinueBtn" onclick="scContinueChat()" style="display:block;margin:10px auto 0;background:linear-gradient(135deg,#c44569,#6a1b9a);color:white;border:none;padding:9px 22px;border-radius:10px;font-size:.85em;font-weight:700;cursor:pointer;width:100%">💬 Continue Conversation →</button>
+    </div>
+    <div id="scInputBar">
+        <textarea id="scTextInp" placeholder="Type your message…" rows="1"
+            onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();scSend();}"></textarea>
+        <button id="scSendBtn" onclick="scSend()">➤</button>
+    </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+// SPURTHI LIVE CHAT — Complete JS (no IIFE, plain globals)
+// ═══════════════════════════════════════════════════════════
+var SC_PATH = 'spurthiChats';
+var SC_FCM  = 'https://fcm-push.harshgujjar.workers.dev';
+var _scOpen = false;
+var _scSid  = null;
+var _scStarted = false;
+var _scUnread  = 0;
+var _scUserRef = null;
+var _scAdminConvRef = null;
+var _scInboxRef    = null;
+var _scCurrentConv = null;
+var _scPing = null;
+
+function scDb() { return window.db || (window.firebase && window.firebase.database()); }
+
+function scTime(ts) {
+    if (!ts) return '';
+    var d = new Date(ts);
+    var h = d.getHours(), m = String(d.getMinutes()).padStart(2,'0');
+    var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    var dateStr = d.getDate() + ' ' + months[d.getMonth()];
+    var timeStr = (h%12||12) + ':' + m + ' ' + (h>=12?'PM':'AM');
+    return dateStr + ', ' + timeStr;
+}
+
+function scEsc(s) {
+    return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+}
+
+function scSid() {
+    if (_scSid) return _scSid;
+    var k = 'sc_sid';
+    var s = localStorage.getItem(k);
+    if (!s) { s = 'c' + Date.now() + '_' + Math.random().toString(36).slice(2,7); localStorage.setItem(k,s); }
+    _scSid = s;
+    return s;
+}
+
+function scPlayPing() {
+    try {
+        if (!_scPing) { _scPing = new Audio('https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg'); _scPing.volume=0.4; }
+        _scPing.currentTime = 0; _scPing.play().catch(function(){});
+    } catch(e) {}
+}
+
+// ── Toggle window open/close ──────────────────────────────
+function scToggle() {
+    var win = document.getElementById('sChatWin');
+    if (!win) return;
+    _scOpen = !_scOpen;
+    if (_scOpen) {
+        win.classList.add('scOpen');
+        _scUnread = 0;
+        var b = document.getElementById('sChatBadge');
+        if (b) { b.style.display='none'; b.textContent=''; }
+        scLoadGuestPerms(); // load live guest permissions
+        // Mark all pending admin messages as read now that window is open
+        if (_scSid && _scStarted) {
+            var db0 = scDb();
+            if (db0) db0.ref(SC_PATH+'/'+_scSid+'/messages').once('value').then(function(s){
+                s.forEach(function(ch){ var m=ch.val(); if(m&&m.sender==='admin'&&!m.read) scMarkRead(ch.key,_scSid); });
+            });
+        }
+        // Auto-start for logged-in student
+        var cu = window.currentUser || '';
+        if (cu === 'Student' && !_scStarted) { scAutoStudent(); }
+        // Restore session if returning visitor (phone-based key)
+        var sid = localStorage.getItem('sc_sid');
+        if (!sid) {
+            // Legacy: try old phone key
+            var ph = localStorage.getItem('sc_phone');
+            if (ph) { sid = 'sc_ph_' + ph; localStorage.setItem('sc_sid', sid); }
+        }
+        if (sid && !_scStarted && cu !== 'Student') {
+            // Pre-fill phone and trigger lookup (will auto-fill name if registered)
+            var storedPhone = localStorage.getItem('sc_phone') || '';
+            var phoneEl2 = document.getElementById('scPhone');
+            if (phoneEl2 && storedPhone) { phoneEl2.value = storedPhone; scPhoneLookup(storedPhone); }
+            scResumeSession(sid);
+        }
+    } else {
+        win.classList.remove('scOpen');
+    }
+}
+
+// ── Resume existing session ───────────────────────────────
+function scResumeSession(sid) {
+    var db = scDb(); if (!db) return;
+    db.ref(SC_PATH+"/"+sid).once("value").then(function(snap) {
+        if (!snap.exists()) return;
+        _scSid = sid;
+        _scStarted = true;
+        document.getElementById("scGuestForm").style.display = "none";
+        document.getElementById("scMsgs").style.display = "flex";
+        var inp = document.getElementById("scInputBar");
+        if (inp) inp.classList.add("scShow");
+        var v = snap.val();
+        var storedName  = v.name  || localStorage.getItem("sc_name")  || "";
+        var storedClass = v.classYear || localStorage.getItem("sc_class") || "";
+        var storedType  = v.type  || localStorage.getItem("sc_type")  || "guest";
+        scUpdateHeader(storedName, storedClass, storedType);
+        if (v.status === "resolved") {
+            if (inp) inp.classList.remove("scShow");
+            document.getElementById("scResolvedBar").style.display = "block";
+        }
+        scListenMsgs();
+    }).catch(function(){});
+}
+
+// ── Auto-start for logged-in student ─────────────────────
+function scAutoStudent() {
+    _scSid = scSid();
+    _scStarted = true;
+    var cls = window.studentClass || '';
+    document.getElementById('scGuestForm').style.display = 'none';
+    document.getElementById('scMsgs').style.display = 'flex';
+    document.getElementById('scInputBar').classList.add('scShow');
+    scInitConv({ name: 'Student' + (cls ? ' - '+cls : ''), phone: 'student', type: 'student', cls: cls });
+}
+
+// ── Phone lookup: auto-fill name from quizStudents ───────
+var _scLookedUpName = '';
+var _scLookedUpClass = '';
+var _scLookedUpType = 'guest';
+function scUpdateHeader(name, classInfo, type) {
+    var sub = document.getElementById('scHeadSub');
+    if (!sub) return;
+    if (name) {
+        var typeLabel = type === 'student' ? '🔵 Student' : '🟠 Guest';
+        var clsStr = classInfo ? ' · ' + classInfo : '';
+        sub.textContent = name + clsStr + ' · ' + (type === 'student' ? 'Student' : 'Guest');
+    } else {
+        sub.textContent = 'Spurthi Youth Fest 2026';
+    }
+}
+function scPhoneLookup(val) {
+    var phone = val.replace(/\D/g,'');
+    var nameEl  = document.getElementById('scName');
+    var hint    = document.getElementById('scLookupHint');
+    _scLookedUpName = ''; _scLookedUpClass = ''; _scLookedUpType = 'guest';
+    if (phone.length < 10) {
+        if (hint) hint.style.display='none';
+        return;
+    }
+    var db = scDb(); if (!db) return;
+    function doLookup(ph) {
+        db.ref('quizStudents').orderByChild('phone').equalTo(ph).once('value').then(function(snap) {
+            if (!snap.exists() && !ph.startsWith('0')) {
+                doLookup('0'+ph); return;
+            }
+            if (snap.exists()) {
+                var found = null;
+                snap.forEach(function(ch) { if (!found) found = ch.val(); });
+                if (found && found.name) {
+                    _scLookedUpName  = found.name;
+                    _scLookedUpClass = found.class || found.classYear || '';
+                    _scLookedUpType  = 'student';
+                    if (nameEl) { nameEl.value = found.name; nameEl.readOnly = true; nameEl.style.background='#f3e5f5'; nameEl.style.color='#4a148c'; }
+                    var hintText = '✅ Registered: ' + found.name + (_scLookedUpClass ? ' · ' + _scLookedUpClass : '');
+                    if (hint) { hint.textContent = hintText; hint.style.display='block'; hint.style.color='#2e7d32'; }
+                    localStorage.setItem('sc_name', found.name);
+                    localStorage.setItem('sc_phone', phone);
+                    localStorage.setItem('sc_class', _scLookedUpClass);
+                    localStorage.setItem('sc_type', 'student');
+                    var phoneKey = 'sc_ph_' + phone;
+                    localStorage.setItem('sc_sid', phoneKey);
+                    // Auto-resume if session exists
+                    scResumeSession(phoneKey);
+                }
+            } else {
+                _scLookedUpName = ''; _scLookedUpClass = ''; _scLookedUpType = 'guest';
+                if (nameEl) { nameEl.readOnly = false; nameEl.style.background=''; nameEl.style.color=''; nameEl.value = localStorage.getItem('sc_name') || ''; }
+                if (hint) { hint.textContent = '⚪ Not registered — please enter your name below.'; hint.style.display='block'; hint.style.color='#e65100'; }
+                // Still try to resume unregistered guest's session
+                var phoneKey = 'sc_ph_' + phone;
+                localStorage.setItem('sc_phone', phone);
+                localStorage.setItem('sc_sid', phoneKey);
+                scResumeSession(phoneKey);
+            }
+        }).catch(function(){});
+    }
+    doLookup(phone);
+}
+
+// ── Guest start ───────────────────────────────────────────
+function scStart() {
+    var nameEl  = document.getElementById('scName');
+    var phoneEl = document.getElementById('scPhone');
+    var name  = nameEl.value.trim();
+    var phone = phoneEl.value.replace(/\D/g,'');
+    if (phone.length < 10) { phoneEl.style.borderColor='#e53935'; phoneEl.focus(); return; } else phoneEl.style.borderColor='';
+    if (!name)  { nameEl.style.borderColor='#e53935'; nameEl.focus(); return; } else nameEl.style.borderColor='';
+    var phoneKey = 'sc_ph_' + phone;
+    _scSid = phoneKey;
+    localStorage.setItem('sc_sid', phoneKey);
+    localStorage.setItem('sc_phone', phone);
+    localStorage.setItem('sc_name', name);
+    localStorage.setItem('sc_class', _scLookedUpClass || '');
+    localStorage.setItem('sc_type', _scLookedUpType || 'guest');
+    _scStarted = true;
+    document.getElementById('scGuestForm').style.display = 'none';
+    document.getElementById('scMsgs').style.display = 'flex';
+    document.getElementById('scInputBar').classList.add('scShow');
+    scUpdateHeader(name, _scLookedUpClass, _scLookedUpType || 'guest');
+    scInitConv({ name: name, phone: phone, type: _scLookedUpType || 'guest', cls: _scLookedUpClass || '' });
+}
+
+// ── Init conversation in Firebase ────────────────────────
+function scInitConv(info) {
+    var db = scDb(); if (!db) return;
+    db.ref(SC_PATH+'/'+_scSid).once('value').then(function(snap) {
+        if (!snap.exists()) {
+            db.ref(SC_PATH+'/'+_scSid).set({
+                name: info.name, phone: info.phone,
+                type: info.type, classYear: info.cls,
+                status: 'open', createdAt: Date.now(),
+                lastMessageAt: Date.now(), unreadAdmin: 0
+            }).then(function() { scGreet(info); });
+        } else {
+            var v = snap.val();
+            if (v.status === 'resolved') {
+                document.getElementById('scInputBar').classList.remove('scShow');
+                document.getElementById('scResolvedBar').style.display = 'block';
+            }
+        }
+        scListenMsgs();
+    });
+}
+
+// ── Send greeting bubbles ─────────────────────────────────
+function scGreet(info) {
+    var db = scDb(); if (!db) return;
+    var cls = info.cls ? ' from ' + info.cls : '';
+    var ref = db.ref(SC_PATH+'/'+_scSid+'/messages');
+    ref.push({ text: '👋 Hi ' + info.name + cls + '! Welcome to Spurthi Youth Fest 2026 support.', sender:'bot', ts: Date.now() });
+    setTimeout(function() {
+        ref.push({ text: "We'll reply to your message as soon as possible. 😊", sender:'bot', ts: Date.now()+50 });
+    }, 1300);
+}
+
+// ── Send visitor message ──────────────────────────────────
+function scSend() {
+    var inp = document.getElementById('scTextInp');
+    var text = inp ? inp.value.trim() : '';
+    if (!text || !_scSid) return;
+    inp.value = ''; inp.style.height = '40px';
+    var db = scDb(); if (!db) return;
+    db.ref(SC_PATH+'/'+_scSid+'/messages').push({ text:text, sender:'visitor', ts:Date.now() });
+    db.ref(SC_PATH+'/'+_scSid).update({ lastMessage:text, lastMessageAt:Date.now(), unreadAdmin: (window.firebase && window.firebase.database && window.firebase.database.ServerValue ? window.firebase.database.ServerValue.increment(1) : 1) });
+    scPushToAdmin(text, _scSid);
+}
+
+// ── Listen for messages (visitor side) ───────────────────
+function scListenMsgs() {
+    var db = scDb(); if (!db || !_scSid) return;
+    if (_scUserRef) { _scUserRef.off(); }
+    var msgsRef = db.ref(SC_PATH+'/'+_scSid+'/messages');
+    _scUserRef = msgsRef;
+    var loaded = false;
+    msgsRef.on('child_added', function(snap) {
+        var msg = snap.val(); if (!msg) return;
+        var key = snap.key;
+        scRenderBub(msg, document.getElementById('scMsgs'), key, false);
+        // Mark admin messages as delivered (and read if window open)
+        if (msg.sender === 'admin' && !msg.delivered) {
+            if (_scOpen) scMarkRead(key, _scSid);
+            else scMarkDelivered(key, _scSid);
+        }
+        if (loaded && msg.sender === 'admin' && !_scOpen) {
+            _scUnread++;
+            var b = document.getElementById('sChatBadge');
+            if (b) { b.textContent = _scUnread; b.style.display = 'flex'; }
+            scPlayPing();
+        }
+    });
+    // Also handle edits/recalls live
+    msgsRef.on('child_changed', function(snap) {
+        var msg = snap.val(); var key = snap.key;
+        var el = document.querySelector('[data-msgkey="'+key+'"]');
+        if (!el) return;
+        var area = document.getElementById('scMsgs');
+        el.remove();
+        scRenderBub(msg, area, key, false);
+    });
+    msgsRef.once('value', function() {
+        loaded = true;
+        // Mark all unread admin msgs as read when window opens
+        if (_scOpen) {
+            msgsRef.once('value').then(function(s){
+                s.forEach(function(ch){ var m=ch.val(); if(m.sender==='admin'&&!m.read) scMarkRead(ch.key,_scSid); });
+            });
+        }
+    });
+    // Watch resolved/open status live
+    db.ref(SC_PATH+'/'+_scSid+'/status').on('value', function(snap) {
+        var status = snap.val();
+        var resolvedBar = document.getElementById('scResolvedBar');
+        var inputBar    = document.getElementById('scInputBar');
+        if (status === 'resolved') {
+            if (inputBar) inputBar.classList.remove('scShow');
+            if (resolvedBar) resolvedBar.style.display = 'block';
+        } else if (status === 'open') {
+            if (resolvedBar) resolvedBar.style.display = 'none';
+            if (inputBar) inputBar.classList.add('scShow');
+        }
+    });
+}
+
+// ── Render a bubble ───────────────────────────────────────
+function scRenderBub(msg, area, msgKey, isAdmin) {
+    if (!area) return;
+    // Skip if already rendered
+    if (msgKey && document.querySelector('[data-msgkey="'+msgKey+'"]')) return;
+    var div = document.createElement('div');
+    var side = msg.sender==='visitor' ? 'scSent' : msg.sender==='admin' ? 'scRecv' : 'scSys';
+    div.className = 'scBub ' + side;
+    if (msgKey) div.setAttribute('data-msgkey', msgKey);
+    if (msg.recalled) {
+        div.classList.add('scRecalled');
+        div.innerHTML = 'This message was recalled<span class="scTime">'+scTime(msg.ts)+'</span>';
+        area.appendChild(div); area.scrollTop = area.scrollHeight; return;
+    }
+    var editedLabel = msg.edited ? '<span class="scEdited">(edited)</span>' : '';
+    // Ticks — only on visitor/admin sent side
+    var ticks = '';
+    if (msg.sender === 'visitor' || (isAdmin && msg.sender === 'admin')) {
+        if (msg.read)       ticks = '<span class="scTick read">✔✔</span>';
+        else if (msg.delivered) ticks = '<span class="scTick delivered">✔✔</span>';
+        else                    ticks = '<span class="scTick sent">✔</span>';
+    }
+    div.innerHTML = '<span class="scMsgText">'+scEsc(msg.text)+'</span>'+editedLabel+'<span class="scTime">'+scTime(msg.ts)+ticks+'</span>';
+    // Action buttons
+    var actions = document.createElement('div');
+    actions.className = 'scMsgActions';
+    var canEdit = false, canDelete = false, canRecall = false;
+    if (isAdmin && msg.sender === 'admin') {
+        canEdit = true; canDelete = true; canRecall = true;
+    } else if (!isAdmin && msg.sender === 'visitor') {
+        var p = window._scGuestPerms || {};
+        canEdit   = !!p.edit;
+        canDelete = !!p.delete;
+        canRecall = !!p.recall;
+    }
+    if (canEdit && msgKey) {
+        var eb = document.createElement('button'); eb.className='scMsgActBtn'; eb.textContent='✏️ Edit';
+        eb.onclick = function(){ scEditMsg(msgKey, div, isAdmin); }; actions.appendChild(eb);
+    }
+    if (canRecall && msgKey) {
+        var rb = document.createElement('button'); rb.className='scMsgActBtn danger'; rb.textContent='🚫 Recall';
+        rb.onclick = function(){ scRecallMsg(msgKey, isAdmin); }; actions.appendChild(rb);
+    }
+    if (canDelete && msgKey) {
+        var db2 = document.createElement('button'); db2.className='scMsgActBtn danger'; db2.textContent='🗑️ Delete';
+        db2.onclick = function(){ scDeleteMsg(msgKey, div, isAdmin); }; actions.appendChild(db2);
+    }
+    if (actions.children.length) div.appendChild(actions);
+    area.appendChild(div); area.scrollTop = area.scrollHeight;
+}
+
+// ── Edit message ──────────────────────────────────────────
+function scEditMsg(key, div, isAdmin) {
+    var textEl = div.querySelector('.scMsgText');
+    var old = textEl ? textEl.textContent : '';
+    var ta = document.createElement('textarea');
+    ta.className = 'scEditInput'; ta.value = old; ta.rows = 2;
+    div.insertBefore(ta, div.querySelector('.scTime'));
+    if (textEl) textEl.style.display='none';
+    var div2 = div.querySelector('.scMsgActions');
+    if (div2) div2.style.display='none';
+    ta.focus();
+    var saveBtn = document.createElement('button'); saveBtn.className='scMsgActBtn'; saveBtn.textContent='💾 Save';
+    var cancelBtn = document.createElement('button'); cancelBtn.className='scMsgActBtn'; cancelBtn.textContent='✕ Cancel';
+    var editBar = document.createElement('div'); editBar.style.cssText='display:flex;gap:5px;margin-top:3px;justify-content:flex-end';
+    editBar.appendChild(cancelBtn); editBar.appendChild(saveBtn);
+    div.appendChild(editBar);
+    cancelBtn.onclick = function() { ta.remove(); editBar.remove(); if(textEl) textEl.style.display=''; if(div2) div2.style.display=''; };
+    saveBtn.onclick = function() {
+        var newText = ta.value.trim(); if (!newText) return;
+        var path = isAdmin ? SC_PATH+'/'+_scCurrentConv+'/messages/'+key : SC_PATH+'/'+_scSid+'/messages/'+key;
+        scDb().ref(path).update({ text: newText, edited: true });
+        ta.remove(); editBar.remove();
+        if (textEl) { textEl.textContent = newText; textEl.style.display=''; }
+        if (div2) div2.style.display='';
+        var editedEl = div.querySelector('.scEdited');
+        if (!editedEl) { var el=document.createElement('span'); el.className='scEdited'; el.textContent='(edited)'; div.querySelector('.scTime').before(el); }
+    };
+}
+
+// ── Delete message ────────────────────────────────────────
+function scDeleteMsg(key, div, isAdmin) {
+    if (!confirm('Delete this message?')) return;
+    var path = isAdmin ? SC_PATH+'/'+_scCurrentConv+'/messages/'+key : SC_PATH+'/'+_scSid+'/messages/'+key;
+    scDb().ref(path).remove();
+    div.remove();
+}
+
+// ── Recall message ────────────────────────────────────────
+function scRecallMsg(key, isAdmin) {
+    if (!confirm('Recall this message? It will show as recalled for both sides.')) return;
+    var path = isAdmin ? SC_PATH+'/'+_scCurrentConv+'/messages/'+key : SC_PATH+'/'+_scSid+'/messages/'+key;
+    scDb().ref(path).update({ recalled: true, text: '' });
+}
+
+// ── Mark message as delivered/read ───────────────────────
+function scMarkDelivered(key, convId) {
+    scDb().ref(SC_PATH+'/'+convId+'/messages/'+key).update({ delivered: true });
+}
+function scMarkRead(key, convId) {
+    scDb().ref(SC_PATH+'/'+convId+'/messages/'+key).update({ delivered: true, read: true });
+}
+
+// ── Guest permissions — load from Firebase ────────────────
+window._scGuestPerms = { edit: false, delete: false, recall: false };
+function scLoadGuestPerms() {
+    var db = scDb(); if (!db) return;
+    db.ref(SC_PATH+'/config').on('value', function(snap) {
+        var p = snap.val() || {};
+        window._scGuestPerms = {
+            edit:   !!p.allowGuestEdit,
+            delete: !!p.allowGuestDelete,
+            recall: !!p.allowGuestRecall
+        };
+    });
+}
+
+// ── Admin: save guest permissions ────────────────────────
+function chatSavePermissions() {
+    var db = scDb(); if (!db) return;
+    var edit   = document.getElementById('chatPermEdit')   ? document.getElementById('chatPermEdit').checked   : false;
+    var del    = document.getElementById('chatPermDelete') ? document.getElementById('chatPermDelete').checked : false;
+    var recall = document.getElementById('chatPermRecall') ? document.getElementById('chatPermRecall').checked : false;
+    db.ref(SC_PATH+'/config').update({
+        allowGuestEdit:   edit,
+        allowGuestDelete: del,
+        allowGuestRecall: recall
+    });
+    var s = document.getElementById('chatPermSaveStatus');
+    if (s) { s.style.display='inline'; setTimeout(function(){ s.style.display='none'; }, 2000); }
+}
+
+// ── Admin: load guest permissions into checkboxes ─────────
+function chatLoadPermToggles() {
+    var db = scDb(); if (!db) return;
+    db.ref(SC_PATH+'/config').once('value').then(function(snap) {
+        var p = snap.val() || {};
+        var e = document.getElementById('chatPermEdit');   if(e) e.checked = !!p.allowGuestEdit;
+        var d = document.getElementById('chatPermDelete'); if(d) d.checked = !!p.allowGuestDelete;
+        var r = document.getElementById('chatPermRecall'); if(r) r.checked = !!p.allowGuestRecall;
+    });
+}
+
+// ── FCM push to admin devices ─────────────────────────────
+function scPushToAdmin(text, convId) {
+    var db = scDb(); if (!db) return;
+    db.ref('fcmTokens').once('value').then(function(snap) {
+        if (!snap.exists()) return;
+        var subs = [], sids = [];
+        // ── Only push to super admin tagged devices ──
+        var hasSuperAdmin = false;
+        snap.forEach(function(ch) {
+            var d = ch.val();
+            if (d.role === 'superadmin') hasSuperAdmin = true;
+        });
+        snap.forEach(function(ch) {
+            var d = ch.val();
+            if (!d.subscription) return;
+            // If any superadmin device exists — only send to superadmin devices
+            // If no superadmin tagged — fall back to all (so admin always gets notified)
+            if (hasSuperAdmin && d.role !== 'superadmin') return;
+            try { subs.push(JSON.parse(d.subscription)); } catch(e) { subs.push(d.subscription); }
+            sids.push(ch.key);
+        });
+        if (!subs.length) return;
+        var pageUrl = window.location.href.split('#')[0];
+        var deepUrl = pageUrl + '?openChat=' + (convId || _scSid || '');
+        fetch(SC_FCM, { method:'POST', headers:{'Content-Type':'application/json'},
+            body: JSON.stringify({
+                title: '💬 New Chat Message',
+                body: text.length>80 ? text.slice(0,80)+'…' : text,
+                subscriptions: subs,
+                sids: sids,
+                url: deepUrl,
+                convId: convId || _scSid || ''
+            })
+        }).catch(function(){});
+    }).catch(function(){});
+}
+
+// ══════════════════════════════════════════
+// ADMIN INBOX
+// ══════════════════════════════════════════
+// ── All conversations cache for filter/search ──
+var _chatAllConvs = [];
+
+function chatAdminLoadInbox() {
+    var db = scDb(); if (!db) return;
+    var listEl = document.getElementById('chatAdminInboxList');
+    if (!listEl) return;
+    listEl.innerHTML = '<div style="color:#aaa;text-align:center;padding:28px;font-size:.88em">Loading…</div>';
+    if (_scInboxRef) { db.ref(SC_PATH).off('value'); }
+    _scInboxRef = db.ref(SC_PATH);
+    var _prevUnreadTotal = -1; // track previous unread count to detect new messages
+    _scInboxRef.on('value', function(snap) {
+        if (!snap.exists()) {
+            _chatAllConvs = [];
+            listEl.innerHTML = '<div style="color:#aaa;text-align:center;padding:28px;font-size:.88em">No conversations yet.</div>';
+            scTabBadge(0);
+            _prevUnreadTotal = 0;
+            var tb = document.getElementById('chatInboxTotalBadge'); if (tb) tb.style.display='none';
+            return;
+        }
+        var convs = [];
+        snap.forEach(function(ch) { convs.push(Object.assign({_id:ch.key}, ch.val())); });
+        convs.sort(function(a,b) { return (b.lastMessageAt||0)-(a.lastMessageAt||0); });
+        // ── Admin ping on new unread message ──────────────────────────────
+        var newTotal = convs.reduce(function(s,c){ return s + (c.unreadAdmin||0); }, 0);
+        if (_prevUnreadTotal >= 0 && newTotal > _prevUnreadTotal) {
+            if (typeof scAdminPing === 'function') scAdminPing();
+        }
+        _prevUnreadTotal = newTotal;
+        _chatAllConvs = convs;
+        chatAdminRenderInbox(convs);
+    });
+}
+
+function chatAdminRenderInbox(convs) {
+    var listEl = document.getElementById('chatAdminInboxList');
+    if (!listEl) return;
+    var total = 0, html = '';
+    convs.forEach(function(c) {
+        var u = c.unreadAdmin||0; total += u;
+        var tag = c.type==='guest' ? '<span class="chat-tag-guest">Guest</span>' : '<span class="chat-tag-student">Student</span>';
+        var avCls = c.type==='guest' ? 'guest-avatar' : 'student-avatar';
+        var init = (c.name||'?').charAt(0).toUpperCase();
+        var preview = c.lastMessage ? scEsc(c.lastMessage.slice(0,50)) : '<em>No messages</em>';
+        var badge = u>0 ? '<div class="chat-inbox-badge">'+u+'</div>' : '';
+        var statusDot = c.status==='resolved'
+            ? '<span style="color:#4caf50;font-size:.7em;display:block">✅ Resolved</span>'
+            : '<span style="color:#ff9800;font-size:.7em;display:block">● Open</span>';
+        html += '<div class="chat-inbox-conv'+(u>0?' unread':'')+' chat-inbox-conv-clickable" data-convid="'+c._id+'">'
+            + '<div class="chat-inbox-avatar '+avCls+'">'+init+'</div>'
+            + '<div class="chat-inbox-body"><div class="chat-inbox-name">'+scEsc(c.name||'Unknown')+tag+'</div>'
+            + '<div class="chat-inbox-preview">'+preview+'</div>'
+            + (c.classYear?'<div style="font-size:.72em;color:#9c27b0;margin-top:2px">📚 '+scEsc(c.classYear)+'</div>':'')
+            + '</div><div class="chat-inbox-meta"><div class="chat-inbox-time">'+scTime(c.lastMessageAt)+'</div>'+badge+statusDot+'</div></div>';
+    });
+    listEl.innerHTML = html || '<div style="color:#aaa;text-align:center;padding:28px;font-size:.88em">No conversations match your filter.</div>';
+    scTabBadge(total);
+    var tb = document.getElementById('chatInboxTotalBadge');
+    if (tb) { if (total>0){tb.textContent=total+' unread';tb.style.display='inline';}else{tb.style.display='none';} }
+    // ── Event delegation: handle row clicks via data-convid ──
+    listEl.onclick = function(e) {
+        var row = e.target.closest('.chat-inbox-conv-clickable');
+        if (row) chatAdminOpenConv(row.getAttribute('data-convid'));
+    };
+}
+
+function chatAdminApplyFilters(reset) {
+    if (reset) {
+        var si = document.getElementById('chatSearchInput'); if (si) si.value = '';
+        var ft = document.getElementById('chatFilterType'); if (ft) ft.value = 'all';
+        var fs = document.getElementById('chatFilterStatus'); if (fs) fs.value = 'all';
+    }
+    var q = (document.getElementById('chatSearchInput')||{}).value || '';
+    var typeF = (document.getElementById('chatFilterType')||{}).value || 'all';
+    var statusF = (document.getElementById('chatFilterStatus')||{}).value || 'all';
+    q = q.toLowerCase().trim();
+    var filtered = _chatAllConvs.filter(function(c) {
+        if (typeF !== 'all' && c.type !== typeF) return false;
+        if (statusF === 'open' && c.status === 'resolved') return false;
+        if (statusF === 'resolved' && c.status !== 'resolved') return false;
+        if (statusF === 'unread' && !(c.unreadAdmin>0)) return false;
+        if (q) {
+            var name = (c.name||'').toLowerCase();
+            var msg  = (c.lastMessage||'').toLowerCase();
+            var phone= (c.phone||'').toLowerCase();
+            if (!name.includes(q) && !msg.includes(q) && !phone.includes(q)) return false;
+        }
+        return true;
+    });
+    chatAdminRenderInbox(filtered);
+}
+function scTabBadge(n) {
+    var b = document.getElementById('chatInboxTabBadge');
+    if (!b) return;
+    if (n>0) { b.textContent=n; b.style.display='inline'; } else { b.style.display='none'; }
+}
+
+function chatAdminOpenConv(id) {
+    var db = scDb(); if (!db) return;
+    _scCurrentConv = id;
+    document.getElementById('chatAdminInboxList').style.display = 'none';
+    document.getElementById('chatAdminReplyPanel').style.display = 'block';
+    // Reset button states
+    var resolveBtn = document.getElementById('chatAdminResolveBtn');
+    var reopenBtn  = document.getElementById('chatAdminReopenBtn');
+    var replyInp   = document.getElementById('chatAdminReplyText');
+    var sendBtn    = document.querySelector('.chat-admin-send-btn');
+    db.ref(SC_PATH+'/'+id).once('value').then(function(snap) {
+        var c = snap.val()||{};
+        var el = document.getElementById('chatAdminConvInfo');
+        var typeTag = c.type==='guest' ? '🟠 Guest' : '🔵 Student';
+        var clsStr  = c.classYear ? ' · 📚 ' + scEsc(c.classYear) : '';
+        var phoneStr = c.phone ? ' · 📞 ' + scEsc(c.phone) : '';
+        var statusStr = c.status==='resolved' ? ' · <span style="color:#4caf50;font-weight:700">✅ Resolved</span>' : ' · <span style="color:#ff6f00;font-weight:700">● Open</span>';
+        if (el) el.innerHTML = '<strong style="font-size:1em">'+scEsc(c.name||'Unknown')+'</strong> · '+typeTag+clsStr+phoneStr+statusStr;
+        // Show correct action buttons based on status
+        var isResolved = c.status === 'resolved';
+        if (resolveBtn) resolveBtn.style.display = isResolved ? 'none'  : '';
+        if (reopenBtn)  reopenBtn.style.display  = isResolved ? ''      : 'none';
+        if (replyInp)   replyInp.disabled  = isResolved;
+        if (sendBtn)    sendBtn.disabled   = isResolved;
+    });
+    db.ref(SC_PATH+'/'+id+'/unreadAdmin').set(0);
+    var area = document.getElementById('chatAdminMsgArea');
+    if (area) area.innerHTML = '';
+    if (_scAdminConvRef) { _scAdminConvRef.off(); }
+    var msgsRef = db.ref(SC_PATH+'/'+id+'/messages');
+    _scAdminConvRef = msgsRef;
+    msgsRef.on('child_added', function(snap) {
+        var msg = snap.val(); if (!msg) return;
+        var key = snap.key;
+        var area2 = document.getElementById('chatAdminMsgArea'); if (!area2) return;
+        scRenderBub(msg, area2, key, true);
+        // Mark visitor messages as delivered from admin side view
+        if (msg.sender === 'visitor' && !msg.read) scMarkRead(key, id);
+    });
+    msgsRef.on('child_changed', function(snap) {
+        var msg = snap.val(); var key = snap.key;
+        var el = document.querySelector('[data-msgkey="'+key+'"]');
+        if (!el) return;
+        var area2 = document.getElementById('chatAdminMsgArea');
+        el.remove();
+        scRenderBub(msg, area2, key, true);
+    });
+    msgsRef.on('child_removed', function(snap) {
+        var el = document.querySelector('[data-msgkey="'+snap.key+'"]');
+        if (el) el.remove();
+    });
+}
+
+function chatAdminBackToInbox() {
+    if (_scAdminConvRef) { _scAdminConvRef.off(); _scAdminConvRef = null; }
+    _scCurrentConv = null;
+    document.getElementById('chatAdminInboxList').style.display = 'block';
+    document.getElementById('chatAdminReplyPanel').style.display = 'none';
+    var a = document.getElementById('chatAdminMsgArea'); if (a) a.innerHTML = '';
+}
+
+function chatAdminSendReply() {
+    var inp = document.getElementById('chatAdminReplyText');
+    var text = inp ? inp.value.trim() : '';
+    if (!text || !_scCurrentConv) return;
+    inp.value = '';
+    var db = scDb(); if (!db) return;
+    db.ref(SC_PATH+'/'+_scCurrentConv+'/messages').push({ text:text, sender:'admin', ts:Date.now() });
+    db.ref(SC_PATH+'/'+_scCurrentConv).update({ lastMessage:text, lastMessageAt:Date.now(), unreadAdmin:0 });
+}
+
+function chatAdminResolve() {
+    if (!_scCurrentConv) return;
+    if (!confirm('Mark as resolved? Visitor will see a "Chat closed" message.')) return;
+    var db = scDb(); if (!db) return;
+    db.ref(SC_PATH+'/'+_scCurrentConv+'/messages').push({ text:'✅ Your conversation has been marked as resolved. Thank you for reaching out!', sender:'bot', ts:Date.now() });
+    db.ref(SC_PATH+'/'+_scCurrentConv).update({ status:'resolved', resolvedAt:Date.now(), lastMessageAt:Date.now() });
+    // Toggle buttons
+    var resolveBtn = document.getElementById('chatAdminResolveBtn');
+    var reopenBtn  = document.getElementById('chatAdminReopenBtn');
+    if (resolveBtn) resolveBtn.style.display = 'none';
+    if (reopenBtn)  reopenBtn.style.display  = '';
+    var inp = document.getElementById('chatAdminReplyText');
+    if (inp) inp.disabled = true;
+    var sendBtn = document.querySelector('.chat-admin-send-btn');
+    if (sendBtn) sendBtn.disabled = true;
+}
+
+// ── Admin: Reopen resolved conversation ───────────────────
+function chatAdminReopenConv() {
+    if (!_scCurrentConv) return;
+    var db = scDb(); if (!db) return;
+    db.ref(SC_PATH+'/'+_scCurrentConv).update({ status:'open', reopenedAt:Date.now() });
+    db.ref(SC_PATH+'/'+_scCurrentConv+'/messages').push({ text:'🔄 Conversation reopened by support. Feel free to continue!', sender:'bot', ts:Date.now() });
+    var resolveBtn = document.getElementById('chatAdminResolveBtn');
+    var reopenBtn  = document.getElementById('chatAdminReopenBtn');
+    if (resolveBtn) resolveBtn.style.display = '';
+    if (reopenBtn)  reopenBtn.style.display  = 'none';
+    var inp = document.getElementById('chatAdminReplyText');
+    if (inp) inp.disabled = false;
+    var sendBtn = document.querySelector('.chat-admin-send-btn');
+    if (sendBtn) sendBtn.disabled = false;
+}
+
+// ── Guest: Continue resolved conversation ─────────────────
+function scContinueChat() {
+    var db = scDb(); if (!db || !_scSid) return;
+    db.ref(SC_PATH+'/'+_scSid).update({ status:'open', reopenedAt:Date.now() });
+    db.ref(SC_PATH+'/'+_scSid+'/messages').push({ text:'💬 Conversation continued.', sender:'bot', ts:Date.now() });
+    document.getElementById('scResolvedBar').style.display = 'none';
+    var inp = document.getElementById('scInputBar');
+    if (inp) inp.classList.add('scShow');
+}
+
+function chatAdminDeleteConv() {
+    if (!_scCurrentConv) return;
+    if (!confirm('Permanently delete this conversation?')) return;
+    var db = scDb(); if (!db) return;
+    db.ref(SC_PATH+'/'+_scCurrentConv).remove().then(function() { chatAdminBackToInbox(); });
+}
+
+
+// ── Textarea auto-resize ──────────────────────────────────
+document.addEventListener('DOMContentLoaded', function() {
+    var ta = document.getElementById('scTextInp');
+    if (ta) ta.addEventListener('input', function() { this.style.height='40px'; this.style.height=Math.min(this.scrollHeight,100)+'px'; });
+    var ta2 = document.getElementById('chatAdminReplyText');
+    if (ta2) ta2.addEventListener('input', function() { this.style.height='44px'; this.style.height=Math.min(this.scrollHeight,120)+'px'; });
+
+    // ── Handle ?openChat=convId deep link from push notification tap ──
+    (function() {
+        var params = new URLSearchParams(window.location.search);
+        var convId = params.get('openChat');
+        if (!convId) return;
+        // Wait for admin login, then open the conversation
+        var attempts = 0;
+        var interval = setInterval(function() {
+            attempts++;
+            var isSA = window.isSuperAdmin || window.isAdmin;
+            if (isSA) {
+                clearInterval(interval);
+                // Show admin section → Chat Inbox → open conversation
+                var chatTab = document.getElementById('chatInboxPanelTab');
+                if (chatTab) chatTab.click();
+                setTimeout(function() { chatAdminOpenConv(convId); }, 600);
+            }
+            if (attempts > 30) clearInterval(interval); // give up after 15s
+        }, 500);
+    })();
+});
+
+// ── Handle SW postMessage for already-open page ────────────────
+if (navigator.serviceWorker) {
+    navigator.serviceWorker.addEventListener('message', function(event) {
+        if (event.data && event.data.type === 'OPEN_CHAT_CONV' && event.data.convId) {
+            var convId = event.data.convId;
+            var isSA = window.isSuperAdmin || window.isAdmin;
+            if (isSA) {
+                var chatTab = document.getElementById('chatInboxPanelTab');
+                if (chatTab) chatTab.click();
+                setTimeout(function() { chatAdminOpenConv(convId); }, 400);
+            }
+        }
+    });
+}
+
+// ── Admin inbox ping: play sound when new message arrives ─────
+function scAdminPing() {
+    try {
+        if (!window._scAdminPingAudio) {
+            window._scAdminPingAudio = new Audio('https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg');
+            window._scAdminPingAudio.volume = 0.5;
+        }
+        window._scAdminPingAudio.currentTime = 0;
+        window._scAdminPingAudio.play().catch(function(){});
+    } catch(e) {}
+}
+</script>
 
 <!-- ═══════════════════════════════════════════════════════════════════
      VERSION HISTORY LOG
@@ -38421,6 +39767,29 @@ export default {
      v6.16 | Mar 04, 2026, (IST) | Fix: Edit button uses global cache (no JSON escape breakage), date/time/logo load correctly on edit, Add button stays enabled in edit mode
      v6.17 | Mar 04, 2026, (IST) | Fix: class change always updates student count & phone (not just when empty); edit scroll uses block:nearest so page stays in place
      v6.18 | Mar 04, 2026, (IST) | Class logo thumbnail shown in registration table Class Name column
+     v6.19 | Mar 04, 2026, 8:16 PM IST | Full chat system: guest+student floating bubble, admin inbox, reply/resolve/delete, FCM push to admin, manager permission toggle
+     v6.20 | Mar 04, 2026, 8:16 PM IST | Chat bubble now visible to ALL users including admins/managers
+     v6.21 | Mar 04, 2026, 8:16 PM IST | Fix: chat bubble always visible — removed display:none, no JS dependency
+     v6.22 | Mar 04, 2026, 8:16 PM IST | Fix: feedback Q7/Q8/Q9 fetched fresh from Firebase on popup open so enabled questions show correctly
+     v6.23 | Mar 04, 2026, 8:16 PM IST | Complete chat rebuild: bubble position:fixed enforced, no IIFE wrapper, plain global functions, full guest/student/admin flow
+     v6.24 | Mar 04, 2026, 8:16 PM IST | Fix: chat bubble moved above DB status bar (was overlapping & blocking clicks); status bar shifted left
+     v6.25 | Mar 04, 2026, 8:16 PM IST | Root fix: literal newline inside regex in scEsc() was a JS syntax error
+     v6.26 | Mar 04, 2026, 8:16 PM IST | Root fix: chat block was placed AFTER </html> so browser discarded it; moved inside body before version history
+     v6.27 | Mar 04, 2026, IST | Fix: JS syntax error in chat script (unescaped quotes in chatAdminOpenConv onclick broke scToggle) — chat bubble now clickable
+     v6.28 | Mar 04, 2026, IST | Fix: chatAdminOpenConv onclick ID not quoted — clicking a chat conversation now works
+     v6.29 | Mar 04, 2026, IST | Chat inbox: click fix (data-attr delegation), search/filter toolbar; Feedback: Show-On trigger mode control
+     v6.30 | Mar 04, 2026, IST | Chat inbox: show date + time on each conversation row
+     v6.31 | Mar 04, 2026, IST | Feedback Show-On: 11 granular trigger modes (login page, roles, events, games)
+     v6.32 | Mar 04, 2026, IST | Chat: phone-based session, super admin push filter, tap-to-conv deep link, admin inbox ping
+     v6.33 | Mar 04, 2026, IST | Activate Feedback: confirm dialog is dynamic based on selected Show-On mode; saves showOn+active together
+     v6.34 | Mar 04, 2026, IST | Fix: removed \n escapes from confirm() that caused JS syntax error crashing entire page
+     v6.35 | Mar 04, 2026, 10:30 PM IST | Chat: phone lookup auto-fills registered name from quizStudents; name shown in greeting; previous conversation restored on phone entry
+     v6.36 | Mar 04, 2026, 10:37 PM IST | Chat: Edit/Delete/Recall for admin+guest; Read/Delivered ticks; Guest permissions (Edit/Delete/Recall) admin-controlled toggles in inbox header
+     v6.37 | Mar 04, 2026, 10:49 PM IST | Chat: same phone = 1 convo; header shows name+class+type; Continue Chat button (guest); Reopen & Continue (admin); identity in conv info
+     v6.38 | Mar 04, 2026, 10:58 PM IST | Fix: Reopen & Continue button display bug fixed; Firebase config paths = allowGuestEdit/Delete/Recall; guest input reopens live when admin reopens
      ═══════════════════════════════════════════════════════════════════ -->
+
+
+
 
 </html>
