@@ -2890,6 +2890,7 @@
                 <button class="tab super-admin-only" onclick="showTab('cloudinaryInspector')" id="cloudinaryInspectorTab">☁️ Cloudinary</button>
                 <button class="tab super-admin-only" onclick="showTab('firebaseDownloadMonitor')" id="firebaseDownloadMonitorTab">🔥 Download Monitor</button>
                 <button class="tab super-admin-only" onclick="showTab('chatInboxPanel');chatAdminLoadInbox();chatLoadPermToggles()" id="chatInboxPanelTab">💬 Chat Inbox <span id="chatInboxTabBadge"></span></button>
+                <button class="tab super-admin-only" onclick="showTab('quizNotifSchedulePanel');qnLoadConfig();qnLoadSlots();setTimeout(function(){if(typeof checkPublishStatusForAdmin==='function')checkPublishStatusForAdmin();},600)" id="quizNotifSchedulePanelTab">🔔 Notifications</button>
                 <button class="tab super-admin-only" onclick="showTab('managerPermissionsPanel')" id="managerPermissionsPanelTab">👔 Manager Permissions</button>
                 <button class="tab super-admin-only" onclick="showTab('vlogAdminPanel');loadVlogAdminPanel()" id="vlogAdminPanelTab">📹 Vlog Admin</button>
                 <button class="tab super-admin-only" onclick="showTab('podcastAdminPanel');loadPodcastAdminPanel()" id="podcastAdminPanelTab">🎙️ Podcast Admin</button>
@@ -3318,16 +3319,6 @@
                         
                         <button class="btn btn-success" onclick="saveQuizQuestionsFromAdmin()" style="font-size:1.1em">💾 Save Questions</button>
                         <button class="btn btn-info btn-small" onclick="viewTodayQuestionsAdmin()" style="margin-left:10px">👁️ View Today's Questions</button>
-                        
-                        <!-- Publish/Unpublish Section for Admin Dashboard -->
-                        <div id="publishControlSectionAdmin" style="display:none;margin-top:30px;background:#fff3cd;padding:25px;border-radius:12px;border-left:5px solid #ffc107">
-                            <h3 style="color:#6a1b9a;margin-bottom:15px">📢 Quiz Publication Control</h3>
-                            <div id="publishStatusDisplayAdmin" style="margin-bottom:20px"></div>
-                            <div style="display:flex;gap:10px;flex-wrap:wrap">
-                                <button class="btn btn-success" onclick="publishTodayQuiz()" id="btnPublishAdmin" style="display:none">✅ PUBLISH Quiz (Make Live)</button>
-                                <button class="btn btn-danger" onclick="unpublishTodayQuiz()" id="btnUnpublishAdmin" style="display:none">❌ UNPUBLISH Quiz (Hide)</button>
-                            </div>
-                        </div>
                         
                         <div id="todayQuestionsViewAdmin" style="display:none;margin-top:30px"></div>
                     </div>
@@ -5278,6 +5269,153 @@
                 </div>
             </div>
 
+            <!-- ═══════════════════════════════════════════════════
+                 QUIZ & SH NOTIFICATION SCHEDULE PANEL
+                 ═══════════════════════════════════════════════════ -->
+            <div id="quizNotifSchedulePanel" class="form-section super-admin-only" style="margin-top:20px">
+                <h2 style="color:#e65100;margin-bottom:8px">🔔 Quiz &amp; Hunt Notifications</h2>
+                <p style="color:#555;font-size:13px;margin-bottom:16px;background:#fff3e0;padding:12px 16px;border-radius:8px;border-left:4px solid #e65100">
+                    Automatically notify all students when quiz goes live, results are announced, or Scavenger Hunt tasks are created/approved.
+                </p>
+
+                <!-- ══ PUBLISH / UNPUBLISH — triggers full notification chain ══ -->
+                <div style="background:linear-gradient(135deg,#f3e5f5,#fff8e1);border-radius:12px;padding:18px 20px;margin-bottom:18px;border:2px solid #6a1b9a">
+                    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:12px">
+                        <strong style="color:#6a1b9a;font-size:1em">📢 Quiz Publication Control</strong>
+                        <div id="publishStatusDisplayAdmin" style="font-size:.82em;color:#555;font-style:italic">Checking status…</div>
+                    </div>
+                    <div style="display:flex;gap:12px;flex-wrap:wrap">
+                        <button class="btn btn-success" onclick="publishTodayQuiz()" id="btnPublishAdmin" style="display:inline-block;font-size:.95em;padding:11px 24px;font-weight:700">✅ PUBLISH Quiz</button>
+                        <button class="btn btn-danger" onclick="unpublishTodayQuiz()" id="btnUnpublishAdmin" style="display:inline-block;font-size:.95em;padding:11px 24px;font-weight:700">❌ UNPUBLISH Quiz</button>
+                    </div>
+                    <p style="font-size:.75em;color:#888;margin:10px 0 0">Publish triggers the full chain: live banner → tab pulse → FCM push → toast to all devices (if Auto-notify checked)</p>
+                </div>
+
+                <!-- Quiz Live Auto-Notify -->
+                <div style="background:#f9f0ff;border-radius:12px;padding:16px;border:1.5px solid #e0d0f0;margin-bottom:14px">
+                    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px">
+                        <strong style="color:#6a1b9a;font-size:.95em">📝 Quiz Live Notification</strong>
+                        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:.82em;font-weight:700">
+                            <input type="checkbox" id="qnAutoQuizLive" onchange="qnSaveConfig()" style="accent-color:#c44569;width:15px;height:15px"> Auto-notify on Publish
+                        </label>
+                    </div>
+                    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+                        <input type="text" id="qnQuizLiveMsg" placeholder="📝 Daily Quiz is LIVE! Play now & win! 🏆" onblur="qnSaveConfig()" style="flex:1;min-width:200px;padding:8px 12px;border:1.5px solid #d0b8f0;border-radius:8px;font-size:.85em;outline:none">
+                        <button onclick="qnSendQuizLiveNow()" style="background:linear-gradient(135deg,#6a1b9a,#c44569);color:white;border:none;padding:9px 18px;border-radius:8px;font-weight:700;font-size:.82em;cursor:pointer">📤 Send Now</button>
+                    </div>
+                    <p style="font-size:.75em;color:#888;margin:6px 0 0">Fires automatically when admin publishes quiz. Toast appears for 11s, repeats up to 3 visits.</p>
+                </div>
+
+                <!-- Quiz Published Q&A Notification -->
+                <div style="background:#f9f0ff;border-radius:12px;padding:16px;border:1.5px solid #e0d0f0;margin-bottom:14px">
+                    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px">
+                        <strong style="color:#6a1b9a;font-size:.95em">📋 Quiz Published — View Q&amp;A</strong>
+                        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:.82em;font-weight:700">
+                            <input type="checkbox" id="qnAutoQuizPublished" onchange="qnSaveConfig()" style="accent-color:#c44569;width:15px;height:15px"> Auto-notify on Publish
+                        </label>
+                    </div>
+                    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+                        <input type="text" id="qnQuizPublishedMsg" placeholder="📋 Today's quiz is published! Check the questions &amp; answers now." onblur="qnSaveConfig()" style="flex:1;min-width:200px;padding:8px 12px;border:1.5px solid #d0b8f0;border-radius:8px;font-size:.85em;outline:none">
+                        <button type="button" onclick="qnSendQuizPublishedNow()" style="background:linear-gradient(135deg,#4a148c,#7b1fa2);color:white;border:none;padding:9px 18px;border-radius:8px;font-weight:700;font-size:.82em;cursor:pointer">📤 Send Now</button>
+                    </div>
+                    <p style="font-size:.75em;color:#888;margin:6px 0 0">Fires when quiz is published. Toast shows date + "View Q&amp;A" button that scrolls to the past results lookup. Separate from the LIVE play notification.</p>
+                </div>
+
+                <!-- Quiz Results Auto-Notify -->
+                <div style="background:#f9f0ff;border-radius:12px;padding:16px;border:1.5px solid #e0d0f0;margin-bottom:14px">
+                    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px">
+                        <strong style="color:#6a1b9a;font-size:.95em">🏆 Quiz Results Notification</strong>
+                        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:.82em;font-weight:700">
+                            <input type="checkbox" id="qnAutoQuizResults" onchange="qnSaveConfig()" style="accent-color:#c44569;width:15px;height:15px"> Auto-notify on Results
+                        </label>
+                    </div>
+                    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:6px">
+                        <input type="text" id="qnQuizResultsMsg" placeholder="🏆 Quiz results are out! Check who won today." onblur="qnSaveConfig()" style="flex:1;min-width:200px;padding:8px 12px;border:1.5px solid #d0b8f0;border-radius:8px;font-size:.85em;outline:none">
+                        <button type="button" onclick="qnSendQuizResultsNow()" style="background:linear-gradient(135deg,#e65100,#ff6d00);color:white;border:none;padding:9px 18px;border-radius:8px;font-weight:700;font-size:.82em;cursor:pointer">📤 Send Now</button>
+                    </div>
+                    <p style="font-size:.75em;color:#888;margin:0">Auto-reads winner &amp; runner-up from <code>quizResults/DATE</code> and broadcasts names + class.</p>
+                </div>
+
+                <!-- SH New Task Auto-Notify -->
+                <div style="background:#f9f0ff;border-radius:12px;padding:16px;border:1.5px solid #e0d0f0;margin-bottom:14px">
+                    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px">
+                        <strong style="color:#6a1b9a;font-size:.95em">🗺️ Scavenger Hunt — New Task</strong>
+                        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:.82em;font-weight:700">
+                            <input type="checkbox" id="qnAutoSHTask" onchange="qnSaveConfig()" style="accent-color:#c44569;width:15px;height:15px"> Auto-notify on New Task
+                        </label>
+                    </div>
+                    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:8px">
+                        <input type="text" id="qnSHTaskMsg" placeholder="🗺️ New Scavenger Hunt task is LIVE! Go find it! 💪" onblur="qnSaveConfig()" style="flex:1;min-width:200px;padding:8px 12px;border:1.5px solid #d0b8f0;border-radius:8px;font-size:.85em;outline:none">
+                        <button onclick="qnSendSHTaskNow()" style="background:linear-gradient(135deg,#2e7d32,#66bb6a);color:white;border:none;padding:9px 18px;border-radius:8px;font-weight:700;font-size:.82em;cursor:pointer">📤 Re-send</button>
+                    </div>
+                    <p style="font-size:.75em;color:#888;margin:0">Toast repeats 3 visits. Re-send resets the counter for everyone.</p>
+                </div>
+
+                <!-- SH Approval Broadcast -->
+                <div style="background:#f9f0ff;border-radius:12px;padding:16px;border:1.5px solid #e0d0f0;margin-bottom:14px">
+                    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:8px">
+                        <strong style="color:#6a1b9a;font-size:.95em">✅ SH Submission Approved — Broadcast</strong>
+                        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:.82em;font-weight:700">
+                            <input type="checkbox" id="qnAutoSHApproval" onchange="qnSaveConfig()" style="accent-color:#c44569;width:15px;height:15px"> Auto-broadcast on Approval
+                        </label>
+                    </div>
+                    <p style="font-size:.75em;color:#888;margin:0">When any student's task is approved, everyone sees: <em>"🎉 [Name] from [Class] just completed a task!"</em></p>
+                </div>
+
+                <!-- Toast Repeat Setting -->
+                <div style="background:#fff8e1;border-radius:10px;padding:12px 16px;border:1.5px solid #ffe082;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+                    <span style="font-size:.82em;font-weight:700;color:#795548">🔁 Toast repeat count:</span>
+                    <select id="qnToastRepeats" onchange="qnSaveConfig()" style="padding:6px 12px;border:1.5px solid #d0b8f0;border-radius:8px;font-size:.85em;outline:none">
+                        <option value="1">1 time</option>
+                        <option value="2">2 times</option>
+                        <option value="3" selected>3 times (default)</option>
+                    </select>
+                    <span style="font-size:.75em;color:#888">Per toast ID — resets when new notification is sent</span>
+                    <span id="qnSaveStatus" style="font-size:.75em;color:#4caf50;font-weight:700;display:none">✅ Saved</span>
+                </div>
+
+                <!-- Quiz Schedule Slots -->
+                <div style="background:#f3e5f5;border-radius:12px;padding:16px;border:1.5px solid #ce93d8;margin-top:14px">
+                    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px">
+                        <strong style="color:#4a148c;font-size:.95em">📅 Quiz Auto-Announce Schedule</strong>
+                        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+                            <span style="font-size:.75em;color:#4caf50;font-weight:700">✅ Runs in Service Worker — fires even when page is closed</span>
+                            <button type="button" onclick="qnLoadSlots()" style="background:#6a1b9a;color:white;border:none;padding:4px 12px;border-radius:6px;font-size:.75em;font-weight:700;cursor:pointer">🔄 Refresh</button>
+                        </div>
+                    </div>
+                    <!-- Firebase rules hint — shown only on permission error -->
+                    <div id="qnRulesHint" style="display:none;background:#fff3e0;border:1.5px solid #ffb300;border-radius:8px;padding:10px 14px;margin-bottom:10px;font-size:.78em;color:#5d4037">
+                        🔒 <strong>Firebase permission denied on <code>/quizNotifConfig</code>, <code>/quizAnnouncements</code> or <code>/quizNotifications</code></strong><br>
+                        Go to <strong>Firebase Console → Realtime Database → Rules</strong> and add all three lines:<br>
+                        <code style="display:block;background:#f5f5f5;padding:6px 10px;border-radius:6px;margin-top:6px;font-size:.95em;line-height:1.8">"quizNotifConfig": { ".read": true, ".write": true },<br>"quizAnnouncements": { ".read": true, ".write": true },<br>"quizNotifications": { ".read": true, ".write": true },<br>"sw_fired_slots": { ".read": true, ".write": true },</code>
+                        Then click <strong>Publish</strong>.
+                    </div>
+                    <div id="qnSlotsList" style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px">
+                        <div style="color:#aaa;font-size:.82em;text-align:center;padding:10px">Loading slots…</div>
+                    </div>
+                    <!-- Add new slot -->
+                    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;background:white;padding:10px;border-radius:8px;border:1.5px dashed #ce93d8">
+                        <select id="qnNewSlotHour" style="padding:7px 10px;border:1.5px solid #ce93d8;border-radius:8px;font-size:.85em;outline:none;cursor:pointer">
+                            <option value="">HH</option>
+                            <option value="00">12 AM</option><option value="01">1 AM</option><option value="02">2 AM</option><option value="03">3 AM</option><option value="04">4 AM</option><option value="05">5 AM</option><option value="06">6 AM</option><option value="07">7 AM</option><option value="08">8 AM</option><option value="09">9 AM</option><option value="10">10 AM</option><option value="11">11 AM</option>
+                            <option value="12">12 PM</option><option value="13">1 PM</option><option value="14">2 PM</option><option value="15">3 PM</option><option value="16">4 PM</option><option value="17">5 PM</option><option value="18">6 PM</option><option value="19">7 PM</option><option value="20">8 PM</option><option value="21">9 PM</option><option value="22">10 PM</option><option value="23">11 PM</option>
+                        </select>
+                        <select id="qnNewSlotMin" style="padding:7px 10px;border:1.5px solid #ce93d8;border-radius:8px;font-size:.85em;outline:none;cursor:pointer">
+                            <option value="">MM</option>
+                            <option value="00">:00</option><option value="05">:05</option><option value="10">:10</option><option value="15">:15</option><option value="20">:20</option><option value="25">:25</option><option value="30">:30</option><option value="35">:35</option><option value="40">:40</option><option value="45">:45</option><option value="50">:50</option><option value="55">:55</option>
+                        </select>
+                        <input type="number" id="qnNewSlotDur" placeholder="Duration (mins)" min="5" max="180" value="45" style="width:140px;padding:7px 10px;border:1.5px solid #ce93d8;border-radius:8px;font-size:.85em;outline:none">
+                        <label style="display:flex;align-items:center;gap:5px;font-size:.82em;font-weight:600;cursor:pointer">
+                            <input type="checkbox" id="qnNewSlotAuto" checked style="accent-color:#c44569"> Auto
+                        </label>
+                        <button type="button" onclick="qnAddSlot()" style="background:linear-gradient(135deg,#6a1b9a,#c44569);color:white;border:none;padding:8px 16px;border-radius:8px;font-weight:700;font-size:.82em;cursor:pointer">+ Add Slot</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ═══════════════════════════════════════════════════
+                 MANAGER PERMISSIONS PANEL
+                 ═══════════════════════════════════════════════════ -->
             <div id="managerPermissionsPanel" class="form-section super-admin-only" style="margin-top:20px">
                 <h2 style="color:#2196F3;margin-bottom:8px">👔 Manager Permissions</h2>
                 <p style="color:#555;font-size:13px;margin-bottom:20px;background:#e3f2fd;padding:12px 16px;border-radius:8px;border-left:4px solid #2196F3">
@@ -8497,6 +8635,11 @@
                 updateMaster();
                 updateEvents();
             });
+            // Pre-load quiz notification slots so they're ready when SA opens Notifications tab
+            setTimeout(function() {
+                if (typeof qnLoadConfig === 'function') qnLoadConfig();
+                if (typeof qnLoadSlots  === 'function') qnLoadSlots();
+            }, 1000);
         }
 
         // ─────────────────────────────────────────────────────────────────────────
@@ -17266,7 +17409,7 @@
             }
 
             if (tab === 'results')        loadResultsTab();
-            if (tab === 'quizManagement') { loadQuizManagementStats(); showQuizManagementTab('questions'); initializeDateSelector(); }
+            if (tab === 'quizManagement') { loadQuizManagementStats(); showQuizManagementTab('questions'); initializeDateSelector(); setTimeout(function(){ if(typeof checkPublishStatusForAdmin==='function') checkPublishStatusForAdmin(); }, 800); }
             if (tab === 'leaderboardAdmin') {
                 if (typeof loadLbConfigIntoForm   === 'function') loadLbConfigIntoForm();
                 if (typeof loadLbCriteriaList     === 'function') loadLbCriteriaList();
@@ -23289,11 +23432,8 @@ Davan Institute Team`;
                     html += '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">';
                     html += '<button class="btn btn-info btn-small" onclick="editQuizByDate(\'' + quiz.date + '\')" style="background:#2196F3;font-weight:600">✏️ Edit</button>';
                     html += '<button class="btn btn-danger btn-small" onclick="deleteQuizByDate(\'' + quiz.date + '\')" style="font-weight:600">🗑️ Delete</button>';
-                    if (isPublished) {
-                        html += '<button class="btn btn-small" onclick="unpublishQuizByDate(\'' + quiz.date + '\')" style="background:#ff9800;color:white;font-weight:600">❌ Unpublish</button>';
-                    } else {
-                        html += '<button class="btn btn-success btn-small" onclick="publishQuizByDate(\'' + quiz.date + '\')" style="font-weight:600">✅ Publish</button>';
-                    }
+                    html += '<button class="btn btn-success btn-small" onclick="publishQuizByDate(\'' + quiz.date + '\')" style="font-weight:600">✅ Publish</button>';
+                    html += '<button class="btn btn-small" onclick="unpublishQuizByDate(\'' + quiz.date + '\')" style="background:#ff9800;color:white;font-weight:600">❌ Unpublish</button>';
                     html += '</div>';
                     html += '</div>';
                     
@@ -23769,6 +23909,24 @@ Davan Institute Team`;
                 
                 await loadQuizManagementStats();
                 console.log('Questions saved successfully for date:', selectedDate);
+
+                // ── AUTO-NOTIFY: if saved date is TODAY, fire full notification chain ──
+                const today = getQuizToday();
+                if (selectedDate === today) {
+                    // Auto-publish so students can see the quiz immediately
+                    await db.ref(`quizPublished/${today}`).set({
+                        published: true,
+                        publishedAt: new Date().toISOString(),
+                        publishedBy: 'Super Admin'
+                    }).catch(function(){});
+                    // Fire full notification chain: banner + pulse + FCM + toast
+                    if (typeof qnOnQuizPublished === 'function') {
+                        qnOnQuizPublished(today);
+                    }
+                    // Update publish status display
+                    const statusDiv = document.getElementById('publishStatusDisplayAdmin');
+                    if (statusDiv) statusDiv.innerHTML = '✅ Published & notified — ' + new Date().toLocaleTimeString();
+                }
             } catch (err) {
                 console.error('Save error:', err);
                 alert('❌ Error saving questions: ' + err.message);
@@ -25433,6 +25591,8 @@ Davan Institute Team`;
                 await db.ref(`quizResults/${today}`).set(data);
                 try { await sendQuizEmail(winner.email,   '🏆 You Won Quiz!', `Dear ${winner.name},\n\nCongratulations! You are the WINNER!\n\nDavan Institute`); } catch(e){}
                 try { await sendQuizEmail(runnerUp.email, '🥈 Runner-Up!',    `Dear ${runnerUp.name},\n\nCongratulations! You are the RUNNER-UP!\n\nDavan Institute`); } catch(e){}
+                // ── Trigger quiz results notification ──
+                if (window.qnOnQuizResults) qnOnQuizResults(today, data);
                 showQuizMsg('quizAdminMessage', '✅ Manual winners declared!', 'success');
                 displayQuizWinnersAdmin(data);
                 toggleManualWinnerUI(); // close panel
@@ -25449,13 +25609,6 @@ Davan Institute Team`;
             const today = getQuizToday();
             console.log('checkPublishStatusForToday called for:', today);
             try {
-                const qSnap = await db.ref(`quizQuestions/${today}`).once('value');
-                if (!qSnap.exists()) {
-                    console.log('No questions exist for today');
-                    document.getElementById('publishControlSection').style.display = 'none';
-                    return;
-                }
-                
                 const pSnap = await db.ref(`quizPublished/${today}`).once('value');
                 const publishData = pSnap.val();
                 const isPublished = publishData && publishData.published === true;
@@ -25478,13 +25631,13 @@ Davan Institute Team`;
                 if (isPublished) {
                     console.log('Showing UNPUBLISH button (Today tab)');
                     statusDiv.innerHTML = '<div style="background:#d4edda;padding:15px;border-radius:8px;border:2px solid #28a745"><p style="margin:0;color:#155724;font-weight:bold">✅ Quiz is PUBLISHED - Students can see it</p><p style="margin:5px 0 0 0;color:#155724;font-size:13px">Published: ' + new Date(publishData.publishedAt).toLocaleString() + '</p></div>';
-                    btnPub.style.display = 'none';
+                    btnPub.style.display = 'inline-block';
                     btnUnpub.style.display = 'inline-block';
                 } else {
                     console.log('Showing PUBLISH button (Today tab)');
                     statusDiv.innerHTML = '<div style="background:#fff3cd;padding:15px;border-radius:8px;border:2px solid #ffc107"><p style="margin:0;color:#856404;font-weight:bold">⚠️ Quiz is DRAFT - Not visible to students</p><p style="margin:5px 0 0 0;color:#856404;font-size:13px">Click PUBLISH to make it visible</p></div>';
                     btnPub.style.display = 'inline-block';
-                    btnUnpub.style.display = 'none';
+                    btnUnpub.style.display = 'inline-block';
                 }
             } catch (err) {
                 console.error('Check publish error (Today):', err);
@@ -25500,12 +25653,6 @@ Davan Institute Team`;
             console.log('Current user:', quizCurrentUser);
             
             try {
-                const qSnap = await db.ref(`quizQuestions/${today}`).once('value');
-                if (!qSnap.exists()) {
-                    showQuizMsg('quizAdminDashMessage', '⚠️ No questions saved for today!', 'error');
-                    return;
-                }
-                
                 // Get the email safely
                 const userEmail = quizCurrentUser ? quizCurrentUser.email : 'admin@system';
                 console.log('Using email:', userEmail);
@@ -25525,6 +25672,9 @@ Davan Institute Team`;
                 console.log('Verification read:', JSON.stringify(publishData));
                 
                 showQuizMsg('quizAdminDashMessage', '✅ Quiz published successfully!', 'success');
+                
+                // ── Trigger quiz live notification ──
+                if (window.qnOnQuizPublished) qnOnQuizPublished(today);
                 
                 // Direct DOM manipulation - force the UI to update immediately
                 const statusDivAdmin = document.getElementById('publishStatusDisplayAdmin');
@@ -25547,7 +25697,7 @@ Davan Institute Team`;
                 if (statusDivAdmin && btnPubAdmin && btnUnpubAdmin) {
                     console.log('Updating Admin Dashboard UI directly');
                     statusDivAdmin.innerHTML = '<div style="background:#d4edda;padding:15px;border-radius:8px;border:2px solid #28a745"><p style="margin:0;color:#155724;font-weight:bold">✅ Quiz is PUBLISHED - Students can see it</p><p style="margin:5px 0 0 0;color:#155724;font-size:13px">Published: ' + new Date(publishData.publishedAt).toLocaleString() + '</p></div>';
-                    btnPubAdmin.style.display = 'none';
+                    btnPubAdmin.style.display = 'inline-block';
                     btnUnpubAdmin.style.display = 'inline-block';
                     console.log('Admin buttons updated - Publish:', btnPubAdmin.style.display, 'Unpublish:', btnUnpubAdmin.style.display);
                 } else {
@@ -25558,7 +25708,7 @@ Davan Institute Team`;
                 if (statusDiv && btnPub && btnUnpub) {
                     console.log('Updating Quiz Management Tab UI directly');
                     statusDiv.innerHTML = '<div style="background:#d4edda;padding:15px;border-radius:8px;border:2px solid #28a745"><p style="margin:0;color:#155724;font-weight:bold">✅ Quiz is PUBLISHED - Students can see it</p><p style="margin:5px 0 0 0;color:#155724;font-size:13px">Published: ' + new Date(publishData.publishedAt).toLocaleString() + '</p></div>';
-                    btnPub.style.display = 'none';
+                    btnPub.style.display = 'inline-block';
                     btnUnpub.style.display = 'inline-block';
                     console.log('Quiz tab buttons updated - Publish:', btnPub.style.display, 'Unpublish:', btnUnpub.style.display);
                 } else {
@@ -25600,6 +25750,8 @@ Davan Institute Team`;
                 console.log('Verification read:', JSON.stringify(verifySnap.val()));
                 
                 showQuizMsg('quizAdminDashMessage', '✅ Quiz unpublished successfully!', 'success');
+                // ── Trigger quiz ended notification ──
+                if (window.qnOnQuizEnded) qnOnQuizEnded(today);
                 
                 // Direct DOM manipulation - force the UI to update immediately
                 const statusDivAdmin = document.getElementById('publishStatusDisplayAdmin');
@@ -25623,7 +25775,7 @@ Davan Institute Team`;
                     console.log('Updating Admin Dashboard UI directly');
                     statusDivAdmin.innerHTML = '<div style="background:#fff3cd;padding:15px;border-radius:8px;border:2px solid #ffc107"><p style="margin:0;color:#856404;font-weight:bold">⚠️ Quiz is DRAFT - Not visible to students</p><p style="margin:5px 0 0 0;color:#856404;font-size:13px">Click PUBLISH to make it visible</p></div>';
                     btnPubAdmin.style.display = 'inline-block';
-                    btnUnpubAdmin.style.display = 'none';
+                    btnUnpubAdmin.style.display = 'inline-block';
                     console.log('Admin buttons updated - Publish:', btnPubAdmin.style.display, 'Unpublish:', btnUnpubAdmin.style.display);
                 } else {
                     console.log('Could not update Admin Dashboard - elements missing');
@@ -25634,7 +25786,7 @@ Davan Institute Team`;
                     console.log('Updating Quiz Management Tab UI directly');
                     statusDiv.innerHTML = '<div style="background:#fff3cd;padding:15px;border-radius:8px;border:2px solid #ffc107"><p style="margin:0;color:#856404;font-weight:bold">⚠️ Quiz is DRAFT - Not visible to students</p><p style="margin:5px 0 0 0;color:#856404;font-size:13px">Click PUBLISH to make it visible</p></div>';
                     btnPub.style.display = 'inline-block';
-                    btnUnpub.style.display = 'none';
+                    btnUnpub.style.display = 'inline-block';
                     console.log('Quiz tab buttons updated - Publish:', btnPub.style.display, 'Unpublish:', btnUnpub.style.display);
                 } else {
                     console.log('Could not update Quiz Management Tab - elements missing');
@@ -25720,13 +25872,6 @@ Davan Institute Team`;
             console.log('Date:', today);
             
             try {
-                const qSnap = await db.ref(`quizQuestions/${today}`).once('value');
-                if (!qSnap.exists()) {
-                    console.log('No questions exist for today');
-                    document.getElementById('publishControlSectionAdmin').style.display = 'none';
-                    return;
-                }
-                
                 const pSnap = await db.ref(`quizPublished/${today}`).once('value');
                 const publishData = pSnap.val();
                 const isPublished = publishData && publishData.published === true;
@@ -25752,7 +25897,7 @@ Davan Institute Team`;
                         statusDiv.innerHTML = '<div style="background:#d4edda;padding:15px;border-radius:8px;border:2px solid #28a745"><p style="margin:0;color:#155724;font-weight:bold">✅ Quiz is PUBLISHED - Students can see it</p><p style="margin:5px 0 0 0;color:#155724;font-size:13px">Published: ' + new Date(publishData.publishedAt).toLocaleString() + '</p></div>';
                         
                         buttonsContainer.innerHTML = `
-                            <button class="btn btn-success" onclick="publishTodayQuiz()" id="btnPublishAdmin" style="display:none">✅ PUBLISH Quiz (Make Live)</button>
+                            <button class="btn btn-success" onclick="publishTodayQuiz()" id="btnPublishAdmin" style="display:inline-block">✅ PUBLISH Quiz (Make Live)</button>
                             <button class="btn btn-danger" onclick="unpublishTodayQuiz()" id="btnUnpublishAdmin" style="display:inline-block">❌ UNPUBLISH Quiz (Hide)</button>
                         `;
                     } else {
@@ -25761,7 +25906,7 @@ Davan Institute Team`;
                         
                         buttonsContainer.innerHTML = `
                             <button class="btn btn-success" onclick="publishTodayQuiz()" id="btnPublishAdmin" style="display:inline-block">✅ PUBLISH Quiz (Make Live)</button>
-                            <button class="btn btn-danger" onclick="unpublishTodayQuiz()" id="btnUnpublishAdmin" style="display:none">❌ UNPUBLISH Quiz (Hide)</button>
+                            <button class="btn btn-danger" onclick="unpublishTodayQuiz()" id="btnUnpublishAdmin" style="display:inline-block">❌ UNPUBLISH Quiz (Hide)</button>
                         `;
                     }
                     console.log('Buttons HTML updated successfully');
@@ -29017,6 +29162,8 @@ Davan Institute Team`;
         if (availFrom)  task.availableFrom = new Date(availFrom).toISOString();
         if (deadline)   task.deadline      = new Date(deadline).toISOString();
         await window.db.ref('scavengerHunt/tasks').push(task);
+        // ── Trigger SH new task notification ──
+        if (window.qnOnSHTaskCreated) qnOnSHTaskCreated(name);
 
         // Show brief success badge
         const msgEl = document.getElementById('shCreateTaskMsg');
@@ -29567,6 +29714,12 @@ Davan Institute Team`;
             adminNote: (adminNote && adminNote.trim()) ? adminNote.trim() : null
         };
         await getDb().ref('scavengerHunt/submissions/'+studentKey+'/'+taskId).update(update);
+        // ── Trigger SH approval broadcast ──
+        if (status === 'approved' && window.qnOnSHApproved) {
+            var subSnap = await getDb().ref('scavengerHunt/submissions/'+studentKey+'/'+taskId).once('value');
+            var subVal  = subSnap.val() || {};
+            qnOnSHApproved(subVal.studentName || 'A student', subVal.studentClass || 'their class', subVal.taskName || taskId);
+        }
         shAdminLoadSubmissions();
     }
 
@@ -36885,13 +37038,12 @@ v6.06 | Mar 03 2026 03:30 PM IST | Incharge banner cards: show captain phone, st
 // Upload this file to your GitHub repo at: /Spurthi-youth-fest-2026/sw.js
 
 const FIREBASE_URL = 'https://spurthi-youthfest-2026-default-rtdb.asia-southeast1.firebasedatabase.app';
+const FCM_WORKER   = 'https://fcm-push.harshgujjar.workers.dev';
 
 function swLog(step, detail) {
-    const entry = { step, detail: detail || '', ts: Date.now() };
     fetch(FIREBASE_URL + '/sw_debug.json', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(entry)
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ step, detail: detail || '', ts: Date.now() })
     }).catch(() => {});
 }
 
@@ -36903,8 +37055,10 @@ self.addEventListener('install', e => {
 self.addEventListener('activate', e => {
     swLog('activate', 'SW activated');
     e.waitUntil(self.clients.claim());
+    startScheduleChecker();
 });
 
+// ── Push handler ─────────────────────────────────────────
 self.addEventListener('push', function(event) {
     swLog('push_received', event.data ? event.data.text() : 'NO DATA');
     let data = { title: 'Spurthi 2026', body: 'New notification' };
@@ -36914,51 +37068,207 @@ self.addEventListener('push', function(event) {
             try { data = JSON.parse(text); } catch(e) { data.body = text; }
         }
     } catch(e) { swLog('push_parse_error', e.message); }
-    const title = data.title || (data.notification && data.notification.title) || 'Spurthi 2026';
-    const body  = data.body  || (data.notification && data.notification.body)  || '';
-    swLog('push_showing', 'title=' + title + ' body=' + body);
+    const title = data.title || 'Spurthi 2026';
+    const body  = data.body  || '';
     const notifUrl = data.url || 'https://harshgujjar.github.io/Spurthi-youth-fest-2026/';
     const options = {
-        body: body,
-        icon: '/Spurthi-youth-fest-2026/davan_logo_2026.gif',
+        body, icon: '/Spurthi-youth-fest-2026/davan_logo_2026.gif',
         badge: '/Spurthi-youth-fest-2026/davan_logo_2026.gif',
         vibrate: [300, 100, 300, 100, 300],
         requireInteraction: true,
-        tag: 'spurthi-chat-' + (data.convId || 'msg'),
+        tag: 'spurthi-' + (data.tag || 'msg'),
         renotify: true,
         data: { url: notifUrl, convId: data.convId || '' }
     };
     event.waitUntil(
         self.registration.showNotification(title, options)
-            .then(() => { swLog('push_shown_ok', title); })
-            .catch(err => { swLog('push_show_error', err.message); })
+            .then(() => swLog('push_shown_ok', title))
+            .catch(err => swLog('push_show_error', err.message))
     );
 });
 
 self.addEventListener('notificationclick', function(event) {
-    swLog('notification_clicked', '');
     event.notification.close();
     const data   = event.notification.data || {};
     const convId = data.convId || '';
     const base   = data.url || 'https://harshgujjar.github.io/Spurthi-youth-fest-2026/';
     const url    = convId ? (base.split('?')[0] + '?openChat=' + convId) : base;
-    swLog('notification_open_url', url);
     event.waitUntil(
         clients.matchAll({ type: 'window', includeUncontrolled: true }).then(list => {
             for (const c of list) {
                 if (c.url.includes('Spurthi')) {
-                    if ('focus' in c) {
-                        c.focus();
-                        // Post message to already-open page to navigate to conversation
-                        c.postMessage({ type: 'OPEN_CHAT_CONV', convId: convId });
-                        return;
-                    }
+                    if ('focus' in c) { c.focus(); c.postMessage({ type: 'OPEN_CHAT_CONV', convId }); return; }
                 }
             }
             if (clients.openWindow) return clients.openWindow(url);
         })
     );
-});`;
+});
+
+// ══════════════════════════════════════════════════════════
+// AUTO-ANNOUNCE SCHEDULE — runs inside SW (no page needed)
+// Fires every 60s, checks Firebase slots, sends FCM at match.
+// Fired-keys stored in Firebase so no double-fire across reloads.
+// Slots repeat daily — same time every day automatically.
+// ══════════════════════════════════════════════════════════
+
+function getToday() {
+    const d = new Date();
+    return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+
+async function swCheckSchedule() {
+    try {
+        const now   = new Date();
+        const nowH  = now.getHours();
+        const nowM  = now.getMinutes();
+        const today = getToday();
+
+        // Read all slots from Firebase
+        const slotsResp = await fetch(FIREBASE_URL + '/quizNotifConfig/slots.json');
+        if (!slotsResp.ok) return;
+        const slots = await slotsResp.json();
+        if (!slots) return;
+
+        for (const key of Object.keys(slots)) {
+            const s = slots[key];
+            if (!s || !s.auto || !s.time) continue;
+
+            const [slotH, slotM] = s.time.split(':').map(Number);
+            const diff = (nowH * 60 + nowM) - (slotH * 60 + slotM);
+            if (diff < 0 || diff > 1) continue;  // only fire within 1-min window
+
+            const fireKey = key + '_' + today;
+
+            // Check if already fired today (stored in Firebase — persists across reloads)
+            const firedResp = await fetch(FIREBASE_URL + '/sw_fired_slots/' + fireKey + '.json');
+            const alreadyFired = firedResp.ok && await firedResp.json() === true;
+            if (alreadyFired) continue;
+
+            // Mark fired immediately to prevent race on multiple open tabs
+            await fetch(FIREBASE_URL + '/sw_fired_slots/' + fireKey + '.json', {
+                method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: 'true'
+            }).catch(() => {});
+
+            swLog('schedule_fired', 'slot=' + s.time + ' date=' + today);
+
+            // Read notification config for message + autoQuizLive flag
+            const cfgResp = await fetch(FIREBASE_URL + '/quizNotifConfig.json');
+            const cfg = cfgResp.ok ? (await cfgResp.json() || {}) : {};
+            const msg = cfg.quizLiveMsg || '📝 Daily Quiz is LIVE! Play now & win! 🏆';
+            const toastId = 'quiz_live_' + today;
+
+            // 1. Write quizAnnouncements/latest → shows live banner on all open pages
+            fetch(FIREBASE_URL + '/quizAnnouncements/latest.json', {
+                method: 'PUT', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status: 'live', title: '📝 Daily Quiz is LIVE!', body: msg, publishedAt: Date.now(), date: today })
+            }).catch(() => {});
+
+            // 2. Auto-publish quiz if not already published
+            const pubResp = await fetch(FIREBASE_URL + '/quizPublished/' + today + '/published.json');
+            const alreadyPublished = pubResp.ok && await pubResp.json() === true;
+            if (!alreadyPublished) {
+                fetch(FIREBASE_URL + '/quizPublished/' + today + '.json', {
+                    method: 'PUT', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ published: true, publishedAt: new Date().toISOString(), publishedBy: 'Auto-Schedule-SW' })
+                }).catch(() => {});
+            }
+
+            // 3. Write live_notifications/latest → open page tabs show toast instantly
+            fetch(FIREBASE_URL + '/live_notifications/latest.json', {
+                method: 'PUT', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ title: '📝 Daily Quiz is LIVE!', body: msg, sentAt: Date.now(), id: toastId, qnType: 'quiz' })
+            }).catch(() => {});
+
+            // 4. FCM push to all subscribed devices (only if Auto-notify on Publish is ON)
+            if (cfg.autoQuizLive) {
+                const tokensResp = await fetch(FIREBASE_URL + '/fcmTokens.json');
+                if (tokensResp.ok) {
+                    const tokens = await tokensResp.json();
+                    if (tokens) {
+                        const subs = Object.values(tokens)
+                            .filter(d => d && d.subscription)
+                            .map(d => { try { return JSON.parse(d.subscription); } catch(e) { return d.subscription; } });
+                        if (subs.length) {
+                            fetch(FCM_WORKER, {
+                                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ title: '📝 Daily Quiz is LIVE!', body: msg, subscriptions: subs, url: 'https://harshgujjar.github.io/Spurthi-youth-fest-2026/' })
+                            }).catch(() => {});
+                        }
+                    }
+                }
+            }
+
+            // 5. Schedule auto-end notification after slot duration
+            const durMs = (s.duration || 45) * 60 * 1000;
+            setTimeout(() => swFireQuizEnded(today, cfg), durMs);
+        }
+
+        // Daily cleanup: remove fired slot keys older than 2 days
+        swCleanFiredSlots();
+
+    } catch(err) {
+        swLog('schedule_error', err.message || String(err));
+    }
+}
+
+async function swFireQuizEnded(today, cfg) {
+    try {
+        const endMsg = '⏰ Quiz has ended! Results coming soon.';
+        const endToastId = 'quiz_ended_' + today;
+        // Update status to ended
+        fetch(FIREBASE_URL + '/quizAnnouncements/latest.json', {
+            method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: 'ended', endedAt: Date.now() })
+        }).catch(() => {});
+        // Toast for open pages
+        fetch(FIREBASE_URL + '/live_notifications/latest.json', {
+            method: 'PUT', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ title: '⏰ Quiz Ended', body: endMsg, sentAt: Date.now(), id: endToastId, qnType: 'quizended' })
+        }).catch(() => {});
+        // FCM push if auto-notify on
+        if (cfg && cfg.autoQuizLive) {
+            const tokensResp = await fetch(FIREBASE_URL + '/fcmTokens.json');
+            if (tokensResp.ok) {
+                const tokens = await tokensResp.json();
+                if (tokens) {
+                    const subs = Object.values(tokens).filter(d => d && d.subscription)
+                        .map(d => { try { return JSON.parse(d.subscription); } catch(e) { return d.subscription; } });
+                    if (subs.length) {
+                        fetch(FCM_WORKER, {
+                            method: 'POST', headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ title: '⏰ Quiz Ended', body: endMsg, subscriptions: subs })
+                        }).catch(() => {});
+                    }
+                }
+            }
+        }
+        swLog('quiz_ended_fired', today);
+    } catch(err) { swLog('quiz_ended_error', err.message); }
+}
+
+async function swCleanFiredSlots() {
+    try {
+        const resp = await fetch(FIREBASE_URL + '/sw_fired_slots.json');
+        if (!resp.ok) return;
+        const fired = await resp.json();
+        if (!fired) return;
+        const d = new Date(); d.setDate(d.getDate() - 2);
+        const cutoff = d.toISOString().slice(0,10);
+        for (const key of Object.keys(fired)) {
+            if (key.slice(-10) < cutoff) {
+                fetch(FIREBASE_URL + '/sw_fired_slots/' + key + '.json', { method: 'DELETE' }).catch(() => {});
+            }
+        }
+    } catch(e) {}
+}
+
+function startScheduleChecker() {
+    // Runs every 60s inside the Service Worker — works even when all tabs are closed.
+    // Slots repeat automatically every day (same time daily) until deleted.
+    setTimeout(swCheckSchedule, 5000);
+    setInterval(swCheckSchedule, 60000);
+}`
 
     function showSwJsCode() {
         document.getElementById('swJsCodeArea').value = SW_JS_CODE;
@@ -38458,7 +38768,10 @@ export default {
     "fcmTokens": { ".read": true, ".write": true },
     "push_force_resub": { ".read": true, ".write": true },
     "sw_force_update": { ".read": true, ".write": true },
-    "live_notifications": { ".read": true, ".write": true }
+    "live_notifications": { ".read": true, ".write": true },
+    "quizAnnouncements": { ".read": true, ".write": true },
+    "quizNotifications": { ".read": true, ".write": true },
+    "quizNotifConfig": { ".read": true, ".write": true }
   }
 }`;
 
@@ -38732,7 +39045,7 @@ export default {
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;" id="devTriggerVersion">
-                <strong>Version:</strong> 6.38 — Fix: extra } in scResumeSession caused scToggle not defined crash; Reopen &amp; Continue button fixed; Firebase allowGuestEdit/Delete/Recall paths<strong>Last Updated:</strong> Mar 04, 2026, 10:58 PM IST</p>
+                <strong>Version:</strong> 6.71 — Schedule now runs in Service Worker (no page needed); fires daily at set times; FCM+toast+publish chain; fired-keys in Firebase prevent double-fire<strong>Last Updated:</strong> Mar 05, 2026, 12:10 AM IST</p>
             <!-- ============================================ -->
             
             <p style="color: #c44569; font-size: 0.85em; font-weight: 600; margin-bottom: 8px;">
@@ -38924,6 +39237,31 @@ export default {
 .chat-admin-input-row textarea:focus { border-color:#c44569; }
 .chat-admin-send-btn { background:linear-gradient(135deg,#c44569,#6a1b9a);color:white;border:none;padding:9px 18px;border-radius:10px;cursor:pointer;font-weight:700;font-size:.875em;white-space:nowrap; }
 .chat-resolve-btn { background:#e8f5e9;color:#2e7d32;border:1.5px solid #a5d6a7;padding:7px 16px;border-radius:8px;cursor:pointer;font-weight:700;font-size:.82em; }
+/* ── Quiz Live Pulse ── */
+@keyframes qnPulse { 0%,100%{box-shadow:0 0 0 0 rgba(198,68,105,.5)} 50%{box-shadow:0 0 0 8px rgba(198,68,105,0)} }
+.qnQuizLive { animation:qnPulse 1.8s infinite !important; background:linear-gradient(135deg,#c44569,#6a1b9a) !important; color:white !important; }
+#qnLiveBanner { display:none; position:fixed; top:0; left:0; right:0; z-index:9998; background:linear-gradient(135deg,#6a1b9a,#c44569); color:white; text-align:center; padding:9px 16px; font-size:.88em; font-weight:700; letter-spacing:.3px; }
+#qnLiveBanner a { color:#ffe082; text-decoration:underline; cursor:pointer; margin-left:10px; }
+
+/* ── Global Notification Toast ── */
+.qnToast { pointer-events:all; background:white; border-radius:14px; padding:14px 16px; box-shadow:0 8px 32px rgba(0,0,0,.18); border-left:5px solid #c44569; display:flex; align-items:flex-start; gap:12px; animation:qnSlideIn .35s ease; min-width:280px; max-width:340px; }
+.qnToast.qnToastQuiz   { border-left-color:#6a1b9a; }
+.qnToast.qnToastResult { border-left-color:#f9a825; }
+.qnToast.qnToastSH     { border-left-color:#2e7d32; }
+.qnToast.qnToastApproval { border-left-color:#0277bd; }
+.qnToastIcon { font-size:1.5em; flex-shrink:0; margin-top:1px; }
+.qnToastBody { flex:1; }
+.qnToastTitle { font-weight:800; font-size:.9em; color:#1a0035; margin:0 0 3px; }
+.qnToastMsg   { font-size:.8em; color:#555; margin:0 0 8px; line-height:1.4; }
+.qnToastBtns  { display:flex; gap:6px; flex-wrap:wrap; }
+.qnToastBtn   { background:linear-gradient(135deg,#6a1b9a,#c44569); color:white; border:none; padding:5px 12px; border-radius:7px; font-size:.75em; font-weight:700; cursor:pointer; }
+.qnToastClose { background:none; border:none; color:#aaa; font-size:1.1em; cursor:pointer; flex-shrink:0; padding:0; line-height:1; margin-top:1px; }
+.qnToastProgress { height:3px; background:#e0d0f0; border-radius:2px; margin-top:8px; overflow:hidden; }
+.qnToastProgressBar { height:100%; background:linear-gradient(90deg,#6a1b9a,#c44569); animation:qnProgress 11s linear forwards; }
+@keyframes qnSlideIn { from { transform:translateX(120%); opacity:0; } to { transform:translateX(0); opacity:1; } }
+@keyframes qnSlideOut { from { transform:translateX(0); opacity:1; } to { transform:translateX(120%); opacity:0; } }
+@keyframes qnProgress { from { width:100%; } to { width:0%; } }
+
 /* Message action buttons */
 .scMsgActions { display:none; gap:4px; margin-top:4px; justify-content:flex-end; }
 .scBub:hover .scMsgActions { display:flex; }
@@ -38944,6 +39282,16 @@ export default {
 .scEditInput { width:100%; border:1.5px solid #ce93d8; border-radius:8px; padding:5px 8px; font-size:.875em; font-family:inherit; resize:none; margin-top:4px; outline:none; }
 
 </style>
+
+<!-- ═══ QUIZ LIVE BANNER ═══ -->
+<div id="qnLiveBanner">
+    📝 <span id="qnLiveBannerText">Daily Quiz is LIVE!</span>
+    <a onclick="qnGoToQuiz()" style="color:#ffe082;text-decoration:underline;cursor:pointer;margin-left:12px;font-weight:800">▶ Play Now</a>
+    <a onclick="document.getElementById('qnLiveBanner').style.display='none'" style="color:#ffe082;text-decoration:underline;cursor:pointer;margin-left:12px">✕ Dismiss</a>
+</div>
+
+<!-- ═══ GLOBAL NOTIFICATION TOAST CONTAINER ═══ -->
+<div id="qnToastContainer" style="position:fixed;top:18px;right:18px;z-index:99999;display:flex;flex-direction:column;gap:10px;pointer-events:none;max-width:340px"></div>
 
 <!-- Floating Chat Bubble -->
 <button id="sChatBubble" title="Chat with Support" onclick="scToggle()">
@@ -39472,6 +39820,703 @@ function scPushToAdmin(text, convId) {
     }).catch(function(){});
 }
 
+
+// ══════════════════════════════════════════════════════════
+// QUIZ & HUNT NOTIFICATION SYSTEM
+// ══════════════════════════════════════════════════════════
+var QN_PATH      = 'quizNotifications';
+var QN_CFG_PATH  = 'quizNotifConfig';
+var _qnListeners = {};
+
+// ── Toast Engine ──────────────────────────────────────────
+function qnShowToast(opts) {
+    // opts: { id, icon, title, msg, btnLabel, btnAction, type, duration }
+    var id       = opts.id || ('qnt_' + Date.now());
+    var duration = opts.duration || 11000;
+    var maxSeen  = parseInt(localStorage.getItem('qn_repeats') || '3');
+    var seenKey  = 'qn_seen_' + id;
+    var seen     = parseInt(localStorage.getItem(seenKey) || '0');
+    if (seen >= maxSeen) return; // already seen enough times
+    localStorage.setItem(seenKey, seen + 1);
+
+    var container = document.getElementById('qnToastContainer');
+    if (!container) return;
+
+    var toast = document.createElement('div');
+    toast.className = 'qnToast ' + (opts.type || '');
+    toast.innerHTML =
+        '<span class="qnToastIcon">'+(opts.icon||'🔔')+'</span>'+
+        '<div class="qnToastBody">'+
+            '<div class="qnToastTitle">'+qnEsc(opts.title||'')+'</div>'+
+            '<div class="qnToastMsg">'+qnEsc(opts.msg||'')+'</div>'+
+            '<div class="qnToastBtns">'+
+                (opts.btnLabel ? '<button class="qnToastBtn" id="qntBtn_'+id+'">'+qnEsc(opts.btnLabel)+'</button>' : '')+
+            '</div>'+
+            '<div class="qnToastProgress"><div class="qnToastProgressBar"></div></div>'+
+        '</div>'+
+        '<button class="qnToastClose" onclick="qnDismissToast(this.parentElement)">✕</button>';
+
+    container.appendChild(toast);
+
+    if (opts.btnAction) {
+        var btn = document.getElementById('qntBtn_' + id);
+        if (btn) btn.onclick = opts.btnAction;
+    }
+
+    var timer = setTimeout(function() { qnDismissToast(toast); }, duration);
+    toast._timer = timer;
+}
+
+function qnDismissToast(el) {
+    if (!el || !el.parentElement) return;
+    el.style.animation = 'qnSlideOut .3s ease forwards';
+    if (el._timer) clearTimeout(el._timer);
+    setTimeout(function() { if (el.parentElement) el.parentElement.removeChild(el); }, 300);
+}
+
+function qnEsc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+// ── Config: save/load ─────────────────────────────────────
+function qnSaveConfig() {
+    var db = window.db || (window.firebase && window.firebase.database());
+    if (!db) return;
+    var cfg = {
+        autoQuizLive:    document.getElementById('qnAutoQuizLive')    ? document.getElementById('qnAutoQuizLive').checked    : false,
+        autoQuizPublished: document.getElementById('qnAutoQuizPublished') ? document.getElementById('qnAutoQuizPublished').checked : false,
+        autoQuizResults: document.getElementById('qnAutoQuizResults') ? document.getElementById('qnAutoQuizResults').checked : false,
+        autoSHTask:      document.getElementById('qnAutoSHTask')      ? document.getElementById('qnAutoSHTask').checked      : false,
+        autoSHApproval:  document.getElementById('qnAutoSHApproval')  ? document.getElementById('qnAutoSHApproval').checked  : false,
+        quizLiveMsg:     document.getElementById('qnQuizLiveMsg')     ? document.getElementById('qnQuizLiveMsg').value.trim() : '',
+        quizPublishedMsg: document.getElementById('qnQuizPublishedMsg') ? document.getElementById('qnQuizPublishedMsg').value.trim() : '',
+        quizResultsMsg:  document.getElementById('qnQuizResultsMsg')  ? document.getElementById('qnQuizResultsMsg').value.trim()  : '',
+        shTaskMsg:       document.getElementById('qnSHTaskMsg')       ? document.getElementById('qnSHTaskMsg').value.trim()  : '',
+        toastRepeats:    document.getElementById('qnToastRepeats')    ? document.getElementById('qnToastRepeats').value       : '3'
+    };
+    db.ref(QN_CFG_PATH).set(cfg);
+    localStorage.setItem('qn_repeats', cfg.toastRepeats);
+    var s = document.getElementById('qnSaveStatus');
+    if (s) { s.style.display='inline'; setTimeout(function(){ s.style.display='none'; }, 2000); }
+}
+
+function qnLoadConfig() {
+    var db = window.db || (window.firebase && window.firebase.database());
+    if (!db) return;
+    db.ref(QN_CFG_PATH).once('value').then(function(snap) {
+        var c = snap.val() || {};
+        var el;
+        el = document.getElementById('qnAutoQuizLive');    if(el) el.checked = !!c.autoQuizLive;
+        el = document.getElementById('qnAutoQuizPublished'); if(el) el.checked = !!c.autoQuizPublished;
+        el = document.getElementById('qnAutoQuizResults'); if(el) el.checked = !!c.autoQuizResults;
+        el = document.getElementById('qnAutoSHTask');      if(el) el.checked = !!c.autoSHTask;
+        el = document.getElementById('qnAutoSHApproval');  if(el) el.checked = !!c.autoSHApproval;
+        el = document.getElementById('qnQuizLiveMsg');     if(el && c.quizLiveMsg) el.value = c.quizLiveMsg;
+        el = document.getElementById('qnQuizPublishedMsg'); if(el && c.quizPublishedMsg) el.value = c.quizPublishedMsg;
+        el = document.getElementById('qnQuizResultsMsg');  if(el && c.quizResultsMsg)  el.value = c.quizResultsMsg;
+        el = document.getElementById('qnSHTaskMsg');       if(el && c.shTaskMsg)   el.value = c.shTaskMsg;
+        el = document.getElementById('qnToastRepeats');    if(el && c.toastRepeats) el.value = c.toastRepeats;
+        if (c.toastRepeats) localStorage.setItem('qn_repeats', c.toastRepeats);
+    });
+}
+
+// ── FCM broadcast helper ──────────────────────────────────
+function qnBroadcastFCM(title, body, toastId, type) {
+    var db = window.db || (window.firebase && window.firebase.database());
+    if (!db) return;
+    // Write to live_notifications so on-page users get toast
+    db.ref('live_notifications/latest').set({
+        title: title, body: body,
+        sentAt: Date.now(), id: toastId || Date.now().toString(),
+        qnType: type || 'quiz'
+    });
+    // Also write to QN_PATH for persistent late-visitor display
+    db.ref(QN_PATH + '/latest').set({
+        title: title, body: body,
+        sentAt: Date.now(), id: toastId || Date.now().toString(),
+        type: type || 'quiz'
+    });
+    // FCM push to all subscribed devices
+    db.ref('fcmTokens').once('value').then(function(snap) {
+        if (!snap.exists()) return;
+        var subs = [];
+        snap.forEach(function(ch) {
+            var d = ch.val();
+            if (d && d.subscription) {
+                try { subs.push(JSON.parse(d.subscription)); } catch(e) { subs.push(d.subscription); }
+            }
+        });
+        if (!subs.length) return;
+        fetch('https://fcm-push.harshgujjar.workers.dev', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ title: title, body: body, subscriptions: subs, url: window.location.href })
+        }).catch(function(){});
+    });
+}
+
+// ── FEATURE 1: Quiz Published hook ───────────────────────
+function qnOnQuizPublished(date) {
+    var db = window.db || (window.firebase && window.firebase.database());
+    if (!db) return;
+    db.ref(QN_CFG_PATH).once('value').then(function(snap) {
+        var cfg = snap.val() || {};
+        _qnDoPublished(date, cfg);
+    }).catch(function() {
+        // cfg read failed (e.g. permission denied) — proceed with defaults
+        _qnDoPublished(date, {});
+    });
+}
+function _qnDoPublished(date, cfg) {
+    var db = window.db || (window.firebase && window.firebase.database());
+    if (!db) return;
+    var msg   = cfg.quizLiveMsg || '📝 Daily Quiz is LIVE! Play now & win! 🏆';
+    var toastId = 'quiz_live_' + date;
+    // Reset seen-count so toast always shows when admin publishes
+    localStorage.removeItem('qn_seen_' + toastId);
+    // Always write quizAnnouncements/latest (so banner + pulse work for all)
+    db.ref('quizAnnouncements/latest').set({
+        status: 'live', title: '📝 Daily Quiz is LIVE!',
+        body: msg, publishedAt: Date.now(), date: date
+    }).catch(function(err) {
+        var m = err.message || String(err);
+        if (m.indexOf('permission') !== -1 || m.indexOf('PERMISSION') !== -1) {
+            var hint = document.getElementById('qnRulesHint');
+            if (hint) hint.style.display = 'block';
+        }
+    });
+    // Show live banner + pulse (always, regardless of autoQuizLive setting)
+    var banner = document.getElementById('qnLiveBanner');
+    var bannerText = document.getElementById('qnLiveBannerText');
+    if (banner) { banner.style.display='block'; }
+    if (bannerText) bannerText.textContent = msg;
+    qnPulseQuizTab(true);
+    // Read autoQuizLive from DOM checkbox directly (most reliable — avoids Firebase read race)
+    var chk = document.getElementById('qnAutoQuizLive');
+    var autoOn = chk ? chk.checked : !!cfg.autoQuizLive;
+    // Toast + FCM if auto-notify is ON
+    if (autoOn) {
+        // Write to live_notifications so all open pages get the toast immediately
+        db.ref('live_notifications/latest').set({
+            title: '📝 Daily Quiz is LIVE!', body: msg,
+            sentAt: Date.now(), id: toastId, qnType: 'quiz'
+        }).catch(function(){});
+        qnBroadcastFCM('📝 Daily Quiz is LIVE!', msg, toastId, 'quiz');
+        qnShowToast({
+            id: toastId, icon: '📝', type: 'qnToastQuiz',
+            title: 'Daily Quiz is LIVE!', msg: msg,
+            btnLabel: 'Play Now →', btnAction: function() { qnGoToQuiz(); }
+        });
+    }
+    // Auto-fire "Quiz Published — View Q&A" notification if that checkbox is ON
+    var chkQA = document.getElementById('qnAutoQuizPublished');
+    var autoQA = chkQA ? chkQA.checked : !!cfg.autoQuizPublished;
+    if (autoQA) {
+        var qaMsgEl = document.getElementById('qnQuizPublishedMsg');
+        var qaMsg = (qaMsgEl ? qaMsgEl.value.trim() : '') || ('📋 Today\'s quiz (' + date + ') is published! Check the questions & answers now.');
+        var qaToastId = 'quiz_published_qa_' + date;
+        localStorage.removeItem('qn_seen_' + qaToastId);
+        db.ref('live_notifications/latest').set({
+            title: '📋 Quiz Published — View Q&A', body: qaMsg,
+            sentAt: Date.now() + 500, id: qaToastId, qnType: 'quizqa', quizDate: date
+        }).catch(function(){});
+        qnShowToastQuizQA(qaToastId, qaMsg, date);
+    }
+}
+
+// ── Quiz tab pulse ────────────────────────────────────────
+function qnPulseQuizTab(on) {
+    // Pulse the "Online Competition" select label / its container
+    var sel = document.getElementById('competitionType');
+    if (sel) {
+        var container = sel.closest('.form-group') || sel.parentElement;
+        if (on) {
+            sel.classList.add('qnQuizLive');
+            if (container) container.classList.add('qnQuizLive');
+        } else {
+            sel.classList.remove('qnQuizLive');
+            if (container) container.classList.remove('qnQuizLive');
+        }
+    }
+    // Also try any tab buttons that might reference quiz (admin tab)
+    var selectors = ['[onclick*="quizManagement"]','#quizManagementTab'];
+    selectors.forEach(function(s) {
+        try {
+            document.querySelectorAll(s).forEach(function(el) {
+                if (on) el.classList.add('qnQuizLive');
+                else    el.classList.remove('qnQuizLive');
+            });
+        } catch(e) {}
+    });
+}
+
+// ── Navigate to quiz section ──────────────────────────────
+function qnGoToQuiz() {
+    // Scroll loginSection into view, set dropdown to dailyquiz, trigger change
+    var loginSection = document.getElementById('loginSection');
+    if (loginSection) loginSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    var sel = document.getElementById('competitionType');
+    if (sel) {
+        sel.value = 'dailyquiz';
+        if (typeof handleCompetitionChange === 'function') handleCompetitionChange();
+    }
+    // Also clear userType so it doesn't conflict
+    var ut = document.getElementById('userType');
+    if (ut) { ut.value = ''; if (typeof handleUserTypeChange === 'function') handleUserTypeChange(); }
+    var banner = document.getElementById('qnLiveBanner');
+    if (banner) banner.style.display = 'none';
+}
+
+// ── Quiz ended notification ───────────────────────────────
+function qnOnQuizEnded(date) {
+    var db = window.db || (window.firebase && window.firebase.database());
+    if (!db) return;
+    db.ref(QN_CFG_PATH).once('value').then(function(snap) {
+        var cfg = snap.val() || {};
+        _qnDoEnded(date, cfg);
+    }).catch(function() {
+        _qnDoEnded(date, {});
+    });
+}
+function _qnDoEnded(date, cfg) {
+    var db = window.db || (window.firebase && window.firebase.database());
+    if (!db) return;
+    var toastId = 'quiz_ended_' + date;
+    var msg = '⏰ Quiz has ended! Results coming soon. Stay tuned 🏆';
+    // Reset seen-count so ended toast always shows on unpublish
+    localStorage.removeItem('qn_seen_' + toastId);
+    // Always update quizAnnouncements/latest to ended + hide banner + stop pulse
+    db.ref('quizAnnouncements/latest').update({ status: 'ended', endedAt: Date.now() }).catch(function(err) {
+        var m = err.message || String(err);
+        if (m.indexOf('permission') !== -1 || m.indexOf('PERMISSION') !== -1) {
+            var hint = document.getElementById('qnRulesHint');
+            if (hint) hint.style.display = 'block';
+        }
+    });
+    var banner = document.getElementById('qnLiveBanner');
+    if (banner) banner.style.display = 'none';
+    qnPulseQuizTab(false);
+    // Read autoQuizLive from DOM checkbox directly (most reliable)
+    var chk = document.getElementById('qnAutoQuizLive');
+    var autoOn = chk ? chk.checked : !!cfg.autoQuizLive;
+    // FCM + toast if auto-notify is ON
+    if (autoOn) {
+        // Write to live_notifications so all open pages get the ended toast immediately
+        db.ref('live_notifications/latest').set({
+            title: '⏰ Quiz Ended!', body: msg,
+            sentAt: Date.now(), id: toastId, qnType: 'quiz'
+        }).catch(function(){});
+        qnBroadcastFCM('⏰ Quiz Ended!', msg, toastId, 'quiz');
+        qnShowToast({ id: toastId, icon: '⏰', type: 'qnToastQuiz', title: 'Quiz Ended!', msg: msg });
+    }
+}
+
+// ── FEATURE 2: Quiz Results hook ─────────────────────────
+function qnOnQuizResults(date, data) {
+    var db = window.db || (window.firebase && window.firebase.database());
+    if (!db) return;
+    db.ref(QN_CFG_PATH).once('value').then(function(snap) {
+        var cfg = snap.val() || {};
+        if (!cfg.autoQuizResults) return;
+        var w = data.winner   || {};
+        var r = data.runnerUp || {};
+        var body = '🥇 ' + (w.name||'—') + ' (' + (w.class||'—') + ')  |  🥈 ' + (r.name||'—') + ' (' + (r.class||'—') + ')';
+        var toastId = 'quiz_result_' + date;
+        qnBroadcastFCM('🏆 Quiz Results Announced!', body, toastId, 'result');
+        qnShowToast({
+            id: toastId, icon: '🏆', type: 'qnToastResult',
+            title: 'Quiz Results Announced!', msg: body,
+            btnLabel: 'View Results →', btnAction: function() { qnGoToQuiz(); }
+        });
+    });
+}
+
+// ── FEATURE 3: SH New Task hook ───────────────────────────
+function qnOnSHTaskCreated(taskName) {
+    var db = window.db || (window.firebase && window.firebase.database());
+    if (!db) return;
+    db.ref(QN_CFG_PATH).once('value').then(function(snap) {
+        var cfg = snap.val() || {};
+        if (!cfg.autoSHTask) return;
+        var msg = cfg.shTaskMsg || '🗺️ New Scavenger Hunt task is LIVE! Go find it! 💪';
+        var toastId = 'sh_task_' + Date.now();
+        qnBroadcastFCM('🗺️ New Hunt Task!', msg, toastId, 'sh');
+        qnShowToast({
+            id: toastId, icon: '🗺️', type: 'qnToastSH',
+            title: 'New Scavenger Hunt Task!', msg: msg,
+            btnLabel: 'Hunt Now →', btnAction: function() { var t = document.querySelector('.tab[onclick*="scavengerAdmin"]'); if(t) t.click(); }
+        });
+    });
+}
+
+// ── FEATURE 4: SH Approval Broadcast ─────────────────────
+function qnOnSHApproved(studentName, studentClass, taskName) {
+    var db = window.db || (window.firebase && window.firebase.database());
+    if (!db) return;
+    db.ref(QN_CFG_PATH).once('value').then(function(snap) {
+        var cfg = snap.val() || {};
+        if (!cfg.autoSHApproval) return;
+        var msg = '🎉 ' + studentName + ' from ' + studentClass + ' just completed a task! Can you beat them? 🗺️';
+        var toastId = 'sh_approval_' + Date.now();
+        qnBroadcastFCM('🎉 Hunt Task Completed!', msg, toastId, 'approval');
+        qnShowToast({
+            id: toastId, icon: '🎉', type: 'qnToastApproval',
+            title: 'Scavenger Hunt Update!', msg: msg,
+            btnLabel: 'Join the Hunt →', btnAction: function() { var t = document.querySelector('.tab[onclick*="scavengerAdmin"]'); if(t) t.click(); }
+        });
+    });
+}
+
+// ── Manual send buttons ───────────────────────────────────
+function qnSendQuizPublishedNow() {
+    var db = window.db || (window.firebase && window.firebase.database());
+    if (!db) { alert('Firebase not ready'); return; }
+    // Get today's date for the Q&A link
+    var now = new Date();
+    var date = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0') + '-' + String(now.getDate()).padStart(2,'0');
+    var customMsg = (document.getElementById('qnQuizPublishedMsg') ? document.getElementById('qnQuizPublishedMsg').value.trim() : '') || '';
+    var msg = customMsg || ('📋 Today\'s quiz (' + date + ') is published! Check the questions & answers now.');
+    var toastId = 'quiz_published_qa_' + date + '_' + Date.now();
+    localStorage.removeItem('qn_seen_' + toastId);
+    db.ref('live_notifications/latest').set({
+        title: '📋 Quiz Published — View Q&A', body: msg,
+        sentAt: Date.now(), id: toastId, qnType: 'quizqa', quizDate: date
+    }).catch(function(){});
+    qnBroadcastFCM('📋 Quiz Published — View Q&A', msg, toastId, 'quiz');
+    qnShowToastQuizQA(toastId, msg, date);
+    alert('✅ Quiz Published Q&A notification sent!');
+}
+
+function qnSendQuizResultsNow() {
+    var db = window.db || (window.firebase && window.firebase.database());
+    if (!db) { alert('Firebase not ready'); return; }
+    var now = new Date();
+    var date = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0') + '-' + String(now.getDate()).padStart(2,'0');
+    // Try to read actual results from Firebase first
+    db.ref('quizResults/' + date).once('value').then(function(snap) {
+        var customMsg = (document.getElementById('qnQuizResultsMsg') ? document.getElementById('qnQuizResultsMsg').value.trim() : '') || '';
+        var msg = customMsg;
+        if (!msg && snap.exists()) {
+            var r = snap.val();
+            var winner = r.winner ? (r.winner.name + ' (' + (r.winner.class || r.winner.college || '') + ')') : null;
+            var runner = r.runnerUp ? (r.runnerUp.name + ' (' + (r.runnerUp.class || r.runnerUp.college || '') + ')') : null;
+            if (winner) msg = '🏆 Quiz results are out! Winner: ' + winner + (runner ? ' | Runner-up: ' + runner : '') + ' 🎉';
+        }
+        msg = msg || '🏆 Quiz results are out! Check the leaderboard now.';
+        var toastId = 'quiz_results_' + date + '_' + Date.now();
+        localStorage.removeItem('qn_seen_' + toastId);
+        db.ref('live_notifications/latest').set({
+            title: '🏆 Quiz Results Announced!', body: msg,
+            sentAt: Date.now(), id: toastId, qnType: 'result'
+        }).catch(function(){});
+        qnBroadcastFCM('🏆 Quiz Results Announced!', msg, toastId, 'result');
+        qnShowToast({ id: toastId, icon: '🏆', type: 'qnToastResult', title: 'Quiz Results Announced!', msg: msg, btnLabel: 'View Results →' });
+        alert('✅ Quiz Results notification sent!');
+    }).catch(function() {
+        var msg = (document.getElementById('qnQuizResultsMsg') ? document.getElementById('qnQuizResultsMsg').value.trim() : '') || '🏆 Quiz results are out! Check the leaderboard now.';
+        var toastId = 'quiz_results_' + date + '_' + Date.now();
+        qnBroadcastFCM('🏆 Quiz Results Announced!', msg, toastId, 'result');
+        qnShowToast({ id: toastId, icon: '🏆', type: 'qnToastResult', title: 'Quiz Results Announced!', msg: msg, btnLabel: 'View Results →' });
+        alert('✅ Quiz Results notification sent!');
+    });
+}
+
+function qnShowToastQuizQA(toastId, msg, date) {
+    localStorage.removeItem('qn_seen_' + toastId);
+    qnShowToast({
+        id: toastId, icon: '📋', type: 'qnToastQuiz',
+        title: '📋 Quiz Published — View Q&A',
+        msg: msg,
+        btnLabel: 'View Q&A →',
+        btnAction: function() {
+            // Scroll to past results lookup and pre-fill the date
+            var inp = document.getElementById('pastResultDate');
+            if (inp) { inp.value = date; }
+            var el = document.getElementById('pastResultDate') || document.getElementById('publicQuizStatus');
+            if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            // Also set competition type to dailyquiz
+            var sel = document.getElementById('competitionType');
+            if (sel) { sel.value = 'dailyquiz'; if (typeof handleCompetitionChange === 'function') handleCompetitionChange(); }
+            var banner = document.getElementById('qnLiveBanner');
+            if (banner) banner.style.display = 'none';
+        }
+    });
+}
+function qnSendQuizLiveNow() {
+    var msg = (document.getElementById('qnQuizLiveMsg') ? document.getElementById('qnQuizLiveMsg').value.trim() : '') || '📝 Daily Quiz is LIVE! Play now & win! 🏆';
+    var toastId = 'quiz_live_manual_' + Date.now();
+    qnBroadcastFCM('📝 Daily Quiz is LIVE!', msg, toastId, 'quiz');
+    qnShowToast({ id: toastId, icon: '📝', type: 'qnToastQuiz', title: 'Daily Quiz is LIVE!', msg: msg, btnLabel: 'Play Now →' });
+    alert('✅ Quiz live notification sent!');
+}
+
+function qnSendSHTaskNow() {
+    var msg = (document.getElementById('qnSHTaskMsg') ? document.getElementById('qnSHTaskMsg').value.trim() : '') || '🗺️ New Scavenger Hunt task is LIVE! Go find it! 💪';
+    var toastId = 'sh_task_manual_' + Date.now(); // new ID = resets 3-visit count for everyone
+    qnBroadcastFCM('🗺️ New Hunt Task!', msg, toastId, 'sh');
+    qnShowToast({ id: toastId, icon: '🗺️', type: 'qnToastSH', title: 'New Scavenger Hunt Task!', msg: msg, btnLabel: 'Hunt Now →' });
+    alert('✅ Scavenger Hunt notification re-sent!');
+}
+
+// ── Listen for live_notifications on page load ────────────
+function qnStartLiveListener() {
+    var db = window.db || (window.firebase && window.firebase.database());
+    if (!db) return;
+    var lastSeen = Date.now();
+
+    // ── Real-time quizAnnouncements listener (banner + pulse for ALL open pages) ──
+    db.ref('quizAnnouncements/latest').on('value', function(snap) {
+        if (!snap.exists()) return;
+        var n = snap.val();
+        if (!n || !n.status) return;
+        var banner = document.getElementById('qnLiveBanner');
+        var bannerText = document.getElementById('qnLiveBannerText');
+        if (n.status === 'live') {
+            if (banner) banner.style.display = 'block';
+            if (bannerText) bannerText.textContent = n.body || 'Daily Quiz is LIVE! Play now & win! 🏆';
+            qnPulseQuizTab(true);
+        } else if (n.status === 'ended') {
+            if (banner) banner.style.display = 'none';
+            qnPulseQuizTab(false);
+        }
+    });
+    db.ref('live_notifications/latest').on('value', function(snap) {
+        if (!snap.exists()) return;
+        var n = snap.val();
+        if (!n || !n.sentAt || n.sentAt < lastSeen) return; // ignore old
+        lastSeen = n.sentAt;
+        var typeMap = { quiz:'qnToastQuiz', result:'qnToastResult', sh:'qnToastSH', approval:'qnToastApproval' };
+        var iconMap = { quiz:'📝', result:'🏆', sh:'🗺️', approval:'🎉' };
+        var toastId = n.id || ('ln_' + n.sentAt);
+        // Reset seen-count so toast always appears when a new notification is broadcast
+        localStorage.removeItem('qn_seen_' + toastId);
+        // Special handling for quizqa type — show Q&A toast with View button
+        if (n.qnType === 'quizqa' && n.quizDate) {
+            qnShowToastQuizQA(toastId, n.body || '📋 Quiz published! Check questions & answers.', n.quizDate);
+            return;
+        }
+        qnShowToast({
+            id: toastId,
+            icon: iconMap[n.qnType] || '🔔',
+            type: typeMap[n.qnType] || '',
+            title: n.title || 'Spurthi Notification',
+            msg:   n.body  || ''
+        });
+    });
+    // Also show latest qn notification on page load (for late visitors)
+    db.ref(QN_PATH + '/latest').once('value').then(function(snap) {
+        if (!snap.exists()) return;
+        var n = snap.val();
+        if (!n || !n.sentAt) return;
+        var typeMap = { quiz:'qnToastQuiz', result:'qnToastResult', sh:'qnToastSH', approval:'qnToastApproval' };
+        var iconMap = { quiz:'📝', result:'🏆', sh:'🗺️', approval:'🎉' };
+        qnShowToast({
+            id: n.id || ('qn_' + n.sentAt),
+            icon: iconMap[n.type] || '🔔',
+            type: typeMap[n.type] || '',
+            title: n.title || 'Spurthi Notification',
+            msg:   n.body  || ''
+        });
+    });
+}
+
+// ── Schedule Slots ────────────────────────────────────────
+var QN_SLOTS_PATH = 'quizNotifConfig/slots';
+
+function qnAddSlot() {
+    var db = window.db || (window.firebase && window.firebase.database());
+    var el = document.getElementById('qnSlotsList');
+    if (!db) {
+        if (el) el.innerHTML = '<div style="color:#c62828;font-size:.82em;text-align:center;padding:10px;background:#fce4ec;border-radius:8px">⚠️ Firebase not ready — please wait a moment and try again</div>';
+        return;
+    }
+    var hEl = document.getElementById('qnNewSlotHour');
+    var mEl = document.getElementById('qnNewSlotMin');
+    var hVal = hEl ? hEl.value : '';
+    var mVal = mEl ? mEl.value : '';
+    if (!hVal || !mVal) { alert('Please select both hour and minute for the slot.'); return; }
+    var time = hVal + ':' + mVal;
+    var dur  = document.getElementById('qnNewSlotDur')  ? parseInt(document.getElementById('qnNewSlotDur').value) || 45 : 45;
+    var auto = document.getElementById('qnNewSlotAuto') ? document.getElementById('qnNewSlotAuto').checked : true;
+    var btn = document.querySelector('button[onclick="qnAddSlot()"]');
+    if (btn) { btn.disabled = true; btn.textContent = 'Adding…'; }
+    if (el) el.innerHTML = '<div style="color:#aaa;font-size:.82em;text-align:center;padding:10px">⏳ Saving slot…</div>';
+
+    // Timeout: if Firebase hangs for 8s, show error
+    var timedOut = false;
+    var addTimer = setTimeout(function() {
+        timedOut = true;
+        if (btn) { btn.disabled = false; btn.textContent = '+ Add Slot'; }
+        if (el) el.innerHTML = '<div style="color:#e65100;font-size:.82em;padding:8px;background:#fff3e0;border-radius:8px">⏳ Firebase timed out saving slot. Check your internet connection and <button type="button" onclick="qnLoadSlots()" style="background:#e65100;color:white;border:none;border-radius:4px;padding:2px 8px;cursor:pointer">Retry</button></div>';
+    }, 8000);
+
+    db.ref(QN_SLOTS_PATH).push({ time: time, duration: dur, auto: auto, createdAt: Date.now() })
+        .then(function() {
+            clearTimeout(addTimer);
+            if (timedOut) return;
+            if (btn) { btn.disabled = false; btn.textContent = '+ Add Slot'; }
+            if (hEl) hEl.value = '';
+            if (mEl) mEl.value = '';
+            qnLoadSlots();
+        })
+        .catch(function(err) {
+            clearTimeout(addTimer);
+            if (timedOut) return;
+            if (btn) { btn.disabled = false; btn.textContent = '+ Add Slot'; }
+            var msg = err.message || String(err);
+            console.error('qnAddSlot error:', msg);
+            if (msg.indexOf('permission') !== -1 || msg.indexOf('PERMISSION') !== -1) {
+                if (el) el.innerHTML = '<div style="color:#c62828;font-size:.82em;padding:8px;background:#fce4ec;border-radius:8px">🔒 Permission denied — update Firebase rules (see hint above)</div>';
+                var hint = document.getElementById('qnRulesHint');
+                if (hint) hint.style.display = 'block';
+            } else {
+                if (el) el.innerHTML = '<div style="color:#c62828;font-size:.82em;padding:8px;background:#fce4ec;border-radius:8px">❌ Failed to add slot: ' + msg + ' <button type="button" onclick="qnLoadSlots()" style="background:#c62828;color:white;border:none;border-radius:4px;padding:2px 8px;cursor:pointer">Retry</button></div>';
+            }
+        });
+}
+
+function qnDeleteSlot(key) {
+    var db = window.db || (window.firebase && window.firebase.database());
+    if (!db) return;
+    db.ref(QN_SLOTS_PATH + '/' + key).remove().then(function() { qnLoadSlots(); });
+}
+
+function qnToggleSlotAuto(key, val) {
+    var db = window.db || (window.firebase && window.firebase.database());
+    if (!db) return;
+    db.ref(QN_SLOTS_PATH + '/' + key).update({ auto: val });
+}
+
+function qnLoadSlots() {
+    var db = window.db || (window.firebase && window.firebase.database());
+    var el = document.getElementById('qnSlotsList'); if (!el) return;
+    if (!db) {
+        el.innerHTML = '<div style="color:#e65100;font-size:.82em;padding:8px;background:#fff3e0;border-radius:8px">⚠️ Firebase not ready — <button type="button" onclick="setTimeout(qnLoadSlots,800)" style="background:#e65100;color:white;border:none;border-radius:4px;padding:2px 8px;cursor:pointer">Retry</button></div>';
+        return;
+    }
+    el.innerHTML = '<div style="color:#aaa;font-size:.82em;text-align:center;padding:10px">⏳ Loading…</div>';
+
+    // Use timeout to detect if Firebase hangs (unauthenticated connection)
+    var timedOut = false;
+    var timer = setTimeout(function() {
+        timedOut = true;
+        el.innerHTML = '<div style="color:#e65100;font-size:.82em;padding:8px;background:#fff3e0;border-radius:8px">⏳ Firebase read timed out — <button type="button" onclick="qnLoadSlots()" style="background:#e65100;color:white;border:none;border-radius:4px;padding:2px 8px;cursor:pointer">Retry</button></div>';
+    }, 6000);
+
+    db.ref(QN_SLOTS_PATH).once('value').then(function(snap) {
+        clearTimeout(timer);
+        if (timedOut) return;
+        if (!snap.exists()) {
+            el.innerHTML = '<div style="color:#888;font-size:.82em;text-align:center;padding:10px">No slots yet — add one below</div>';
+            return;
+        }
+        var html = '';
+        var i = 1;
+        snap.forEach(function(ch) {
+            var s = ch.val();
+            var key = ch.key;
+            var parts = (s.time||'').split(':');
+            var h = parseInt(parts[0]||0), m = parts[1]||'00';
+            var label = (h%12||12) + ':' + m + ' ' + (h>=12?'PM':'AM');
+            html += '<div style="display:flex;align-items:center;gap:8px;background:white;padding:9px 12px;border-radius:8px;border:1.5px solid #e0d0f0;flex-wrap:wrap">'
+                + '<span style="font-size:.82em;font-weight:700;color:#4a148c;min-width:60px">Slot '+i+'</span>'
+                + '<span style="font-size:.88em;font-weight:800;color:#333;min-width:80px">⏰ '+label+'</span>'
+                + '<span style="font-size:.78em;color:#666;min-width:70px">⏱ '+s.duration+' mins</span>'
+                + '<label style="display:flex;align-items:center;gap:4px;font-size:.78em;font-weight:600;cursor:pointer">'
+                +   '<input type="checkbox" '+(s.auto?'checked':'')
+                +   ' onchange="qnToggleSlotAuto(\'' + key + '\',this.checked)" style="accent-color:#c44569"> Auto</label>'
+                + '<button onclick="qnDeleteSlot(\'' + key + '\')" style="background:#fce4ec;color:#c62828;border:none;border-radius:6px;padding:3px 10px;font-size:.75em;font-weight:700;cursor:pointer;margin-left:auto">🗑 Remove</button>'
+                + '</div>';
+            i++;
+        });
+        el.innerHTML = html;
+    }).catch(function(err) {
+        clearTimeout(timer);
+        if (timedOut) return;
+        var msg = err.message || String(err);
+        console.error('qnLoadSlots error:', msg);
+        if (msg.indexOf('permission') !== -1 || msg.indexOf('PERMISSION') !== -1) {
+            el.innerHTML = '<div style="color:#c62828;font-size:.82em;padding:8px;background:#fce4ec;border-radius:8px">🔒 Permission denied on quizNotifConfig/slots — update Firebase rules. <button type="button" onclick="qnLoadSlots()" style="background:#c62828;color:white;border:none;border-radius:4px;padding:2px 8px;cursor:pointer">Retry</button></div>';
+            var hint = document.getElementById('qnRulesHint');
+            if (hint) hint.style.display = 'block';
+        } else {
+            el.innerHTML = '<div style="color:#c62828;font-size:.82em;padding:8px;background:#fce4ec;border-radius:8px">❌ Error: ' + msg + ' <button type="button" onclick="qnLoadSlots()" style="background:#c62828;color:white;border:none;border-radius:4px;padding:2px 8px;cursor:pointer">Retry</button></div>';
+        }
+    });
+}
+
+// ── Service worker schedule checker (runs every 60s) ──────
+var _qnLastFiredSlot = {};
+function qnCheckSchedule() {
+    var db = window.db || (window.firebase && window.firebase.database());
+    if (!db) return;
+    db.ref(QN_SLOTS_PATH).once('value').then(function(snap) {
+        if (!snap.exists()) return;
+        var now  = new Date();
+        var nowH = now.getHours();
+        var nowM = now.getMinutes();
+        snap.forEach(function(ch) {
+            var s = ch.val(); if (!s.auto) return;
+            var parts = (s.time||'').split(':');
+            var slotH = parseInt(parts[0]||0);
+            var slotM = parseInt(parts[1]||0);
+            var key   = ch.key;
+            var today = now.toISOString().slice(0,10);
+            var fireKey = key + '_' + today;
+            if (nowH === slotH && nowM === slotM && !_qnLastFiredSlot[fireKey]) {
+                _qnLastFiredSlot[fireKey] = true;
+                // Auto-fire quiz live notification
+                qnOnQuizPublished(today);
+                // Also write quizPublished if not already published
+                db.ref('quizPublished/'+today+'/published').once('value').then(function(ps) {
+                    if (!ps.val()) {
+                        db.ref('quizPublished/'+today).set({
+                            published: true,
+                            publishedAt: new Date().toISOString(),
+                            publishedBy: 'Auto-Schedule'
+                        });
+                    }
+                });
+                // Schedule quiz end after duration
+                var durMs = (s.duration || 45) * 60 * 1000;
+                setTimeout(function() { qnOnQuizEnded(today); }, durMs);
+            }
+        });
+    });
+}
+
+// Start schedule checker
+setInterval(qnCheckSchedule, 60000);
+
+// ── Check quizAnnouncements on page load (show banner for live quiz) ──
+function qnCheckLiveOnLoad() {
+    var db = window.db || (window.firebase && window.firebase.database());
+    if (!db) return;
+    db.ref('quizAnnouncements/latest').once('value').then(function(snap) {
+        if (!snap.exists()) return;
+        var n = snap.val();
+        if (n.status !== 'live') return;
+        // Still live — show banner + pulse
+        var banner = document.getElementById('qnLiveBanner');
+        var bannerText = document.getElementById('qnLiveBannerText');
+        if (banner) banner.style.display = 'block';
+        if (bannerText) bannerText.textContent = n.body || 'Daily Quiz is LIVE! Play now & win! 🏆';
+        qnPulseQuizTab(true);
+    });
+}
+
+
+(function() {
+    var attempts = 0;
+    var iv = setInterval(function() {
+        attempts++;
+        if (window.db || (window.firebase && window.firebase.database)) {
+            clearInterval(iv);
+            qnStartLiveListener();
+            qnCheckLiveOnLoad();
+        }
+        if (attempts > 40) clearInterval(iv);
+    }, 500);
+})();
+
 // ══════════════════════════════════════════
 // ADMIN INBOX
 // ══════════════════════════════════════════
@@ -39787,6 +40832,30 @@ function scAdminPing() {
      v6.36 | Mar 04, 2026, 10:37 PM IST | Chat: Edit/Delete/Recall for admin+guest; Read/Delivered ticks; Guest permissions (Edit/Delete/Recall) admin-controlled toggles in inbox header
      v6.37 | Mar 04, 2026, 10:49 PM IST | Chat: same phone = 1 convo; header shows name+class+type; Continue Chat button (guest); Reopen & Continue (admin); identity in conv info
      v6.38 | Mar 04, 2026, 10:58 PM IST | Fix: Reopen & Continue button display bug fixed; Firebase config paths = allowGuestEdit/Delete/Recall; guest input reopens live when admin reopens
+     v6.39 | Mar 04, 2026, 11:51 PM IST | Notification system: quiz live/results/SH task/SH approval; toast engine 11s/3-visit/expiry; SA Notifications panel; all hooks wired
+     v6.40 | Mar 05, 2026, 12:10 AM IST | Part 1 complete: quizAnnouncements/latest write, quiz tab pulse, live banner, quiz-ended push on unpublish; schedule slots panel with auto-fire 60s checker
+     v6.41 | Mar 05, 2026, 12:10 AM IST | Fix: Add Slot button was silently doing nothing if Firebase not ready; now shows red error, button disables while saving, clears time on success, type=button added
+     v6.42 | Mar 05, 2026, 12:10 AM IST | Fix: quizNotifConfig permission_denied now shows in-panel Firebase rules hint with exact rule to copy-paste, instead of crashing silently in console
+     v6.43 | Mar 05, 2026, 12:10 AM IST | Fix: quiz publish/unpublish chain was fully blocked by cfg read permission_denied; banner+pulse+quizAnnouncements now always fire with fallback defaults; FCM/toast only when autoQuizLive ON
+     v6.44 | Mar 05, 2026, 12:10 AM IST | Fix: quizAnnouncements missing from Firebase rules template (blocked full chain); added to rules block + hint banner; catch on quizAnnouncements write now surfaces permission error in UI
+     v6.45 | Mar 05, 2026, 12:10 AM IST | Fix: qnPulseQuizTab selectors targeted non-existent quizPanel tab; now pulses competitionType dropdown + quizManagementTab; qnGoToQuiz() added; banner Play Now + toast btnAction both wired
+     v6.46 | Mar 05, 2026, 12:10 AM IST | Fix: ended chain never propagated to other open pages — quizAnnouncements/.on() real-time listener added (banner hide/show + pulse on all pages); live_notifications written on both publish+ended so toasts fire everywhere
+     v6.47 | Mar 05, 2026, 12:10 AM IST | Fix: toasts silently skipped — localStorage qn_seen_ counter was at maxSeen from repeated testing; now cleared before every publish/ended/live_notifications broadcast toast
+     v6.48 | Mar 05, 2026, 12:10 AM IST | Fix: quizNotifications path missing from Firebase rules template and hint banner — added to both; was causing permission_denied on QN_PATH/latest writes
+     v6.49 | Mar 05, 2026, 12:10 AM IST | Fix: toast+FCM gated on cfg.autoQuizLive from Firebase read (race/stale); now reads qnAutoQuizLive DOM checkbox directly — toast fires reliably when checkbox is checked
+     v6.50 | Mar 05, 2026, 12:10 AM IST | New: Quiz Published Q&A notification card — auto-fires on publish, View Q&A button pre-fills past results date, Send Now button, quizqa type handled in live_notifications listener for all open pages
+     v6.51–v6.60 | changes made outside this conversation — details not logged
+     v6.61 | Mar 05, 2026, 12:10 AM IST | Fix: Publish + Unpublish buttons always visible and work independently — no toggling
+     v6.62 | Mar 05, 2026, 12:10 AM IST | Fix: Publish section always visible (no questions guard removed); schedule slots auto-load on Firebase ready; time input accepts HH:MM text
+     v6.63 | Mar 05, 2026, 12:10 AM IST | Fix: time input restored to clock picker; publish section auto-loads on quiz tab open; both Publish+Unpublish always shown in All Quizzes list
+     v6.64 | Mar 05, 2026, 12:10 AM IST | Fix: time input replaced with hour+minute dropdowns (no broken clock); slots load after SA login (not DOMContentLoaded)
+     v6.65 | Mar 05, 2026, 12:10 AM IST | Fix: slot errors now visible in UI with Retry button; Refresh button added to schedule header; qnAddSlot errors surface properly
+     v6.66 | Mar 05, 2026, 12:10 AM IST | Fix: qnLoadSlots + qnAddSlot now detect Firebase hangs with 6s/8s timeouts and show exact error — no more silent loading stuck
+     v6.67 | Mar 05, 2026, 12:10 AM IST | Fix: missing function qnSendQuizLiveNow() declaration restored — was causing ReferenceError qnAddSlot/qnLoadSlots not defined
+     v6.68 | Mar 05, 2026, 12:10 AM IST | Publish/Unpublish buttons moved to TOP of Notifications tab — triggers full chain: banner + pulse + FCM + toast
+     v6.69 | Mar 05, 2026, 12:10 AM IST | Quiz Live Notification now auto-fires on save: if saved date = today, auto-publishes + fires full chain (banner+pulse+FCM+toast)
+     v6.70 | Mar 05, 2026, 12:10 AM IST | Fix: wrong schedule label; message inputs auto-save on blur; publish no longer blocked by missing questions; Results card gets Send Now + auto-reads winner/runner-up
+     v6.71 | Mar 05, 2026, 12:10 AM IST | Schedule now runs in Service Worker (no page needed); fires daily at set times; FCM+toast+publish chain; fired-keys in Firebase prevent double-fire
      ═══════════════════════════════════════════════════════════════════ -->
 
 
