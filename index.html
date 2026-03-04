@@ -1315,15 +1315,8 @@
             <h2 id="devTriggerLogin" style="text-align:center;color:#c44569;margin-bottom:20px;font-size:1.5em;letter-spacing:1px">🔐 Login Portal</h2>
 
             <!-- Refundable Payment Notice — shown once payment is approved -->
-            <div id="paRefundBanner" style="display:none;background:linear-gradient(135deg,#e8f5e9,#f1f8e9);border-radius:12px;padding:14px 18px;margin-bottom:16px;border:2px solid #4caf50;box-shadow:0 2px 8px rgba(76,175,80,0.15)">
-                <div style="display:flex;align-items:flex-start;gap:12px;flex-wrap:wrap">
-                    <span style="font-size:1.6em;flex-shrink:0">💰</span>
-                    <div style="flex:1">
-                        <div style="font-weight:800;color:#1b5e20;font-size:0.95em;margin-bottom:5px">Spurthi Youth Fest 2026 — Class Registration Payment Status</div>
-                        <div id="paRefundBannerList" style="display:flex;flex-direction:column;gap:5px"></div>
-                    </div>
-                </div>
-            </div>
+            <!-- REMOVED: Payment Refund Banner - Not needed -->
+            <div id="paRefundBanner" style="display:none"></div>
 
             <!-- Student Login at Top -->
             <div id="studentLogin" style="background:linear-gradient(135deg,#e8f5e9,#f3e5f5);border-radius:14px;padding:16px 18px;margin-bottom:16px;border:2px solid #ce93d8">
@@ -4188,7 +4181,7 @@
             <!-- ================================================ -->
             <!-- 💳 PAYMENT APPROVAL ADMIN PANEL (Super Admin)   -->
             <!-- ================================================ -->
-            <div id="paymentApprovalAdmin" class="form-section super-admin-only" style="margin-top:20px">
+            <div id="paymentApprovalAdmin" class="form-section manager-or-admin" style="margin-top:20px">
                 <h2 style="color:#c44569;margin-bottom:6px">💳 Payment Approval — Admin Panel</h2>
                 <p style="color:#888;margin-bottom:14px;font-size:.9em">Each <strong>class</strong> registers as a group and pays ₹1,500. Coordinators verify the payment in person, then approve the entire class here.</p>
 
@@ -4249,9 +4242,15 @@
                 </div>
 
                 <!-- Manual Class Entry form -->
-                <div style="background:#e8f5e9;border-radius:12px;padding:20px;border:2px solid #4caf50;margin-top:24px">
+                <div id="paManualEntryForm" style="background:#e8f5e9;border-radius:12px;padding:20px;border:2px solid #4caf50;margin-top:24px">
                     <h3 style="color:#1b5e20;margin-bottom:12px;font-size:1em">➕ Manually Add Class Registration (Admin Entry)</h3>
                     <p style="font-size:.83em;color:#388e3c;margin-bottom:10px">Use this if a class paid in person and you want to record &amp; approve them directly.</p>
+                    
+                    <!-- Class Logo Display Area -->
+                    <div id="paClassLogoContainer" style="display:none;background:#f1f8e9;border-radius:8px;padding:12px;margin-bottom:12px;text-align:center;border:2px dashed #7cb342">
+                        <img id="paClassLogoImage" src="" alt="Class Logo" style="height:100px;width:auto;border-radius:6px;box-shadow:0 2px 8px rgba(0,0,0,0.15)">
+                    </div>
+                    
                     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:10px;flex-wrap:wrap">
                         <div>
                             <select id="paManualName" onchange="paManualClassChanged()" style="width:100%;padding:9px 12px;border-radius:8px;border:2px solid #a5d6a7;box-sizing:border-box">
@@ -4271,13 +4270,43 @@
                     <div id="paInchargeStrip" style="display:none;background:#f1f8e9;border-radius:8px;padding:7px 12px;margin-bottom:10px;font-size:0.82em;color:#33691e;border-left:3px solid #7cb342">
                         👩‍🏫 <span id="paInchargeText">—</span>
                     </div>
-                    <div style="display:flex;gap:10px;flex-wrap:wrap">
+                    
+                    <!-- Date & Time Picker -->
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:10px">
+                        <div>
+                            <label style="font-size:0.82em;color:#1b5e20;font-weight:600;display:block;margin-bottom:4px">Approval Date *</label>
+                            <input type="date" id="paManualDate" style="width:100%;padding:9px 12px;border-radius:8px;border:2px solid #a5d6a7;box-sizing:border-box">
+                        </div>
+                        <div>
+                            <label style="font-size:0.82em;color:#1b5e20;font-weight:600;display:block;margin-bottom:4px">Approval Time *</label>
+                            <input type="time" id="paManualTime" style="width:100%;padding:9px 12px;border-radius:8px;border:2px solid #a5d6a7;box-sizing:border-box">
+                        </div>
+                    </div>
+                    
+                    <!-- Logo Upload -->
+                    <div style="margin-bottom:10px">
+                        <label style="font-size:0.82em;color:#1b5e20;font-weight:600;display:block;margin-bottom:4px">📤 Class Logo (Upload OR Paste URL)</label>
+                        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px">
+                            <input type="file" id="paManualLogoFile" accept="image/*" style="padding:8px 12px;border-radius:8px;border:2px solid #a5d6a7;flex:1;min-width:200px">
+                            <button class="btn btn-small" onclick="paUploadLogo()" style="background:#7cb342;color:white">🚀 Upload Logo</button>
+                            <span id="paLogoStatus" style="font-size:0.78em;color:#1b5e20;display:none"></span>
+                        </div>
+                        <!-- Manual Logo URL input (for testing or existing logos) -->
+                        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+                            <input type="text" id="paManualLogoUrl" placeholder="OR paste Cloudinary logo URL here..." style="padding:9px 12px;border-radius:8px;border:2px solid #a5d6a7;flex:1;min-width:200px;font-size:0.85em">
+                            <button class="btn btn-small" onclick="paPasteLogoUrl()" style="background:#1565c0;color:white">✅ Use URL</button>
+                        </div>
+                        <div id="paUploadedLogoUrl" style="display:none;margin-top:6px;font-size:0.75em;color:#1b5e20;background:#e8f5e9;padding:6px 8px;border-radius:6px;word-break:break-all"></div>
+                    </div>
+                    
+                    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
                         <select id="paManualStatus" style="padding:9px 12px;border-radius:8px;border:2px solid #a5d6a7">
                             <option value="approved">✅ Approved (₹1,500 received)</option>
                             <option value="pending">⏳ Pending (not yet paid)</option>
                         </select>
                         <input type="text" id="paManualNote" placeholder="Note (optional)" style="padding:9px 12px;border-radius:8px;border:2px solid #a5d6a7;flex:1">
                         <button class="btn btn-success" onclick="paManualAdd()">➕ Add Class</button>
+                        <button id="paEditModeBtn" class="btn btn-small" onclick="paToggleEditMode()" style="background:#1976d2;color:white" title="Edit selected entry">✏️ Edit</button>
                     </div>
                 </div>
             </div>
@@ -7543,7 +7572,6 @@
             console.error('Firebase error:', e);
             // Show user-visible warning without breaking the page
             document.addEventListener('DOMContentLoaded', function() {
-        setTimeout(function() { if(typeof paLoadRefundBanner==='function') paLoadRefundBanner(); if(typeof paLoadInchargeBanner==='function') paLoadInchargeBanner(); }, 2500);
                 const warn = document.createElement('div');
                 warn.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#c62828;color:white;text-align:center;padding:10px;font-weight:700;z-index:99999;font-size:14px';
                 warn.innerHTML = '⚠️ Database connection error. Please refresh the page. If the problem persists, contact support.';
@@ -11973,6 +12001,13 @@
         ];
         // Expose globally so other <script> blocks (e.g. Payment Approval) can access it
         window.FACULTY_LIST = FACULTY_LIST;
+        // Show approved-class incharge banner above footer — waits 2.5s for Firebase to be ready
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(function() {
+                if (typeof paLoadInchargeBanner === 'function') paLoadInchargeBanner();
+                if (typeof paLoadRefundBanner   === 'function') paLoadRefundBanner();
+            }, 2500);
+        });
 
         // Define faculty roles (used in cards + dashboard)
         const FACULTY_ROLES = {
@@ -11987,6 +12022,33 @@
             'Lalitha S K'     : { role: '✅ BOW Entry Verifier + 📋 Event Incharge', color: '#e65100', bg: '#ffe0b2', detail: 'Best Out of Waste — marks participant attendance on event day (Present/Absent) for jury forwarding. Also Incharge: Interdisciplinary, Best Out of Waste' },
             'Hemavathi Desai' : { role: '🎙️ Podcast Approval + 📋 Event Incharge', color: '#bf360c', bg: '#ffccbc', detail: 'Pod Casting Approval Incharge, Ramp Walk, Interdisciplinary' },
             'Shankar B C'     : { role: '✅ BOW Verifier + 🎭 Nukkad Post-event + 📋 Incharge', color: '#e65100', bg: '#ffe0b2', detail: 'BOW entry verification + Nukkad Natak post-event (YouTube & newspaper verify). Also Incharge: Social Awareness Skit, Nukkad Natak' },
+        };
+
+        // Direct class-to-incharge mapping (for manual registration form)
+        const CLASS_INCHARGE_MAP = {
+            '1st B.Com': 'Priyanka V',
+            '2nd B.Com': 'Hemavathi Desai',
+            '3rd B.Com': 'Chandan G B',
+            '1st BCA': 'Roopa M.C',
+            '1ST BCA': 'Roopa M.C',
+            '2nd BCA': 'Smitha',
+            '2ND BCA': 'Smitha',
+            '2ND BCA A SEC': 'Smitha',
+            '2ND BCA A': 'Smitha',
+            '2ND BCA B SEC': 'Anitha N',
+            '2ND BCA B': 'Anitha N',
+            '3rd BCA': 'Pooja C',
+            '3RD BCA': 'Pooja C',
+            '3RD BCA A': 'Anitha N',
+            '3RD BCA A SEC': 'Anitha N',
+            '3RD BCA B': 'Anitha N',
+            '3RD BCA B SEC': 'Anitha N',
+            '3RD BCA C': 'Kotrappa K',
+            '3RD BCA C SEC': 'Kotrappa K',
+            '2nd BBA': 'Hemavathi Desai',
+            '2ND BBA': 'Hemavathi Desai',
+            '3rd BBA': 'Shankar B C',
+            '3RD BBA': 'Shankar B C',
         };
 
         // -- All events from Event Schedule mapped to faculty names --
@@ -34249,22 +34311,16 @@ Proceed?`)) return;
                 hintEl.style.display = 'block';
                 hintEl.textContent = count > 0 ? ('✅ ' + count + ' students enrolled for Spurthi from this class') : '⚠️ No enrollments found for this class yet';
             }
-            if (countInp && !countInp.value && count > 0) countInp.value = count;
+            // Always update count when class changes (not just when empty)
+            if (countInp && count > 0) countInp.value = count;
         } catch(e) {
             if (hintEl) { hintEl.style.display = 'block'; hintEl.textContent = 'Could not load enrollment count'; }
         }
 
-        // 2. Show incharge faculty name from FACULTY_LIST (match by class)
+        // 2. Show incharge faculty name from CLASS_INCHARGE_MAP (direct class mapping)
         var inchNames = [];
-        var _FL = (typeof FACULTY_LIST !== 'undefined' ? FACULTY_LIST : null) || window.FACULTY_LIST || [];
-        if (_FL.length) {
-            _FL.forEach(function(f) {
-                var fc = (f.class || '').toLowerCase().replace(/\s+/g,'');
-                var cn = className.toLowerCase().replace(/\s+/g,'');
-                if (fc === cn || fc.includes(cn) || cn.includes(fc)) {
-                    if (inchNames.indexOf(f.name) === -1) inchNames.push(f.name);
-                }
-            });
+        if (typeof CLASS_INCHARGE_MAP !== 'undefined' && CLASS_INCHARGE_MAP[className]) {
+            inchNames = [CLASS_INCHARGE_MAP[className]];
         }
         if (strip && inchEl) {
             if (inchNames.length) {
@@ -34288,7 +34344,8 @@ Proceed?`)) return;
                     if (d.phone && !foundPhone) foundPhone = d.phone;
                 });
             }
-            if (phoneInp && !phoneInp.value && foundPhone) phoneInp.value = foundPhone;
+            // Always update phone when class changes (not just when empty)
+            if (phoneInp && foundPhone) phoneInp.value = foundPhone;
             if (phoneHint) {
                 if (foundPhone) {
                     phoneHint.style.display = 'block';
@@ -34296,6 +34353,100 @@ Proceed?`)) return;
                 } else {
                     phoneHint.style.display = 'none';
                 }
+            }
+        } catch(e) {
+            // silent
+        }
+
+        // 3. Show class logo (uploaded by manager to Cloudinary during payment approval)
+        // SKIP if in edit mode — logo is already loaded from regData in paLoadRegistrationForEdit
+        if (!paEditingId) {
+        try {
+            var db = getDb();
+            // Look for Cloudinary logo URL in paymentRegistrations where manager uploaded it
+            var paSnap = await db.ref(PA_FB_PATH).orderByChild('classYear').equalTo(className).once('value');
+            var logoContainer = document.getElementById('paClassLogoContainer');
+            var logoImg = document.getElementById('paClassLogoImage');
+            
+            if (paSnap.exists()) {
+                var found = false;
+                paSnap.forEach(function(ch) {
+                    var d = ch.val();
+                    // Get logo URL from manager's Cloudinary upload (classLogoUrl field)
+                    if (d.classLogoUrl) {
+                        var logoUrl = d.classLogoUrl; // Cloudinary secure URL
+                        if (logoImg && logoContainer) {
+                            logoImg.src = logoUrl;
+                            logoImg.onerror = function() {
+                                logoContainer.style.display = 'none';
+                            };
+                            logoImg.onload = function() {
+                                logoContainer.style.display = 'block';
+                            };
+                            found = true;
+                        }
+                    }
+                });
+                if (!found && logoContainer) {
+                    logoContainer.style.display = 'none';
+                }
+            } else {
+                if (logoContainer) logoContainer.style.display = 'none';
+            }
+        } catch(e) {
+            // silent - logo not found is ok
+        }
+        } // end skip-logo-in-edit-mode
+
+        // 4. Check if this class is already approved and show warning (but allow if editing)
+        try {
+            var dupCheck = await getDb().ref(PA_FB_PATH).orderByChild('classYear').equalTo(className).once('value');
+            var duplicateWarning = document.getElementById('paDuplicateWarning');
+            if (!duplicateWarning) {
+                // Create warning element if it doesn't exist
+                var container = document.getElementById('paClassLogoContainer');
+                if (container && container.parentElement) {
+                    duplicateWarning = document.createElement('div');
+                    duplicateWarning.id = 'paDuplicateWarning';
+                    container.parentElement.insertBefore(duplicateWarning, container.nextSibling);
+                }
+            }
+            
+            if (dupCheck.exists()) {
+                var allRegs = [];
+                dupCheck.forEach(function(ch) { allRegs.push(ch.val()); });
+                var approved = allRegs.filter(i => i.status === 'approved');
+                // Show warning only if NOT in edit mode
+                if (approved.length > 0 && !paEditingId && duplicateWarning) {
+                    duplicateWarning.style.display = 'block';
+                    duplicateWarning.style.background = '#ffebee';
+                    duplicateWarning.style.border = '2px solid #e53935';
+                    duplicateWarning.style.borderRadius = '8px';
+                    duplicateWarning.style.padding = '12px';
+                    duplicateWarning.style.marginBottom = '10px';
+                    duplicateWarning.style.color = '#c62828';
+                    duplicateWarning.style.fontWeight = '600';
+                    duplicateWarning.innerHTML = '⚠️ <strong>WARNING: This class is already registered and APPROVED!</strong><br>Click a row above to EDIT it.';
+                    // Disable Add Class button ONLY if NOT editing
+                    var addBtn = document.querySelector('button[onclick="paManualAdd()"]');
+                    if (addBtn) { 
+                        addBtn.disabled = true;
+                        addBtn.style.opacity = '0.5';
+                    }
+                } else {
+                    // Always enable button (for new entries OR when editing)
+                    if (duplicateWarning) { duplicateWarning.style.display = 'none'; }
+                    var addBtn = document.querySelector('button[onclick="paManualAdd()"]');
+                    if (addBtn) { 
+                        addBtn.disabled = false;
+                        addBtn.style.opacity = '1';
+                    }
+                }
+            } else {
+                if (duplicateWarning) { duplicateWarning.style.display = 'none'; }
+                // Enable Add Class button
+                var addBtn = document.querySelector('button[onclick="paManualAdd()"]');
+                if (addBtn) { addBtn.disabled = false; addBtn.style.opacity = '1'; }
             }
         } catch(e) {
             // silent
@@ -34364,24 +34515,78 @@ Proceed?`)) return;
         }
     }
 
-    // ── paLoadInchargeBanner: show class incharge faculty list above footer ──
-    function paLoadInchargeBanner() {
+    // ── paLoadInchargeBanner: show approved classes + incharge above footer ──
+    async function paLoadInchargeBanner() {
         var banner = document.getElementById('classInchargeBanner');
         var listEl = document.getElementById('classInchargeBannerList');
-        var _fl = (typeof FACULTY_LIST !== 'undefined' ? FACULTY_LIST : null) || window.FACULTY_LIST || [];
         if (!banner || !listEl) return;
-        if (!_fl.length) return;
-        var html = _fl.map(function(f) {
-            return '<div style="background:rgba(255,255,255,0.12);border-radius:8px;padding:6px 12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">'
-                + '<span style="color:white;font-weight:700;font-size:0.88em">' + (f.name||'') + '</span>'
-                + '<span style="color:#9fa8da;font-size:0.8em">—</span>'
-                + '<span style="color:#c5cae9;font-size:0.82em">' + (f.class||'') + '</span>'
-                + '</div>';
-        }).join('');
-        listEl.innerHTML = html;
-        banner.style.display = 'block';
-        // Trigger animation
-        setTimeout(function() { banner.classList.add('banner-visible'); }, 50);
+        
+        function getIncharge(className) {
+            // Use direct class-to-incharge mapping
+            if (typeof CLASS_INCHARGE_MAP !== 'undefined' && CLASS_INCHARGE_MAP[className]) {
+                return CLASS_INCHARGE_MAP[className];
+            }
+            return '';
+        }
+        try {
+            var snap = await getDb().ref(PA_FB_PATH).once('value');
+            if (!snap.exists()) return;
+            var items = [];
+            snap.forEach(function(ch) { items.push(ch.val()); });
+            var approved = items.filter(function(i) { return i.status === 'approved'; });
+            if (!approved.length) return;
+            listEl.innerHTML = approved.map(function(it) {
+                var className = it.name || it.classYear || 'Class';
+                // Use saved incharge field first, fallback to CLASS_INCHARGE_MAP lookup
+                var incharge  = it.incharge;
+                if (!incharge || incharge === 'Not assigned') {
+                    // Try to look up from CLASS_INCHARGE_MAP if not saved
+                    incharge = getIncharge(className);
+                }
+                // If still empty, mark as not assigned
+                if (!incharge) {
+                    incharge = '—';
+                }
+                // Date & time approved (reviewedAt), fallback to registeredAt
+                var dtRaw = it.reviewedAt || it.registeredAt || '';
+                var dtStr = '';
+                if (dtRaw) {
+                    var d = new Date(dtRaw);
+                    dtStr = d.toLocaleDateString('en-IN', {day:'2-digit', month:'short', year:'numeric'})
+                          + ' ' + d.toLocaleTimeString('en-IN', {hour:'2-digit', minute:'2-digit', hour12:true});
+                }
+                var approvedBy = it.reviewedBy || it.addedBy || '';
+                return '<div style="background:rgba(255,255,255,0.09);border-radius:12px;padding:12px 16px;border-left:4px solid #66bb6a;margin-bottom:2px">'
+                    // Row 1: Logo image + class name + approved badge
+                    + '<div style="display:flex;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:6px">'
+                    +   (it.classLogoUrl ? '<img src="' + it.classLogoUrl + '" style="height:60px;width:auto;border-radius:6px;box-shadow:0 2px 6px rgba(0,0,0,0.2)" alt="Logo">' : '<span style="font-size:1.5em">🏫</span>')
+                    +   '<div style="flex:1">'
+                    +     '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">'
+                    +       '<span style="color:white;font-weight:800;font-size:0.95em">' + className + '</span>'
+                    +       '<span style="background:#388e3c;color:white;border-radius:12px;padding:2px 10px;font-size:0.72em;font-weight:700">✅ Approved</span>'
+                    +     '</div>'
+                    +   '</div>'
+                    + '</div>'
+                    // Row 2: fee received line
+                    + '<div style="color:#a5d6a7;font-size:0.83em;margin-bottom:5px">'
+                    +   '💰 Registration fee of <strong style="color:white">₹1,500</strong> received and approved.'
+                    + '</div>'
+                    // Row 3: detail pills
+                    + '<div style="display:flex;flex-wrap:wrap;gap:8px;font-size:0.78em">'
+                    +   (it.phone     ? '<span style="background:rgba(255,255,255,0.12);color:#e3f2fd;border-radius:8px;padding:3px 9px">📱 ' + it.phone + '</span>' : '')
+                    +   (it.studentCount ? '<span style="background:rgba(255,255,255,0.12);color:#e3f2fd;border-radius:8px;padding:3px 9px">👥 ' + it.studentCount + ' students</span>' : '')
+                    +   (dtStr        ? '<span style="background:rgba(255,255,255,0.12);color:#ffe082;border-radius:8px;padding:3px 9px">🕐 ' + dtStr + '</span>' : '')
+                    +   (approvedBy   ? '<span style="background:rgba(255,255,255,0.12);color:#ce93d8;border-radius:8px;padding:3px 9px">👤 By: ' + approvedBy + '</span>' : '')
+                    +   (incharge && incharge !== '—'     ? '<span style="background:rgba(102,187,106,0.25);color:#a5d6a7;border-radius:8px;padding:3px 9px;font-weight:700">👩‍🏫 Incharge: ' + incharge + '</span>' : '<span style="background:rgba(102,187,106,0.15);color:#7cb342;border-radius:8px;padding:3px 9px;font-weight:600;font-style:italic">👩‍🏫 Incharge: Not assigned</span>')
+                    +   (it.note      ? '<span style="background:rgba(255,255,255,0.08);color:#b0bec5;border-radius:8px;padding:3px 9px;font-style:italic">📝 ' + it.note + '</span>' : '')
+                    + '</div>'
+                    + '</div>';
+            }).join('');
+            banner.style.display = 'block';
+            setTimeout(function() { banner.classList.add('banner-visible'); }, 50);
+        } catch(e) {
+            // silent — banner stays hidden if Firebase unavailable
+        }
     }
 
         async function paLoadPending() {
@@ -34390,6 +34595,7 @@ Proceed?`)) return;
         const searchEl   = document.getElementById('paSearch');
         if (!wrap) return;
         wrap.innerHTML = '<p style="color:#aaa;text-align:center;padding:24px">Loading…</p>';
+        window._paRegCache = window._paRegCache || {}; // global cache for row data
 
         const filterStatus = filterSel?.value || '';
         const searchTerm   = (searchEl?.value || '').toLowerCase();
@@ -34401,6 +34607,9 @@ Proceed?`)) return;
                 items = Object.entries(snap.val()).map(([k,v]) => ({id:k,...v}))
                     .sort((a,b) => new Date(b.registeredAt||0) - new Date(a.registeredAt||0));
             }
+            // Populate global cache so edit onclick can use ID only
+            window._paRegCache = {};
+            items.forEach(function(it) { window._paRegCache[it.id] = it; });
 
             // Update stat counters
             document.getElementById('paStatPending').textContent  = items.filter(i=>i.status==='pending').length;
@@ -34443,14 +34652,23 @@ Proceed?`)) return;
                     </thead>
                     <tbody>
                         ${filtered.map((it,i) => `
-                        <tr style="background:${i%2===0?'#fafafa':'white'};border-bottom:1px solid #eee" id="pa-row-${it.id}">
-                            <td style="padding:9px 12px;font-weight:600">🏫 ${it.name||it.classYear||'—'}</td>
+                        <tr style="background:${i%2===0?'#fafafa':'white'};border-bottom:1px solid #eee;cursor:pointer" id="pa-row-${it.id}" onclick="paLoadRegistrationForEdit('${it.id}')">
+                            <td style="padding:9px 12px;font-weight:600">
+                                <div style="display:flex;align-items:center;gap:8px">
+                                    ${it.classLogoUrl
+                                        ? `<img src="${it.classLogoUrl}" alt="logo" style="height:32px;width:32px;object-fit:contain;border-radius:5px;border:1px solid #e0e0e0;background:#fff;flex-shrink:0" onerror="this.style.display='none';this.nextSibling.style.display='inline'">`
+                                        : ''}
+                                    <span style="${it.classLogoUrl ? 'display:none' : ''}">🏫</span>
+                                    <span>${it.name||it.classYear||'—'}</span>
+                                </div>
+                            </td>
                             <td style="padding:9px 12px">${it.phone||'—'}</td>
                             <td style="padding:9px 12px;text-align:center">${it.studentCount||'—'}</td>
                             <td style="padding:9px 12px;font-size:.8em;color:#777">${it.registeredAt ? new Date(it.registeredAt).toLocaleString('en-IN') : '—'}</td>
                             <td style="padding:9px 12px;text-align:center" id="pa-status-${it.id}">${statusBadge(it.status)}</td>
                             <td style="padding:9px 12px;font-size:.82em;color:#555">${it.note||''}</td>
-                            <td style="padding:9px 12px;text-align:center;white-space:nowrap">
+                            <td style="padding:9px 12px;text-align:center;white-space:nowrap" onclick="event.stopPropagation()">
+                                <button onclick="paLoadRegistrationForEdit('${it.id}');event.stopPropagation()" style="background:#1976d2;color:white;border:none;border-radius:6px;padding:4px 10px;cursor:pointer;font-size:.8em;font-weight:700;margin:2px" title="Edit this registration">✏️ Edit</button>
                                 ${it.status !== 'approved' ? `<button onclick="paSetStatus('${it.id}','approved')" style="background:#e8f5e9;color:#1b5e20;border:none;border-radius:6px;padding:4px 10px;cursor:pointer;font-size:.8em;font-weight:700;margin:2px">✅ Approve</button>` : ''}
                                 ${it.status !== 'rejected' ? `<button onclick="paSetStatus('${it.id}','rejected')" style="background:#fce4ec;color:#880e4f;border:none;border-radius:6px;padding:4px 10px;cursor:pointer;font-size:.8em;font-weight:700;margin:2px">❌ Reject</button>` : ''}
                                 <button onclick="paDelete('${it.id}')" style="background:#f5f5f5;color:#555;border:none;border-radius:6px;padding:4px 10px;cursor:pointer;font-size:.8em;margin:2px">🗑️</button>
@@ -34481,26 +34699,316 @@ Proceed?`)) return;
         } catch(e) { alert('Error: ' + e.message); }
     }
 
+    var paEditingId = null; // Track which registration we're editing
+    
+    function paToggleEditMode() {
+        var btn = event.target;
+        if (paEditingId) {
+            // Cancel edit mode
+            paManualClearForm();
+            paEditingId = null;
+            btn.textContent = '✏️ Edit';
+        } else {
+            // Show instructions
+            alert('📝 EDIT MODE:\n\n1. Find the class you want to edit in the list above\n2. Click the class name or row to load it\n3. Modify the fields (date, time, logo, note, etc.)\n4. Click "➕ Add Class" to save changes\n\nThe system will update the existing entry.');
+            btn.textContent = '❌ Cancel Edit';
+        }
+    }
+    
+    function paLoadRegistrationForEdit(regId, regDataLegacy) {
+        // Use global cache first; fall back to legacy inline data arg (backward compat)
+        var regData = (window._paRegCache && window._paRegCache[regId]) || regDataLegacy;
+        
+        // Parse if string (legacy fallback)
+        if (typeof regData === 'string') {
+            try { regData = JSON.parse(regData); } catch(e) {
+                alert('❌ Error parsing data: ' + e.message); return;
+            }
+        }
+        
+        if (!regData) {
+            alert('❌ Could not load registration data. Please refresh and try again.');
+            return;
+        }
+        
+        console.log('📋 Edit - loaded data:', regData);
+        paEditingId = regId;  // Set BEFORE any async work
+        
+        // Set the class select dropdown
+        if (document.getElementById('paManualName')) {
+            document.getElementById('paManualName').value = regData.name || regData.classYear || '';
+        }
+        if (document.getElementById('paManualPhone')) {
+            document.getElementById('paManualPhone').value = regData.phone || '';
+        }
+        if (document.getElementById('paManualClass')) {
+            document.getElementById('paManualClass').value = regData.studentCount || '';
+        }
+        if (document.getElementById('paManualNote')) {
+            document.getElementById('paManualNote').value = regData.note || '';
+        }
+        if (document.getElementById('paManualStatus')) {
+            document.getElementById('paManualStatus').value = regData.status || 'approved';
+        }
+        
+        // Trigger class change to load hints/incharge (but NOT logo — we handle that below)
+        // paEditingId is already set so duplicate check won't disable Add button
+        var changeEvent = new Event('change', { bubbles: true });
+        if (document.getElementById('paManualName')) {
+            document.getElementById('paManualName').dispatchEvent(changeEvent);
+        }
+        
+        // Set date/time AFTER dispatching change event so async paManualClassChanged 
+        // doesn't overwrite them (it doesn't touch these fields, but timing safety)
+        setTimeout(function() {
+            // DATE
+            if (document.getElementById('paManualDate')) {
+                var dateVal = regData.approvalDate || '';
+                if (!dateVal) {
+                    dateVal = new Date().toISOString().split('T')[0];
+                }
+                document.getElementById('paManualDate').value = dateVal;
+                console.log('📅 Set date:', dateVal);
+            }
+            
+            // TIME
+            if (document.getElementById('paManualTime')) {
+                var timeVal = regData.approvalTime || '';
+                if (!timeVal) {
+                    var now = new Date();
+                    timeVal = String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
+                }
+                document.getElementById('paManualTime').value = timeVal;
+                console.log('🕐 Set time:', timeVal);
+            }
+            
+            // LOGO — load from saved data, don't let paManualClassChanged overwrite it
+            if (regData.classLogoUrl) {
+                window.paCurrentLogoUrl = regData.classLogoUrl;
+                if (document.getElementById('paManualLogoUrl')) {
+                    document.getElementById('paManualLogoUrl').value = regData.classLogoUrl;
+                }
+                var logoImg = document.getElementById('paClassLogoImage');
+                var logoContainer = document.getElementById('paClassLogoContainer');
+                if (logoImg && logoContainer) {
+                    logoImg.onerror = function() { logoContainer.style.display = 'none'; };
+                    logoImg.onload  = function() { logoContainer.style.display = 'block'; };
+                    logoImg.src = regData.classLogoUrl;
+                }
+                if (document.getElementById('paUploadedLogoUrl')) {
+                    document.getElementById('paUploadedLogoUrl').style.display = 'block';
+                    document.getElementById('paUploadedLogoUrl').textContent = '🔗 ' + regData.classLogoUrl;
+                }
+            } else {
+                window.paCurrentLogoUrl = '';
+                var logoContainer = document.getElementById('paClassLogoContainer');
+                if (logoContainer) logoContainer.style.display = 'none';
+            }
+            
+            // Ensure Add Class button is ENABLED in edit mode
+            var addBtn = document.querySelector('button[onclick="paManualAdd()"]');
+            if (addBtn) { addBtn.disabled = false; addBtn.style.opacity = '1'; }
+            
+            // Hide duplicate warning if visible
+            var dupWarn = document.getElementById('paDuplicateWarning');
+            if (dupWarn) dupWarn.style.display = 'none';
+            
+        }, 100);
+        
+        // Change button text
+        var btn = document.getElementById('paEditModeBtn');
+        if (btn) btn.textContent = '❌ Cancel Edit';
+        
+        // Scroll to the manual entry form — use 'nearest' so page doesn't jump if already visible
+        var form = document.getElementById('paManualEntryForm') || document.querySelector('[id="paymentApprovalAdmin"]');
+        if (form) form.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    function paManualClearForm() {
+        // Clear all form fields
+        if (document.getElementById('paManualName')) document.getElementById('paManualName').value = '';
+        if (document.getElementById('paManualPhone')) document.getElementById('paManualPhone').value = '';
+        if (document.getElementById('paManualClass')) document.getElementById('paManualClass').value = '';
+        if (document.getElementById('paManualDate')) document.getElementById('paManualDate').value = '';
+        if (document.getElementById('paManualTime')) document.getElementById('paManualTime').value = '';
+        if (document.getElementById('paManualNote')) document.getElementById('paManualNote').value = '';
+        if (document.getElementById('paManualStatus')) document.getElementById('paManualStatus').value = 'approved';
+        if (document.getElementById('paManualLogoFile')) document.getElementById('paManualLogoFile').value = '';
+        if (document.getElementById('paManualLogoUrl')) document.getElementById('paManualLogoUrl').value = '';
+        if (document.getElementById('paLogoStatus')) document.getElementById('paLogoStatus').style.display = 'none';
+        if (document.getElementById('paUploadedLogoUrl')) document.getElementById('paUploadedLogoUrl').style.display = 'none';
+        if (document.getElementById('paClassLogoContainer')) document.getElementById('paClassLogoContainer').style.display = 'none';
+        if (document.getElementById('paInchargeStrip')) document.getElementById('paInchargeStrip').style.display = 'none';
+        if (document.getElementById('paPhoneHint')) document.getElementById('paPhoneHint').style.display = 'none';
+        if (document.getElementById('paCaptainNameHint')) document.getElementById('paCaptainNameHint').style.display = 'none';
+        if (document.getElementById('paStudentHint')) document.getElementById('paStudentHint').style.display = 'none';
+        window.paCurrentLogoUrl = ''; // Clear stored logo URL
+    }
+
+    async function paUploadLogo() {
+        var fileInput = document.getElementById('paManualLogoFile');
+        var statusEl = document.getElementById('paLogoStatus');
+        var urlEl = document.getElementById('paUploadedLogoUrl');
+        
+        if (!fileInput || !fileInput.files || !fileInput.files[0]) {
+            if (statusEl) { statusEl.style.display = 'block'; statusEl.textContent = '❌ Please select a logo image'; statusEl.style.color = '#c62828'; }
+            return;
+        }
+        
+        var file = fileInput.files[0];
+        var formData = new FormData();
+        formData.append('file', file);
+        formData.append('upload_preset', 'scavenger_hunt');
+        
+        if (statusEl) { statusEl.style.display = 'block'; statusEl.textContent = '⏳ Uploading to Cloudinary...'; statusEl.style.color = '#1b5e20'; }
+        
+        try {
+            var response = await fetch('https://api.cloudinary.com/v1_1/dat0khbet/image/upload', {
+                method: 'POST',
+                body: formData
+            });
+            
+            if (!response.ok) {
+                if (statusEl) { statusEl.style.display = 'block'; statusEl.textContent = '❌ Upload failed'; statusEl.style.color = '#c62828'; }
+                return;
+            }
+            
+            var data = await response.json();
+            var logoUrl = data.secure_url;
+            
+            // Store the URL for use when adding class
+            window.paCurrentLogoUrl = logoUrl;
+            
+            if (statusEl) { statusEl.style.display = 'block'; statusEl.textContent = '✅ Logo uploaded successfully!'; statusEl.style.color = '#1b5e20'; }
+            if (urlEl) { 
+                urlEl.style.display = 'block'; 
+                urlEl.textContent = '🔗 ' + logoUrl;
+                urlEl.title = logoUrl;
+            }
+        } catch(e) {
+            if (statusEl) { statusEl.style.display = 'block'; statusEl.textContent = '❌ Error: ' + e.message; statusEl.style.color = '#c62828'; }
+        }
+    }
+
+    function paPasteLogoUrl() {
+        var urlInput = document.getElementById('paManualLogoUrl');
+        var statusEl = document.getElementById('paLogoStatus');
+        var urlEl = document.getElementById('paUploadedLogoUrl');
+        var logoImg = document.getElementById('paClassLogoImage');
+        var logoContainer = document.getElementById('paClassLogoContainer');
+        
+        if (!urlInput || !urlInput.value.trim()) {
+            if (statusEl) { statusEl.style.display = 'block'; statusEl.textContent = '❌ Please paste a logo URL'; statusEl.style.color = '#c62828'; }
+            return;
+        }
+        
+        var logoUrl = urlInput.value.trim();
+        
+        // Validate it's a valid URL
+        try {
+            new URL(logoUrl);
+        } catch(e) {
+            if (statusEl) { statusEl.style.display = 'block'; statusEl.textContent = '❌ Invalid URL format'; statusEl.style.color = '#c62828'; }
+            return;
+        }
+        
+        // Store the URL for use when adding class
+        window.paCurrentLogoUrl = logoUrl;
+        console.log('Logo URL stored:', logoUrl); // Debug
+        
+        // Display logo immediately with better error handling
+        if (logoImg && logoContainer) {
+            logoImg.onload = function() {
+                logoContainer.style.display = 'block';
+                if (statusEl) { statusEl.style.display = 'block'; statusEl.textContent = '✅ Logo loaded and ready to save!'; statusEl.style.color = '#1b5e20'; }
+            };
+            logoImg.onerror = function() {
+                console.log('Logo failed to load:', logoUrl);
+                logoContainer.style.display = 'none';
+                if (statusEl) { statusEl.style.display = 'block'; statusEl.textContent = '❌ Cannot load this URL - check if it\'s valid'; statusEl.style.color = '#c62828'; }
+            };
+            // Set src last to trigger load event
+            logoImg.src = logoUrl;
+        }
+        
+        if (urlEl) { 
+            urlEl.style.display = 'block'; 
+            urlEl.textContent = '🔗 ' + logoUrl;
+            urlEl.title = logoUrl;
+        }
+    }
+
     async function paManualAdd() {
         const className = (document.getElementById('paManualName')?.value || '').trim();
         const phone     = (document.getElementById('paManualPhone')?.value || '').trim();
         const students  = (document.getElementById('paManualClass')?.value || '').trim();
         const status    = document.getElementById('paManualStatus')?.value || 'pending';
         const note      = (document.getElementById('paManualNote')?.value || '').trim();
+        const approvalDate = (document.getElementById('paManualDate')?.value || '').trim();
+        const approvalTime = (document.getElementById('paManualTime')?.value || '').trim();
 
         if (!className || !phone) { alert('Please fill in Class Name and Captain Phone.'); return; }
 
+        // Skip duplicate check if we're in EDIT mode
+        if (!paEditingId) {
+            // Check if this class is already registered and approved (only for NEW entries)
+            try {
+                var existingSnap = await getDb().ref(PA_FB_PATH).orderByChild('classYear').equalTo(className).once('value');
+                if (existingSnap.exists()) {
+                    var existing = [];
+                    existingSnap.forEach(function(ch) { existing.push(ch.val()); });
+                    var approved = existing.filter(i => i.status === 'approved');
+                    if (approved.length > 0) {
+                        alert('⚠️ This class is already APPROVED!\n\n✏️ To edit click row in table above, then modify & save.');
+                        return;
+                    }
+                }
+            } catch(e) {
+                // silent - continue
+            }
+        }
+
+        // Get incharge faculty name from CLASS_INCHARGE_MAP (direct mapping)
+        var inchargeName = '';
+        if (typeof CLASS_INCHARGE_MAP !== 'undefined' && CLASS_INCHARGE_MAP[className]) {
+            inchargeName = CLASS_INCHARGE_MAP[className];
+        }
+        
+        // Fallback: if no incharge found, mark as not assigned
+        if (!inchargeName) {
+            inchargeName = 'Not assigned';
+        }
+
         try {
-            await getDb().ref(PA_FB_PATH).push({
+            const logoUrl = window.paCurrentLogoUrl || ''; // Get uploaded/pasted logo URL
+            const dataToSave = {
                 name: className, phone, classYear: className,
                 studentCount: students, status, note,
+                approvalDate: approvalDate,
+                approvalTime: approvalTime,
+                incharge: inchargeName,
                 registeredAt: new Date().toISOString(),
                 addedBy: currentUser || 'Admin',
-            });
-            document.getElementById('paManualName').value  = '';
-            document.getElementById('paManualPhone').value = '';
-            document.getElementById('paManualClass').value = '';
-            document.getElementById('paManualNote').value  = '';
+            };
+            
+            // ONLY add logo if there's a new one
+            if (logoUrl) {
+                dataToSave.classLogoUrl = logoUrl;
+            }
+            
+            if (paEditingId) {
+                // UPDATE existing entry - if no new logo, existing stays
+                await getDb().ref(`${PA_FB_PATH}/${paEditingId}`).update(dataToSave);
+                alert('✅ Registration updated successfully!');
+                paEditingId = null;
+                var btn = document.getElementById('paEditModeBtn');
+                if (btn) btn.textContent = '✏️ Edit';
+            } else {
+                // CREATE new entry
+                await getDb().ref(PA_FB_PATH).push(dataToSave);
+                alert('✅ Registration added successfully!');
+            }
+            paManualClearForm();
             paLoadPending();
         } catch(e) { alert('Error: ' + e.message); }
     }
@@ -35580,6 +36088,9 @@ v6.00 | Mar 03 2026 02:45 PM IST | YT Ad panel: Refresh All Classes moved into h
 v6.01 | Mar 03 2026 02:45 PM IST | Payment Approval: auto-fill enrollment count + incharge faculty + captain phone; refundable payment banner on login page
 v6.02 | Mar 03 2026 03:30 PM IST | Manual Add: captain name shown on phone input; class incharge strip on class select; incharge faculty banner above footer
 v6.03 | Mar 03 2026 03:30 PM IST | Fix: FACULTY_LIST exposed on window so incharge shows in Manual Add & banner; stat cards clickable; default filter changed to All
+v6.04 | Mar 03 2026 03:30 PM IST | Fix: incharge banner & refund banner now triggered correctly on DOMContentLoaded (were stuck inside Firebase catch block)
+v6.05 | Mar 03 2026 03:30 PM IST | Incharge banner: Firebase-driven, shows approved classes + incharge name + date, hidden if no approvals, 2.5s delay
+v6.06 | Mar 03 2026 03:30 PM IST | Incharge banner cards: show captain phone, student count, approval date/time, approved-by, incharge faculty, note
 -->
     <!-- ============================================================ -->
     <!-- 🟢 FIREBASE PRESENCE + 📣 PUSH NOTIFICATIONS SCRIPTS       -->
@@ -37844,7 +38355,7 @@ export default {
         <div style="display:flex;align-items:flex-start;gap:14px;flex-wrap:wrap">
             <div style="font-size:2em;line-height:1">👩‍‍🏫</div>
             <div style="flex:1;min-width:220px">
-                <div style="color:#c5cae9;font-size:0.76em;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:5px">Class Incharge Faculty — Spurthi Youth Festival 2026</div>
+                <div style="color:#c5cae9;font-size:0.76em;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">💳 Spurthi Youth Festival 2026 — Class Registration Status</div>
                 <div id="classInchargeBannerList" style="display:flex;flex-direction:column;gap:6px"></div>
             </div>
         </div>
@@ -37877,7 +38388,7 @@ export default {
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;" id="devTriggerVersion">
-                <strong>Version:</strong> 6.03 — Fix: FACULTY_LIST exposed on window so incharge shows in Manual Add & banner; stat cards clickable; default filter changed to All<strong>Last Updated:</strong> Mar 03, 2026, 03:30 PM IST</p>
+                <strong>Version:</strong> 6.18 — Class logo thumbnail shown in registration table Class Name column<strong>Last Updated:</strong> Mar 04, 2026, (IST)</p>
             <!-- ============================================ -->
             
             <p style="color: #c44569; font-size: 0.85em; font-weight: 600; margin-bottom: 8px;">
@@ -37893,3 +38404,23 @@ export default {
 
         </div>
     </footer>
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     VERSION HISTORY LOG
+     ═══════════════════════════════════════════════════════════════════
+     v6.06 | Mar 03, 2026, 03:30 PM IST | Incharge banner cards: show captain phone, student count, approval date/time, approved-by, incharge faculty, note
+     v6.07 | Mar 03, 2026, 8:37 PM IST  | Added class logo (Cloudinary), edit button, date/time picker, incharge faculty name capture, removed payment banner title
+     v6.08 | Mar 03, 2026, 8:37 PM IST  | Added logo upload (Cloudinary dat0khbet/scavenger_hunt configured)
+     v6.09 | Mar 03, 2026, 8:37 PM IST  | Added duplicate registration prevention (blocks re-registration of approved classes)
+     v6.10 | Mar 03, 2026, 8:37 PM IST  | Fixed: removed payment banner, ensured incharge shows in banner, force FACULTY_LIST lookup
+     v6.11 | Mar 03, 2026, 8:37 PM IST  | Fixed: incharge now pulled from Event Schedule (not FACULTY_LIST)
+     v6.12 | Mar 03, 2026, 8:37 PM IST  | Added CLASS_INCHARGE_MAP: direct class-to-faculty mapping for all classes
+     v6.13 | Mar 03, 2026, 8:37 PM IST  | Added manual logo URL paste option for testing existing Cloudinary logos
+     v6.14 | Mar 03, 2026, 8:37 PM IST  | Manager access enabled, proper edit functionality, logo display/upload/paste working
+     v6.15 | Mar 03, 2026, 8:37 PM IST  | FINAL: Click row to edit, logo displays immediately when pasted (changes made outside this conversation)
+     v6.16 | Mar 04, 2026, (IST) | Fix: Edit button uses global cache (no JSON escape breakage), date/time/logo load correctly on edit, Add button stays enabled in edit mode
+     v6.17 | Mar 04, 2026, (IST) | Fix: class change always updates student count & phone (not just when empty); edit scroll uses block:nearest so page stays in place
+     v6.18 | Mar 04, 2026, (IST) | Class logo thumbnail shown in registration table Class Name column
+     ═══════════════════════════════════════════════════════════════════ -->
+
+</html>
