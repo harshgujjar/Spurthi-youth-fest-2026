@@ -37072,8 +37072,8 @@ self.addEventListener('push', function(event) {
     const body  = data.body  || '';
     const notifUrl = data.url || 'https://harshgujjar.github.io/Spurthi-youth-fest-2026/';
     const options = {
-        body, icon: '/Spurthi-youth-fest-2026/davan_logo_2026.gif',
-        badge: '/Spurthi-youth-fest-2026/davan_logo_2026.gif',
+        body, icon: '/Spurthi-youth-fest-2026/davan_degree1.png',
+        badge: '/Spurthi-youth-fest-2026/davan_degree1.png',
         vibrate: [300, 100, 300, 100, 300],
         requireInteraction: true,
         tag: 'spurthi-' + (data.tag || 'msg'),
@@ -39045,7 +39045,7 @@ export default {
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;" id="devTriggerVersion">
-                <strong>Version:</strong> 6.71 — Schedule now runs in Service Worker (no page needed); fires daily at set times; FCM+toast+publish chain; fired-keys in Firebase prevent double-fire<strong>Last Updated:</strong> Mar 05, 2026, 12:10 AM IST</p>
+                <strong>Version:</strong> 6.73 — sw.js template: icon + badge updated from davan_logo_2026.gif to davan_degree1.png<strong>Last Updated:</strong> Mar 05, 2026, 02:50 AM IST</p>
             <!-- ============================================ -->
             
             <p style="color: #c44569; font-size: 0.85em; font-weight: 600; margin-bottom: 8px;">
@@ -39307,6 +39307,7 @@ export default {
             <strong>Spurthi Support</strong>
             <small id="scHeadSub">Spurthi Youth Fest 2026</small>
         </div>
+        <button id="scMuteBtn" onclick="scToggleMute()" title="Mute/Unmute notification sound" style="background:none;border:none;cursor:pointer;font-size:1.1em;padding:4px 8px;border-radius:8px;margin-right:4px;color:#6a1b9a;transition:background 0.2s" onmouseover="this.style.background='rgba(106,27,154,0.1)'" onmouseout="this.style.background='none'">🔔</button>
         <button class="scCloseBtn" onclick="scToggle()">✕</button>
     </div>
     <div id="scGuestForm">
@@ -39370,10 +39371,45 @@ function scSid() {
     return s;
 }
 
+// ── Guest chat sound mute state (default: unmuted) ────────
+var _scMuted = localStorage.getItem('sc_muted') === 'true' ? true : false;
+
+function scToggleMute() {
+    _scMuted = !_scMuted;
+    localStorage.setItem('sc_muted', _scMuted ? 'true' : 'false');
+    var btn = document.getElementById('scMuteBtn');
+    if (btn) btn.textContent = _scMuted ? '🔕' : '🔔';
+    if (btn) btn.title = _scMuted ? 'Unmute notification sound' : 'Mute notification sound';
+}
+
+function scInitMuteBtn() {
+    var btn = document.getElementById('scMuteBtn');
+    if (btn) {
+        btn.textContent = _scMuted ? '🔕' : '🔔';
+        btn.title = _scMuted ? 'Unmute notification sound' : 'Mute notification sound';
+    }
+}
+
 function scPlayPing() {
+    if (_scMuted) return;
     try {
-        if (!_scPing) { _scPing = new Audio('https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg'); _scPing.volume=0.4; }
-        _scPing.currentTime = 0; _scPing.play().catch(function(){});
+        // Guest tone: soft double-chime (higher pitch, gentle)
+        var ctx = new (window.AudioContext || window.webkitAudioContext)();
+        function chime(freq, startTime, duration) {
+            var osc = ctx.createOscillator();
+            var gain = ctx.createGain();
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(freq, startTime);
+            gain.gain.setValueAtTime(0, startTime);
+            gain.gain.linearRampToValueAtTime(0.25, startTime + 0.01);
+            gain.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
+            osc.start(startTime);
+            osc.stop(startTime + duration);
+        }
+        chime(880, ctx.currentTime, 0.35);       // high A — first chime
+        chime(1047, ctx.currentTime + 0.18, 0.35); // high C — second chime
     } catch(e) {}
 }
 
@@ -39600,10 +39636,12 @@ function scListenMsgs() {
             if (_scOpen) scMarkRead(key, _scSid);
             else scMarkDelivered(key, _scSid);
         }
-        if (loaded && msg.sender === 'admin' && !_scOpen) {
-            _scUnread++;
-            var b = document.getElementById('sChatBadge');
-            if (b) { b.textContent = _scUnread; b.style.display = 'flex'; }
+        if (loaded && msg.sender === 'admin') {
+            if (!_scOpen) {
+                _scUnread++;
+                var b = document.getElementById('sChatBadge');
+                if (b) { b.textContent = _scUnread; b.style.display = 'flex'; }
+            }
             scPlayPing();
         }
     });
@@ -40745,6 +40783,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (ta) ta.addEventListener('input', function() { this.style.height='40px'; this.style.height=Math.min(this.scrollHeight,100)+'px'; });
     var ta2 = document.getElementById('chatAdminReplyText');
     if (ta2) ta2.addEventListener('input', function() { this.style.height='44px'; this.style.height=Math.min(this.scrollHeight,120)+'px'; });
+    scInitMuteBtn(); // set correct 🔔/🔕 icon on load
 
     // ── Handle ?openChat=convId deep link from push notification tap ──
     (function() {
@@ -40856,6 +40895,8 @@ function scAdminPing() {
      v6.69 | Mar 05, 2026, 12:10 AM IST | Quiz Live Notification now auto-fires on save: if saved date = today, auto-publishes + fires full chain (banner+pulse+FCM+toast)
      v6.70 | Mar 05, 2026, 12:10 AM IST | Fix: wrong schedule label; message inputs auto-save on blur; publish no longer blocked by missing questions; Results card gets Send Now + auto-reads winner/runner-up
      v6.71 | Mar 05, 2026, 12:10 AM IST | Schedule now runs in Service Worker (no page needed); fires daily at set times; FCM+toast+publish chain; fired-keys in Firebase prevent double-fire
+     v6.72 | Mar 05, 2026, 02:50 AM IST | Guest chat: sound plays on all new admin messages (open or closed), different soft double-chime tone vs admin, mute toggle button (🔔/🔕) in chat header, default unmuted
+     v6.73 | Mar 05, 2026, 02:50 AM IST | sw.js template: icon + badge updated from davan_logo_2026.gif to davan_degree1.png
      ═══════════════════════════════════════════════════════════════════ -->
 
 
