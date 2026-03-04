@@ -36,8 +36,9 @@ self.addEventListener('push', function(event) {
     const body  = data.body  || '';
     const notifUrl = data.url || 'https://harshgujjar.github.io/Spurthi-youth-fest-2026/';
     const options = {
-        body, icon: '/Spurthi-youth-fest-2026/davan_logo_2026.gif',
-        badge: '/Spurthi-youth-fest-2026/davan_logo_2026.gif',
+         body: body,
+            icon: '/Spurthi-youth-fest-2026/davan_degree1.png',
+            badge: '/Spurthi-youth-fest-2026/davan_degree1.png',
         vibrate: [300, 100, 300, 100, 300],
         requireInteraction: true,
         tag: 'spurthi-' + (data.tag || 'msg'),
