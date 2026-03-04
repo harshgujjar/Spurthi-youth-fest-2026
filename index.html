@@ -5208,9 +5208,109 @@
             <div id="chatInboxPanel" class="form-section super-admin-only" style="margin-top:20px">
                 <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:6px">
                     <h2 style="color:#c44569;margin:0">💬 Chat Inbox</h2>
-                    <span id="chatInboxTotalBadge" style="display:none;background:#e53935;color:white;border-radius:20px;padding:4px 14px;font-size:0.82em;font-weight:700"></span>
+                    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+                        <span id="chatInboxTotalBadge" style="display:none;background:#e53935;color:white;border-radius:20px;padding:4px 14px;font-size:0.82em;font-weight:700"></span>
+                        <button onclick="chatAdminOpenCompose()" style="background:linear-gradient(135deg,#c44569,#6a1b9a);color:white;border:none;padding:9px 20px;border-radius:20px;font-size:0.85em;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(196,69,105,0.35)">✉️ New Chat</button>
+                    </div>
                 </div>
                 <p style="color:#888;font-size:0.85em;margin-bottom:10px">All student and guest conversations. Click a conversation to reply.</p>
+
+                <!-- ── New Chat Compose Panel ── -->
+                <div id="chatComposePanel" style="display:none;background:linear-gradient(135deg,#fdf4ff,#f9f0ff);border:1.5px solid #d0b8f0;border-radius:14px;padding:20px;margin-bottom:16px">
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+                        <h3 style="margin:0;color:#6a1b9a;font-size:1em">✉️ Start New Conversation</h3>
+                        <button onclick="chatAdminCloseCompose()" style="background:none;border:none;font-size:1.3em;cursor:pointer;color:#aaa;line-height:1">✕</button>
+                    </div>
+
+                    <!-- Target type selector -->
+                    <div style="margin-bottom:12px">
+                        <label style="font-size:.82em;font-weight:700;color:#6a1b9a;display:block;margin-bottom:6px">📌 Send To:</label>
+                        <div style="display:flex;flex-wrap:wrap;gap:8px" id="chatComposeTargetBtns">
+                            <button class="cc-target-btn cc-active" data-target="student" onclick="chatComposeSetTarget('student')">🎓 Specific Student</button>
+                            <button class="cc-target-btn" data-target="class" onclick="chatComposeSetTarget('class')">👥 Entire Class</button>
+                            <button class="cc-target-btn" data-target="faculty" onclick="chatComposeSetTarget('faculty')">👨‍🏫 Staff / Faculty</button>
+                            <button class="cc-target-btn" data-target="guest" onclick="chatComposeSetTarget('guest')">🟠 Guest (by phone)</button>
+                            <button class="cc-target-btn" data-target="all" onclick="chatComposeSetTarget('all')">📢 Broadcast to All</button>
+                        </div>
+                    </div>
+
+                    <!-- Student picker -->
+                    <div id="cc-student-picker" style="margin-bottom:12px">
+                        <label style="font-size:.82em;font-weight:700;color:#555;display:block;margin-bottom:5px">Search Student:</label>
+                        <input id="ccStudentSearch" type="text" placeholder="Filter by name or class…" oninput="chatComposeSearchStudents(this.value)"
+                            style="width:100%;padding:9px 14px;border:1.5px solid #d0b8f0;border-radius:8px;font-size:.88em;outline:none;box-sizing:border-box;margin-bottom:6px">
+                        <div id="ccStudentResults" style="background:white;border:1.5px solid #e0d0f0;border-radius:8px;max-height:180px;overflow-y:auto;display:block">
+                            <div style="color:#aaa;text-align:center;padding:12px;font-size:.83em">Loading students…</div>
+                        </div>
+                        <div id="ccStudentSelected" style="margin-top:8px;display:none;background:#ede7f6;border-radius:8px;padding:7px 12px;font-size:.84em;color:#4a0080;font-weight:600"></div>
+                        <!-- Custom name fallback -->
+                        <div style="margin-top:8px;border-top:1px dashed #d0b8f0;padding-top:8px">
+                            <label style="font-size:.78em;color:#888;font-weight:600">Not in list? Enter name manually:</label>
+                            <input id="ccStudentCustomName" type="text" placeholder="Enter name…"
+                                style="width:100%;margin-top:4px;padding:8px 12px;border:1.5px solid #d0b8f0;border-radius:8px;font-size:.85em;outline:none;box-sizing:border-box"
+                                oninput="chatComposeCustomStudent(this.value)">
+                        </div>
+                    </div>
+
+                    <!-- Class picker -->
+                    <div id="cc-class-picker" style="margin-bottom:12px;display:none">
+                        <label style="font-size:.82em;font-weight:700;color:#555;display:block;margin-bottom:5px">Select Class:</label>
+                        <select id="ccClassSelect" onchange="chatComposeShowClassStudents(this.value)" style="width:100%;padding:9px 12px;border:1.5px solid #d0b8f0;border-radius:8px;font-size:.88em;outline:none;background:white;box-sizing:border-box">
+                            <option value="">— Choose class —</option>
+                        </select>
+                        <div id="ccClassStudentList" style="margin-top:8px;background:white;border:1.5px solid #e0d0f0;border-radius:8px;max-height:180px;overflow-y:auto;display:none"></div>
+                    </div>
+
+                    <!-- Faculty picker -->
+                    <div id="cc-faculty-picker" style="margin-bottom:12px;display:none">
+                        <label style="font-size:.82em;font-weight:700;color:#555;display:block;margin-bottom:6px">Select Staff / Faculty:</label>
+                        <div id="ccFacultyList" style="background:white;border:1.5px solid #e0d0f0;border-radius:8px;max-height:200px;overflow-y:auto"></div>
+                        <div id="ccFacultySelected" style="margin-top:8px;display:none;background:#e8f5e9;border-radius:8px;padding:7px 12px;font-size:.84em;color:#1b5e20;font-weight:600"></div>
+                        <div style="margin-top:8px;border-top:1px dashed #d0b8f0;padding-top:8px">
+                            <label style="font-size:.78em;color:#888;font-weight:600">Not in list? Enter name manually:</label>
+                            <input id="ccFacultyCustomName" type="text" placeholder="Enter staff name…"
+                                style="width:100%;margin-top:4px;padding:8px 12px;border:1.5px solid #d0b8f0;border-radius:8px;font-size:.85em;outline:none;box-sizing:border-box"
+                                oninput="chatComposeCustomFaculty(this.value)">
+                        </div>
+                    </div>
+
+                    <!-- Guest picker -->
+                    <div id="cc-guest-picker" style="margin-bottom:12px;display:none">
+                        <label style="font-size:.82em;font-weight:700;color:#555;display:block;margin-bottom:5px">Search Guest by Phone / Name:</label>
+                        <input id="ccGuestSearch" type="text" placeholder="Filter by phone or name…" oninput="chatComposeSearchGuests(this.value)"
+                            style="width:100%;padding:9px 14px;border:1.5px solid #d0b8f0;border-radius:8px;font-size:.88em;outline:none;box-sizing:border-box;margin-bottom:6px">
+                        <div id="ccGuestResults" style="background:white;border:1.5px solid #e0d0f0;border-radius:8px;max-height:180px;overflow-y:auto;display:block">
+                            <div style="color:#aaa;text-align:center;padding:12px;font-size:.83em">Loading guests…</div>
+                        </div>
+                        <div id="ccGuestSelected" style="margin-top:8px;display:none;background:#fff3e0;border-radius:8px;padding:7px 12px;font-size:.84em;color:#e65100;font-weight:600"></div>
+                        <div style="margin-top:8px;border-top:1px dashed #d0b8f0;padding-top:8px">
+                            <label style="font-size:.78em;color:#888;font-weight:600">Not in list? Enter phone number to create new guest chat:</label>
+                            <input id="ccGuestCustomPhone" type="tel" placeholder="10-digit phone…" maxlength="10"
+                                style="width:100%;margin-top:4px;padding:8px 12px;border:1.5px solid #d0b8f0;border-radius:8px;font-size:.85em;outline:none;box-sizing:border-box"
+                                oninput="chatComposeCustomGuest(this.value)">
+                        </div>
+                    </div>
+
+                    <!-- Broadcast info -->
+                    <div id="cc-all-info" style="margin-bottom:12px;display:none;background:#e8f5e9;border-radius:8px;padding:10px 14px;font-size:.84em;color:#1b5e20;font-weight:600">
+                        📢 This message will be sent to ALL registered students, guests and faculty who have an existing chat or are registered.
+                    </div>
+
+                    <!-- Message box -->
+                    <div style="margin-bottom:12px">
+                        <label style="font-size:.82em;font-weight:700;color:#555;display:block;margin-bottom:5px">Message:</label>
+                        <textarea id="ccMessageText" placeholder="Type your message…" rows="3"
+                            style="width:100%;padding:10px 14px;border:1.5px solid #d0b8f0;border-radius:8px;font-size:.9em;outline:none;resize:vertical;font-family:inherit;box-sizing:border-box"></textarea>
+                    </div>
+
+                    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+                        <button onclick="chatAdminSendNewChat()" id="ccSendBtn"
+                            style="background:linear-gradient(135deg,#c44569,#6a1b9a);color:white;border:none;padding:10px 28px;border-radius:20px;font-size:.9em;font-weight:700;cursor:pointer">
+                            📤 Send
+                        </button>
+                        <span id="ccSendStatus" style="font-size:.82em;font-weight:700;display:none"></span>
+                    </div>
+                </div>
 
                 <!-- ── Guest Permissions Bar ── -->
                 <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:12px;background:#fff8e1;padding:10px 16px;border-radius:10px;border:1.5px solid #ffe082">
@@ -39045,7 +39145,7 @@ export default {
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;" id="devTriggerVersion">
-                <strong>Version:</strong> 6.73 — sw.js template: icon + badge updated from davan_logo_2026.gif to davan_degree1.png<strong>Last Updated:</strong> Mar 05, 2026, 02:50 AM IST</p>
+                <strong>Version:</strong> 6.81 — Fix: resume always uses sc_ph_ key; form shown if old session missing<strong>Last Updated:</strong> Mar 05, 2026, 03:47 AM IST</p>
             <!-- ============================================ -->
             
             <p style="color: #c44569; font-size: 0.85em; font-weight: 600; margin-bottom: 8px;">
@@ -39208,6 +39308,18 @@ export default {
     padding:1px 6px; font-size:.72em; font-weight:700;
     margin-left:5px; display:none;
 }
+.cc-target-btn {
+    background: white; color: #6a1b9a; border: 1.5px solid #d0b8f0;
+    padding: 7px 14px; border-radius: 20px; font-size: .8em; font-weight: 700;
+    cursor: pointer; transition: all 0.2s;
+}
+.cc-target-btn:hover { background: #f3e5f5; }
+.cc-target-btn.cc-active { background: linear-gradient(135deg,#c44569,#6a1b9a); color: white; border-color: transparent; }
+.cc-student-row, .cc-guest-row {
+    padding: 9px 14px; font-size: .85em; cursor: pointer; border-bottom: 1px solid #f3e5f5;
+    transition: background 0.15s;
+}
+.cc-student-row:hover, .cc-guest-row:hover { background: #f9f0ff; }
 .chat-inbox-conv {
     display:flex; align-items:center; gap:12px;
     padding:11px 14px; border-bottom:1px solid #f0e8f8;
@@ -39270,9 +39382,9 @@ export default {
 .scMsgActBtn.danger:hover { background:#fce4ec; color:#c62828; border-color:#ef9a9a; }
 /* Tick indicators */
 .scTick { font-size:.72em; margin-left:4px; }
-.scTick.sent     { color:#aaa; }
-.scTick.delivered{ color:#aaa; }
-.scTick.read     { color:#29b6f6; }
+.scTick.sent     { color:#bbb; }
+.scTick.delivered{ color:#bbb; }
+.scTick.read     { color:#1565c0; }
 /* Recalled ghost bubble */
 .scRecalled { opacity:.55; font-style:italic; color:#888 !important; background:#f5f5f5 !important; border:1px dashed #ccc !important; }
 .scRecalled::before { content:'🚫 '; }
@@ -39321,12 +39433,20 @@ export default {
     <div id="scMsgs" style="display:none"></div>
     <div id="scResolvedBar">
         <span>✅ Chat closed by support. Thank you!</span>
-        <button id="scContinueBtn" onclick="scContinueChat()" style="display:block;margin:10px auto 0;background:linear-gradient(135deg,#c44569,#6a1b9a);color:white;border:none;padding:9px 22px;border-radius:10px;font-size:.85em;font-weight:700;cursor:pointer;width:100%">💬 Continue Conversation →</button>
+        <div style="display:flex;gap:8px;margin-top:10px">
+            <button id="scContinueBtn" onclick="scContinueChat()" style="flex:1;background:linear-gradient(135deg,#c44569,#6a1b9a);color:white;border:none;padding:9px 14px;border-radius:10px;font-size:.82em;font-weight:700;cursor:pointer">💬 Continue Chat</button>
+            <button onclick="scStartNewChat()" style="flex:1;background:white;color:#6a1b9a;border:1.5px solid #d0b8f0;padding:9px 14px;border-radius:10px;font-size:.82em;font-weight:700;cursor:pointer">✨ New Chat</button>
+        </div>
     </div>
     <div id="scInputBar">
         <textarea id="scTextInp" placeholder="Type your message…" rows="1"
             onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();scSend();}"></textarea>
         <button id="scSendBtn" onclick="scSend()">➤</button>
+    </div>
+    <!-- End chat / New chat bar -->
+    <div id="scBottomBar" style="display:none;padding:7px 11px;border-top:1px solid #f0e8f8;background:#fdfaff;display:flex;gap:8px;flex-shrink:0">
+        <button onclick="scGuestEndChat()" style="flex:1;background:#fce4ec;color:#880e4f;border:1.5px solid #f48fb1;padding:7px 10px;border-radius:10px;font-size:.78em;font-weight:700;cursor:pointer">🔴 End Chat</button>
+        <button onclick="scStartNewChat()" style="flex:1;background:#e8f5e9;color:#1b5e20;border:1.5px solid #a5d6a7;padding:7px 10px;border-radius:10px;font-size:.78em;font-weight:700;cursor:pointer">✨ New Chat</button>
     </div>
 </div>
 
@@ -39434,19 +39554,20 @@ function scToggle() {
         // Auto-start for logged-in student
         var cu = window.currentUser || '';
         if (cu === 'Student' && !_scStarted) { scAutoStudent(); }
-        // Restore session if returning visitor (phone-based key)
-        var sid = localStorage.getItem('sc_sid');
-        if (!sid) {
-            // Legacy: try old phone key
-            var ph = localStorage.getItem('sc_phone');
-            if (ph) { sid = 'sc_ph_' + ph; localStorage.setItem('sc_sid', sid); }
-        }
-        if (sid && !_scStarted && cu !== 'Student') {
-            // Pre-fill phone and trigger lookup (will auto-fill name if registered)
+        // Restore session if returning visitor — always prefer sc_ph_{phone} key
+        if (!_scStarted && cu !== 'Student') {
             var storedPhone = localStorage.getItem('sc_phone') || '';
             var phoneEl2 = document.getElementById('scPhone');
             if (phoneEl2 && storedPhone) { phoneEl2.value = storedPhone; scPhoneLookup(storedPhone); }
-            scResumeSession(sid);
+            if (storedPhone) {
+                // Always use phone-based key so admin-initiated chats are found
+                var preferredSid = 'sc_ph_' + storedPhone.replace(/\D/g,'').slice(-10);
+                localStorage.setItem('sc_sid', preferredSid);
+                scResumeSession(preferredSid);
+            } else {
+                var sid = localStorage.getItem('sc_sid');
+                if (sid) scResumeSession(sid);
+            }
         }
     } else {
         win.classList.remove('scOpen');
@@ -39457,7 +39578,13 @@ function scToggle() {
 function scResumeSession(sid) {
     var db = scDb(); if (!db) return;
     db.ref(SC_PATH+"/"+sid).once("value").then(function(snap) {
-        if (!snap.exists()) return;
+        if (!snap.exists()) {
+            // Session not found — show form so user can re-enter phone
+            // (their old random key session doesn't exist; they need to type phone again)
+            var form = document.getElementById('scGuestForm');
+            if (form) form.style.display = 'flex';
+            return;
+        }
         _scSid = sid;
         _scStarted = true;
         document.getElementById("scGuestForm").style.display = "none";
@@ -39472,6 +39599,9 @@ function scResumeSession(sid) {
         if (v.status === "resolved") {
             if (inp) inp.classList.remove("scShow");
             document.getElementById("scResolvedBar").style.display = "block";
+            scSyncBottomBar(false);
+        } else {
+            scSyncBottomBar(true);
         }
         scListenMsgs();
     }).catch(function(){});
@@ -39485,6 +39615,7 @@ function scAutoStudent() {
     document.getElementById('scGuestForm').style.display = 'none';
     document.getElementById('scMsgs').style.display = 'flex';
     document.getElementById('scInputBar').classList.add('scShow');
+    scSyncBottomBar(true);
     scInitConv({ name: 'Student' + (cls ? ' - '+cls : ''), phone: 'student', type: 'student', cls: cls });
 }
 
@@ -39571,6 +39702,7 @@ function scStart() {
     document.getElementById('scGuestForm').style.display = 'none';
     document.getElementById('scMsgs').style.display = 'flex';
     document.getElementById('scInputBar').classList.add('scShow');
+    scSyncBottomBar(true);
     scUpdateHeader(name, _scLookedUpClass, _scLookedUpType || 'guest');
     scInitConv({ name: name, phone: phone, type: _scLookedUpType || 'guest', cls: _scLookedUpClass || '' });
 }
@@ -39578,31 +39710,64 @@ function scStart() {
 // ── Init conversation in Firebase ────────────────────────
 function scInitConv(info) {
     var db = scDb(); if (!db) return;
-    db.ref(SC_PATH+'/'+_scSid).once('value').then(function(snap) {
-        if (!snap.exists()) {
-            db.ref(SC_PATH+'/'+_scSid).set({
+    // If phone provided, always prefer the sc_ph_ key so admin-initiated chats are found
+    if (info.phone && info.phone !== 'student') {
+        var preferredKey = 'sc_ph_' + String(info.phone).replace(/\D/g,'').slice(-10);
+        db.ref(SC_PATH+'/'+preferredKey).once('value').then(function(snap) {
+            if (snap.exists()) {
+                // Admin already created this session — switch to it
+                _scSid = preferredKey;
+                localStorage.setItem('sc_sid', preferredKey);
+                var v = snap.val();
+                if (v.status === 'resolved') {
+                    document.getElementById('scInputBar').classList.remove('scShow');
+                    document.getElementById('scResolvedBar').style.display = 'block';
+                    scSyncBottomBar(false);
+                } else {
+                    scSyncBottomBar(true);
+                }
+                scListenMsgs();
+                return;
+            }
+            // No pre-created session — create new under preferred key
+            _scSid = preferredKey;
+            localStorage.setItem('sc_sid', preferredKey);
+            db.ref(SC_PATH+'/'+preferredKey).set({
                 name: info.name, phone: info.phone,
                 type: info.type, classYear: info.cls,
                 status: 'open', createdAt: Date.now(),
                 lastMessageAt: Date.now(), unreadAdmin: 0
             }).then(function() { scGreet(info); });
-        } else {
-            var v = snap.val();
-            if (v.status === 'resolved') {
-                document.getElementById('scInputBar').classList.remove('scShow');
-                document.getElementById('scResolvedBar').style.display = 'block';
+            scListenMsgs();
+        });
+    } else {
+        // Student login or no phone — use existing _scSid
+        db.ref(SC_PATH+'/'+_scSid).once('value').then(function(snap) {
+            if (!snap.exists()) {
+                db.ref(SC_PATH+'/'+_scSid).set({
+                    name: info.name, phone: info.phone,
+                    type: info.type, classYear: info.cls,
+                    status: 'open', createdAt: Date.now(),
+                    lastMessageAt: Date.now(), unreadAdmin: 0
+                }).then(function() { scGreet(info); });
+            } else {
+                var v = snap.val();
+                if (v.status === 'resolved') {
+                    document.getElementById('scInputBar').classList.remove('scShow');
+                    document.getElementById('scResolvedBar').style.display = 'block';
+                    scSyncBottomBar(false);
+                }
             }
-        }
-        scListenMsgs();
-    });
+            scListenMsgs();
+        });
+    }
 }
 
 // ── Send greeting bubbles ─────────────────────────────────
 function scGreet(info) {
     var db = scDb(); if (!db) return;
-    var cls = info.cls ? ' from ' + info.cls : '';
     var ref = db.ref(SC_PATH+'/'+_scSid+'/messages');
-    ref.push({ text: '👋 Hi ' + info.name + cls + '! Welcome to Spurthi Youth Fest 2026 support.', sender:'bot', ts: Date.now() });
+    ref.push({ text: '👋 Hi ' + info.name + '! Welcome to Spurthi Youth Fest 2026 support.', sender:'bot', ts: Date.now() });
     setTimeout(function() {
         ref.push({ text: "We'll reply to your message as soon as possible. 😊", sender:'bot', ts: Date.now()+50 });
     }, 1300);
@@ -39631,10 +39796,10 @@ function scListenMsgs() {
         var msg = snap.val(); if (!msg) return;
         var key = snap.key;
         scRenderBub(msg, document.getElementById('scMsgs'), key, false);
-        // Mark admin messages as delivered (and read if window open)
-        if (msg.sender === 'admin' && !msg.delivered) {
-            if (_scOpen) scMarkRead(key, _scSid);
-            else scMarkDelivered(key, _scSid);
+        // Always mark admin messages as delivered on render; mark read if window open
+        if (msg.sender === 'admin') {
+            if (!msg.read && _scOpen) scMarkRead(key, _scSid);
+            else if (!msg.delivered) scMarkDelivered(key, _scSid);
         }
         if (loaded && msg.sender === 'admin') {
             if (!_scOpen) {
@@ -39671,9 +39836,11 @@ function scListenMsgs() {
         if (status === 'resolved') {
             if (inputBar) inputBar.classList.remove('scShow');
             if (resolvedBar) resolvedBar.style.display = 'block';
+            scSyncBottomBar(false);
         } else if (status === 'open') {
             if (resolvedBar) resolvedBar.style.display = 'none';
             if (inputBar) inputBar.classList.add('scShow');
+            scSyncBottomBar(true);
         }
     });
 }
@@ -39693,10 +39860,17 @@ function scRenderBub(msg, area, msgKey, isAdmin) {
         area.appendChild(div); area.scrollTop = area.scrollHeight; return;
     }
     var editedLabel = msg.edited ? '<span class="scEdited">(edited)</span>' : '';
-    // Ticks — only on visitor/admin sent side
+    // Ticks — show on sender's own messages
     var ticks = '';
-    if (msg.sender === 'visitor' || (isAdmin && msg.sender === 'admin')) {
-        if (msg.read)       ticks = '<span class="scTick read">✔✔</span>';
+    var isSenderMsg = (isAdmin && msg.sender === 'admin') || (!isAdmin && msg.sender === 'visitor');
+    if (isSenderMsg) {
+        if (msg.read)           ticks = '<span class="scTick read">✔✔</span>';
+        else if (msg.delivered) ticks = '<span class="scTick delivered">✔✔</span>';
+        else                    ticks = '<span class="scTick sent">✔</span>';
+    }
+    // Also show ticks on admin side for visitor messages (so admin knows status)
+    if (isAdmin && msg.sender === 'visitor') {
+        if (msg.read)           ticks = '<span class="scTick read">✔✔</span>';
         else if (msg.delivered) ticks = '<span class="scTick delivered">✔✔</span>';
         else                    ticks = '<span class="scTick sent">✔</span>';
     }
@@ -40686,13 +40860,24 @@ function chatAdminOpenConv(id) {
     if (_scAdminConvRef) { _scAdminConvRef.off(); }
     var msgsRef = db.ref(SC_PATH+'/'+id+'/messages');
     _scAdminConvRef = msgsRef;
-    msgsRef.on('child_added', function(snap) {
-        var msg = snap.val(); if (!msg) return;
-        var key = snap.key;
+    // First load all existing messages, then listen for new ones
+    msgsRef.once('value').then(function(allSnap) {
         var area2 = document.getElementById('chatAdminMsgArea'); if (!area2) return;
-        scRenderBub(msg, area2, key, true);
-        // Mark visitor messages as delivered from admin side view
-        if (msg.sender === 'visitor' && !msg.read) scMarkRead(key, id);
+        allSnap.forEach(function(snap) {
+            var msg = snap.val(); if (!msg) return;
+            scRenderBub(msg, area2, snap.key, true);
+            // Mark all visitor messages as read when admin opens conversation
+            if (msg.sender === 'visitor' && !msg.read) scMarkRead(snap.key, id);
+        });
+        // Now listen only for NEW messages (after current timestamp)
+        var lastTs = Date.now();
+        msgsRef.orderByChild('ts').startAt(lastTs + 1).on('child_added', function(snap) {
+            var msg = snap.val(); if (!msg) return;
+            var key = snap.key;
+            var area3 = document.getElementById('chatAdminMsgArea'); if (!area3) return;
+            scRenderBub(msg, area3, key, true);
+            if (msg.sender === 'visitor' && !msg.read) scMarkRead(key, id);
+        });
     });
     msgsRef.on('child_changed', function(snap) {
         var msg = snap.val(); var key = snap.key;
@@ -40706,6 +40891,271 @@ function chatAdminOpenConv(id) {
         var el = document.querySelector('[data-msgkey="'+snap.key+'"]');
         if (el) el.remove();
     });
+}
+
+// ═══════════════════════════════════════════════════════════
+// ADMIN NEW CHAT COMPOSE
+// ═══════════════════════════════════════════════════════════
+var _ccTarget = 'student';
+var _ccSelectedStudent = null;
+var _ccSelectedGuest   = null;
+var _ccSelectedFaculty = null;
+var _ccStudentsCache   = null;
+var _ccGuestsCache     = null;
+
+function chatAdminOpenCompose() {
+    var p = document.getElementById('chatComposePanel');
+    if (p) p.style.display = 'block';
+    _ccTarget = 'student';
+    _ccSelectedStudent = null; _ccSelectedGuest = null; _ccSelectedFaculty = null;
+    var mt = document.getElementById('ccMessageText'); if (mt) mt.value = '';
+    var ss = document.getElementById('ccSendStatus'); if (ss) { ss.style.display='none'; ss.textContent=''; }
+    ['ccStudentCustomName','ccFacultyCustomName','ccGuestCustomPhone'].forEach(function(id){ var el=document.getElementById(id); if(el) el.value=''; });
+    chatComposeLoadStudentsCache(function() { chatComposeSetTarget('student'); });
+    chatComposeLoadGuestsCache(function(){});
+    chatComposeFillClassDropdown();
+    chatComposeFillFacultyList();
+}
+
+function chatAdminCloseCompose() {
+    var p = document.getElementById('chatComposePanel'); if (p) p.style.display = 'none';
+}
+
+function chatComposeSetTarget(target) {
+    _ccTarget = target;
+    _ccSelectedStudent = null; _ccSelectedGuest = null; _ccSelectedFaculty = null;
+    document.querySelectorAll('.cc-target-btn').forEach(function(b){
+        b.classList.toggle('cc-active', b.getAttribute('data-target') === target);
+    });
+    var pickers = { student:'cc-student-picker', class:'cc-class-picker', faculty:'cc-faculty-picker', guest:'cc-guest-picker', all:'cc-all-info' };
+    Object.keys(pickers).forEach(function(k){ var el=document.getElementById(pickers[k]); if(el) el.style.display=(k===target)?'block':'none'; });
+    ['ccStudentSelected','ccGuestSelected','ccFacultySelected'].forEach(function(id){ var el=document.getElementById(id); if(el){el.style.display='none';el.innerHTML='';} });
+    ['ccStudentSearch','ccGuestSearch','ccStudentCustomName','ccFacultyCustomName','ccGuestCustomPhone'].forEach(function(id){ var el=document.getElementById(id); if(el) el.value=''; });
+    if (target==='student') chatComposeRenderStudents(_ccStudentsCache||[]);
+    if (target==='guest')   chatComposeRenderGuests(_ccGuestsCache||[]);
+    if (target==='faculty') chatComposeFillFacultyList();
+    if (target==='class') { var cl=document.getElementById('ccClassStudentList'); if(cl) cl.style.display='none'; var cs=document.getElementById('ccClassSelect'); if(cs) cs.value=''; }
+}
+
+function chatComposeLoadStudentsCache(cb) {
+    if (_ccStudentsCache) { if(cb) cb(); return; }
+    var db = scDb(); if (!db) { _ccStudentsCache=[]; if(cb)cb(); return; }
+    db.ref('quizStudents').once('value').then(function(snap) {
+        _ccStudentsCache = [];
+        snap.forEach(function(ch){ var d=ch.val(); if(d&&d.name) _ccStudentsCache.push({ sid:ch.key, name:d.name||'', classYear:d.classYear||d.class||'', phone:d.phone||'' }); });
+        _ccStudentsCache.sort(function(a,b){ return a.name.localeCompare(b.name); });
+        if(cb) cb();
+        if(_ccTarget==='student') chatComposeRenderStudents(_ccStudentsCache);
+    }).catch(function(){ _ccStudentsCache=[]; if(cb)cb(); });
+}
+
+function chatComposeLoadGuestsCache(cb) {
+    if (_ccGuestsCache) { if(cb)cb(); return; }
+    var db = scDb(); if (!db) { _ccGuestsCache=[]; if(cb)cb(); return; }
+    db.ref(SC_PATH).once('value').then(function(snap) {
+        _ccGuestsCache = [];
+        snap.forEach(function(ch){ var d=ch.val(); if(d&&d.type==='guest'&&d.name&&ch.key!=='config') _ccGuestsCache.push({ sid:ch.key, name:d.name||'', phone:d.phone||'' }); });
+        _ccGuestsCache.sort(function(a,b){ return a.name.localeCompare(b.name); });
+        if(cb) cb();
+        if(_ccTarget==='guest') chatComposeRenderGuests(_ccGuestsCache);
+    }).catch(function(){ _ccGuestsCache=[]; if(cb)cb(); });
+}
+
+function chatComposeRenderStudents(list) {
+    var res = document.getElementById('ccStudentResults'); if (!res) return;
+    if (!list||!list.length) { res.innerHTML='<div style="color:#aaa;text-align:center;padding:14px;font-size:.83em">No students found</div>'; return; }
+    res.innerHTML = list.map(function(s) {
+        return '<div class="cc-student-row" onclick=\'chatComposeSelectStudent('+JSON.stringify(s)+')\'  style="display:flex;align-items:center;justify-content:space-between;gap:8px">'
+            + '<span><strong>'+scEsc(s.name)+'</strong>'+(s.classYear?' <span style="color:#9c27b0;font-size:.8em">\u{1F4DA} '+scEsc(s.classYear)+'</span>':'')+'</span>'
+            + (s.phone?'<span style="color:#aaa;font-size:.76em">\u{1F4DE} '+scEsc(s.phone)+'</span>':'')+'</div>';
+    }).join('');
+}
+
+function chatComposeRenderGuests(list) {
+    var res = document.getElementById('ccGuestResults'); if (!res) return;
+    if (!list||!list.length) { res.innerHTML='<div style="color:#aaa;text-align:center;padding:14px;font-size:.83em">No guests found</div>'; return; }
+    res.innerHTML = list.map(function(g) {
+        return '<div class="cc-guest-row" onclick=\'chatComposeSelectGuest('+JSON.stringify(g)+')\'  style="display:flex;align-items:center;justify-content:space-between;gap:8px">'
+            + '<strong>'+scEsc(g.name)+'</strong>'+(g.phone?'<span style="color:#aaa;font-size:.76em">\u{1F4DE} '+scEsc(g.phone)+'</span>':'')+'</div>';
+    }).join('');
+}
+
+function chatComposeSearchStudents(q) {
+    q=q.trim().toLowerCase();
+    chatComposeRenderStudents(q?(_ccStudentsCache||[]).filter(function(s){ return s.name.toLowerCase().includes(q)||s.classYear.toLowerCase().includes(q)||String(s.phone).includes(q); }):(_ccStudentsCache||[]));
+}
+
+function chatComposeSearchGuests(q) {
+    q=q.trim().toLowerCase();
+    chatComposeRenderGuests(q?(_ccGuestsCache||[]).filter(function(g){ return g.name.toLowerCase().includes(q)||String(g.phone).includes(q); }):(_ccGuestsCache||[]));
+}
+
+function chatComposeSelectStudent(s) {
+    _ccSelectedStudent=s;
+    document.querySelectorAll('.cc-student-row').forEach(function(r){ r.style.background=''; });
+    var res=document.getElementById('ccStudentResults');
+    if(res) res.querySelectorAll('.cc-student-row').forEach(function(r){ if(r.querySelector('strong')&&r.querySelector('strong').textContent===s.name) r.style.background='#ede7f6'; });
+    var sel=document.getElementById('ccStudentSelected');
+    if(sel){sel.innerHTML='\u2705 Selected: <strong>'+scEsc(s.name)+'</strong>'+(s.classYear?' \u00b7 \u{1F4DA} '+scEsc(s.classYear):'')+(s.phone?' \u00b7 \u{1F4DE} '+scEsc(s.phone):'');sel.style.display='block';}
+    var cn=document.getElementById('ccStudentCustomName'); if(cn) cn.value='';
+}
+
+function chatComposeCustomStudent(val) {
+    if(val.trim()){ _ccSelectedStudent={sid:null,name:val.trim(),classYear:'',phone:''};
+        var sel=document.getElementById('ccStudentSelected');
+        if(sel){sel.innerHTML='\u270F\uFE0F Custom: <strong>'+scEsc(val.trim())+'</strong> <span style="color:#888;font-size:.8em">(new chat)</span>';sel.style.display='block';}
+        document.querySelectorAll('.cc-student-row').forEach(function(r){ r.style.background=''; });
+    } else { _ccSelectedStudent=null; var sel2=document.getElementById('ccStudentSelected'); if(sel2) sel2.style.display='none'; }
+}
+
+function chatComposeSelectGuest(g) {
+    _ccSelectedGuest=g;
+    document.querySelectorAll('.cc-guest-row').forEach(function(r){ r.style.background=''; });
+    var res=document.getElementById('ccGuestResults');
+    if(res) res.querySelectorAll('.cc-guest-row').forEach(function(r){ if(r.querySelector('strong')&&r.querySelector('strong').textContent===g.name) r.style.background='#fff3e0'; });
+    var sel=document.getElementById('ccGuestSelected');
+    if(sel){sel.innerHTML='\u2705 Selected: <strong>'+scEsc(g.name)+'</strong>'+(g.phone?' \u00b7 \u{1F4DE} '+scEsc(g.phone):'');sel.style.display='block';}
+    var gc=document.getElementById('ccGuestCustomPhone'); if(gc) gc.value='';
+}
+
+function chatComposeCustomGuest(val) {
+    val=val.replace(/\D/g,'').slice(0,10);
+    if(val.length>=10){ _ccSelectedGuest={sid:null,name:'Guest',phone:val};
+        var sel=document.getElementById('ccGuestSelected');
+        if(sel){sel.innerHTML='\u270F\uFE0F New guest: <strong>\u{1F4DE} '+scEsc(val)+'</strong>';sel.style.display='block';}
+        document.querySelectorAll('.cc-guest-row').forEach(function(r){ r.style.background=''; });
+    } else { _ccSelectedGuest=null; var sel2=document.getElementById('ccGuestSelected'); if(sel2) sel2.style.display='none'; }
+}
+
+function chatComposeFillClassDropdown() {
+    var sel=document.getElementById('ccClassSelect'); if(!sel) return;
+    var classes=['I BCA A','I BCA B','II BCA A','II BCA B','III BCA A','III BCA B','III BCA C','I B.Com','II B.Com','III B.Com','I BBA','II BBA','III BBA'];
+    sel.innerHTML='<option value="">\u2014 Choose class \u2014</option>'+classes.map(function(c){ return '<option value="'+c+'">'+c+'</option>'; }).join('');
+}
+
+function chatComposeShowClassStudents(cls) {
+    var listEl=document.getElementById('ccClassStudentList'); if(!listEl) return;
+    if(!cls){listEl.style.display='none';return;}
+    listEl.style.display='block';
+    listEl.innerHTML='<div style="color:#aaa;text-align:center;padding:10px;font-size:.83em">Loading...</div>';
+    var db=scDb(); if(!db) return;
+    db.ref('quizStudents').once('value').then(function(snap){
+        var found=[];
+        snap.forEach(function(ch){ var d=ch.val(); if(d&&(d.classYear===cls||d.class===cls)&&d.name) found.push(d); });
+        if(!found.length){listEl.innerHTML='<div style="color:#aaa;text-align:center;padding:10px;font-size:.83em">No students in this class</div>';return;}
+        listEl.innerHTML='<div style="padding:8px 14px;background:#f9f0ff;font-size:.8em;color:#6a1b9a;font-weight:700;border-bottom:1px solid #e0d0f0">\u{1F4DA} '+scEsc(cls)+' \u2014 '+found.length+' students (all will receive this message)</div>'
+            +found.map(function(s){ return '<div style="padding:8px 14px;border-bottom:1px solid #f3e5f5;font-size:.85em;display:flex;justify-content:space-between"><strong>'+scEsc(s.name||'Unknown')+'</strong>'+(s.phone?'<span style="color:#aaa;font-size:.8em">'+scEsc(s.phone)+'</span>':'')+'</div>'; }).join('');
+    }).catch(function(){listEl.innerHTML='<div style="color:#e53935;padding:10px;font-size:.83em">Could not load students</div>';});
+}
+
+function chatComposeFillFacultyList() {
+    var listEl=document.getElementById('ccFacultyList'); if(!listEl) return;
+    var fl=window.FACULTY_LIST||[];
+    if(!fl.length){listEl.innerHTML='<div style="color:#aaa;text-align:center;padding:14px;font-size:.83em">No faculty data</div>';return;}
+    listEl.innerHTML=fl.map(function(f){
+        var fo=JSON.stringify({phone:f.phone,name:f.name,cls:f.class});
+        return '<div class="cc-student-row" onclick=\'chatComposeSelectFaculty('+fo+')\'  style="display:flex;align-items:center;justify-content:space-between;gap:8px">'
+            +'<span><strong>'+scEsc(f.name)+'</strong> <span style="color:#388e3c;font-size:.8em">\u{1F4DA} '+scEsc(f.class)+'</span></span>'
+            +'<span style="color:#aaa;font-size:.76em">\u{1F4DE} '+scEsc(f.phone)+'</span></div>';
+    }).join('');
+}
+
+function chatComposeSelectFaculty(f) {
+    _ccSelectedFaculty=f;
+    document.querySelectorAll('#ccFacultyList .cc-student-row').forEach(function(r){ r.style.background=''; });
+    var sel=document.getElementById('ccFacultySelected');
+    if(sel){sel.innerHTML='\u2705 Selected: <strong>'+scEsc(f.name)+'</strong> \u00b7 \u{1F4DA} '+scEsc(f.cls||'')+(f.phone?' \u00b7 \u{1F4DE} '+scEsc(f.phone):'');sel.style.display='block';}
+    var fc=document.getElementById('ccFacultyCustomName'); if(fc) fc.value='';
+}
+
+function chatComposeCustomFaculty(val) {
+    if(val.trim()){ _ccSelectedFaculty={phone:'',name:val.trim(),cls:''};
+        var sel=document.getElementById('ccFacultySelected');
+        if(sel){sel.innerHTML='\u270F\uFE0F Custom: <strong>'+scEsc(val.trim())+'</strong> <span style="color:#888;font-size:.8em">(new chat)</span>';sel.style.display='block';}
+        document.querySelectorAll('#ccFacultyList .cc-student-row').forEach(function(r){ r.style.background=''; });
+    } else { _ccSelectedFaculty=null; var sel2=document.getElementById('ccFacultySelected'); if(sel2) sel2.style.display='none'; }
+}
+
+async function chatAdminSendNewChat() {
+    var text=((document.getElementById('ccMessageText')||{}).value||'').trim();
+    if(!text){chatComposeStatus('\u26a0\ufe0f Please type a message.','#e65100');return;}
+    var db=scDb(); if(!db) return;
+    var btn=document.getElementById('ccSendBtn');
+    if(btn){btn.disabled=true;btn.textContent='Sending\u2026';}
+    var targets=[];
+    if(_ccTarget==='student'){
+        if(!_ccSelectedStudent){chatComposeStatus('\u26a0\ufe0f Please select or enter a student.','#e65100');if(btn){btn.disabled=false;btn.textContent='\u{1F4E4} Send';}return;}
+        var sid=await chatComposeGetOrCreateSid(_ccSelectedStudent.phone,_ccSelectedStudent.name,'student',_ccSelectedStudent.classYear);
+        targets.push({sid,name:_ccSelectedStudent.name,type:'student',classYear:_ccSelectedStudent.classYear,phone:_ccSelectedStudent.phone});
+    } else if(_ccTarget==='class'){
+        var cls=(document.getElementById('ccClassSelect')||{}).value||'';
+        if(!cls){chatComposeStatus('\u26a0\ufe0f Please select a class.','#e65100');if(btn){btn.disabled=false;btn.textContent='\u{1F4E4} Send';}return;}
+        var snap=await db.ref('quizStudents').once('value').catch(function(){return null;});
+        if(snap) snap.forEach(function(ch){var d=ch.val();if(d&&(d.classYear===cls||d.class===cls)&&d.phone) targets.push({sid:null,phone:d.phone,name:d.name||'Student',type:'student',classYear:cls});});
+        if(!targets.length){chatComposeStatus('\u26a0\ufe0f No students found for this class.','#e65100');if(btn){btn.disabled=false;btn.textContent='\u{1F4E4} Send';}return;}
+    } else if(_ccTarget==='faculty'){
+        if(!_ccSelectedFaculty){chatComposeStatus('\u26a0\ufe0f Please select or enter a faculty name.','#e65100');if(btn){btn.disabled=false;btn.textContent='\u{1F4E4} Send';}return;}
+        var sid2=await chatComposeGetOrCreateSid(_ccSelectedFaculty.phone,_ccSelectedFaculty.name,'faculty',_ccSelectedFaculty.cls||'');
+        targets.push({sid:sid2,name:_ccSelectedFaculty.name,type:'faculty',classYear:_ccSelectedFaculty.cls||'',phone:_ccSelectedFaculty.phone||''});
+    } else if(_ccTarget==='guest'){
+        if(!_ccSelectedGuest){chatComposeStatus('\u26a0\ufe0f Please select or enter a guest phone.','#e65100');if(btn){btn.disabled=false;btn.textContent='\u{1F4E4} Send';}return;}
+        var sid3=_ccSelectedGuest.sid||await chatComposeGetOrCreateSid(_ccSelectedGuest.phone,_ccSelectedGuest.name||'Guest','guest','');
+        targets.push({sid:sid3,name:_ccSelectedGuest.name||'Guest',type:'guest',phone:_ccSelectedGuest.phone||''});
+    } else if(_ccTarget==='all'){
+        var snap2=await db.ref(SC_PATH).once('value').catch(function(){return null;});
+        if(snap2) snap2.forEach(function(ch){var d=ch.val();if(d&&d.name&&ch.key!=='config') targets.push({sid:ch.key,name:d.name,type:d.type||'student',classYear:d.classYear||'',phone:d.phone||''});});
+        if(!targets.length){chatComposeStatus('\u26a0\ufe0f No conversations found.','#e65100');if(btn){btn.disabled=false;btn.textContent='\u{1F4E4} Send';}return;}
+    }
+    var sent=0,failed=0;
+    var lastSid=null;
+    for(var i=0;i<targets.length;i++){
+        var t=targets[i];
+        try{
+            var sid4=t.sid||await chatComposeGetOrCreateSid(t.phone,t.name,t.type,t.classYear);
+            if(!sid4){failed++;continue;}
+            await db.ref(SC_PATH+'/'+sid4+'/messages').push({text:text,sender:'admin',ts:Date.now()});
+            await db.ref(SC_PATH+'/'+sid4).update({lastMessage:text,lastMessageAt:Date.now(),status:'open',unreadAdmin:0});
+            await db.ref('live_notifications/chat_'+sid4).set({type:'chat_msg',convId:sid4,name:t.name,msg:text,ts:Date.now()});
+            lastSid=sid4;
+            sent++;
+        }catch(e){failed++;}
+    }
+    if(btn){btn.disabled=false;btn.textContent='\u{1F4E4} Send';}
+    if(failed===0){
+        chatComposeStatus('\u2705 Sent to '+sent+' recipient'+(sent!==1?'s':'')+'!','#2e7d32');
+        document.getElementById('ccMessageText').value='';
+        _ccGuestsCache=null;
+        chatAdminCloseCompose();
+        // If single recipient — auto-open the conversation
+        if(sent===1 && lastSid){
+            setTimeout(function(){ chatAdminLoadInbox(); setTimeout(function(){ chatAdminOpenConv(lastSid); },400); },300);
+        } else {
+            setTimeout(function(){chatAdminLoadInbox();},800);
+        }
+    } else { chatComposeStatus('\u26a0\ufe0f Sent: '+sent+', Failed: '+failed,'#e65100'); }
+}
+
+async function chatComposeGetOrCreateSid(phone,name,type,classYear) {
+    var db=scDb(); if(!db) return null;
+    if(phone){
+        phone=String(phone).replace(/\D/g,'').slice(-10);
+        // 1. Check the standard guest key format sc_ph_{phone} first (most common)
+        var phoneKey = 'sc_ph_' + phone;
+        var directSnap = await db.ref(SC_PATH+'/'+phoneKey).once('value').catch(function(){return null;});
+        if(directSnap && directSnap.exists()) return phoneKey;
+        // 2. Search by phone field (for admin-created or student sessions)
+        var snap=await db.ref(SC_PATH).orderByChild('phone').equalTo(phone).once('value').catch(function(){return null;});
+        if(snap&&snap.exists()){var key=null;snap.forEach(function(ch){if(!key&&ch.key!=='config')key=ch.key;});if(key)return key;}
+    }
+    // 3. Create new session under sc_ph_ format so guest can find it
+    var newSid = phone ? ('sc_ph_' + phone) : ('c'+Date.now()+'_adm'+Math.random().toString(36).slice(2,6));
+    await db.ref(SC_PATH+'/'+newSid).set({name:name||'Unknown',phone:phone||'',type:type||'student',classYear:classYear||'',status:'open',createdAt:Date.now(),lastMessageAt:Date.now(),lastMessage:'',unreadAdmin:0,unreadGuest:0,initiatedByAdmin:true});
+    return newSid;
+}
+
+function chatComposeStatus(msg,color){
+    var s=document.getElementById('ccSendStatus');
+    if(s){s.textContent=msg;s.style.color=color||'#333';s.style.display='inline';}
 }
 
 function chatAdminBackToInbox() {
@@ -40767,6 +41217,53 @@ function scContinueChat() {
     document.getElementById('scResolvedBar').style.display = 'none';
     var inp = document.getElementById('scInputBar');
     if (inp) inp.classList.add('scShow');
+    scSyncBottomBar(true);
+}
+
+// ── Show/hide the End Chat + New Chat bottom bar ──────────
+function scSyncBottomBar(show) {
+    var bar = document.getElementById('scBottomBar');
+    if (bar) bar.style.display = show ? 'flex' : 'none';
+}
+
+// ── Guest ends their own chat ─────────────────────────────
+function scGuestEndChat() {
+    if (!confirm('End this chat? You can start a new one anytime.')) return;
+    var db = scDb();
+    if (db && _scSid) {
+        db.ref(SC_PATH+'/'+_scSid).update({ status:'resolved', endedByUser:true, endedAt:Date.now() });
+        db.ref(SC_PATH+'/'+_scSid+'/messages').push({ text:'👋 User ended the chat.', sender:'bot', ts:Date.now() });
+    }
+    var inp = document.getElementById('scInputBar'); if (inp) inp.classList.remove('scShow');
+    var res = document.getElementById('scResolvedBar'); if (res) res.style.display='block';
+    scSyncBottomBar(false);
+}
+
+// ── Start a completely new chat (clear session) ───────────
+function scStartNewChat() {
+    if (!confirm('Start a new chat? This will clear your current session.')) return;
+    // Clear localStorage session
+    localStorage.removeItem('sc_sid');
+    localStorage.removeItem('sc_phone');
+    localStorage.removeItem('sc_name');
+    localStorage.removeItem('sc_class');
+    localStorage.removeItem('sc_type');
+    // Reset all state
+    _scSid = null; _scStarted = false; _scUnread = 0;
+    if (_scUserRef) { _scUserRef.off(); _scUserRef = null; }
+    // Reset UI
+    var msgs = document.getElementById('scMsgs'); if (msgs) { msgs.innerHTML=''; msgs.style.display='none'; }
+    var res  = document.getElementById('scResolvedBar'); if (res) res.style.display='none';
+    var inp  = document.getElementById('scInputBar');    if (inp) inp.classList.remove('scShow');
+    var form = document.getElementById('scGuestForm');   if (form) form.style.display='flex';
+    scSyncBottomBar(false);
+    // Reset header subtitle
+    var sub = document.getElementById('scHeadSub'); if (sub) sub.textContent='Spurthi Youth Fest 2026';
+    // Clear input fields
+    var ph = document.getElementById('scPhone'); if (ph) ph.value='';
+    var nm = document.getElementById('scName');  if (nm) nm.value='';
+    var hint = document.getElementById('scLookupHint'); if (hint) { hint.style.display='none'; hint.textContent=''; }
+    _scLookedUpName=''; _scLookedUpClass=''; _scLookedUpType='guest';
 }
 
 function chatAdminDeleteConv() {
@@ -40897,6 +41394,14 @@ function scAdminPing() {
      v6.71 | Mar 05, 2026, 12:10 AM IST | Schedule now runs in Service Worker (no page needed); fires daily at set times; FCM+toast+publish chain; fired-keys in Firebase prevent double-fire
      v6.72 | Mar 05, 2026, 02:50 AM IST | Guest chat: sound plays on all new admin messages (open or closed), different soft double-chime tone vs admin, mute toggle button (🔔/🔕) in chat header, default unmuted
      v6.73 | Mar 05, 2026, 02:50 AM IST | sw.js template: icon + badge updated from davan_logo_2026.gif to davan_degree1.png
+     v6.74 | Mar 05, 2026, 02:50 AM IST | New: Admin can initiate chat — send to specific student, entire class, staff/faculty, guest by phone, or broadcast to all; New Chat button in inbox header
+     v6.75 | Mar 05, 2026, 02:50 AM IST | Compose: all students/guests/faculty shown immediately as scrollable list; filter-as-you-type; click to select with highlight; custom name/phone fallback for unlisted people; class picker shows all students in selected class
+     v6.76 | Mar 05, 2026, 02:50 AM IST | Fix: new chat auto-opens conversation after send; blue ticks now proper blue; ticks show on all sent messages both admin and guest sides
+     v6.77 | Mar 05, 2026, 02:50 AM IST | Guest chat: End Chat button (marks resolved) + New Chat button (clears session, shows fresh form) added to chat widget bottom bar
+     v6.78 | Mar 05, 2026, 02:50 AM IST | Fix: old messages shown immediately on admin open (once+then new only); admin messages marked delivered as soon as page loads (not just when chat opens); scSyncBottomBar on session resume
+     v6.79 | Mar 05, 2026, 02:50 AM IST | Fix: admin compose now writes to sc_ph_{phone} key — same path guest listens to — so guest sees admin-initiated messages immediately
+     v6.80 | Mar 05, 2026, 03:47 AM IST | Fix: scInitConv checks sc_ph_ key first so guest joins admin-created session; greeting no longer appends class as location; greeting only fires on brand new sessions
+     v6.81 | Mar 05, 2026, 03:47 AM IST | Fix: scToggle resume always uses sc_ph_{phone} key; scResumeSession shows form if session not found so user re-enters phone and joins correct session
      ═══════════════════════════════════════════════════════════════════ -->
 
 
