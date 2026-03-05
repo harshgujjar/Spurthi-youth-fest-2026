@@ -905,6 +905,14 @@
             border: 3px solid rgba(255,255,255,.6) !important;
         }
         .ssc-tile.ssc-empty:hover { transform: scale(1.04); }
+        /* Tiles adjacent to empty — highlight them as tappable */
+        .ssc-tile.ssc-can-move {
+            box-shadow: inset 0 0 0 3px rgba(255,255,255,.9), 0 0 16px rgba(255,255,0,.7) !important;
+            cursor: pointer;
+        }
+        .ssc-tile.ssc-can-move:hover { transform: scale(1.06); }
+        /* Empty tile — muted, not clickable-looking */
+        .ssc-tile.ssc-empty { cursor: default !important; }
         @keyframes sscWinPop {
             from { transform: scale(0.5); opacity: 0; }
             to   { transform: scale(1);   opacity: 1; }
@@ -7648,7 +7656,7 @@
                                 <div style="font-weight:800;color:#333;margin-top:8px;font-size:1.1em">8-Puzzle</div>
                                 <div style="font-size:.8em;color:#999;margin-top:4px">3×3 grid · 8 tiles</div>
                                 <div style="font-size:.75em;color:#888;margin-top:2px">Beginner</div>
-                                <div style="font-size:.75em;color:#2e7d32;margin-top:4px;font-weight:700">🎯 Solvable in ~10 moves</div>
+                                <div style="font-size:.75em;color:#2e7d32;margin-top:4px;font-weight:700">🎯 Solvable in ~5–8 moves</div>
                                 <span style="display:inline-block;background:linear-gradient(135deg,#43a047,#66bb6a);color:white;padding:5px 16px;border-radius:14px;font-size:.82em;font-weight:800;margin-top:10px;letter-spacing:.3px">100 pts max</span>
                             </div>
                             <div id="ssdc-medium" onclick="sscSelectDiff('medium')" class="ssc-diff-card ssc-selected">
@@ -7656,7 +7664,7 @@
                                 <div style="font-weight:800;color:#333;margin-top:8px;font-size:1.1em">15-Puzzle</div>
                                 <div style="font-size:.8em;color:#999;margin-top:4px">4×4 grid · 15 tiles</div>
                                 <div style="font-size:.75em;color:#9c27b0;margin-top:2px;font-weight:700">⭐ Popular</div>
-                                <div style="font-size:.75em;color:#6a1b9a;margin-top:4px;font-weight:700">🎯 Solvable in ~15 moves</div>
+                                <div style="font-size:.75em;color:#6a1b9a;margin-top:4px;font-weight:700">🎯 Solvable in ~7–10 moves</div>
                                 <span style="display:inline-block;background:linear-gradient(135deg,#6a1b9a,#c44569);color:white;padding:5px 16px;border-radius:14px;font-size:.82em;font-weight:800;margin-top:10px;letter-spacing:.3px">200 pts max</span>
                             </div>
                             <div id="ssdc-hard" onclick="sscSelectDiff('hard')" class="ssc-diff-card">
@@ -7664,7 +7672,7 @@
                                 <div style="font-weight:800;color:#333;margin-top:8px;font-size:1.1em">24-Puzzle</div>
                                 <div style="font-size:.8em;color:#999;margin-top:4px">5×5 grid · 24 tiles</div>
                                 <div style="font-size:.75em;color:#e65100;margin-top:2px;font-weight:700">🔥 Expert</div>
-                                <div style="font-size:.75em;color:#bf360c;margin-top:4px;font-weight:700">🎯 Solvable in ~20 moves</div>
+                                <div style="font-size:.75em;color:#bf360c;margin-top:4px;font-weight:700">🎯 Solvable in ~10–12 moves</div>
                                 <span style="display:inline-block;background:linear-gradient(135deg,#e65100,#ff6f00);color:white;padding:5px 16px;border-radius:14px;font-size:.82em;font-weight:800;margin-top:10px;letter-spacing:.3px">300 pts max</span>
                             </div>
                         </div>
@@ -32739,7 +32747,7 @@ Proceed?`)) return;
 
     function sscUpdateLiveScore() {
         const base = SSC_DIFF[sscDiff] ? SSC_DIFF[sscDiff].maxPts : 0;
-        const minMoves = sscSize * sscSize * 2;
+        const minMoves = sscSize === 3 ? 6 : sscSize === 4 ? 9 : 12;
         const live = Math.max(10, base - Math.floor(sscSeconds*0.5) - Math.max(0, sscMoves-minMoves));
         const el = document.getElementById('sscPtsDisplay');
         if (el) {
@@ -33000,30 +33008,22 @@ Proceed?`)) return;
     }
 
     function sscShuffleTiles() {
-        // STEP 1: Full Fisher-Yates random shuffle — completely different every time
-        const n = sscTiles.length;
-        for (let i = n - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [sscTiles[i], sscTiles[j]] = [sscTiles[j], sscTiles[i]];
-        }
-        // STEP 2: If not solvable, swap two non-blank tiles to fix parity
-        if (!sscIsSolvable()) {
-            // swap first two non-blank tiles to flip parity
-            let first = -1, second = -1;
-            for (let i = 0; i < sscTiles.length; i++) {
-                if (sscTiles[i] !== 0) {
-                    if (first === -1) first = i;
-                    else { second = i; break; }
-                }
-            }
-            [sscTiles[first], sscTiles[second]] = [sscTiles[second], sscTiles[first]];
-        }
-        // STEP 3: Short random-walk on top to add extra unpredictability
-        // and guarantee the puzzle is not accidentally near-solved
-        const extraMoves = sscSize === 3 ? 10 : sscSize === 4 ? 15 : 20;
-        let blankIdx = sscTiles.indexOf(0);
+        // Start from SOLVED state and do a short random-walk
+        // This guarantees the puzzle is solvable in roughly the same number of steps
+        // 8-puzzle  (3×3): 8  steps → ~5–8  moves to solve
+        // 15-puzzle (4×4): 12 steps → ~7–10 moves to solve
+        // 24-puzzle (5×5): 15 steps → ~10–12 moves to solve
+        const walkSteps = sscSize === 3 ? 8 : sscSize === 4 ? 12 : 15;
+
+        // Reset to solved state first: [1,2,3,...,n²-1, 0]
+        const n2 = sscTiles.length;
+        for (let i = 0; i < n2 - 1; i++) sscTiles[i] = i + 1;
+        sscTiles[n2 - 1] = 0;
+
+        // Random-walk: slide random valid neighbours into blank
+        let blankIdx = n2 - 1;
         let lastBlank = -1;
-        for (let m = 0; m < extraMoves; m++) {
+        for (let m = 0; m < walkSteps; m++) {
             const r = Math.floor(blankIdx / sscSize);
             const c = blankIdx % sscSize;
             const neighbors = [];
@@ -33031,6 +33031,7 @@ Proceed?`)) return;
             if (r < sscSize - 1)  neighbors.push(blankIdx + sscSize);
             if (c > 0)            neighbors.push(blankIdx - 1);
             if (c < sscSize - 1)  neighbors.push(blankIdx + 1);
+            // Avoid immediately reversing last move
             const choices = neighbors.filter(idx => idx !== lastBlank);
             const pick = choices[Math.floor(Math.random() * choices.length)];
             lastBlank = blankIdx;
@@ -33068,24 +33069,32 @@ Proceed?`)) return;
         const availW = Math.min(parentW || window.innerWidth - 24, window.innerWidth - 24);
         const tileSize = Math.max(180, availW - 10);
         const sz = Math.floor(tileSize / sscSize);
+        const emptyIdx = sscTiles.indexOf(0);
+        const eR = Math.floor(emptyIdx/sscSize), eC = emptyIdx%sscSize;
+
         sscTiles.forEach((val, idx) => {
             const tile = document.createElement('div');
-            tile.className = 'ssc-tile' + (val===0 ? ' ssc-empty' : '') + (idx===movedIdx ? ' ssc-moved' : '');
+            const cR = Math.floor(idx/sscSize), cC = idx%sscSize;
+            const isAdjacent = (Math.abs(eR-cR)===1 && eC===cC)||(Math.abs(eC-cC)===1 && eR===cR);
+            // Arrow direction: points toward empty slot
+            const arrowDir = val!==0 && isAdjacent ? (
+                eR > cR ? '⬇️' : eR < cR ? '⬆️' : eC > cC ? '➡️' : '⬅️'
+            ) : '';
+
+            tile.className = 'ssc-tile' + (val===0 ? ' ssc-empty' : '') + (idx===movedIdx ? ' ssc-moved' : '') + (isAdjacent && val!==0 ? ' ssc-can-move' : '');
             tile.style.cssText += ';touch-action:none;-webkit-touch-callout:none;user-select:none';
             tile.style.width = sz+'px'; tile.style.height = sz+'px';
             if (val === 0) {
+                // Empty tile — show logo + tap hint scaled by difficulty
                 const logoEl = document.createElement('img');
                 logoEl.src = 'davan_degree1.png';
-                const logoSize = Math.floor(sz * 0.45);
-                logoEl.style.cssText = `width:${logoSize}px;height:${logoSize}px;object-fit:contain;margin-bottom:3px;opacity:0.9;filter:drop-shadow(0 1px 3px rgba(0,0,0,.3))`;
-                const iconEl = document.createElement('div');
-                iconEl.style.cssText = 'font-size:1.3em;line-height:1;animation:sscEmptyArrow 0.9s ease-in-out infinite';
-                iconEl.textContent = '👆';
+                const logoSize = Math.floor(sz * (sscSize===3 ? 0.55 : sscSize===4 ? 0.45 : 0.35));
+                logoEl.style.cssText = `width:${logoSize}px;height:${logoSize}px;object-fit:contain;border-radius:50%;margin-bottom:6px;opacity:0.92;filter:drop-shadow(0 1px 4px rgba(0,0,0,.35))`;
+                const lblFontSize = sscSize===3 ? '0.6em' : sscSize===4 ? '0.48em' : '0.38em';
                 const lblEl = document.createElement('div');
-                lblEl.style.cssText = 'font-size:.55em;font-weight:900;letter-spacing:1px;color:#3d0000';
-                lblEl.textContent = 'MOVE HERE';
+                lblEl.style.cssText = `font-size:${lblFontSize};font-weight:900;letter-spacing:1px;color:#3d0000;text-align:center`;
+                lblEl.textContent = 'TAP NEXT TILE';
                 tile.appendChild(logoEl);
-                tile.appendChild(iconEl);
                 tile.appendChild(lblEl);
             } else {
                 const zeroVal = val - 1;
@@ -33094,6 +33103,15 @@ Proceed?`)) return;
                 tile.style.backgroundImage    = 'url('+sscImageData+')';
                 tile.style.backgroundSize     = (sz * sscSize) + 'px ' + (sz * sscSize) + 'px';
                 tile.style.backgroundPosition = (-col * sz) + 'px ' + (-row * sz) + 'px';
+                // Show arrow overlay on movable tiles
+                if (isAdjacent) {
+                    const arrowFontSize = sscSize===3 ? '2.2em' : sscSize===4 ? '1.6em' : '1.1em';
+                    const arrow = document.createElement('div');
+                    arrow.style.cssText = `position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:${arrowFontSize};pointer-events:none;filter:drop-shadow(0 0 5px rgba(0,0,0,0.9));animation:sscEmptyArrow 0.9s ease-in-out infinite`;
+                    arrow.textContent = arrowDir;
+                    tile.style.position = 'relative';
+                    tile.appendChild(arrow);
+                }
             }
 
             // Use touchstart for instant response — no click event needed on mobile
@@ -33171,7 +33189,7 @@ Proceed?`)) return;
 
     function sscCalcPoints() {
         const base = SSC_DIFF[sscDiff].maxPts;
-        const minMoves = sscSize * sscSize * 2;
+        const minMoves = sscSize === 3 ? 6 : sscSize === 4 ? 9 : 12;
         return Math.max(10, base - Math.floor(sscSeconds*0.5) - Math.max(0, sscMoves-minMoves));
     }
 
@@ -39145,7 +39163,7 @@ export default {
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;" id="devTriggerVersion">
-                <strong>Version:</strong> 6.86 — Fix: admin chat bubbles correctly sided; admin=right, visitor=left<strong>Last Updated:</strong> Mar 05, 2026, 08:35 AM IST</p>
+                <strong>Version:</strong> 6.92 — Speed Slide difficulty labels corrected to match actual shuffle<strong>Last Updated:</strong> Mar 05, 2026, 09:15 AM IST</p>
             <!-- ============================================ -->
             
             <p style="color: #c44569; font-size: 0.85em; font-weight: 600; margin-bottom: 8px;">
@@ -41447,6 +41465,12 @@ function scAdminPing() {
      v6.84 | Mar 05, 2026, 04:15 AM IST | Fix: bot greeting msgs shown again; only STALE bot msgs (older than 1 min) auto-deleted; fresh greetings on new sessions always visible
      v6.85 | Mar 05, 2026, 08:30 AM IST | Fix: chat FAB bubble hidden on mobile when chat is open (was overlapping send button); body.scChatOpen class toggled in scToggle()
      v6.86 | Mar 05, 2026, 08:35 AM IST | Fix: scRenderBub bubble sides flipped for admin view — admin msgs on right, visitor msgs on left; was using guest-side logic for both views
+     v6.87 | Mar 05, 2026, 08:45 AM IST | Speed Slide UX: removed confusing MOVE HERE on empty tile; now shows directional arrows on adjacent movable tiles with glowing border highlight
+     v6.88 | Mar 05, 2026, 08:50 AM IST | Speed Slide: restored logo on empty tile; changed text to TAP NEXT TILE; arrow+logo+text scale by difficulty (8=large, 15=medium, 24=small)
+     v6.89 | Mar 05, 2026, 09:00 AM IST | Speed Slide: shuffle replaced with short random-walk from solved state — 8-puzzle:8 steps(~5-8 moves), 15-puzzle:12 steps(~7-10 moves), 24-puzzle:15 steps(~10-12 moves); minMoves updated for scoring
+     v6.90 | Mar 05, 2026, 09:05 AM IST | Fix: removed leftover orphan code from old shuffle function that caused SyntaxError at line 33045
+     v6.91 | Mar 05, 2026, 09:10 AM IST | Speed Slide: removed 👆 hand emoji from empty tile; logo + TAP NEXT TILE text only
+     v6.92 | Mar 05, 2026, 09:15 AM IST | Speed Slide: updated difficulty card labels — 8:~5-8 moves, 15:~7-10 moves, 24:~10-12 moves
      ═══════════════════════════════════════════════════════════════════ -->
 
 
