@@ -36891,14 +36891,14 @@ v6.06 | Mar 03 2026 03:30 PM IST | Incharge banner cards: show captain phone, st
                     console.log('[SW] Registered:', reg.scope);
                     // Force browser to fetch latest sw.js from GitHub immediately
                     reg.update().then(() => { console.log('[SW] Update check triggered'); }).catch(() => {});
-                    if (Notification.permission === 'granted') subscribeToPush(reg);
+                    if (typeof Notification !== 'undefined' && Notification.permission === 'granted') subscribeToPush(reg);
                 })
                 .catch(err => {
                     console.warn('[SW] sw.js registration failed:', err.message);
                 });
             navigator.serviceWorker.ready.then(reg => {
                 console.log('[SW] Ready. Active worker:', reg.active ? reg.active.scriptURL : 'none');
-                if (Notification.permission === 'granted') subscribeToPush(reg);
+                if (typeof Notification !== 'undefined' && Notification.permission === 'granted') subscribeToPush(reg);
                 reg.update().catch(() => {});
             });
         }
@@ -36927,6 +36927,8 @@ v6.06 | Mar 03 2026 03:30 PM IST | Incharge banner cards: show captain phone, st
 
     // Show notification permission banner ONCE per session if not already dismissed/granted
     window.maybeShowNotifBanner = function() {
+        // iOS Safari and some browsers don't support Notification API
+        if (typeof Notification === 'undefined') return;
         // Already granted or permanently dismissed → never show
         if (Notification.permission !== 'default') return;
         if (localStorage.getItem('notif_banner_dismissed')) return;
@@ -37008,7 +37010,7 @@ v6.06 | Mar 03 2026 03:30 PM IST | Incharge banner cards: show captain phone, st
                     if (_lastResub === data.triggeredAt) return;
                     _lastResub = data.triggeredAt;
                     if (!('serviceWorker' in navigator)) return;
-                    if (Notification.permission !== 'granted') return;
+                    if (typeof Notification === 'undefined' || Notification.permission !== 'granted') return;
                     navigator.serviceWorker.ready.then(reg => {
                         localStorage.removeItem('spurthi_push_subbed_v2');
                         subscribeToPush(reg, true).then(() => {
@@ -38219,7 +38221,7 @@ function startScheduleChecker() {
 
         // 2. Always re-subscribe on THIS device regardless of Firebase result
         try {
-            if ('serviceWorker' in navigator && Notification.permission === 'granted') {
+            if ('serviceWorker' in navigator && typeof Notification !== 'undefined' && Notification.permission === 'granted') {
                 const reg = await navigator.serviceWorker.ready;
                 localStorage.removeItem('spurthi_push_subbed_v2');
                 await subscribeToPush(reg, true);
@@ -39172,7 +39174,7 @@ export default {
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;" id="devTriggerVersion">
-                <strong>Version:</strong> 6.96 — Fix: upload auto-fills URL field; manager just uploads + saves<strong>Last Updated:</strong> Mar 05, 2026, 12:50 PM IST</p>
+                <strong>Version:</strong> 6.97 — Fix: iOS Safari login crash; Notification API guarded everywhere<strong>Last Updated:</strong> Mar 05, 2026, 01:14 PM IST</p>
             <!-- ============================================ -->
             
             <p style="color: #c44569; font-size: 0.85em; font-weight: 600; margin-bottom: 8px;">
@@ -41508,6 +41510,7 @@ function scAdminPing() {
      v6.94 | Mar 05, 2026, 10:10 AM IST | Fix: Quiz Published Q&A toast now uses YESTERDAY's date; auto-fire checks if yesterday published before firing; manual send also checks + alerts if not published
      v6.95 | Mar 05, 2026, 12:45 PM IST | Fix: class logo save reads URL input field directly at save time; oninput sync added so paCurrentLogoUrl always matches typed/pasted URL
      v6.96 | Mar 05, 2026, 12:50 PM IST | Fix: after file upload, new Cloudinary URL now auto-fills URL input field + shows preview — manager just uploads file and clicks Add Class, no URL pasting needed
+     v6.97 | Mar 05, 2026, 01:14 PM IST | Fix: iOS Safari login crash — Notification API not available on iOS; all bare Notification.permission calls now guarded with typeof check; maybeShowNotifBanner returns early on iOS
      ═══════════════════════════════════════════════════════════════════ -->
 
 
