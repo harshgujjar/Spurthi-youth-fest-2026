@@ -5517,6 +5517,48 @@
                         <button type="button" onclick="qnAddSlot()" style="background:linear-gradient(135deg,#6a1b9a,#c44569);color:white;border:none;padding:8px 16px;border-radius:8px;font-weight:700;font-size:.82em;cursor:pointer">+ Add Slot</button>
                     </div>
                 </div>
+
+                <!-- ══ EVENT LIVE BANNERS ══════════════════════════ -->
+                <div style="background:#f3e5f5;border-radius:12px;padding:18px 20px;margin-top:18px;border:1.5px solid #ce93d8">
+                    <h3 style="color:#6a1b9a;margin:0 0 6px;font-size:1em">📣 Event Live Banners</h3>
+                    <p style="color:#555;font-size:.8em;margin:0 0 14px">Show a coloured top banner for any event. Students see it on all pages until dismissed.</p>
+                    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px">
+                        <!-- Each row: coloured dot + event name + Show/Hide buttons -->
+                        <script>
+                        (function(){
+                            var events = [
+                                {id:'sh',       emoji:'🗺️', name:'Scavenger Hunt',         color:'#00695c'},
+                                {id:'ssc',      emoji:'🧩', name:'Speed Slide Challenge',   color:'#e65100'},
+                                {id:'mime',     emoji:'🎭', name:'Mime',                    color:'#283593'},
+                                {id:'skit',     emoji:'🎬', name:'Social Awareness Skit',   color:'#880e4f'},
+                                {id:'dance',    emoji:'💃', name:'Group Dance',              color:'#ad1457'},
+                                {id:'madads',   emoji:'📢', name:'Mad Ads',                  color:'#bf360c'},
+                                {id:'rampwalk', emoji:'👠', name:'Ramp Walk',               color:'#b71c1c'},
+                                {id:'nukkad',   emoji:'🎙️', name:'Nukkad Natak',            color:'#1b5e20'},
+                                {id:'talent',   emoji:'🌟', name:'Talent Hunt',              color:'#006064'},
+                                {id:'ytad',     emoji:'📹', name:'YouTube Advertisement',   color:'#c62828'},
+                                {id:'podcast',  emoji:'🎙️', name:'Pod Casting',             color:'#4a148c'},
+                                {id:'vlog',     emoji:'🎥', name:'Vlog',                    color:'#4e342e'},
+                                {id:'handwriting',emoji:'✍️',name:'Hand Writing',           color:'#5d4037'},
+                                {id:'waste',    emoji:'♻️', name:'Best Out of Waste',        color:'#33691e'},
+                                {id:'case',     emoji:'🧠', name:'Case Analysis',            color:'#1a237e'},
+                                {id:'inter',    emoji:'🔬', name:'Interdisciplinary',        color:'#006064'},
+                            ];
+                            document.write(events.map(function(e){
+                                return '<div style="background:white;border-radius:8px;padding:10px 12px;border-left:4px solid '+e.color+';display:flex;align-items:center;gap:8px;flex-wrap:wrap">'
+                                    +'<span style="font-size:1.1em">'+e.emoji+'</span>'
+                                    +'<span style="flex:1;font-size:.82em;font-weight:700;color:#333">'+e.name+'</span>'
+                                    +'<button onclick="showEvtBanner(\''+e.id+'\')" style="background:'+e.color+';color:white;border:none;padding:5px 12px;border-radius:6px;font-size:.78em;font-weight:700;cursor:pointer">▶ Show</button>'
+                                    +'<button onclick="hideEvtBanner(\''+e.id+'\')" style="background:#757575;color:white;border:none;padding:5px 10px;border-radius:6px;font-size:.78em;font-weight:700;cursor:pointer">✕ Hide</button>'
+                                    +'</div>';
+                            }).join(''));
+                        })();
+                        </script>
+                    </div>
+                    <div style="margin-top:12px;text-align:right">
+                        <button onclick="hideAllEvtBanners()" style="background:#616161;color:white;border:none;padding:8px 18px;border-radius:8px;font-size:.82em;font-weight:700;cursor:pointer">✕ Hide All Banners</button>
+                    </div>
+                </div>
             </div>
 
             <!-- ═══════════════════════════════════════════════════
@@ -9299,11 +9341,26 @@
 
             let filtered = _aeoData.slice();
             if (evF)  filtered = filtered.filter(r => r.evName === evF);
-            if (stF === 'enrolled')     filtered = filtered.filter(r => r.hasSubmissions);
-            if (stF === 'not_enrolled') filtered = filtered.filter(r => !r.hasSubmissions);
 
-            // For class filter: only show events where that class enrolled
-            if (clsF) filtered = filtered.filter(r => r.enrolledClasses.includes(clsF));
+            if (stF === 'enrolled') {
+                if (clsF) {
+                    // Show events where this specific class HAS enrolled
+                    filtered = filtered.filter(r => r.enrolledClasses.includes(clsF));
+                } else {
+                    filtered = filtered.filter(r => r.hasSubmissions);
+                }
+            } else if (stF === 'not_enrolled') {
+                if (clsF) {
+                    // Show events where this specific class has NOT enrolled
+                    filtered = filtered.filter(r => !r.enrolledClasses.includes(clsF));
+                } else {
+                    // No class selected — show events with zero total enrollments
+                    filtered = filtered.filter(r => !r.hasSubmissions);
+                }
+            }
+
+            // For class filter without status filter: only show events where that class enrolled
+            if (clsF && stF !== 'enrolled' && stF !== 'not_enrolled') filtered = filtered.filter(r => r.enrolledClasses.includes(clsF));
 
             const badge = document.getElementById('aeoFilterBadge');
             if (badge) badge.textContent = filtered.length + ' event' + (filtered.length !== 1 ? 's' : '') + ' shown';
@@ -9334,9 +9391,11 @@
 
             data.forEach((row, idx) => {
                 const rowBg = idx % 2 === 0 ? 'white' : '#faf8ff';
-                const statusBg    = row.hasSubmissions ? '#d4edda' : '#fff3cd';
-                const statusColor = row.hasSubmissions ? '#155724' : '#856404';
-                const statusText  = row.hasSubmissions ? '✅ Enrolled' : '⚠️ No Enrolments';
+                // If filtering by a specific class, show enrollment status FOR THAT CLASS
+                const classEnrolled = highlightClass ? row.enrolledClasses.includes(highlightClass) : row.hasSubmissions;
+                const statusBg    = classEnrolled ? '#d4edda' : '#fff3cd';
+                const statusColor = classEnrolled ? '#155724' : '#856404';
+                const statusText  = classEnrolled ? '✅ Enrolled' : '⚠️ Not Enrolled';
                 const expandId    = 'aeo_exp_' + idx;
 
                 // Class pills — compact, highlighted if filter active
@@ -39172,7 +39231,7 @@ export default {
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;" id="devTriggerVersion">
-                <strong>Version:</strong> 7.00 — CRITICAL: today's Q&A never shown to students<strong>Last Updated:</strong> Mar 05, 2026, 02:35 PM IST</p>
+                <strong>Version:</strong> 7.02 — Fix: Not Enrolled filter works correctly per class<strong>Last Updated:</strong> Mar 05, 2026, 03:25 PM IST</p>
             <!-- ============================================ -->
             
             <p style="color: #c44569; font-size: 0.85em; font-weight: 600; margin-bottom: 8px;">
@@ -39434,6 +39493,113 @@ export default {
     📝 <span id="qnLiveBannerText">Daily Quiz is LIVE!</span>
     <a onclick="qnGoToQuiz()" style="color:#ffe082;text-decoration:underline;cursor:pointer;margin-left:12px;font-weight:800">▶ Play Now</a>
     <a onclick="document.getElementById('qnLiveBanner').style.display='none'" style="color:#ffe082;text-decoration:underline;cursor:pointer;margin-left:12px">✕ Dismiss</a>
+</div>
+
+<!-- ══ EVENT LIVE BANNERS ══════════════════════════════════════════ -->
+<style>
+.evtBanner { display:none; position:fixed; top:0; left:0; right:0; z-index:9997; color:white; text-align:center; padding:9px 16px; font-size:.88em; font-weight:700; letter-spacing:.3px; }
+.evtBanner a { color:#ffe082; text-decoration:underline; cursor:pointer; margin-left:10px; }
+/* Stack banners if multiple are shown */
+.evtBanner.stacked-1 { top:38px; }
+.evtBanner.stacked-2 { top:76px; }
+</style>
+
+<!-- Scavenger Hunt — teal/green -->
+<div id="evtBanner_sh" class="evtBanner" style="background:linear-gradient(135deg,#00695c,#26a69a)">
+    🗺️ <span id="evtBannerText_sh">Scavenger Hunt is LIVE! Find the clues & win!</span>
+    <a onclick="document.getElementById('competitionType').value='scavengerhunt';handleCompetitionChange&&handleCompetitionChange();this.closest('.evtBanner').style.display='none'" style="color:#ffe082;text-decoration:underline;cursor:pointer;margin-left:12px;font-weight:800">▶ Play Now</a>
+    <a onclick="this.closest('.evtBanner').style.display='none'" style="color:#ffe082;text-decoration:underline;cursor:pointer;margin-left:12px">✕ Dismiss</a>
+</div>
+
+<!-- Speed Slide Challenge — orange/amber -->
+<div id="evtBanner_ssc" class="evtBanner" style="background:linear-gradient(135deg,#e65100,#ff8f00)">
+    🧩 <span id="evtBannerText_ssc">Speed Slide Challenge is LIVE! Solve the puzzle!</span>
+    <a onclick="document.getElementById('competitionType').value='speedslide';handleCompetitionChange&&handleCompetitionChange();this.closest('.evtBanner').style.display='none'" style="color:#ffe082;text-decoration:underline;cursor:pointer;margin-left:12px;font-weight:800">▶ Play Now</a>
+    <a onclick="this.closest('.evtBanner').style.display='none'" style="color:#ffe082;text-decoration:underline;cursor:pointer;margin-left:12px">✕ Dismiss</a>
+</div>
+
+<!-- Mime — indigo/blue -->
+<div id="evtBanner_mime" class="evtBanner" style="background:linear-gradient(135deg,#283593,#1565c0)">
+    🎭 <span id="evtBannerText_mime">Mime event is happening NOW! Come watch!</span>
+    <a onclick="this.closest('.evtBanner').style.display='none'" style="color:#ffe082;text-decoration:underline;cursor:pointer;margin-left:12px">✕ Dismiss</a>
+</div>
+
+<!-- Social Awareness Skit — rose/pink -->
+<div id="evtBanner_skit" class="evtBanner" style="background:linear-gradient(135deg,#880e4f,#e91e63)">
+    🎬 <span id="evtBannerText_skit">Social Awareness Skit is LIVE on stage!</span>
+    <a onclick="this.closest('.evtBanner').style.display='none'" style="color:#ffe082;text-decoration:underline;cursor:pointer;margin-left:12px">✕ Dismiss</a>
+</div>
+
+<!-- Group Dance — magenta/deep pink -->
+<div id="evtBanner_dance" class="evtBanner" style="background:linear-gradient(135deg,#ad1457,#f06292)">
+    💃 <span id="evtBannerText_dance">Group Dance performance is LIVE on stage!</span>
+    <a onclick="this.closest('.evtBanner').style.display='none'" style="color:#ffe082;text-decoration:underline;cursor:pointer;margin-left:12px">✕ Dismiss</a>
+</div>
+
+<!-- Mad Ads — yellow/deep orange -->
+<div id="evtBanner_madads" class="evtBanner" style="background:linear-gradient(135deg,#bf360c,#ff6f00)">
+    📢 <span id="evtBannerText_madads">Mad Ads is LIVE on stage! Don't miss it!</span>
+    <a onclick="this.closest('.evtBanner').style.display='none'" style="color:#ffe082;text-decoration:underline;cursor:pointer;margin-left:12px">✕ Dismiss</a>
+</div>
+
+<!-- Ramp Walk — rose/gold -->
+<div id="evtBanner_rampwalk" class="evtBanner" style="background:linear-gradient(135deg,#b71c1c,#f9a825)">
+    👠 <span id="evtBannerText_rampwalk">Ramp Walk is happening NOW on stage!</span>
+    <a onclick="this.closest('.evtBanner').style.display='none'" style="color:#ffe082;text-decoration:underline;cursor:pointer;margin-left:12px">✕ Dismiss</a>
+</div>
+
+<!-- Nukkad Natak — deep green/teal -->
+<div id="evtBanner_nukkad" class="evtBanner" style="background:linear-gradient(135deg,#1b5e20,#388e3c)">
+    🎙️ <span id="evtBannerText_nukkad">Nukkad Natak is LIVE! Street play in action!</span>
+    <a onclick="this.closest('.evtBanner').style.display='none'" style="color:#ffe082;text-decoration:underline;cursor:pointer;margin-left:12px">✕ Dismiss</a>
+</div>
+
+<!-- Talent Hunt — cyan/blue -->
+<div id="evtBanner_talent" class="evtBanner" style="background:linear-gradient(135deg,#006064,#0097a7)">
+    🌟 <span id="evtBannerText_talent">Talent Hunt is LIVE! Show your skills!</span>
+    <a onclick="this.closest('.evtBanner').style.display='none'" style="color:#ffe082;text-decoration:underline;cursor:pointer;margin-left:12px">✕ Dismiss</a>
+</div>
+
+<!-- YouTube Advertisement — red/coral -->
+<div id="evtBanner_ytad" class="evtBanner" style="background:linear-gradient(135deg,#c62828,#e53935)">
+    📹 <span id="evtBannerText_ytad">YouTube Advertisement submissions are OPEN!</span>
+    <a onclick="this.closest('.evtBanner').style.display='none'" style="color:#ffe082;text-decoration:underline;cursor:pointer;margin-left:12px">✕ Dismiss</a>
+</div>
+
+<!-- Pod Casting — purple/violet -->
+<div id="evtBanner_podcast" class="evtBanner" style="background:linear-gradient(135deg,#4a148c,#7b1fa2)">
+    🎙️ <span id="evtBannerText_podcast">Pod Casting submissions are OPEN!</span>
+    <a onclick="this.closest('.evtBanner').style.display='none'" style="color:#ffe082;text-decoration:underline;cursor:pointer;margin-left:12px">✕ Dismiss</a>
+</div>
+
+<!-- Vlog — deep red/maroon -->
+<div id="evtBanner_vlog" class="evtBanner" style="background:linear-gradient(135deg,#4e342e,#d84315)">
+    🎥 <span id="evtBannerText_vlog">Vlog submissions are OPEN! Record & submit!</span>
+    <a onclick="this.closest('.evtBanner').style.display='none'" style="color:#ffe082;text-decoration:underline;cursor:pointer;margin-left:12px">✕ Dismiss</a>
+</div>
+
+<!-- Hand Writing — warm brown -->
+<div id="evtBanner_handwriting" class="evtBanner" style="background:linear-gradient(135deg,#4e342e,#8d6e63)">
+    ✍️ <span id="evtBannerText_handwriting">Hand Writing competition is OPEN! Submit your entry!</span>
+    <a onclick="this.closest('.evtBanner').style.display='none'" style="color:#ffe082;text-decoration:underline;cursor:pointer;margin-left:12px">✕ Dismiss</a>
+</div>
+
+<!-- Best Out of Waste — lime/green -->
+<div id="evtBanner_waste" class="evtBanner" style="background:linear-gradient(135deg,#33691e,#689f38)">
+    ♻️ <span id="evtBannerText_waste">Best Out of Waste — Show your creativity!</span>
+    <a onclick="this.closest('.evtBanner').style.display='none'" style="color:#ffe082;text-decoration:underline;cursor:pointer;margin-left:12px">✕ Dismiss</a>
+</div>
+
+<!-- Case Analysis — slate/navy -->
+<div id="evtBanner_case" class="evtBanner" style="background:linear-gradient(135deg,#1a237e,#3949ab)">
+    🧠 <span id="evtBannerText_case">Case Analysis competition is OPEN!</span>
+    <a onclick="this.closest('.evtBanner').style.display='none'" style="color:#ffe082;text-decoration:underline;cursor:pointer;margin-left:12px">✕ Dismiss</a>
+</div>
+
+<!-- Interdisciplinary — teal/indigo -->
+<div id="evtBanner_inter" class="evtBanner" style="background:linear-gradient(135deg,#006064,#283593)">
+    🔬 <span id="evtBannerText_inter">Interdisciplinary event is OPEN!</span>
+    <a onclick="this.closest('.evtBanner').style.display='none'" style="color:#ffe082;text-decoration:underline;cursor:pointer;margin-left:12px">✕ Dismiss</a>
 </div>
 
 <!-- ═══ GLOBAL NOTIFICATION TOAST CONTAINER ═══ -->
@@ -40311,6 +40477,34 @@ function _qnDoPublished(date, cfg) {
 }
 
 // ── Quiz tab pulse ────────────────────────────────────────
+// ── Event Banner Controls ─────────────────────────────────
+// Usage: showEvtBanner('sh', 'Scavenger Hunt starts in 5 mins!')
+// IDs:  sh, ssc, mime, skit, dance, madads, rampwalk, nukkad,
+//       talent, ytad, podcast, vlog, handwriting, waste, case, inter
+window.showEvtBanner = function(eventId, customText) {
+    var el = document.getElementById('evtBanner_' + eventId);
+    if (!el) return;
+    if (customText) {
+        var textEl = document.getElementById('evtBannerText_' + eventId);
+        if (textEl) textEl.textContent = customText;
+    }
+    el.style.display = 'block';
+    // If quiz banner also showing, stack below it
+    var quizBanner = document.getElementById('qnLiveBanner');
+    if (quizBanner && quizBanner.style.display !== 'none' && getComputedStyle(quizBanner).display !== 'none') {
+        el.style.top = '38px';
+    } else {
+        el.style.top = '0';
+    }
+};
+window.hideEvtBanner = function(eventId) {
+    var el = document.getElementById('evtBanner_' + eventId);
+    if (el) el.style.display = 'none';
+};
+window.hideAllEvtBanners = function() {
+    document.querySelectorAll('.evtBanner').forEach(function(b){ b.style.display='none'; });
+};
+
 function qnPulseQuizTab(on) {
     // Pulse the "Online Competition" select label / its container
     var sel = document.getElementById('competitionType');
@@ -41506,6 +41700,8 @@ function scAdminPing() {
      v6.98 | Mar 05, 2026, 02:10 PM IST | Fix: Q&A toast completely removed from PUBLISH chain; Auto-notify checkbox removed; Q&A section clearly labelled as manual-only; Send Now checks yesterday published before firing
      v6.99 | Mar 05, 2026, 02:20 PM IST | Q&A toast auto-fires on PUBLISH again — checks Firebase if yesterday published; skips silently if not; label updated to green Auto-fires on Publish
      v7.00 | Mar 05, 2026, 02:35 PM IST | CRITICAL FIX: Q&A display now excludes today's date — students can never see today's answers; only past dates shown (d < today filter)
+     v7.01 | Mar 05, 2026, 03:10 PM IST | New: 16 event live banners added (SH, SSC, Mime, Skit, Dance, MadAds, RampWalk, Nukkad, Talent, YTAd, Podcast, Vlog, Handwriting, Waste, Case, Inter) each unique color; admin panel in Notifications tab with Show/Hide buttons per event
+     v7.02 | Mar 05, 2026, 03:25 PM IST | Fix: Not Enrolled filter now works — when class selected shows events that class hasn't joined; status badge shows per-class enrollment; without class shows events with zero total enrollments
      ═══════════════════════════════════════════════════════════════════ -->
 
 
