@@ -5417,16 +5417,14 @@
                 <!-- Quiz Published Q&A Notification -->
                 <div style="background:#f9f0ff;border-radius:12px;padding:16px;border:1.5px solid #e0d0f0;margin-bottom:14px">
                     <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px">
-                        <strong style="color:#6a1b9a;font-size:.95em">📋 Quiz Published — View Q&amp;A</strong>
-                        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:.82em;font-weight:700">
-                            <input type="checkbox" id="qnAutoQuizPublished" onchange="qnSaveConfig()" style="accent-color:#c44569;width:15px;height:15px"> Auto-notify on Publish
-                        </label>
+                        <strong style="color:#6a1b9a;font-size:.95em">📋 Yesterday's Quiz — View Q&amp;A</strong>
+                        <span style="font-size:.78em;color:#1b5e20;font-weight:700;background:#e8f5e9;padding:3px 10px;border-radius:20px;border:1px solid #a5d6a7">⚡ Auto-fires on Publish</span>
                     </div>
                     <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-                        <input type="text" id="qnQuizPublishedMsg" placeholder="📋 Today's quiz is published! Check the questions &amp; answers now." onblur="qnSaveConfig()" style="flex:1;min-width:200px;padding:8px 12px;border:1.5px solid #d0b8f0;border-radius:8px;font-size:.85em;outline:none">
+                        <input type="text" id="qnQuizPublishedMsg" placeholder="📋 Yesterday's quiz Q&amp;A is now published! Check the questions &amp; answers." onblur="qnSaveConfig()" style="flex:1;min-width:200px;padding:8px 12px;border:1.5px solid #d0b8f0;border-radius:8px;font-size:.85em;outline:none">
                         <button type="button" onclick="qnSendQuizPublishedNow()" style="background:linear-gradient(135deg,#4a148c,#7b1fa2);color:white;border:none;padding:9px 18px;border-radius:8px;font-weight:700;font-size:.82em;cursor:pointer">📤 Send Now</button>
                     </div>
-                    <p style="font-size:.75em;color:#888;margin:6px 0 0">Fires when quiz is published. Toast shows date + "View Q&amp;A" button that scrolls to the past results lookup. Separate from the LIVE play notification.</p>
+                    <p style="font-size:.75em;color:#888;margin:6px 0 0">Auto-fires when admin clicks PUBLISH — only if yesterday's quiz is already published in Firebase. Use Send Now to re-send manually if needed.</p>
                 </div>
 
                 <!-- Quiz Results Auto-Notify -->
@@ -21634,14 +21632,14 @@
                 if (allPublished.exists()) {
                     const pubData = allPublished.val();
                     const publishedDates = Object.keys(pubData)
-                        .filter(d => pubData[d] && pubData[d].published === true)
+                        .filter(d => pubData[d] && pubData[d].published === true && d < today) // NEVER show today's answers
                         .sort().reverse();
                     if (publishedDates.length > 0) {
                         latestPublishedDate = publishedDates[0];
                         latestPublishedData = pubData[latestPublishedDate];
                     }
                 }
-                console.log('Latest published date:', latestPublishedDate);
+                console.log('Latest published date (excluding today):', latestPublishedDate);
 
                 // If there is a published quiz (any date), show its Q&A
                 if (latestPublishedDate) {
@@ -39174,7 +39172,7 @@ export default {
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;" id="devTriggerVersion">
-                <strong>Version:</strong> 6.97 — Fix: iOS Safari login crash; Notification API guarded everywhere<strong>Last Updated:</strong> Mar 05, 2026, 01:14 PM IST</p>
+                <strong>Version:</strong> 7.00 — CRITICAL: today's Q&A never shown to students<strong>Last Updated:</strong> Mar 05, 2026, 02:35 PM IST</p>
             <!-- ============================================ -->
             
             <p style="color: #c44569; font-size: 0.85em; font-weight: 600; margin-bottom: 8px;">
@@ -40295,27 +40293,21 @@ function _qnDoPublished(date, cfg) {
             btnLabel: 'Play Now →', btnAction: function() { qnGoToQuiz(); }
         });
     }
-    // Auto-fire "Quiz Published — View Q&A" notification if that checkbox is ON
-    var chkQA = document.getElementById('qnAutoQuizPublished');
-    var autoQA = chkQA ? chkQA.checked : !!cfg.autoQuizPublished;
-    if (autoQA) {
-        // Q&A is for YESTERDAY's quiz (published today means yesterday's answers are now visible)
-        var yesterday = new Date(); yesterday.setDate(yesterday.getDate() - 1);
-        var qaDate = yesterday.getFullYear() + '-' + String(yesterday.getMonth()+1).padStart(2,'0') + '-' + String(yesterday.getDate()).padStart(2,'0');
-        // Only fire if yesterday's quiz is actually published
-        db.ref('quizPublished/' + qaDate).once('value').then(function(qaSnap) {
-            if (!qaSnap.exists() || !qaSnap.val().published) return; // yesterday not published yet, skip
-            var qaMsgEl = document.getElementById('qnQuizPublishedMsg');
-            var qaMsg = (qaMsgEl ? qaMsgEl.value.trim() : '') || ('📋 Yesterday\'s quiz (' + qaDate + ') Q&A is now published! Check the questions & answers.');
-            var qaToastId = 'quiz_published_qa_' + qaDate;
-            localStorage.removeItem('qn_seen_' + qaToastId);
-            db.ref('live_notifications/latest').set({
-                title: '📋 Quiz Published — View Q&A', body: qaMsg,
-                sentAt: Date.now() + 500, id: qaToastId, qnType: 'quizqa', quizDate: qaDate
-            }).catch(function(){});
-            qnShowToastQuizQA(qaToastId, qaMsg, qaDate);
+    // Auto-fire yesterday's Q&A toast — only if yesterday is actually published in Firebase
+    var yesterday = new Date(); yesterday.setDate(yesterday.getDate() - 1);
+    var qaDate = yesterday.getFullYear() + '-' + String(yesterday.getMonth()+1).padStart(2,'0') + '-' + String(yesterday.getDate()).padStart(2,'0');
+    db.ref('quizPublished/' + qaDate).once('value').then(function(qaSnap) {
+        if (!qaSnap.exists() || !qaSnap.val().published) return; // yesterday not published, skip silently
+        var qaMsgEl = document.getElementById('qnQuizPublishedMsg');
+        var qaMsg = (qaMsgEl ? qaMsgEl.value.trim() : '') || ('📋 Yesterday\'s quiz (' + qaDate + ') Q&A is now available! Check the questions & answers.');
+        var qaToastId = 'quiz_published_qa_' + qaDate;
+        localStorage.removeItem('qn_seen_' + qaToastId);
+        db.ref('live_notifications/latest').set({
+            title: '📋 Yesterday\'s Quiz — View Q&A', body: qaMsg,
+            sentAt: Date.now() + 600, id: qaToastId, qnType: 'quizqa', quizDate: qaDate
         }).catch(function(){});
-    }
+        qnShowToastQuizQA(qaToastId, qaMsg, qaDate);
+    }).catch(function(){});
 }
 
 // ── Quiz tab pulse ────────────────────────────────────────
@@ -41511,6 +41503,9 @@ function scAdminPing() {
      v6.95 | Mar 05, 2026, 12:45 PM IST | Fix: class logo save reads URL input field directly at save time; oninput sync added so paCurrentLogoUrl always matches typed/pasted URL
      v6.96 | Mar 05, 2026, 12:50 PM IST | Fix: after file upload, new Cloudinary URL now auto-fills URL input field + shows preview — manager just uploads file and clicks Add Class, no URL pasting needed
      v6.97 | Mar 05, 2026, 01:14 PM IST | Fix: iOS Safari login crash — Notification API not available on iOS; all bare Notification.permission calls now guarded with typeof check; maybeShowNotifBanner returns early on iOS
+     v6.98 | Mar 05, 2026, 02:10 PM IST | Fix: Q&A toast completely removed from PUBLISH chain; Auto-notify checkbox removed; Q&A section clearly labelled as manual-only; Send Now checks yesterday published before firing
+     v6.99 | Mar 05, 2026, 02:20 PM IST | Q&A toast auto-fires on PUBLISH again — checks Firebase if yesterday published; skips silently if not; label updated to green Auto-fires on Publish
+     v7.00 | Mar 05, 2026, 02:35 PM IST | CRITICAL FIX: Q&A display now excludes today's date — students can never see today's answers; only past dates shown (d < today filter)
      ═══════════════════════════════════════════════════════════════════ -->
 
 
