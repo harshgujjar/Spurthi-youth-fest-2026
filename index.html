@@ -4294,7 +4294,7 @@
                         </div>
                         <!-- Manual Logo URL input (for testing or existing logos) -->
                         <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-                            <input type="text" id="paManualLogoUrl" placeholder="OR paste Cloudinary logo URL here..." style="padding:9px 12px;border-radius:8px;border:2px solid #a5d6a7;flex:1;min-width:200px;font-size:0.85em">
+                            <input type="text" id="paManualLogoUrl" placeholder="OR paste Cloudinary logo URL here..." oninput="window.paCurrentLogoUrl=this.value.trim()" style="padding:9px 12px;border-radius:8px;border:2px solid #a5d6a7;flex:1;min-width:200px;font-size:0.85em">
                             <button class="btn btn-small" onclick="paPasteLogoUrl()" style="background:#1565c0;color:white">✅ Use URL</button>
                         </div>
                         <div id="paUploadedLogoUrl" style="display:none;margin-top:6px;font-size:0.75em;color:#1b5e20;background:#e8f5e9;padding:6px 8px;border-radius:6px;word-break:break-all"></div>
@@ -35476,6 +35476,13 @@ Proceed?`)) return;
             
             // Store the URL for use when adding class
             window.paCurrentLogoUrl = logoUrl;
+            // Also update the URL input field so save always reads the latest
+            var urlInput = document.getElementById('paManualLogoUrl');
+            if (urlInput) urlInput.value = logoUrl;
+            // Show preview image
+            var logoImg = document.getElementById('paClassLogoImage');
+            var logoContainer = document.getElementById('paClassLogoContainer');
+            if (logoImg && logoContainer) { logoImg.src = logoUrl; logoContainer.style.display = 'block'; }
             
             if (statusEl) { statusEl.style.display = 'block'; statusEl.textContent = '✅ Logo uploaded successfully!'; statusEl.style.color = '#1b5e20'; }
             if (urlEl) { 
@@ -35578,7 +35585,9 @@ Proceed?`)) return;
         }
 
         try {
-            const logoUrl = window.paCurrentLogoUrl || ''; // Get uploaded/pasted logo URL
+            // Get logo URL — prefer URL input field value, fall back to paCurrentLogoUrl
+            const urlInputVal = (document.getElementById('paManualLogoUrl') ? document.getElementById('paManualLogoUrl').value.trim() : '');
+            const logoUrl = urlInputVal || window.paCurrentLogoUrl || '';
             const dataToSave = {
                 name: className, phone, classYear: className,
                 studentCount: students, status, note,
@@ -39163,7 +39172,7 @@ export default {
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;" id="devTriggerVersion">
-                <strong>Version:</strong> 6.93 — Fix: FAB hidden on mobile; bigger input box; 92vh chat height<strong>Last Updated:</strong> Mar 05, 2026, 10:03 AM IST</p>
+                <strong>Version:</strong> 6.96 — Fix: upload auto-fills URL field; manager just uploads + saves<strong>Last Updated:</strong> Mar 05, 2026, 12:50 PM IST</p>
             <!-- ============================================ -->
             
             <p style="color: #c44569; font-size: 0.85em; font-weight: 600; margin-bottom: 8px;">
@@ -40288,15 +40297,22 @@ function _qnDoPublished(date, cfg) {
     var chkQA = document.getElementById('qnAutoQuizPublished');
     var autoQA = chkQA ? chkQA.checked : !!cfg.autoQuizPublished;
     if (autoQA) {
-        var qaMsgEl = document.getElementById('qnQuizPublishedMsg');
-        var qaMsg = (qaMsgEl ? qaMsgEl.value.trim() : '') || ('📋 Today\'s quiz (' + date + ') is published! Check the questions & answers now.');
-        var qaToastId = 'quiz_published_qa_' + date;
-        localStorage.removeItem('qn_seen_' + qaToastId);
-        db.ref('live_notifications/latest').set({
-            title: '📋 Quiz Published — View Q&A', body: qaMsg,
-            sentAt: Date.now() + 500, id: qaToastId, qnType: 'quizqa', quizDate: date
+        // Q&A is for YESTERDAY's quiz (published today means yesterday's answers are now visible)
+        var yesterday = new Date(); yesterday.setDate(yesterday.getDate() - 1);
+        var qaDate = yesterday.getFullYear() + '-' + String(yesterday.getMonth()+1).padStart(2,'0') + '-' + String(yesterday.getDate()).padStart(2,'0');
+        // Only fire if yesterday's quiz is actually published
+        db.ref('quizPublished/' + qaDate).once('value').then(function(qaSnap) {
+            if (!qaSnap.exists() || !qaSnap.val().published) return; // yesterday not published yet, skip
+            var qaMsgEl = document.getElementById('qnQuizPublishedMsg');
+            var qaMsg = (qaMsgEl ? qaMsgEl.value.trim() : '') || ('📋 Yesterday\'s quiz (' + qaDate + ') Q&A is now published! Check the questions & answers.');
+            var qaToastId = 'quiz_published_qa_' + qaDate;
+            localStorage.removeItem('qn_seen_' + qaToastId);
+            db.ref('live_notifications/latest').set({
+                title: '📋 Quiz Published — View Q&A', body: qaMsg,
+                sentAt: Date.now() + 500, id: qaToastId, qnType: 'quizqa', quizDate: qaDate
+            }).catch(function(){});
+            qnShowToastQuizQA(qaToastId, qaMsg, qaDate);
         }).catch(function(){});
-        qnShowToastQuizQA(qaToastId, qaMsg, date);
     }
 }
 
@@ -40447,20 +40463,29 @@ function qnOnSHApproved(studentName, studentClass, taskName) {
 function qnSendQuizPublishedNow() {
     var db = window.db || (window.firebase && window.firebase.database());
     if (!db) { alert('Firebase not ready'); return; }
-    // Get today's date for the Q&A link
-    var now = new Date();
-    var date = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0') + '-' + String(now.getDate()).padStart(2,'0');
-    var customMsg = (document.getElementById('qnQuizPublishedMsg') ? document.getElementById('qnQuizPublishedMsg').value.trim() : '') || '';
-    var msg = customMsg || ('📋 Today\'s quiz (' + date + ') is published! Check the questions & answers now.');
-    var toastId = 'quiz_published_qa_' + date + '_' + Date.now();
-    localStorage.removeItem('qn_seen_' + toastId);
-    db.ref('live_notifications/latest').set({
-        title: '📋 Quiz Published — View Q&A', body: msg,
-        sentAt: Date.now(), id: toastId, qnType: 'quizqa', quizDate: date
-    }).catch(function(){});
-    qnBroadcastFCM('📋 Quiz Published — View Q&A', msg, toastId, 'quiz');
-    qnShowToastQuizQA(toastId, msg, date);
-    alert('✅ Quiz Published Q&A notification sent!');
+    // Q&A is for YESTERDAY's quiz
+    var yesterday = new Date(); yesterday.setDate(yesterday.getDate() - 1);
+    var date = yesterday.getFullYear() + '-' + String(yesterday.getMonth()+1).padStart(2,'0') + '-' + String(yesterday.getDate()).padStart(2,'0');
+    // Check if yesterday's quiz is actually published before sending
+    db.ref('quizPublished/' + date).once('value').then(function(snap) {
+        if (!snap.exists() || !snap.val().published) {
+            alert('⚠️ Yesterday\'s quiz (' + date + ') has not been published yet. Please publish it first before sending the Q&A notification.');
+            return;
+        }
+        var customMsg = (document.getElementById('qnQuizPublishedMsg') ? document.getElementById('qnQuizPublishedMsg').value.trim() : '') || '';
+        var msg = customMsg || ('📋 Yesterday\'s quiz (' + date + ') Q&A is now published! Check the questions & answers.');
+        var toastId = 'quiz_published_qa_' + date + '_' + Date.now();
+        localStorage.removeItem('qn_seen_' + toastId);
+        db.ref('live_notifications/latest').set({
+            title: '📋 Quiz Published — View Q&A', body: msg,
+            sentAt: Date.now(), id: toastId, qnType: 'quizqa', quizDate: date
+        }).catch(function(){});
+        qnBroadcastFCM('📋 Quiz Published — View Q&A', msg, toastId, 'quiz');
+        qnShowToastQuizQA(toastId, msg, date);
+        alert('✅ Quiz Published Q&A notification sent for ' + date + '!');
+    }).catch(function() {
+        alert('❌ Could not verify yesterday\'s quiz status. Please try again.');
+    });
 }
 
 function qnSendQuizResultsNow() {
@@ -41480,6 +41505,9 @@ function scAdminPing() {
      v6.91 | Mar 05, 2026, 09:10 AM IST | Speed Slide: removed 👆 hand emoji from empty tile; logo + TAP NEXT TILE text only
      v6.92 | Mar 05, 2026, 09:15 AM IST | Speed Slide: updated difficulty card labels — 8:~5-8 moves, 15:~7-10 moves, 24:~10-12 moves
      v6.93 | Mar 05, 2026, 10:03 AM IST | Fix: FAB bubble hidden on mobile for all chat open paths (toggle/auto/resume); input box + send button bigger on mobile; chat window 92vh
+     v6.94 | Mar 05, 2026, 10:10 AM IST | Fix: Quiz Published Q&A toast now uses YESTERDAY's date; auto-fire checks if yesterday published before firing; manual send also checks + alerts if not published
+     v6.95 | Mar 05, 2026, 12:45 PM IST | Fix: class logo save reads URL input field directly at save time; oninput sync added so paCurrentLogoUrl always matches typed/pasted URL
+     v6.96 | Mar 05, 2026, 12:50 PM IST | Fix: after file upload, new Cloudinary URL now auto-fills URL input field + shows preview — manager just uploads file and clicks Add Class, no URL pasting needed
      ═══════════════════════════════════════════════════════════════════ -->
 
 
