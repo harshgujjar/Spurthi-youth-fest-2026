@@ -39163,7 +39163,7 @@ export default {
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;" id="devTriggerVersion">
-                <strong>Version:</strong> 6.92 — Speed Slide difficulty labels corrected to match actual shuffle<strong>Last Updated:</strong> Mar 05, 2026, 09:15 AM IST</p>
+                <strong>Version:</strong> 6.93 — Fix: FAB hidden on mobile; bigger input box; 92vh chat height<strong>Last Updated:</strong> Mar 05, 2026, 10:03 AM IST</p>
             <!-- ============================================ -->
             
             <p style="color: #c44569; font-size: 0.85em; font-weight: 600; margin-bottom: 8px;">
@@ -39236,11 +39236,15 @@ export default {
 }
 #sChatWin.scOpen { display: flex !important; }
 @media (max-width: 500px) {
-    #sChatWin { bottom:0!important; right:0!important; left:0!important; width:100%!important; max-height:85vh!important; border-radius:18px 18px 0 0; }
+    #sChatWin { bottom:0!important; right:0!important; left:0!important; width:100%!important; max-height:92vh!important; border-radius:18px 18px 0 0; }
     #sChatBubble { bottom:70px!important; right:16px!important; }
-    /* Hide FAB when chat is open on mobile so it doesn't overlap send button */
-    #sChatWin.scOpen ~ #sChatBubble,
+    /* Hide FAB whenever chat window is visible on mobile */
     body.scChatOpen #sChatBubble { display:none!important; }
+    /* Bigger input box on mobile */
+    #scInputBar { padding:10px 12px!important; }
+    #scTextInp { height:48px!important; font-size:1em!important; padding:10px 13px!important; }
+    #scSendBtn { width:48px!important; height:48px!important; font-size:22px!important; }
+    #scBottomBar button { font-size:0.95em!important; padding:12px 10px!important; }
 }
 .scHead {
     background: linear-gradient(135deg,#c44569,#6a1b9a);
@@ -39610,6 +39614,8 @@ function scResumeSession(sid) {
         }
         _scSid = sid;
         _scStarted = true;
+        _scOpen = true;
+        document.body.classList.add('scChatOpen');
         document.getElementById("scGuestForm").style.display = "none";
         document.getElementById("scMsgs").style.display = "flex";
         var inp = document.getElementById("scInputBar");
@@ -39634,6 +39640,8 @@ function scResumeSession(sid) {
 function scAutoStudent() {
     _scSid = scSid();
     _scStarted = true;
+    _scOpen = true;
+    document.body.classList.add('scChatOpen');
     var cls = window.studentClass || '';
     document.getElementById('scGuestForm').style.display = 'none';
     document.getElementById('scMsgs').style.display = 'flex';
@@ -41471,6 +41479,7 @@ function scAdminPing() {
      v6.90 | Mar 05, 2026, 09:05 AM IST | Fix: removed leftover orphan code from old shuffle function that caused SyntaxError at line 33045
      v6.91 | Mar 05, 2026, 09:10 AM IST | Speed Slide: removed 👆 hand emoji from empty tile; logo + TAP NEXT TILE text only
      v6.92 | Mar 05, 2026, 09:15 AM IST | Speed Slide: updated difficulty card labels — 8:~5-8 moves, 15:~7-10 moves, 24:~10-12 moves
+     v6.93 | Mar 05, 2026, 10:03 AM IST | Fix: FAB bubble hidden on mobile for all chat open paths (toggle/auto/resume); input box + send button bigger on mobile; chat window 92vh
      ═══════════════════════════════════════════════════════════════════ -->
 
 
