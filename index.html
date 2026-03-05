@@ -39145,7 +39145,7 @@ export default {
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;" id="devTriggerVersion">
-                <strong>Version:</strong> 6.81 — Fix: resume always uses sc_ph_ key; form shown if old session missing<strong>Last Updated:</strong> Mar 05, 2026, 03:47 AM IST</p>
+                <strong>Version:</strong> 6.86 — Fix: admin chat bubbles correctly sided; admin=right, visitor=left<strong>Last Updated:</strong> Mar 05, 2026, 08:35 AM IST</p>
             <!-- ============================================ -->
             
             <p style="color: #c44569; font-size: 0.85em; font-weight: 600; margin-bottom: 8px;">
@@ -39218,8 +39218,11 @@ export default {
 }
 #sChatWin.scOpen { display: flex !important; }
 @media (max-width: 500px) {
-    #sChatWin { bottom:0!important; right:0!important; left:0!important; width:100%!important; max-height:80vh!important; border-radius:18px 18px 0 0; }
+    #sChatWin { bottom:0!important; right:0!important; left:0!important; width:100%!important; max-height:85vh!important; border-radius:18px 18px 0 0; }
     #sChatBubble { bottom:70px!important; right:16px!important; }
+    /* Hide FAB when chat is open on mobile so it doesn't overlap send button */
+    #sChatWin.scOpen ~ #sChatBubble,
+    body.scChatOpen #sChatBubble { display:none!important; }
 }
 .scHead {
     background: linear-gradient(135deg,#c44569,#6a1b9a);
@@ -39540,6 +39543,7 @@ function scToggle() {
     _scOpen = !_scOpen;
     if (_scOpen) {
         win.classList.add('scOpen');
+        document.body.classList.add('scChatOpen');
         _scUnread = 0;
         var b = document.getElementById('sChatBadge');
         if (b) { b.style.display='none'; b.textContent=''; }
@@ -39571,6 +39575,7 @@ function scToggle() {
         }
     } else {
         win.classList.remove('scOpen');
+        document.body.classList.remove('scChatOpen');
     }
 }
 
@@ -39767,10 +39772,14 @@ function scInitConv(info) {
 function scGreet(info) {
     var db = scDb(); if (!db) return;
     var ref = db.ref(SC_PATH+'/'+_scSid+'/messages');
-    ref.push({ text: '👋 Hi ' + info.name + '! Welcome to Spurthi Youth Fest 2026 support.', sender:'bot', ts: Date.now() });
-    setTimeout(function() {
-        ref.push({ text: "We'll reply to your message as soon as possible. 😊", sender:'bot', ts: Date.now()+50 });
-    }, 1300);
+    // Only greet if no messages exist yet (avoid duplicate greetings on resume)
+    ref.once('value').then(function(snap) {
+        if (snap.exists()) return; // already has messages, skip greeting
+        ref.push({ text: '👋 Welcome to Spurthi Youth Fest 2026 Support! How can we help you today?', sender:'bot', ts: Date.now() });
+        setTimeout(function() {
+            ref.push({ text: "Our team will reply as soon as possible. 😊", sender:'bot', ts: Date.now()+50 });
+        }, 1300);
+    });
 }
 
 // ── Send visitor message ──────────────────────────────────
@@ -39791,41 +39800,63 @@ function scListenMsgs() {
     if (_scUserRef) { _scUserRef.off(); }
     var msgsRef = db.ref(SC_PATH+'/'+_scSid+'/messages');
     _scUserRef = msgsRef;
-    var loaded = false;
-    msgsRef.on('child_added', function(snap) {
-        var msg = snap.val(); if (!msg) return;
-        var key = snap.key;
-        scRenderBub(msg, document.getElementById('scMsgs'), key, false);
-        // Always mark admin messages as delivered on render; mark read if window open
-        if (msg.sender === 'admin') {
-            if (!msg.read && _scOpen) scMarkRead(key, _scSid);
-            else if (!msg.delivered) scMarkDelivered(key, _scSid);
-        }
-        if (loaded && msg.sender === 'admin') {
-            if (!_scOpen) {
-                _scUnread++;
-                var b = document.getElementById('sChatBadge');
-                if (b) { b.textContent = _scUnread; b.style.display = 'flex'; }
+    var area = document.getElementById('scMsgs');
+
+    // Step 1: Load ALL existing messages at once, render all, delete ONLY stale bot msgs
+    msgsRef.once('value').then(function(allSnap) {
+        var lastTs = 0;
+        var sessionStart = Date.now();
+        allSnap.forEach(function(ch) {
+            var m = ch.val(); if (!m) return;
+            // Bot messages older than 1 minute are stale greetings — delete silently
+            if (m.sender === 'bot' && m.ts && (sessionStart - m.ts) > 60000) {
+                msgsRef.child(ch.key).remove().catch(function(){});
+                return;
             }
-            scPlayPing();
-        }
+            // Render all messages (bot, admin, visitor)
+            if (area) scRenderBub(m, area, ch.key, false);
+            if (m.sender === 'admin') {
+                if (!m.read && _scOpen) scMarkRead(ch.key, _scSid);
+                else if (!m.delivered) scMarkDelivered(ch.key, _scSid);
+            }
+            if (m.ts && m.ts > lastTs) lastTs = m.ts;
+        });
+
+        // Step 2: Listen ONLY for NEW messages after what we already loaded
+        var newMsgsRef = msgsRef.orderByChild('ts').startAt(lastTs + 1);
+        newMsgsRef.on('child_added', function(snap) {
+            var msg = snap.val(); if (!msg) return;
+            if (area) scRenderBub(msg, area, snap.key, false);
+            if (msg.sender === 'admin') {
+                if (!msg.read && _scOpen) scMarkRead(snap.key, _scSid);
+                else if (!msg.delivered) scMarkDelivered(snap.key, _scSid);
+                if (!_scOpen) {
+                    _scUnread++;
+                    var b = document.getElementById('sChatBadge');
+                    if (b) { b.textContent = _scUnread; b.style.display = 'flex'; }
+                }
+                scPlayPing();
+            }
+        });
     });
-    // Also handle edits/recalls live
+
+    // Handle edits/recalls live
     msgsRef.on('child_changed', function(snap) {
         var msg = snap.val(); var key = snap.key;
         var el = document.querySelector('[data-msgkey="'+key+'"]');
         if (!el) return;
-        var area = document.getElementById('scMsgs');
         el.remove();
-        scRenderBub(msg, area, key, false);
+        if (area) scRenderBub(msg, area, key, false);
     });
-    msgsRef.once('value', function() {
-        loaded = true;
-        // Mark all unread admin msgs as read when window opens
+    // Remove deleted messages from UI instantly
+    msgsRef.on('child_removed', function(snap) {
+        var el = document.querySelector('[data-msgkey="'+snap.key+'"]');
+        if (el) el.remove();
+    });
+    // Mark all admin msgs read when window opened
+    msgsRef.once('value').then(function(s) {
         if (_scOpen) {
-            msgsRef.once('value').then(function(s){
-                s.forEach(function(ch){ var m=ch.val(); if(m.sender==='admin'&&!m.read) scMarkRead(ch.key,_scSid); });
-            });
+            s.forEach(function(ch){ var m=ch.val(); if(m&&m.sender==='admin'&&!m.read) scMarkRead(ch.key,_scSid); });
         }
     });
     // Watch resolved/open status live
@@ -39851,7 +39882,16 @@ function scRenderBub(msg, area, msgKey, isAdmin) {
     // Skip if already rendered
     if (msgKey && document.querySelector('[data-msgkey="'+msgKey+'"]')) return;
     var div = document.createElement('div');
-    var side = msg.sender==='visitor' ? 'scSent' : msg.sender==='admin' ? 'scRecv' : 'scSys';
+    var side;
+    if (msg.sender === 'bot') {
+        side = 'scSys';
+    } else if (isAdmin) {
+        // Admin view: admin's own msgs on right, visitor msgs on left
+        side = msg.sender === 'admin' ? 'scSent' : 'scRecv';
+    } else {
+        // Guest view: visitor's own msgs on right, admin msgs on left
+        side = msg.sender === 'visitor' ? 'scSent' : 'scRecv';
+    }
     div.className = 'scBub ' + side;
     if (msgKey) div.setAttribute('data-msgkey', msgKey);
     if (msg.recalled) {
@@ -41402,6 +41442,11 @@ function scAdminPing() {
      v6.79 | Mar 05, 2026, 02:50 AM IST | Fix: admin compose now writes to sc_ph_{phone} key — same path guest listens to — so guest sees admin-initiated messages immediately
      v6.80 | Mar 05, 2026, 03:47 AM IST | Fix: scInitConv checks sc_ph_ key first so guest joins admin-created session; greeting no longer appends class as location; greeting only fires on brand new sessions
      v6.81 | Mar 05, 2026, 03:47 AM IST | Fix: scToggle resume always uses sc_ph_{phone} key; scResumeSession shows form if session not found so user re-enters phone and joins correct session
+     v6.82 | Mar 05, 2026, 04:03 AM IST | Fix: bot msgs skipped in render + auto-deleted from Firebase; child_removed listener added; scGreet only fires on truly empty sessions; greeting text cleaned up
+     v6.83 | Mar 05, 2026, 04:10 AM IST | Fix: scListenMsgs rewritten — load all existing msgs at once via once(value), delete bots, render real msgs, then only listen for new ones; eliminates race condition
+     v6.84 | Mar 05, 2026, 04:15 AM IST | Fix: bot greeting msgs shown again; only STALE bot msgs (older than 1 min) auto-deleted; fresh greetings on new sessions always visible
+     v6.85 | Mar 05, 2026, 08:30 AM IST | Fix: chat FAB bubble hidden on mobile when chat is open (was overlapping send button); body.scChatOpen class toggled in scToggle()
+     v6.86 | Mar 05, 2026, 08:35 AM IST | Fix: scRenderBub bubble sides flipped for admin view — admin msgs on right, visitor msgs on left; was using guest-side logic for both views
      ═══════════════════════════════════════════════════════════════════ -->
 
 
