@@ -5468,6 +5468,89 @@
                     <p style="font-size:.75em;color:#888;margin:0">When any student's task is approved, everyone sees: <em>"🎉 [Name] from [Class] just completed a task!"</em></p>
                 </div>
 
+                <!-- Quiz Peer Nudge -->
+                <div style="background:#f9f0ff;border-radius:12px;padding:16px;border:1.5px solid #e0d0f0;margin-bottom:14px">
+                    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px">
+                        <strong style="color:#6a1b9a;font-size:.95em">👥 Quiz Peer Nudge — Un-answered Students</strong>
+                        <span style="font-size:.78em;color:#1b5e20;font-weight:700;background:#e8f5e9;padding:3px 10px;border-radius:20px;border:1px solid #a5d6a7">⚡ Auto on Correct Submit</span>
+                    </div>
+                    <p style="font-size:.78em;color:#555;margin:0 0 12px">When a student answers <strong>both questions correctly</strong>, fires automatically to all students who haven't played yet. 35 rotating templates — cycles in order. Never reveals correct/wrong.</p>
+
+                    <!-- Template picker row -->
+                    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px">
+                        <select id="qnPeerNudgeTemplate" onchange="qnPreviewPeerNudge()" style="flex:1;min-width:220px;padding:8px 12px;border:1.5px solid #d0b8f0;border-radius:8px;font-size:.82em;outline:none;background:white;cursor:pointer">
+                            <option value="auto">🔄 Auto — next in cycle</option>
+                            <option value="random">🎲 Random pick</option>
+                            <option value="custom">✏️ Custom message</option>
+                            <optgroup label="── Competitive (5) ──">
+                                <option value="0">1 · 🔥 "Can you beat them?"</option>
+                                <option value="1">2 · ⚡ "Think you can top them?"</option>
+                                <option value="2">3 · 🏁 "Jump in before it's too late!"</option>
+                                <option value="3">4 · 🎯 "Are you ready to challenge?"</option>
+                                <option value="4">5 · 💪 "Do you have what it takes?"</option>
+                            </optgroup>
+                            <optgroup label="── FOMO (5) ──">
+                                <option value="5">6 · ⏳ "Don't miss your chance!"</option>
+                                <option value="6">7 · 😮 "Have you played yet?"</option>
+                                <option value="7">8 · 🚨 "Quiz won't wait forever!"</option>
+                                <option value="8">9 · ⌛ "Every minute counts!"</option>
+                                <option value="9">10 · 📣 "Don't let it pass you by!"</option>
+                            </optgroup>
+                            <optgroup label="── Mysterious (5) ──">
+                                <option value="10">11 · 🎯 "Are you next?"</option>
+                                <option value="11">12 · 🔐 "Can you solve it too?"</option>
+                                <option value="12">13 · 🌟 "Will you be the next one?"</option>
+                                <option value="13">14 · 👀 "What are you waiting for?"</option>
+                                <option value="14">15 · 🤫 "Shhh… go play now!"</option>
+                            </optgroup>
+                            <optgroup label="── Leaderboard (5) ──">
+                                <option value="15">16 · 🏆 "Your move!"</option>
+                                <option value="16">17 · 📊 "Don't let them get ahead!"</option>
+                                <option value="17">18 · 🥇 "Going for gold!"</option>
+                                <option value="18">19 · 🎖️ "Leaderboard is waiting!"</option>
+                                <option value="19">20 · 📈 "Climbing the ranks!"</option>
+                            </optgroup>
+                            <optgroup label="── Simple Nudge (5) ──">
+                                <option value="20">21 · 📝 "Have you played yet?"</option>
+                                <option value="21">22 · ✅ "Your turn!"</option>
+                                <option value="22">23 · 📌 "Don't forget to play!"</option>
+                                <option value="23">24 · 🗒️ "Still open for you!"</option>
+                                <option value="24">25 · 👋 "Join them!"</option>
+                            </optgroup>
+                            <optgroup label="── Urgency (5) ──">
+                                <option value="25">26 · ⏰ "Play before midnight!"</option>
+                                <option value="26">27 · 🕐 "How much time left?"</option>
+                                <option value="27">28 · ⚡ "Will you beat the clock?"</option>
+                                <option value="28">29 · 🌙 "Quiz closes at midnight!"</option>
+                                <option value="29">30 · 🏃 "Quiz won't wait!"</option>
+                            </optgroup>
+                            <optgroup label="── Fun/Emoji (5) ──">
+                                <option value="30">31 · 🎉 "Go get yours!"</option>
+                                <option value="31">32 · 🚀 "Are you ready to blast off?"</option>
+                                <option value="32">33 · 🎮 "Your turn to play!"</option>
+                                <option value="33">34 · 🌈 "Quiz is waiting for you!"</option>
+                                <option value="34">35 · 🔔 "Who's ringing next?"</option>
+                            </optgroup>
+                        </select>
+                        <button type="button" onclick="qnPreviewPeerNudge()" style="background:#7b1fa2;color:white;border:none;padding:8px 14px;border-radius:8px;font-weight:700;font-size:.82em;cursor:pointer">👁 Preview</button>
+                        <button type="button" onclick="qnSendPeerNudgeNow()" style="background:linear-gradient(135deg,#0288d1,#0097a7);color:white;border:none;padding:8px 18px;border-radius:8px;font-weight:700;font-size:.82em;cursor:pointer">📤 Send Now</button>
+                    </div>
+
+                    <!-- Custom message input (only shown when custom selected) -->
+                    <div id="qnPeerNudgeCustomRow" style="display:none;margin-bottom:10px">
+                        <input type="text" id="qnPeerNudgeMsg" placeholder="Type your custom message here…" style="width:100%;padding:8px 12px;border:1.5px solid #d0b8f0;border-radius:8px;font-size:.85em;outline:none;box-sizing:border-box" oninput="qnPreviewPeerNudge()">
+                    </div>
+
+                    <!-- Preview box -->
+                    <div id="qnPeerNudgePreview" style="display:none;background:#e8f5e9;border:1.5px solid #a5d6a7;border-radius:8px;padding:10px 14px;font-size:.82em;color:#1b5e20;margin-bottom:8px">
+                        <strong>👁 Preview:</strong> <span id="qnPeerNudgePreviewText" style="font-style:italic"></span>
+                    </div>
+
+                    <div style="background:#fff8e1;border-radius:8px;padding:8px 12px;font-size:.75em;color:#795548">
+                        <strong>35 templates · 7 styles:</strong> Competitive · FOMO · Mysterious · Leaderboard · Nudge · Urgency · Fun/Emoji — each includes student name, class, date &amp; time. Auto mode cycles in order; Random picks any.
+                    </div>
+                </div>
+
                 <!-- Toast Repeat Setting -->
                 <div style="background:#fff8e1;border-radius:10px;padding:12px 16px;border:1.5px solid #ffe082;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
                     <span style="font-size:.82em;font-weight:700;color:#795548">🔁 Toast repeat count:</span>
@@ -5493,7 +5576,7 @@
                     <div id="qnRulesHint" style="display:none;background:#fff3e0;border:1.5px solid #ffb300;border-radius:8px;padding:10px 14px;margin-bottom:10px;font-size:.78em;color:#5d4037">
                         🔒 <strong>Firebase permission denied on <code>/quizNotifConfig</code>, <code>/quizAnnouncements</code> or <code>/quizNotifications</code></strong><br>
                         Go to <strong>Firebase Console → Realtime Database → Rules</strong> and add all three lines:<br>
-                        <code style="display:block;background:#f5f5f5;padding:6px 10px;border-radius:6px;margin-top:6px;font-size:.95em;line-height:1.8">"quizNotifConfig": { ".read": true, ".write": true },<br>"quizAnnouncements": { ".read": true, ".write": true },<br>"quizNotifications": { ".read": true, ".write": true },<br>"sw_fired_slots": { ".read": true, ".write": true },</code>
+                        <code style="display:block;background:#f5f5f5;padding:6px 10px;border-radius:6px;margin-top:6px;font-size:.95em;line-height:1.8">"quizNotifConfig": { ".read": true, ".write": true },<br>"quizAnnouncements": { ".read": true, ".write": true },<br>"quizNotifications": { ".read": true, ".write": true },<br>"sw_fired_slots": { ".read": true, ".write": true },<br>"quizCorrectCount": { ".read": true, ".write": true },</code>
                         Then click <strong>Publish</strong>.
                     </div>
                     <div id="qnSlotsList" style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px">
@@ -21690,6 +21773,8 @@
             const day   = String(now.getDate()).padStart(2, '0');
             return `${year}-${month}-${day}`;
         }
+        // Expose to window so peer nudge receiver (outside IIFE) can use server-corrected date
+        window.getQuizToday = getQuizToday;
 
         async function getQuizTodayServer() {
             await fetchServerTimeOffset();
@@ -22886,6 +22971,21 @@ Davan Institute Team`;
                     submittedAt: new Date().toISOString(),
                     timeTaken: Math.floor((Date.now() - quizStartTime) / 1000)
                 });
+
+                // Fire peer nudge to un-answered students if both answers correct
+                if (score === 2) {
+                    try {
+                        await qnFirePeerNudge(
+                            quizCurrentUser.name,
+                            quizCurrentUser.class || quizCurrentUser.classYear || '',
+                            new Date().toISOString(),
+                            today,
+                            quizCurrentUser.key  // senderKey — so sender's own page skips the toast
+                        );
+                    } catch(nudgeErr) {
+                        console.warn('[PeerNudge] Non-critical error:', nudgeErr.message);
+                    }
+                }
                 
                 disableQuizAntiCheat();
                 if (quizTimerInterval) clearInterval(quizTimerInterval);
@@ -39226,7 +39326,7 @@ export default {
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;" id="devTriggerVersion">
-                <strong>Version:</strong> 7.05 — Fix: CLASS_INCHARGE_MAP always overrides Firebase saved incharge<strong>Last Updated:</strong> Mar 06, 2026, 09:20 AM IST</p>
+                <strong>Version:</strong> 7.08 — Fix: PeerNudge admin panel — dropdown, random, preview added<strong>Last Updated:</strong> Mar 06, 2026, 10:15 AM IST</p>
             <!-- ============================================ -->
             
             <p style="color: #c44569; font-size: 0.85em; font-weight: 600; margin-bottom: 8px;">
@@ -40734,6 +40834,193 @@ function qnSendQuizLiveNow() {
     alert('✅ Quiz live notification sent!');
 }
 
+// ── Quiz Correct Answer Peer Nudge — 30+ templates ───────────────────────────
+// Fires to all registered students who haven't submitted today yet
+// Cycles through templates in order: index = (correctCount % total)
+const QN_PEER_TEMPLATES = [
+    // Style A — Competitive
+    (n,c,t,d) => `🔥 ${n} from ${c} answered the ${d} quiz at ${t}! Can you beat them?`,
+    (n,c,t,d) => `⚡ ${n} (${c}) just cracked today's quiz at ${t}! Think you can top them?`,
+    (n,c,t,d) => `🏁 ${n} from ${c} has entered the race at ${t}! Jump in before it's too late!`,
+    (n,c,t,d) => `🎯 ${n} (${c}) locked in their answer at ${t}! Are you ready to challenge them?`,
+    (n,c,t,d) => `💪 ${n} from ${c} took on today's quiz at ${t}! Do you have what it takes?`,
+    // Style B — FOMO
+    (n,c,t,d) => `⏳ ${n} from ${c} just played the ${d} quiz at ${t}! Don't miss your chance!`,
+    (n,c,t,d) => `😮 ${n} (${c}) already submitted at ${t}! Have you played today's quiz yet?`,
+    (n,c,t,d) => `🚨 ${n} from ${c} is done at ${t}! The ${d} quiz won't wait forever!`,
+    (n,c,t,d) => `⌛ ${n} (${c}) answered at ${t}! Every minute counts — play now!`,
+    (n,c,t,d) => `📣 ${n} from ${c} just submitted at ${t}! Don't let today's quiz pass you by!`,
+    // Style C — Mysterious/Anonymous-ish
+    (n,c,t,d) => `🎯 A student from ${c} just cracked the ${d} quiz at ${t}! Are you next?`,
+    (n,c,t,d) => `🔐 Someone from ${c} unlocked today's quiz at ${t}! Can you solve it too?`,
+    (n,c,t,d) => `🌟 A quiz hero from ${c} appeared at ${t}! Will you be the next one?`,
+    (n,c,t,d) => `👀 ${c} is making moves — quiz answered at ${t}! What are you waiting for?`,
+    (n,c,t,d) => `🤫 A ${c} student just quietly submitted at ${t}. Shhh… go play now!`,
+    // Style D — Leaderboard pressure
+    (n,c,t,d) => `🏆 ${n} from ${c} is on the ${d} leaderboard! Submitted at ${t}. Your move!`,
+    (n,c,t,d) => `📊 ${n} (${c}) entered the rankings at ${t}! Don't let them get ahead!`,
+    (n,c,t,d) => `🥇 ${n} from ${c} is going for gold — answered at ${t}! Join the competition!`,
+    (n,c,t,d) => `🎖️ ${n} (${c}) made their mark at ${t}! The leaderboard is waiting for you!`,
+    (n,c,t,d) => `📈 ${n} from ${c} is climbing the ranks — submitted at ${t}! Start playing now!`,
+    // Style E — Simple nudge
+    (n,c,t,d) => `📝 ${n} from ${c} has submitted the ${d} quiz at ${t}. Have you played yet?`,
+    (n,c,t,d) => `✅ ${n} (${c}) completed today's quiz at ${t}. Your turn!`,
+    (n,c,t,d) => `📌 ${n} from ${c} answered the ${d} quiz at ${t}. Don't forget to play!`,
+    (n,c,t,d) => `🗒️ ${n} (${c}) submitted at ${t}. Today's quiz is still open for you!`,
+    (n,c,t,d) => `👋 ${n} from ${c} just played at ${t}. Join them — today's quiz is live!`,
+    // Style F — Time urgency
+    (n,c,t,d) => `⏰ ${n} from ${c} answered at ${t}! Clock is ticking — play before midnight!`,
+    (n,c,t,d) => `🕐 It's ${t} and ${n} (${c}) already answered! How much time do you have left?`,
+    (n,c,t,d) => `⚡ ${n} from ${c} was quick — submitted at ${t}! Will you beat the clock?`,
+    (n,c,t,d) => `🌙 ${n} (${c}) didn't wait — answered at ${t}! Quiz closes at midnight!`,
+    (n,c,t,d) => `🏃 ${n} from ${c} is ahead — answered at ${t}! Run, the quiz won't wait!`,
+    // Style G — Fun/emoji-heavy
+    (n,c,t,d) => `🎉 ${n} from ${c} just smashed the ${d} quiz at ${t}! 🎊 Go get yours!`,
+    (n,c,t,d) => `🚀 ${n} (${c}) launched into today's quiz at ${t}! 🌟 Are you ready to blast off?`,
+    (n,c,t,d) => `🎮 ${n} from ${c} just played their move at ${t}! 🕹️ Your turn to play!`,
+    (n,c,t,d) => `🌈 ${n} (${c}) brought the energy at ${t}! ✨ Today's quiz is waiting for you!`,
+    (n,c,t,d) => `🔔 Ding ding! ${n} from ${c} submitted at ${t}! 🏅 Who's ringing next?`,
+];
+
+// Fire peer nudge notification — called after both correct answers submitted
+async function qnFirePeerNudge(studentName, studentClass, submittedAt, today, senderKey) {
+    var db = window.db || (window.firebase && window.firebase.database());
+    if (!db) return;
+    try {
+        // Use Firebase transaction to safely increment — prevents race condition
+        // when multiple students submit at the same time
+        var countRef = db.ref('quizCorrectCount/' + today);
+        var transResult = await countRef.transaction(function(current) {
+            return (current || 0) + 1;
+        });
+        var count = transResult.snapshot.val();
+
+        // Pick template by cycling index
+        var idx = (count - 1) % QN_PEER_TEMPLATES.length;
+        var timeStr = new Date(submittedAt).toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit' });
+        var dateStr = new Date(today + 'T00:00:00').toLocaleDateString('en-IN', { day:'2-digit', month:'short' });
+        var msg = QN_PEER_TEMPLATES[idx](studentName, studentClass, timeStr, dateStr);
+
+        var toastId = 'quiz_peer_' + today + '_' + count;
+        localStorage.removeItem('qn_seen_' + toastId);
+
+        // Write to live_notifications — all open pages will receive this instantly
+        // senderKey included so sender's own page skips showing the toast
+        await db.ref('live_notifications/latest').set({
+            title: '📝 Quiz Update!',
+            body: msg,
+            sentAt: Date.now(),
+            id: toastId,
+            qnType: 'quiz_peer',
+            senderKey: senderKey || ''
+        });
+
+        // FCM push to all devices
+        qnBroadcastFCM('📝 Quiz Update!', msg, toastId, 'quiz');
+
+        console.log('[PeerNudge] Fired template #' + (idx+1) + ':', msg);
+    } catch(e) {
+        console.warn('[PeerNudge] Failed:', e.message);
+    }
+}
+
+// Manual send from admin panel — picks next template in cycle
+// Show/hide custom input and update preview based on dropdown
+function qnPreviewPeerNudge() {
+    var sel = document.getElementById('qnPeerNudgeTemplate');
+    var customRow = document.getElementById('qnPeerNudgeCustomRow');
+    var previewBox = document.getElementById('qnPeerNudgePreview');
+    var previewText = document.getElementById('qnPeerNudgePreviewText');
+    if (!sel) return;
+    var val = sel.value;
+
+    // Show/hide custom input
+    if (customRow) customRow.style.display = (val === 'custom') ? 'block' : 'none';
+
+    // Build preview
+    var sampleName = 'Riya Sharma';
+    var sampleClass = '2ND BCA A';
+    var sampleTime = '10:32 AM';
+    var sampleDate = '06 Mar';
+    var msg = '';
+
+    if (val === 'auto') {
+        msg = '🔄 Will use next template in the auto-cycle (based on today\'s correct submission count).';
+    } else if (val === 'random') {
+        var ridx = Math.floor(Math.random() * QN_PEER_TEMPLATES.length);
+        msg = '🎲 Random example: ' + QN_PEER_TEMPLATES[ridx](sampleName, sampleClass, sampleTime, sampleDate);
+    } else if (val === 'custom') {
+        var customEl = document.getElementById('qnPeerNudgeMsg');
+        msg = (customEl && customEl.value.trim()) ? customEl.value.trim() : '(type your custom message above)';
+    } else {
+        var idx = parseInt(val);
+        if (!isNaN(idx) && QN_PEER_TEMPLATES[idx]) {
+            msg = QN_PEER_TEMPLATES[idx](sampleName, sampleClass, sampleTime, sampleDate);
+        }
+    }
+
+    if (previewBox && previewText && msg) {
+        previewText.textContent = msg;
+        previewBox.style.display = 'block';
+    }
+}
+
+async function qnSendPeerNudgeNow() {
+    var db = window.db || (window.firebase && window.firebase.database());
+    if (!db) { alert('Firebase not ready'); return; }
+    var today = (typeof window.getQuizToday === 'function') ? window.getQuizToday() : new Date().toISOString().slice(0,10);
+
+    // Check if there are any correct submissions today
+    var subSnap = await db.ref('quizSubmissions/' + today).once('value');
+    if (!subSnap.exists()) { alert('⚠️ No submissions today yet — nothing to nudge about.'); return; }
+
+    // Find latest correct submission for name/class/time
+    var latest = null;
+    subSnap.forEach(function(ch) {
+        var v = ch.val();
+        if (v.score === 2) latest = v;
+    });
+    if (!latest) { alert('⚠️ No correct (score=2) submissions today yet.'); return; }
+
+    var sel = document.getElementById('qnPeerNudgeTemplate');
+    var mode = sel ? sel.value : 'auto';
+
+    var msg = '';
+    var toastId = 'quiz_peer_manual_' + Date.now();
+
+    if (mode === 'custom') {
+        var customEl = document.getElementById('qnPeerNudgeMsg');
+        msg = customEl ? customEl.value.trim() : '';
+        if (!msg) { alert('⚠️ Please type a custom message first.'); return; }
+    } else if (mode === 'random') {
+        var ridx = Math.floor(Math.random() * QN_PEER_TEMPLATES.length);
+        var timeStr = new Date(latest.submittedAt).toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit' });
+        var dateStr = new Date(today + 'T00:00:00').toLocaleDateString('en-IN', { day:'2-digit', month:'short' });
+        msg = QN_PEER_TEMPLATES[ridx](latest.studentName, latest.studentClass || latest.studentEmail, timeStr, dateStr);
+    } else if (mode === 'auto') {
+        // Use next in cycle via qnFirePeerNudge (handles counter + template pick)
+        await qnFirePeerNudge(latest.studentName, latest.studentClass || latest.studentEmail, latest.submittedAt, today, null);
+        alert('✅ Peer nudge sent using next auto-template in cycle!');
+        return;
+    } else {
+        // Specific template index picked
+        var idx = parseInt(mode);
+        if (isNaN(idx) || !QN_PEER_TEMPLATES[idx]) { alert('⚠️ Invalid template selected.'); return; }
+        var timeStr2 = new Date(latest.submittedAt).toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit' });
+        var dateStr2 = new Date(today + 'T00:00:00').toLocaleDateString('en-IN', { day:'2-digit', month:'short' });
+        msg = QN_PEER_TEMPLATES[idx](latest.studentName, latest.studentClass || latest.studentEmail, timeStr2, dateStr2);
+    }
+
+    localStorage.removeItem('qn_seen_' + toastId);
+    await db.ref('live_notifications/latest').set({
+        title: '📝 Quiz Update!', body: msg,
+        sentAt: Date.now(), id: toastId, qnType: 'quiz_peer', senderKey: ''
+    });
+    qnBroadcastFCM('📝 Quiz Update!', msg, toastId, 'quiz');
+    qnShowToast({ id: toastId, icon: '📝', type: 'qnToastQuiz', title: '📝 Quiz Update!', msg: msg });
+    alert('✅ Peer nudge sent!\n\nMessage: ' + msg);
+}
+
 function qnSendSHTaskNow() {
     var msg = (document.getElementById('qnSHTaskMsg') ? document.getElementById('qnSHTaskMsg').value.trim() : '') || '🗺️ New Scavenger Hunt task is LIVE! Go find it! 💪';
     var toastId = 'sh_task_manual_' + Date.now(); // new ID = resets 3-visit count for everyone
@@ -40777,6 +41064,31 @@ function qnStartLiveListener() {
         // Special handling for quizqa type — show Q&A toast with View button
         if (n.qnType === 'quizqa' && n.quizDate) {
             qnShowToastQuizQA(toastId, n.body || '📋 Quiz published! Check questions & answers.', n.quizDate);
+            return;
+        }
+        // Special handling for quiz_peer — only show to students who haven't submitted today
+        if (n.qnType === 'quiz_peer') {
+            var db2 = window.db || (window.firebase && window.firebase.database());
+            var todayKey = (typeof getQuizToday === 'function') ? getQuizToday() : new Date().toISOString().slice(0,10);
+            var currentUser = window.quizCurrentUser || null;
+            if (!currentUser) return; // not logged in, skip
+            // Immediately skip if this device is the sender — no async needed
+            if (n.senderKey && currentUser.key && n.senderKey === currentUser.key) return;
+            // Check if this student already submitted (catches any other case)
+            db2.ref('quizSubmissions/' + todayKey).once('value').then(function(subSnap) {
+                var alreadySubmitted = false;
+                if (subSnap.exists()) {
+                    subSnap.forEach(function(ch) {
+                        if (ch.val().studentKey === currentUser.key) alreadySubmitted = true;
+                    });
+                }
+                if (alreadySubmitted) return; // already played — don't nudge
+                qnShowToast({
+                    id: toastId, icon: '📝', type: 'qnToastQuiz',
+                    title: '📝 Quiz Update!', msg: n.body || '',
+                    btnLabel: 'Play Now →', btnAction: function() { qnGoToQuiz && qnGoToQuiz(); }
+                });
+            }).catch(function(){});
             return;
         }
         qnShowToast({
@@ -41700,6 +42012,9 @@ function scAdminPing() {
      v7.03 | Mar 05, 2026, 05:55 PM IST | Fix: Not Enrolled (no class) now shows ALL 15 events with red ❌ pills for missing classes per event + collapsible enrolled list; column header updates to show context
      v7.04 | Mar 06, 2026, 09:02 AM IST | Fix: quiz Save no longer auto-publishes or fires notifications — save is save only; PUBLISH button is the only trigger; Q&A toast message corrected to show yesterday date not today
      v7.05 | Mar 06, 2026, 09:20 AM IST | Fix: CLASS_INCHARGE_MAP corrected — 1st B.Com→Dr.Shilpa R Y, 2nd B.Com→Lalitha S K, 1ST BCA→Roopa M.C, 2ND BCA B→Kotrappa K, 3RD BCA B→Pooja C, 3RD BCA C→Anitha N; Priyanka V faculty class=I BCA
+     v7.06 | Mar 06, 2026, 10:15 AM IST | New: Quiz Peer Nudge — 35 rotating templates auto-fire to un-answered students when any student gets both correct; cycles A-G styles (Competitive/FOMO/Mystery/Leaderboard/Nudge/Urgency/Fun); includes name+class+time; admin manual Send Now panel; never reveals correct/wrong
+     v7.07 | Mar 06, 2026, 10:45 AM IST | Fix: PeerNudge 4 bugs — (1) senderKey now passed in trigger call (2) receiver checks senderKey instantly before async read so sender never sees own toast (3) dead timeStr/dateStr removed from manual send (4) getQuizToday exposed to window for correct server-time date in receiver
+     v7.08 | Mar 06, 2026, 11:10 AM IST | Fix: PeerNudge admin panel — added dropdown (all 35 templates labelled by style), Random option, Preview box with sample output, custom message input shown only when custom selected
      ═══════════════════════════════════════════════════════════════════ -->
 
 
