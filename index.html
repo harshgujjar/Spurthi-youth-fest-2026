@@ -6742,7 +6742,7 @@
                             <h3 style="color:#1a237e;margin:0 0 6px;font-size:1.05em">✍️ Handwriting Competition — Attendance &amp; Sitting Codes</h3>
                             <p style="color:#555;font-size:0.82em;margin:0 0 6px">View all enrolled participants. Each participant gets a unique 2-letter sitting code. Mark Present or Absent on event day. Codes are sent to Jury automatically.</p>
                             <div style="background:#e3f2fd;border-radius:8px;padding:8px 12px;font-size:0.8em;color:#1565c0;margin-top:8px">
-                                📅 <strong>Event Date:</strong> 14th March 2026 @ 12:00 PM &nbsp;|&nbsp; 🖊️ Duration: 45 minutes
+                                📅 <strong>Event Date:</strong> <span id="hwEventDateDisplay">Loading…</span> &nbsp;|&nbsp; 🖊️ Duration: 45 minutes
                             </div>
                         </div>
                         <!-- Filter bar -->
@@ -16212,6 +16212,22 @@
             const listEl = document.getElementById('handwritingList');
             if (!listEl) return;
             listEl.innerHTML = '<div style="text-align:center;color:#aaa;padding:20px">Loading…</div>';
+            // -- Pull event date/time from Firebase eventSchedule dynamically --
+            try {
+                const esSnap = await db.ref('eventSchedule').once('value');
+                if (esSnap.exists()) {
+                    const esItems = Object.values(esSnap.val());
+                    const hwEntry = esItems.find(e => (e.name||'').toLowerCase().includes('hand'));
+                    const hwDateEl = document.getElementById('hwEventDateDisplay');
+                    if (hwDateEl && hwEntry) {
+                        const d = hwEntry.endDate || hwEntry.startDate || '';
+                        const t = hwEntry.startTime || hwEntry.endTime || '';
+                        hwDateEl.textContent = (d || '—') + (t ? ' @ ' + t : '');
+                    } else if (hwDateEl) {
+                        hwDateEl.textContent = 'Date not set';
+                    }
+                }
+            } catch(e) { /* keep "Loading…" if Firebase fails */ }
             await ensureSittingCodes('Hand Writing', 'handwriting');
             try {
                 // Use full load + JS filter (reliable, no index needed)
@@ -36000,29 +36016,33 @@ Proceed?`)) return;
         if (title) title.textContent = '➕ Add New Event';
     }
     // Render the public-facing event schedule table
-    async function esRenderPublicTable() {
+    function _esDrawPublicRows(snap) {
         const tbody = document.getElementById('eventScheduleBody');
         if (!tbody) return;
+        if (!snap || !snap.exists()) return; // keep hardcoded rows if nothing in Firebase yet
+        const items = Object.values(snap.val()).sort((a,b)=>(a.sl||999)-(b.sl||999));
+        if (!items.length) return;
+        tbody.innerHTML = items.map((it,i) => `
+        <tr style="background:${i%2===0?'#fafafa':'white'};border-bottom:1px solid #eee;">
+            <td style="padding:9px 10px;text-align:center;font-weight:700;color:#6a1b9a">${it.sl||i+1}</td>
+            <td style="padding:9px 10px;font-weight:600">${it.name||'—'} <span style="font-size:.78em;color:#888;font-weight:400">(${it.stageType||''})</span></td>
+            <td style="padding:9px 10px">${it.classInfo||'—'}</td>
+            <td style="padding:9px 10px">${it.incharge||'—'}</td>
+            <td style="padding:9px 10px;font-size:.82em">${it.meeting1||'—'}</td>
+            <td style="padding:9px 10px;font-size:.82em">${it.meeting2||'—'}</td>
+            <td style="padding:9px 10px;text-align:center;font-weight:600;color:${it.startDate?'#1b5e20':'#aaa'}">${it.startDate||'—'}</td>
+            <td style="padding:9px 10px;text-align:center;font-weight:600;color:${it.endDate?'#b71c1c':'#aaa'}">${it.endDate||'—'}</td>
+            <td style="padding:9px 10px;text-align:center;font-weight:600;color:${it.startTime?'#0d47a1':'#aaa'}">${it.startTime||'—'}</td>
+            <td style="padding:9px 10px;text-align:center;font-weight:600;color:${it.endTime?'#6a1b9a':'#aaa'}">${it.endTime||'—'}</td>
+        </tr>`).join('');
+    }
+
+    // esRenderPublicTable — force a fresh once() read then draw (called after admin save)
+    async function esRenderPublicTable() {
         try {
             const snap = await getDb().ref(ES_FB_PATH).once('value');
-            if (!snap.exists()) return; // keep hardcoded rows if nothing in Firebase yet
-            const items = Object.values(snap.val()).sort((a,b)=>(a.sl||999)-(b.sl||999));
-            if (!items.length) return;
-            tbody.innerHTML = items.map((it,i) => `
-            <tr style="background:${i%2===0?'#fafafa':'white'};border-bottom:1px solid #eee;">
-                <td style="padding:9px 10px;text-align:center;font-weight:700;color:#6a1b9a">${it.sl||i+1}</td>
-                <td style="padding:9px 10px;font-weight:600">${it.name||'—'} <span style="font-size:.78em;color:#888;font-weight:400">(${it.stageType||''})</span></td>
-                <td style="padding:9px 10px">${it.classInfo||'—'}</td>
-                <td style="padding:9px 10px">${it.incharge||'—'}</td>
-                <td style="padding:9px 10px;font-size:.82em">${it.meeting1||'—'}</td>
-                <td style="padding:9px 10px;font-size:.82em">${it.meeting2||'—'}</td>
-                <td style="padding:9px 10px;text-align:center;font-weight:600;color:${it.startDate?'#1b5e20':'#aaa'}">${it.startDate||'—'}</td>
-                <td style="padding:9px 10px;text-align:center;font-weight:600;color:${it.endDate?'#b71c1c':'#aaa'}">${it.endDate||'—'}</td>
-                <td style="padding:9px 10px;text-align:center;font-weight:600;color:${it.startTime?'#0d47a1':'#aaa'}">${it.startTime||'—'}</td>
-                <td style="padding:9px 10px;text-align:center;font-weight:600;color:${it.endTime?'#6a1b9a':'#aaa'}">${it.endTime||'—'}</td>
-            </tr>`).join('');
+            _esDrawPublicRows(snap);
         } catch(e) {
-            // Silently keep the hardcoded static table if Firebase rules not yet set
             console.info('esRenderPublicTable: using static fallback —', e.message);
         }
     }
@@ -36034,7 +36054,12 @@ Proceed?`)) return;
     (function initPublicSections() {
         function tryInit() {
             if (window.db) {
-                esRenderPublicTable();
+                // Real-time listener — public table stays in sync with any admin edits instantly
+                getDb().ref(ES_FB_PATH).on('value', function(snap) {
+                    _esDrawPublicRows(snap);
+                }, function(err) {
+                    console.info('esPublicTable realtime listener error —', err.message);
+                });
             } else {
                 setTimeout(tryInit, 700);
             }
@@ -39335,7 +39360,7 @@ export default {
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;" id="devTriggerVersion">
-                <strong>Version:</strong> 7.10 — Quiz Ended notification shows "Quiz of 5th March 2026 has ended at 11:59 PM"<strong>Last Updated:</strong> Mar 06, 2026, 11:10 AM IST</p>
+                <strong>Version:</strong> 7.12 — Fix: Handwriting Competition event date in Attendance panel now pulled live from Firebase eventSchedule instead of hardcoded<strong>Last Updated:</strong> Mar 06, 2026, 11:10 AM IST</p>
             <!-- ============================================ -->
             
             <p style="color: #c44569; font-size: 0.85em; font-weight: 600; margin-bottom: 8px;">
@@ -42036,6 +42061,8 @@ function scAdminPing() {
      v7.08 | Mar 06, 2026, 11:10 AM IST | Fix: PeerNudge admin panel — added dropdown (all 35 templates labelled by style), Random option, Preview box with sample output, custom message input shown only when custom selected
      v7.09 | Mar 06, 2026, 11:10 AM IST | Quiz Ended notification now includes the date of the ended quiz
      v7.10 | Mar 06, 2026, 11:10 AM IST | Quiz Ended notification shows "Quiz of 5th March 2026 has ended at 11:59 PM"
+     v7.11 | Mar 06, 2026, 11:10 AM IST | Fix: Event Schedule public table now uses real-time Firebase listener — admin edits reflect instantly without page reload
+     v7.12 | Mar 06, 2026, 11:10 AM IST | Fix: Handwriting Competition event date in Attendance panel now pulled live from Firebase eventSchedule instead of hardcoded
      ═══════════════════════════════════════════════════════════════════ -->
 
 
