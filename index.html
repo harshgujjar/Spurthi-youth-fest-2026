@@ -1763,7 +1763,7 @@
                 <button class="tab" onclick="showCRTab('crView')">View Enrollments</button>
                 <button class="tab" onclick="showCRTab('crQuizStats');loadCRQuizStats()">🧠 Quiz Stats</button>
                 <button class="tab" onclick="showCRTab('crScavengerStats');loadCRScavengerStats()">🗺️ Scavenger Hunt</button>
-                <button class="tab" onclick="showCRTab('crVlogChallenge');checkVlogEventActive();loadVlogSubmissions();initVlogDailyScreenshots()">📹 Vlog Challenge</button>
+                <button class="tab" onclick="showCRTab('crVlogChallenge');checkVlogEventActive();loadVlogSubmissions();initVlogDailyScreenshots();loadVlogExistingScreenshots(window.currentCRClass||crClass)">📹 Vlog Challenge</button>
                 <button class="tab" onclick="showCRTab('crPodCasting');checkPodcastEventActive();loadPodcastSubmissions()">🎙️ Pod Casting</button>
                 <button class="tab" onclick="showCRTab('crBestOutWaste');loadBOWSubmissions()">♻️ Best Out of Waste</button>
                 <button class="tab" id="crYtAdTab" onclick="showCRTab('crYtAd');checkYtAdEventActive();loadYtAdSubmissions()">📺 YT Advertisement</button>
@@ -2145,11 +2145,8 @@
                         </div>
                         <!-- Screenshot slots (rendered by initVlogDailyScreenshots) -->
                         <div id="vlogDailyScreenshotsContainer" style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px">
-                            <!-- Daily date slots rendered by initVlogDailyScreenshots() -->
+                            <!-- Per-slot submit buttons rendered by initVlogDailyScreenshots() -->
                         </div>
-                        <!-- Separate submit message + button -->
-                        <div id="vlogScreenshotSubmitMsg" style="display:none;margin-bottom:12px;padding:10px 14px;border-radius:8px;font-size:0.88em;font-weight:600"></div>
-                        <button class="btn" id="vlogScreenshotSubmitBtn" onclick="submitVlogScreenshotsOnly()" style="background:linear-gradient(135deg,#6a1b9a,#9c27b0);border:none;width:100%;font-size:0.95em">📸 Submit Insight Screenshots</button>
                     </div>
                 </div>
                 <!-- ═══════════════════════════════════════════════════════════════ -->
@@ -2639,7 +2636,6 @@
                     </div>
                     <div id="ytAdScreenshotSlots" style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px"></div>
                     <div id="ytAdScreenshotMsg" style="display:none;margin-bottom:12px;padding:10px 14px;border-radius:8px;font-size:0.88em;font-weight:600"></div>
-                    <button class="btn" id="ytAdScreenshotBtn" onclick="submitYtAdScreenshots()" style="background:linear-gradient(135deg,#6a1b9a,#9c27b0);border:none;width:100%;font-size:0.95em">📸 Submit Analytics Screenshots</button>
                 </div>
 
                 <!-- Submissions Table -->
@@ -3061,6 +3057,8 @@
                     <div style="display:flex;gap:10px;align-items:center;margin-bottom:18px;flex-wrap:wrap">
                         <button class="btn btn-info" onclick="loadJurySummaryReport()">🔄 Refresh</button>
                         <button class="btn btn-small" onclick="printJurySummary()" style="background:#1b5e20;color:white;border:none">🖨️ Print / Save PDF</button>
+                        <button class="btn btn-small" onclick="showJuryEventSummaryWA()" style="background:#25D366;color:white;border:none;font-weight:700">📋 Event Overview (WhatsApp)</button>
+                        <button class="btn btn-small" onclick="showJuryInvitationWA()" style="background:#128C7E;color:white;border:none;font-weight:700">💌 Jury Invitation (WhatsApp)</button>
                     </div>
                     <div id="jurySummaryContainer">
                         <p style="color:#aaa;text-align:center;padding:30px">Loading…</p>
@@ -5845,6 +5843,7 @@
                             <select id="vlogAdminClassFilter" onchange="loadVlogAdminPanel()" style="padding:6px 10px;border-radius:8px;border:none;font-size:0.82em;color:#333">
                                 <option value="">All Classes</option>
                             </select>
+                            <button class="btn btn-small" onclick="showVlogWhatsAppSummary()" style="background:#25D366;border:1px solid #128C7E;color:white;font-size:0.8em;font-weight:700">📋 WhatsApp Summary</button>
                             <button class="btn btn-small" onclick="loadVlogAdminPanel()" style="background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.5);color:white;font-size:0.8em">🔄 Refresh</button>
                         </div>
                     </div>
@@ -5913,7 +5912,10 @@
                 <div style="background:white;border-radius:14px;border:2px solid #c8e6c9;overflow:hidden">
                     <div style="background:linear-gradient(135deg,#1db954,#191414);padding:14px 18px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
                         <h4 style="color:white;margin:0;font-size:0.95em">🎙️ All Podcast Submissions</h4>
-                        <button class="btn btn-small" onclick="loadPodcastAdminPanel()" style="background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.5);color:white;font-size:0.8em">🔄 Refresh</button>
+                        <div style="display:flex;gap:8px;flex-wrap:wrap">
+                            <button class="btn btn-small" onclick="showPodcastWhatsAppSummary()" style="background:#25D366;border:1px solid #128C7E;color:white;font-size:0.8em;font-weight:700">📋 WhatsApp Summary</button>
+                            <button class="btn btn-small" onclick="loadPodcastAdminPanel()" style="background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.5);color:white;font-size:0.8em">🔄 Refresh</button>
+                        </div>
                     </div>
                     <div id="podcastAdminTableWrap" style="padding:16px">
                         <p style="color:#aaa;text-align:center;padding:20px">Click Refresh to load submissions.</p>
@@ -6441,6 +6443,7 @@
                             <select id="ytAdAdminClassFilter" onchange="loadYtAdAdminPanel()" style="padding:6px 10px;border-radius:8px;border:none;font-size:0.82em;color:#333">
                                 <option value="">All Classes</option>
                             </select>
+                            <button class="btn btn-small" onclick="showYtAdWhatsAppSummary()" style="background:#25D366;border:1px solid #128C7E;color:white;font-size:0.8em;font-weight:700">📋 WhatsApp Summary</button>
                             <button class="btn btn-small" onclick="loadYtAdAdminPanel()" style="background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.5);color:white;font-size:0.8em">🔄 Refresh</button>
                         </div>
                     </div>
@@ -6609,7 +6612,8 @@
                         </div>
 
                         <!-- Team cards with screenshot + metric entry -->
-                        <div style="display:flex;justify-content:flex-end;margin-bottom:10px">
+                        <div style="display:flex;justify-content:flex-end;gap:8px;margin-bottom:10px">
+                            <button onclick="showVlogWhatsAppSummary()" style="background:#25D366;color:white;border:none;border-radius:8px;padding:6px 14px;font-size:0.82em;font-weight:700;cursor:pointer">📋 WhatsApp Summary</button>
                             <button class="btn btn-secondary" onclick="loadChandanPanel()" style="font-size:0.85em">🔄 Refresh Teams</button>
                         </div>
                         <div id="chandanTeamList" style="display:flex;flex-direction:column;gap:16px">
@@ -6628,6 +6632,7 @@
                                 </div>
                                 <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
                                     <span id="podAutoRefreshBadge" style="background:#e3f2fd;color:#1565c0;border-radius:10px;padding:3px 10px;font-size:0.75em;font-weight:700">🔄 Auto-refresh: ON</span>
+                                    <button onclick="showPodcastWhatsAppSummary()" style="background:#25D366;color:white;border:none;border-radius:8px;padding:6px 14px;font-size:0.82em;font-weight:700;cursor:pointer">📋 WhatsApp Summary</button>
                                     <button onclick="loadChandanPodcastPanel()" style="background:#1b5e20;color:white;border:none;border-radius:8px;padding:6px 14px;font-size:0.82em;font-weight:700;cursor:pointer">🔄 Refresh Now</button>
                                 </div>
                             </div>
@@ -6695,7 +6700,10 @@
                                         ⚠️ <strong>Important:</strong> Only count <em>genuine original comments</em>. Ignore spam, bot comments, and repeated phrases. Quality over quantity.
                                     </div>
                                 </div>
-                                <button class="btn btn-secondary" onclick="loadYtAdMonitorPanel()" style="font-size:0.85em;white-space:nowrap;flex-shrink:0">🔄 Refresh All Classes</button>
+                                <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;flex-shrink:0">
+                                    <button onclick="showYtAdWhatsAppSummary()" style="background:#25D366;color:white;border:none;border-radius:8px;padding:6px 14px;font-size:0.82em;font-weight:700;cursor:pointer">📋 WhatsApp Summary</button>
+                                    <button class="btn btn-secondary" onclick="loadYtAdMonitorPanel()" style="font-size:0.85em;white-space:nowrap">🔄 Refresh All Classes</button>
+                                </div>
                             </div>
                         </div>
                         <div id="ytAdMonitorList" style="display:flex;flex-direction:column;gap:16px">
@@ -10761,14 +10769,23 @@
                         <img id="${imgId}" src="" alt="Insight Screenshot" style="max-height:140px;max-width:100%;border-radius:8px;border:2px solid #ce93d8;object-fit:contain">
                         <button type="button" onclick="removeDailyShot('${slot.iso}')" style="display:inline-block;margin-top:5px;background:#f44336;color:white;border:none;border-radius:6px;padding:3px 12px;font-size:0.76em;cursor:pointer">✕ Remove</button>
                     </div>
-                    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+                    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px">
                         <input type="file" id="${fileId}" accept="image/*" onchange="previewDailyShot('${slot.iso}',this)" style="display:none" ${disabled}>
                         <button type="button" onclick="document.getElementById('${fileId}').click()"
                             style="background:#9c27b0;color:white;border:none;border-radius:8px;padding:8px 16px;font-size:0.84em;font-weight:700;cursor:pointer;${disStyle}" ${disabled}>
-                            📷 Upload Screenshot
+                            📷 Choose Screenshot
                         </button>
                         <span id="${nameId}" style="font-size:0.8em;color:#888">No file chosen</span>
                     </div>
+                    <div id="vlogAlready_${slot.iso}" style="display:none;margin-bottom:8px;font-size:0.8em;color:#388e3c;background:#f1f8e9;border-radius:6px;padding:6px 10px;border:1px solid #a5d6a7">
+                        ✅ Screenshot already uploaded. You can replace it below.
+                    </div>
+                    <button type="button" id="vlogShotSubmitBtn_${slot.iso}" onclick="submitSingleVlogShot('${slot.iso}')"
+                        ${disabled}
+                        style="background:linear-gradient(135deg,#6a1b9a,#9c27b0);color:white;border:none;border-radius:8px;padding:9px 20px;font-size:0.87em;font-weight:700;cursor:pointer;width:100%;${disStyle}">
+                        📤 Submit This Screenshot
+                    </button>
+                    <div id="vlogShotSubmitMsg_${slot.iso}" style="display:none;margin-top:8px;padding:8px 12px;border-radius:8px;font-size:0.84em;font-weight:600"></div>
                 </div>`);
             });
         }
@@ -10842,6 +10859,78 @@
                 }
             }
             return results; // { '2026_03_02': 'https://...', ... }
+        }
+
+        // -- Per-slot independent vlog screenshot submission --
+        async function submitSingleVlogShot(iso) {
+            const cls    = (window.currentCRClass || crClass || '').trim();
+            const btnEl  = document.getElementById('vlogShotSubmitBtn_' + iso);
+            const msgEl  = document.getElementById('vlogShotSubmitMsg_' + iso);
+            const fileEl = document.getElementById('vlogShotFile_' + iso);
+
+            const showMsg = (text, ok) => {
+                if (!msgEl) return;
+                msgEl.style.display    = 'block';
+                msgEl.style.background = ok ? '#d4edda' : '#f8d7da';
+                msgEl.style.color      = ok ? '#155724' : '#721c24';
+                msgEl.style.border     = ok ? '1px solid #c3e6cb' : '1px solid #f5c6cb';
+                msgEl.textContent = text;
+            };
+
+            if (!cls) { showMsg('❌ Class info missing. Please re-login.', false); return; }
+            if (!fileEl || !fileEl.files[0]) { showMsg('⚠️ Please choose a screenshot file first.', false); return; }
+
+            if (btnEl) { btnEl.disabled = true; btnEl.textContent = '⏳ Uploading…'; }
+            try {
+                // Upload to Cloudinary under its own dated folder
+                const r = await uploadDailyShot(iso);
+                if (!r) { showMsg('❌ Upload failed. Please try again.', false); return; }
+
+                // Find this class's vlog entry and save independently under dailyScreenshots[iso]
+                const snap = await db.ref('vlogChallenge').orderByChild('classYear').equalTo(cls).once('value');
+                let updated = 0;
+                const updates = {};
+                snap.forEach(ch => {
+                    const isoKey = iso.replace(/-/g, '_');
+                    updates['vlogChallenge/' + ch.key + '/dailyScreenshots/' + isoKey] = r.url;
+                    updates['vlogChallenge/' + ch.key + '/screenshotUrl'] = r.url;
+                    updated++;
+                });
+                if (!updated) { showMsg('❌ No submitted reel found for your class. Please submit the Reel Link first.', false); return; }
+                await db.ref().update(updates);
+
+                showMsg('✅ Screenshot submitted! Chandan will enter your metrics for this date.', true);
+
+                // Show already-uploaded badge
+                const alreadyEl = document.getElementById('vlogAlready_' + iso);
+                if (alreadyEl) { alreadyEl.style.display = 'block'; alreadyEl.textContent = '✅ Screenshot uploaded. You can replace it anytime.'; }
+                // Reset file input
+                fileEl.value = '';
+                const nameEl = document.getElementById('vlogShotName_' + iso);
+                if (nameEl) nameEl.textContent = 'No file chosen';
+                const prevEl = document.getElementById('vlogShotPrev_' + iso);
+                if (prevEl) prevEl.style.display = 'none';
+            } catch(err) {
+                showMsg('❌ Error: ' + err.message, false);
+            } finally {
+                if (btnEl) { btnEl.disabled = false; btnEl.textContent = '📤 Submit This Screenshot'; }
+            }
+        }
+
+        // -- Load existing vlog screenshots and show already-uploaded badges --
+        async function loadVlogExistingScreenshots(cls) {
+            if (!cls) return;
+            try {
+                const snap = await db.ref('vlogChallenge').orderByChild('classYear').equalTo(cls).once('value');
+                snap.forEach(ch => {
+                    const daily = ch.val().dailyScreenshots || {};
+                    Object.keys(daily).forEach(isoKey => {
+                        const iso = isoKey.replace(/_/g, '-');
+                        const el = document.getElementById('vlogAlready_' + iso);
+                        if (el) { el.style.display = 'block'; }
+                    });
+                });
+            } catch(e) {}
         }
 
         // -- Separate screenshot-only submission (called after reel link submit) --
@@ -11023,7 +11112,7 @@
                 const shotSection = document.getElementById('vlogInsightScreenshotSection');
                 if (shotSection) {
                     shotSection.style.display = 'block';
-                    initVlogDailyScreenshots(); // populate screenshot date slots
+                    initVlogDailyScreenshots(); loadVlogExistingScreenshots(window.currentCRClass||crClass); // populate screenshot date slots
                     shotSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 }
             } catch(err) {
@@ -11144,7 +11233,7 @@
                 const shotSection = document.getElementById('vlogInsightScreenshotSection');
                 if (shotSection) {
                     shotSection.style.display = 'block';
-                    initVlogDailyScreenshots(); // populate screenshot date slots
+                    initVlogDailyScreenshots(); loadVlogExistingScreenshots(window.currentCRClass||crClass); // populate screenshot date slots
                 }
 
                 const VLOG_MAX_SOCIAL = 1000; // adjust when API is live
@@ -11483,7 +11572,8 @@
         // Scoring: 50% Social (Views+Likes+OrigComments) + 50% Jury (J1+J2 avg)
         // ══════════════════════════════════════════════════════════════
 
-        const YT_AD_ELIGIBLE = ['1ST BCA', '2ND BCA A SEC'];
+        // YT_AD_ELIGIBLE — now built dynamically from Firebase enrollments in loadYtAdMonitorPanel
+        let YT_AD_ELIGIBLE = [];
 
         // -- Settings -------------------------------------------------
         function setYtAdSetting(key, value) {
@@ -12133,13 +12223,9 @@
             if (!container) return;
             container.innerHTML = '';
             YT_AD_SCREENSHOT_SLOTS.forEach(slot => {
-                const badge     = `<span style="background:#e3f2fd;color:#1565c0;padding:2px 8px;border-radius:10px;font-size:0.72em;margin-left:6px">OPENS ${slot.date}</span>`;
-                const disabled  = '';
-                const disStyle  = '';
-                const bgColor   = '#f1f8e9';
-                const border    = '#a5d6a7';
+                const badge = `<span style="background:#e3f2fd;color:#1565c0;padding:2px 8px;border-radius:10px;font-size:0.72em;margin-left:6px">OPENS ${slot.date}</span>`;
                 container.insertAdjacentHTML('beforeend', `
-                <div style="background:${bgColor};border:2px solid ${border};border-radius:10px;padding:14px 16px">
+                <div style="background:#f1f8e9;border:2px solid #a5d6a7;border-radius:10px;padding:14px 16px">
                     <div style="font-size:0.87em;font-weight:700;color:#444;margin-bottom:10px">${slot.label}${badge}</div>
                     <p style="font-size:0.76em;color:#777;margin:0 0 8px">
                         📊 Open YouTube Studio → Analytics → screenshot showing <strong>Views, Likes, Comments</strong>.<br>
@@ -12152,15 +12238,20 @@
                     <div id="ytAdShotAlready_${slot.key}" style="display:none;margin-bottom:8px;font-size:0.8em;color:#388e3c;background:#f1f8e9;border-radius:6px;padding:6px 10px;border:1px solid #a5d6a7">
                         ✅ Screenshot already uploaded. You can replace it below.
                     </div>
-                    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-                        <input type="file" id="ytAdShotFile_${slot.key}" accept="image/*" onchange="previewYtAdShot('${slot.key}',this)" style="display:none" ${disabled}>
+                    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px">
+                        <input type="file" id="ytAdShotFile_${slot.key}" accept="image/*" onchange="previewYtAdShot('${slot.key}',this)" style="display:none">
                         <button type="button" onclick="document.getElementById('ytAdShotFile_${slot.key}').click()"
-                            style="background:#9c27b0;color:white;border:none;border-radius:8px;padding:8px 16px;font-size:0.84em;font-weight:700;cursor:pointer;${disStyle}" ${disabled}>
-                            📷 Upload Screenshot
+                            style="background:#9c27b0;color:white;border:none;border-radius:8px;padding:8px 16px;font-size:0.84em;font-weight:700;cursor:pointer">
+                            📷 Choose Screenshot
                         </button>
                         <span id="ytAdShotName_${slot.key}" style="font-size:0.8em;color:#888">No file chosen</span>
                         <span id="ytAdShotStatus_${slot.key}" style="font-size:0.78em;font-weight:700;display:none;padding:3px 8px;border-radius:6px"></span>
                     </div>
+                    <button type="button" id="ytAdShotSubmitBtn_${slot.key}" onclick="submitSingleYtAdShot('${slot.key}')"
+                        style="background:linear-gradient(135deg,#6a1b9a,#9c27b0);color:white;border:none;border-radius:8px;padding:9px 20px;font-size:0.87em;font-weight:700;cursor:pointer;width:100%">
+                        📤 Submit This Screenshot
+                    </button>
+                    <div id="ytAdShotSubmitMsg_${slot.key}" style="display:none;margin-top:8px;padding:8px 12px;border-radius:8px;font-size:0.84em;font-weight:600"></div>
                 </div>`);
             });
         }
@@ -12268,209 +12359,195 @@
             }
         }
 
+        // Submit a single screenshot slot independently
+        async function submitSingleYtAdShot(key) {
+            const cls    = (window.currentCRClass || crClass || '').trim();
+            const btnEl  = document.getElementById('ytAdShotSubmitBtn_' + key);
+            const msgEl  = document.getElementById('ytAdShotSubmitMsg_' + key);
+            const fileEl = document.getElementById('ytAdShotFile_' + key);
+
+            const showMsg = (text, ok) => {
+                if (!msgEl) return;
+                msgEl.style.display    = 'block';
+                msgEl.style.background = ok ? '#d4edda' : '#f8d7da';
+                msgEl.style.color      = ok ? '#155724' : '#721c24';
+                msgEl.style.border     = ok ? '1px solid #c3e6cb' : '1px solid #f5c6cb';
+                msgEl.textContent = text;
+            };
+
+            if (!cls) { showMsg('❌ Class info missing. Please re-login.', false); return; }
+            if (!fileEl || !fileEl.files[0]) { showMsg('⚠️ Please choose a screenshot file first.', false); return; }
+
+            if (btnEl) { btnEl.disabled = true; btnEl.textContent = '⏳ Uploading…'; }
+
+            try {
+                // Find or check submission entry for this class
+                const subSnap = await db.ref('youtubeAd').once('value');
+                let entryKey = null;
+                if (subSnap.exists()) subSnap.forEach(ch => { if (ch.val().classYear === cls) entryKey = ch.key; });
+                if (!entryKey) { showMsg('❌ Please submit your YouTube link first before uploading screenshots.', false); return; }
+
+                // Upload this specific screenshot
+                const url = await uploadYtAdShot(key);
+                if (!url) { showMsg('❌ Upload failed. Please try again.', false); return; }
+
+                // Merge into existing screenshots object
+                const existSnap = await db.ref('youtubeAd/' + entryKey + '/screenshots').once('value').catch(() => null);
+                const existing  = (existSnap && existSnap.val()) || {};
+                existing[key]   = url;
+                await db.ref('youtubeAd/' + entryKey + '/screenshots').set(existing);
+                await db.ref('youtubeAd/' + entryKey + '/latestScreenshotUrl').set(url);
+
+                showMsg('✅ Screenshot submitted! Roopa M C / Smitha M will enter your metrics.', true);
+
+                // Show "already uploaded" badge
+                const alreadyEl = document.getElementById('ytAdShotAlready_' + key);
+                if (alreadyEl) {
+                    alreadyEl.style.display = 'block';
+                    alreadyEl.textContent   = '✅ Screenshot uploaded successfully. You can replace it anytime.';
+                }
+                // Reset file input
+                fileEl.value = '';
+                const nameEl = document.getElementById('ytAdShotName_' + key);
+                if (nameEl) nameEl.textContent = 'No file chosen';
+                const prevEl = document.getElementById('ytAdShotPrev_' + key);
+                if (prevEl) prevEl.style.display = 'none';
+
+            } catch(err) {
+                showMsg('❌ Error: ' + err.message, false);
+            } finally {
+                if (btnEl) { btnEl.disabled = false; btnEl.textContent = '📤 Submit This Screenshot'; }
+            }
+        }
+
         // -- Faculty Monitor: Roopa M C and Smitha M ------------------
         async function loadYtAdMonitorPanel() {
             const listEl = document.getElementById('ytAdMonitorList');
             if (!listEl) return;
-            listEl.innerHTML = '<div style="text-align:center;color:#aaa;padding:30px">Loading YouTube Ad submissions…</div>';
-
+            listEl.innerHTML = '<div style="text-align:center;color:#aaa;padding:30px">Loading YouTube Ad data…</div>';
             try {
-                const [snap, fSnap] = await Promise.all([
+                const [snap, fSnap, enrollSnap] = await Promise.all([
                     db.ref('youtubeAd').once('value'),
-                    db.ref('youtubeAd/socialFormula').once('value').catch(() => null)
+                    db.ref('youtubeAd/socialFormula').once('value').catch(() => null),
+                    db.ref('youthfest-enrollments').once('value')
                 ]);
                 const formula = (fSnap && fSnap.val()) || { weightViews:1, weightLikes:3, weightComments:5, maxRaw:5000 };
 
-                // Collect only submission entries (skip settings keys like eventActive, leaderboardPublished, socialFormula)
-                const teams = [];
+                // Build per-class enrollment info
+                const enrollByClass = {};
+                if (enrollSnap.exists()) enrollSnap.forEach(ch => {
+                    const d = ch.val();
+                    if (d.event !== 'YouTube Advertisement') return;
+                    const cls = (d.classYear || d.class || '').trim();
+                    if (!cls) return;
+                    if (!enrollByClass[cls]) enrollByClass[cls] = { members: [], product: d.product || '—' };
+                    enrollByClass[cls].members.push(d.name || d.memberName || '—');
+                    if (d.product && enrollByClass[cls].product === '—') enrollByClass[cls].product = d.product;
+                });
+
+                // Update YT_AD_ELIGIBLE dynamically
+                YT_AD_ELIGIBLE = Object.keys(enrollByClass).sort();
+
+                // Build submissions map: classYear → submission
+                const subMap = {};
                 if (snap.exists()) snap.forEach(ch => {
                     const d = ch.val();
-                    if (d && d.classYear) teams.push({ id: ch.key, ...d });
+                    if (d && d.classYear) subMap[d.classYear.trim()] = { id: ch.key, ...d };
                 });
-                teams.sort((a,b) => (a.classYear||'').localeCompare(b.classYear||''));
 
-                if (teams.length === 0) {
-                    // Show all eligible classes with entry forms even if CR hasn't submitted
-                    const today = new Date().toISOString().slice(0,10);
-                    listEl.innerHTML = YT_AD_ELIGIBLE.map(cls => `
-                        <div style="background:white;border-radius:12px;border:2px solid #ffcdd2;padding:18px;box-shadow:0 2px 8px rgba(0,0,0,0.06)">
-                            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px">
-                                <div>
-                                    <span style="background:linear-gradient(135deg,#cc0000,#ff6600);color:white;border-radius:20px;padding:3px 12px;font-size:0.82em;font-weight:700">📺 ${cls}</span>
-                                </div>
-                                <span style="background:#fff3cd;color:#856404;border-radius:12px;padding:4px 12px;font-size:0.78em;font-weight:700">⏳ CR hasn't submitted link yet</span>
-                            </div>
-                            <div style="background:#fff8f0;border-radius:8px;padding:10px 14px;font-size:0.8em;color:#e65100;margin-bottom:14px">
-                                ⚠️ No YouTube Ad link or screenshot from CR yet — but you can still enter metrics once you have the numbers.
-                            </div>
-                            <div style="display:flex;flex-direction:column;gap:8px;max-width:320px">
-                                <div style="font-size:0.82em;font-weight:700;color:#444;margin-bottom:4px">📝 Enter Metrics <span style="color:#888;font-weight:400">(${today}):</span></div>
-                                <div style="display:flex;align-items:center;gap:8px">
-                                    <span style="width:90px;font-size:0.82em;color:#555;font-weight:600">👁 Views</span>
-                                    <input type="number" id="ytMon_views_nk_${cls.replace(/\s/g,'_')}" min="0" placeholder="0"
-                                           style="flex:1;padding:7px 10px;border:2px solid #ffcdd2;border-radius:8px;font-size:0.88em;outline:none">
-                                </div>
-                                <div style="display:flex;align-items:center;gap:8px">
-                                    <span style="width:90px;font-size:0.82em;color:#555;font-weight:600">👍 Likes</span>
-                                    <input type="number" id="ytMon_likes_nk_${cls.replace(/\s/g,'_')}" min="0" placeholder="0"
-                                           style="flex:1;padding:7px 10px;border:2px solid #ffcdd2;border-radius:8px;font-size:0.88em;outline:none">
-                                </div>
-                                <div style="display:flex;align-items:center;gap:8px">
-                                    <span style="width:90px;font-size:0.82em;color:#555;font-weight:600">💬 Comments</span>
-                                    <input type="number" id="ytMon_comments_nk_${cls.replace(/\s/g,'_')}" min="0" placeholder="0"
-                                           style="flex:1;padding:7px 10px;border:2px solid #ffcdd2;border-radius:8px;font-size:0.88em;outline:none">
-                                </div>
-                                <div style="background:#fff8f0;border-radius:8px;padding:8px 12px;font-size:0.8em;color:#e65100;margin-top:2px">
-                                    Formula: (Views×${formula.weightViews||1}) + (Likes×${formula.weightLikes||3}) + (Comments×${formula.weightComments||5}) ÷ ${formula.maxRaw||5000} × 50
-                                </div>
-                                <div style="display:flex;gap:8px;align-items:center;margin-top:4px">
-                                    <button onclick="saveYtAdMonitorScoreByClass('${cls}')"
-                                            style="background:linear-gradient(135deg,#cc0000,#ff6600);color:white;border:none;border-radius:8px;padding:9px 18px;font-size:0.88em;font-weight:700;cursor:pointer">
-                                        💾 Save Score
-                                    </button>
-                                    <span id="ytMonMsg_nk_${cls.replace(/\s/g,'_')}" style="font-size:0.8em;font-weight:700;display:none"></span>
-                                </div>
-                            </div>
-                        </div>`).join('');
+                const allClasses = Object.keys(enrollByClass).sort();
+                if (!allClasses.length) {
+                    listEl.innerHTML = '<div style="text-align:center;color:#aaa;padding:30px">No YouTube Ad enrollments found.</div>';
                     return;
                 }
 
-                listEl.innerHTML = teams.map((t, i) => {
-                    const socialRaw = (t.views||0)*(formula.weightViews||1) + (t.likes||0)*(formula.weightLikes||3) + (t.comments||0)*(formula.weightComments||5);
-                    const socialPct = Math.min(50, +(socialRaw/(formula.maxRaw||5000)*50).toFixed(2));
-                    const today = new Date().toISOString().slice(0,10);
+                const today = new Date().toISOString().slice(0, 10);
 
-                    // Build screenshot HTML
+                listEl.innerHTML = allClasses.map((cls, i) => {
+                    const enr = enrollByClass[cls];
+                    const t   = subMap[cls] || null;
+                    const f_  = formula;
+                    const memberBar = `<div style="margin-bottom:10px;background:#fff8f0;border-radius:8px;padding:8px 12px;font-size:0.8em;color:#555;border-left:3px solid #ff6600">
+                        <strong style="color:#333">👥 Members:</strong> ${enr.members.join(', ') || '—'}
+                        &nbsp;&nbsp;|&nbsp;&nbsp;
+                        <strong style="color:#333">📌 Product:</strong> ${(t ? t.product : enr.product) || '—'}
+                    </div>`;
+
+                    if (!t) {
+                        return `<div style="background:white;border-radius:12px;border:2px solid #ffcdd2;padding:18px;box-shadow:0 2px 8px rgba(0,0,0,0.06)">
+                            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px">
+                                <span style="background:linear-gradient(135deg,#cc0000,#ff6600);color:white;border-radius:20px;padding:3px 12px;font-size:0.82em;font-weight:700">📺 ${cls}</span>
+                                <span style="background:#fff3cd;color:#856404;border-radius:12px;padding:4px 12px;font-size:0.78em;font-weight:700">⏳ CR hasn't submitted link yet</span>
+                            </div>
+                            ${memberBar}
+                            <div style="background:#fff8f0;border-radius:8px;padding:10px 14px;font-size:0.8em;color:#e65100;margin-bottom:14px">
+                                ⚠️ No YouTube Ad link or screenshot from CR yet — you can still enter metrics once you have the numbers.
+                            </div>
+                            <div style="display:flex;flex-direction:column;gap:8px;max-width:320px">
+                                <div style="font-size:0.82em;font-weight:700;color:#444;margin-bottom:4px">📝 Enter Metrics <span style="color:#888;font-weight:400">(${today}):</span></div>
+                                <div style="display:flex;align-items:center;gap:8px"><span style="width:90px;font-size:0.82em;color:#555;font-weight:600">👁 Views</span><input type="number" id="ytMon_views_nk_${cls.replace(/\s/g,'_')}" min="0" placeholder="0" style="flex:1;padding:7px 10px;border:2px solid #ffcdd2;border-radius:8px;font-size:0.88em;outline:none"></div>
+                                <div style="display:flex;align-items:center;gap:8px"><span style="width:90px;font-size:0.82em;color:#555;font-weight:600">👍 Likes</span><input type="number" id="ytMon_likes_nk_${cls.replace(/\s/g,'_')}" min="0" placeholder="0" style="flex:1;padding:7px 10px;border:2px solid #ffcdd2;border-radius:8px;font-size:0.88em;outline:none"></div>
+                                <div style="display:flex;align-items:center;gap:8px"><span style="width:90px;font-size:0.82em;color:#555;font-weight:600">💬 Comments</span><input type="number" id="ytMon_comments_nk_${cls.replace(/\s/g,'_')}" min="0" placeholder="0" style="flex:1;padding:7px 10px;border:2px solid #ffcdd2;border-radius:8px;font-size:0.88em;outline:none"></div>
+                                <div style="background:#fff8f0;border-radius:8px;padding:8px 12px;font-size:0.8em;color:#e65100;margin-top:2px">Formula: (Views×${f_.weightViews||1}) + (Likes×${f_.weightLikes||3}) + (Comments×${f_.weightComments||5}) ÷ ${f_.maxRaw||5000} × 50</div>
+                                <div style="display:flex;gap:8px;align-items:center;margin-top:4px">
+                                    <button onclick="saveYtAdMonitorScoreByClass('${cls}')" style="background:linear-gradient(135deg,#cc0000,#ff6600);color:white;border:none;border-radius:8px;padding:9px 18px;font-size:0.88em;font-weight:700;cursor:pointer">💾 Save Score</button>
+                                    <span id="ytMonMsg_nk_${cls.replace(/\s/g,'_')}" style="font-size:0.8em;font-weight:700;display:none"></span>
+                                </div>
+                            </div>
+                        </div>`;
+                    }
+
+                    const socialRaw = (t.views||0)*(f_.weightViews||1) + (t.likes||0)*(f_.weightLikes||3) + (t.comments||0)*(f_.weightComments||5);
+                    const socialPct = Math.min(50, +(socialRaw/(f_.maxRaw||5000)*50).toFixed(2));
                     const shots = t.screenshots || {};
-                    let screenshotHtml = '';
                     const shotEntries = Object.entries(shots);
+                    let screenshotHtml = '';
                     if (shotEntries.length > 0) {
                         screenshotHtml = '<div style="display:flex;flex-direction:column;gap:8px">';
                         shotEntries.forEach(([key, url]) => {
                             const label = key === 'start' ? '02-Mar (Start)' : key === 'end' ? '07-Mar (End)' : key;
-                            screenshotHtml += `<a href="${url}" target="_blank" rel="noopener" style="display:inline-block">
-                                <img src="${url}" style="max-height:120px;max-width:100%;border-radius:8px;border:2px solid #a5d6a7;object-fit:contain" alt="Analytics ${label}">
-                                <div style="font-size:0.72em;color:#4caf50;margin-top:2px">📊 ${label} — Click to enlarge</div>
-                            </a>`;
+                            screenshotHtml += `<a href="${url}" target="_blank" rel="noopener"><img src="${url}" style="max-height:120px;max-width:100%;border-radius:8px;border:2px solid #a5d6a7;object-fit:contain"><div style="font-size:0.72em;color:#4caf50;margin-top:2px">📊 ${label}</div></a>`;
                         });
                         screenshotHtml += '</div>';
                     } else if (t.latestScreenshotUrl) {
-                        screenshotHtml = `<a href="${t.latestScreenshotUrl}" target="_blank" rel="noopener">
-                            <img src="${t.latestScreenshotUrl}" style="max-height:130px;max-width:100%;border-radius:8px;border:2px solid #a5d6a7;object-fit:contain">
-                            <div style="font-size:0.75em;color:#4caf50;margin-top:3px">📊 Click to open full screenshot</div>
-                        </a>`;
+                        screenshotHtml = `<a href="${t.latestScreenshotUrl}" target="_blank" rel="noopener"><img src="${t.latestScreenshotUrl}" style="max-height:130px;max-width:100%;border-radius:8px;border:2px solid #a5d6a7;object-fit:contain"><div style="font-size:0.75em;color:#4caf50;margin-top:3px">📊 Click to enlarge</div></a>`;
                     } else {
                         screenshotHtml = '<div style="background:#f5f5f5;border-radius:8px;padding:16px;text-align:center;color:#bbb;font-size:0.82em;border:2px dashed #ddd">No screenshot uploaded by CR yet</div>';
                     }
 
                     return `<div style="background:white;border-radius:12px;border:2px solid #ffcdd2;padding:18px;box-shadow:0 2px 8px rgba(0,0,0,0.06)">
-                        <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px;margin-bottom:14px">
+                        <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px;margin-bottom:10px">
                             <div>
-                                <span style="background:linear-gradient(135deg,#cc0000,#ff6600);color:white;border-radius:20px;padding:3px 12px;font-size:0.82em;font-weight:700">Class ${i+1}</span>
-                                <strong style="margin-left:8px;font-size:0.95em">${t.classYear||'—'}</strong>
+                                <span style="background:linear-gradient(135deg,#cc0000,#ff6600);color:white;border-radius:20px;padding:3px 12px;font-size:0.82em;font-weight:700">📺 ${i+1}</span>
+                                <strong style="margin-left:8px;font-size:0.95em">${t.classYear||cls}</strong>
                                 <span style="color:#c62828;font-size:0.82em;margin-left:8px">📌 ${t.adTitle||'—'}</span>
                             </div>
                             <a href="${t.ytLink||'#'}" target="_blank" rel="noopener" style="background:#cc0000;color:white;border-radius:16px;padding:4px 14px;text-decoration:none;font-size:0.8em;font-weight:700">▶️ Watch Video</a>
                         </div>
-
+                        ${memberBar}
                         <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
-                            <!-- Screenshots from CR -->
                             <div>
                                 <div style="font-size:0.82em;font-weight:700;color:#444;margin-bottom:6px">📊 Analytics Screenshot (by CR):</div>
                                 ${screenshotHtml}
                             </div>
-
-                            <!-- Entry form -->
                             <div>
                                 <div style="font-size:0.82em;font-weight:700;color:#444;margin-bottom:8px">📝 Enter Metrics <span style="color:#888;font-weight:400">(${today})</span>:</div>
                                 <div style="display:flex;flex-direction:column;gap:8px">
-                                    <div style="display:flex;align-items:center;gap:8px">
-                                        <span style="width:80px;font-size:0.82em;color:#555;font-weight:600">👁 Views</span>
-                                        <input type="number" id="ytMon_views_${t.id}" min="0" placeholder="0" value="${t.views||''}"
-                                               style="flex:1;padding:7px 10px;border:2px solid #ffcdd2;border-radius:8px;font-size:0.88em;outline:none">
-                                    </div>
-                                    <div style="display:flex;align-items:center;gap:8px">
-                                        <span style="width:80px;font-size:0.82em;color:#555;font-weight:600">👍 Likes</span>
-                                        <input type="number" id="ytMon_likes_${t.id}" min="0" placeholder="0" value="${t.likes||''}"
-                                               style="flex:1;padding:7px 10px;border:2px solid #ffcdd2;border-radius:8px;font-size:0.88em;outline:none">
-                                    </div>
-                                    <div style="display:flex;align-items:center;gap:8px">
-                                        <span style="width:80px;font-size:0.82em;color:#555;font-weight:600">💬 Comments</span>
-                                        <input type="number" id="ytMon_comments_${t.id}" min="0" placeholder="0" value="${t.comments||''}"
-                                               style="flex:1;padding:7px 10px;border:2px solid #ffcdd2;border-radius:8px;font-size:0.88em;outline:none">
-                                    </div>
-                                    <div style="background:#fff8f0;border-radius:8px;padding:8px 12px;font-size:0.8em;color:#e65100;margin-top:2px">
-                                        Formula: (Views×${formula.weightViews||1}) + (Likes×${formula.weightLikes||3}) + (Comments×${formula.weightComments||5}) ÷ ${formula.maxRaw||5000} × 50
-                                    </div>
-                                    <div style="display:flex;gap:8px;align-items:center;margin-top:4px">
-                                        <button onclick="saveYtAdMonitorScore('${t.id}')"
-                                                style="background:linear-gradient(135deg,#cc0000,#ff6600);color:white;border:none;border-radius:8px;padding:9px 18px;font-size:0.88em;font-weight:700;cursor:pointer">
-                                            💾 Save Score
-                                        </button>
+                                    <div style="display:flex;align-items:center;gap:8px"><span style="width:80px;font-size:0.82em;color:#555;font-weight:600">👁 Views</span><input type="number" id="ytMon_views_${t.id}" min="0" placeholder="0" value="${t.views||''}" style="flex:1;padding:7px 10px;border:2px solid #ffcdd2;border-radius:8px;font-size:0.88em;outline:none"></div>
+                                    <div style="display:flex;align-items:center;gap:8px"><span style="width:80px;font-size:0.82em;color:#555;font-weight:600">👍 Likes</span><input type="number" id="ytMon_likes_${t.id}" min="0" placeholder="0" value="${t.likes||''}" style="flex:1;padding:7px 10px;border:2px solid #ffcdd2;border-radius:8px;font-size:0.88em;outline:none"></div>
+                                    <div style="display:flex;align-items:center;gap:8px"><span style="width:80px;font-size:0.82em;color:#555;font-weight:600">💬 Comments</span><input type="number" id="ytMon_comments_${t.id}" min="0" placeholder="0" value="${t.comments||''}" style="flex:1;padding:7px 10px;border:2px solid #ffcdd2;border-radius:8px;font-size:0.88em;outline:none"></div>
+                                    <div style="background:#fff8f0;border-radius:8px;padding:8px 12px;font-size:0.8em;color:#e65100;margin-top:2px">Formula: (Views×${f_.weightViews||1}) + (Likes×${f_.weightLikes||3}) + (Comments×${f_.weightComments||5}) ÷ ${f_.maxRaw||5000} × 50</div>
+                                    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:4px">
+                                        <button onclick="saveYtAdMonitorScore('${t.id}')" style="background:linear-gradient(135deg,#cc0000,#ff6600);color:white;border:none;border-radius:8px;padding:9px 18px;font-size:0.88em;font-weight:700;cursor:pointer">💾 Save Score</button>
                                         <span id="ytMonMsg_${t.id}" style="font-size:0.8em;font-weight:700;display:none"></span>
                                     </div>
+                                    <div style="font-size:0.88em;font-weight:700;color:${t.views ? '#e65100' : '#aaa'}">Social Score: <strong>${socialPct} / 50</strong></div>
                                 </div>
-                            </div>
-                        </div>
-
-                        <!-- Last saved score -->
-                        <div style="margin-top:12px;background:${t.views ? '#fff3e0' : '#f5f5f5'};border-radius:8px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
-                            <div style="font-size:0.82em;color:#555">
-                                Views: <strong>${t.views||0}</strong> &nbsp;·&nbsp;
-                                Likes: <strong>${t.likes||0}</strong> &nbsp;·&nbsp;
-                                Comments: <strong>${t.comments||0}</strong>
-                            </div>
-                            <div style="font-size:0.88em;font-weight:700;color:${t.views ? '#e65100' : '#aaa'}">
-                                Social Score: <strong>${socialPct} / 50</strong>
                             </div>
                         </div>
                     </div>`;
                 }).join('');
 
-                // Also show any eligible classes that haven't submitted yet
-                const submittedClasses = teams.map(t => t.classYear || '');
-                const missingClasses = YT_AD_ELIGIBLE.filter(cls => !submittedClasses.includes(cls));
-                if (missingClasses.length > 0) {
-                    const today = new Date().toISOString().slice(0,10);
-                    listEl.innerHTML += missingClasses.map(cls => `
-                        <div style="background:white;border-radius:12px;border:2px solid #ffcdd2;padding:18px;box-shadow:0 2px 8px rgba(0,0,0,0.06)">
-                            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px">
-                                <span style="background:linear-gradient(135deg,#cc0000,#ff6600);color:white;border-radius:20px;padding:3px 12px;font-size:0.82em;font-weight:700">📺 ${cls}</span>
-                                <span style="background:#fff3cd;color:#856404;border-radius:12px;padding:4px 12px;font-size:0.78em;font-weight:700">⏳ CR hasn't submitted link yet</span>
-                            </div>
-                            <div style="background:#fff8f0;border-radius:8px;padding:10px 14px;font-size:0.8em;color:#e65100;margin-bottom:14px">
-                                ⚠️ No YouTube Ad link or screenshot from CR yet — but you can still enter metrics once you have the numbers.
-                            </div>
-                            <div style="display:flex;flex-direction:column;gap:8px;max-width:320px">
-                                <div style="font-size:0.82em;font-weight:700;color:#444;margin-bottom:4px">📝 Enter Metrics <span style="color:#888;font-weight:400">(${today}):</span></div>
-                                <div style="display:flex;align-items:center;gap:8px">
-                                    <span style="width:90px;font-size:0.82em;color:#555;font-weight:600">👁 Views</span>
-                                    <input type="number" id="ytMon_views_nk_${cls.replace(/\s/g,'_')}" min="0" placeholder="0"
-                                           style="flex:1;padding:7px 10px;border:2px solid #ffcdd2;border-radius:8px;font-size:0.88em;outline:none">
-                                </div>
-                                <div style="display:flex;align-items:center;gap:8px">
-                                    <span style="width:90px;font-size:0.82em;color:#555;font-weight:600">👍 Likes</span>
-                                    <input type="number" id="ytMon_likes_nk_${cls.replace(/\s/g,'_')}" min="0" placeholder="0"
-                                           style="flex:1;padding:7px 10px;border:2px solid #ffcdd2;border-radius:8px;font-size:0.88em;outline:none">
-                                </div>
-                                <div style="display:flex;align-items:center;gap:8px">
-                                    <span style="width:90px;font-size:0.82em;color:#555;font-weight:600">💬 Comments</span>
-                                    <input type="number" id="ytMon_comments_nk_${cls.replace(/\s/g,'_')}" min="0" placeholder="0"
-                                           style="flex:1;padding:7px 10px;border:2px solid #ffcdd2;border-radius:8px;font-size:0.88em;outline:none">
-                                </div>
-                                <div style="background:#fff8f0;border-radius:8px;padding:8px 12px;font-size:0.8em;color:#e65100;margin-top:2px">
-                                    Formula: (Views×${formula.weightViews||1}) + (Likes×${formula.weightLikes||3}) + (Comments×${formula.weightComments||5}) ÷ ${formula.maxRaw||5000} × 50
-                                </div>
-                                <div style="display:flex;gap:8px;align-items:center;margin-top:4px">
-                                    <button onclick="saveYtAdMonitorScoreByClass('${cls}')"
-                                            style="background:linear-gradient(135deg,#cc0000,#ff6600);color:white;border:none;border-radius:8px;padding:9px 18px;font-size:0.88em;font-weight:700;cursor:pointer">
-                                        💾 Save Score
-                                    </button>
-                                    <span id="ytMonMsg_nk_${cls.replace(/\s/g,'_')}" style="font-size:0.8em;font-weight:700;display:none"></span>
-                                </div>
-                            </div>
-                        </div>`).join('');
-                }
             } catch(e) {
                 const isPermission = e && e.message && e.message.includes('permission_denied');
                 listEl.innerHTML = `<div style="padding:24px;background:#ffeef0;border-radius:10px;border:2px solid #f5c6cb">
@@ -12479,6 +12556,7 @@
                 </div>`;
             }
         }
+
 
         // Save score for a class that hasn't submitted their YT link yet (by class name)
         async function saveYtAdMonitorScoreByClass(cls) {
@@ -14824,10 +14902,283 @@
         // END POD CASTING
         // ══════════════════════════════════════════════════════════════
 
+        // ══════════════════════════════════════════════════════════════
+        // WHATSAPP SUMMARY — PODCAST / VLOG / YOUTUBE AD
+        // Shared modal + per-event generator functions
+        // ══════════════════════════════════════════════════════════════
+
+        function _showWaSummaryModal(title, text, isHtml) {
+            let modal = document.getElementById('waSummaryModal');
+            if (!modal) {
+                modal = document.createElement('div');
+                modal.id = 'waSummaryModal';
+                modal.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.65);display:none;align-items:center;justify-content:center;padding:12px;box-sizing:border-box';
+                modal.innerHTML = `
+                <div style="background:white;border-radius:18px;max-width:640px;width:100%;height:calc(100vh - 24px);max-height:calc(100vh - 24px);display:flex;flex-direction:column;box-shadow:0 12px 48px rgba(0,0,0,0.35);overflow:hidden">
+                    <div style="background:linear-gradient(135deg,#25D366,#128C7E);padding:14px 18px;display:flex;justify-content:space-between;align-items:center;flex-shrink:0">
+                        <div style="min-width:0;flex:1;margin-right:10px">
+                            <div id="waSummaryModalTitle" style="color:white;font-weight:800;font-size:1.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></div>
+                            <div id="waSummaryModalHint" style="color:rgba(255,255,255,0.85);font-size:0.76em;margin-top:2px"></div>
+                        </div>
+                        <button onclick="document.getElementById('waSummaryModal').style.display='none'" style="background:rgba(255,255,255,0.2);border:none;color:white;border-radius:10px;padding:6px 14px;cursor:pointer;font-weight:700;font-size:1em;flex-shrink:0">✕</button>
+                    </div>
+                    <div id="waSummaryScrollBody" style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:14px;min-height:0">
+                        <textarea id="waSummaryText" readonly onclick="this.select()" style="width:100%;height:100%;min-height:200px;border:2px solid #25D366;border-radius:10px;padding:14px;font-size:0.85em;font-family:monospace;line-height:1.65;resize:none;background:#f9fff9;color:#111;outline:none;box-sizing:border-box"></textarea>
+                        <div id="waSummaryHtmlBody" style="display:none"></div>
+                    </div>
+                    <div id="waSummaryFooter" style="padding:10px 14px;background:#f1f1f1;display:flex;gap:10px;flex-wrap:wrap;flex-shrink:0;border-top:1px solid #e0e0e0">
+                        <button id="waCopyBtn" onclick="(function(){var t=document.getElementById('waSummaryText');t.select();try{document.execCommand('copy');}catch(e){};var b=document.getElementById('waCopyBtn');b.textContent='✅ Copied!';setTimeout(function(){b.textContent='📋 Copy All';},2000);})()" style="background:#25D366;color:white;border:none;border-radius:10px;padding:10px 22px;font-weight:700;cursor:pointer;font-size:0.9em">📋 Copy All</button>
+                        <button onclick="document.getElementById('waSummaryModal').style.display='none'" style="background:#eee;color:#333;border:none;border-radius:10px;padding:10px 18px;font-weight:600;cursor:pointer;font-size:0.9em">Close</button>
+                    </div>
+                </div>`;
+                document.body.appendChild(modal);
+                modal.addEventListener('click', function(e){ if(e.target===modal) modal.style.display='none'; });
+            }
+            const textEl   = document.getElementById('waSummaryText');
+            const htmlEl   = document.getElementById('waSummaryHtmlBody');
+            const footerEl = document.getElementById('waSummaryFooter');
+            const hintEl   = document.getElementById('waSummaryModalHint');
+            const scrollEl = document.getElementById('waSummaryScrollBody');
+            document.getElementById('waSummaryModalTitle').textContent = title;
+            if (isHtml) {
+                textEl.style.display   = 'none';
+                htmlEl.style.display   = 'block';
+                htmlEl.innerHTML       = text;
+                footerEl.style.display = 'none';
+                hintEl.textContent     = 'Scroll to see all — tap a name to open their invitation';
+            } else {
+                textEl.style.display   = 'block';
+                htmlEl.style.display   = 'none';
+                htmlEl.innerHTML       = '';
+                footerEl.style.display = 'flex';
+                hintEl.textContent     = 'Tap the box → Select All → Copy → Paste in WhatsApp';
+                textEl.value = text;
+            }
+            modal.style.display = 'flex';
+            if (scrollEl) scrollEl.scrollTop = 0;
+            if (!isHtml) setTimeout(function(){ var t=document.getElementById('waSummaryText'); if(t) t.select(); }, 150);
+        }
+
+        async function showPodcastWhatsAppSummary() {
+            try {
+                // Fetch both enrollments and submissions in parallel
+                const [enrollSnap, subSnap] = await Promise.all([
+                    db.ref('youthfest-enrollments').once('value'),
+                    db.ref('podcastChallenge').once('value')
+                ]);
+
+                // Build submissions map: memberName → submission record
+                const subMap = {};
+                if (subSnap.exists()) subSnap.forEach(ch => {
+                    const d = ch.val();
+                    if (d.memberName) subMap[d.memberName.trim().toLowerCase()] = d;
+                });
+
+                // Collect all podcast enrollments
+                const enrolled = [];
+                if (enrollSnap.exists()) enrollSnap.forEach(ch => {
+                    const d = ch.val();
+                    if (d.event === 'Pod Casting') enrolled.push(d);
+                });
+
+                if (!enrolled.length) { alert('No podcast enrollments found.'); return; }
+                enrolled.sort((a,b) => (a.classYear||'').localeCompare(b.classYear||'') || (a.memberName||'').localeCompare(b.memberName||''));
+
+                const now = new Date().toLocaleDateString('en-IN',{day:'2-digit',month:'long',year:'numeric'});
+                const lines = [];
+                lines.push('🎙️ *POD CASTING — Summary Report*');
+                lines.push('📅 ' + now);
+                lines.push('━━━━━━━━━━━━━━━━━━━━━━━━');
+
+                const byClass = {};
+                enrolled.forEach(e => {
+                    const cls = (e.classYear || e.class || 'Unknown').trim();
+                    if (!byClass[cls]) byClass[cls] = [];
+                    byClass[cls].push(e);
+                });
+
+                let idx = 1;
+                let submitted = 0, notSubmitted = 0;
+                Object.keys(byClass).sort().forEach(cls => {
+                    lines.push('');
+                    lines.push('🏫 *' + cls + '*');
+                    byClass[cls].forEach(e => {
+                        const name = (e.memberName || e.name || '—').trim();
+                        const sub = subMap[name.toLowerCase()] || null;
+                        lines.push('');
+                        lines.push(idx + '. 👤 *' + name + '*');
+                        lines.push('   📌 Topic: ' + (e.topic || (sub && sub.topic) || '—'));
+                        if (sub) {
+                            lines.push('   🔖 Sub-topic: ' + (sub.subtopic || e.podSubtopic || '—'));
+                            lines.push('   🎵 URL: ' + (sub.link || '—'));
+                            if (sub.episodeTitle) lines.push('   📻 Episode: ' + sub.episodeTitle);
+                            lines.push('   ✅ Submitted');
+                            submitted++;
+                        } else {
+                            lines.push('   🔖 Sub-topic: ' + (e.podSubtopic || '—'));
+                            lines.push('   🎵 URL: ⏳ Not submitted yet');
+                            notSubmitted++;
+                        }
+                        idx++;
+                    });
+                });
+
+                lines.push('');
+                lines.push('━━━━━━━━━━━━━━━━━━━━━━━━');
+                lines.push('📊 Total Enrolled: ' + enrolled.length);
+                lines.push('✅ Submitted: ' + submitted + '  |  ⏳ Pending: ' + notSubmitted);
+                lines.push('🏫 Classes: ' + Object.keys(byClass).length);
+
+                _showWaSummaryModal('🎙️ Podcast WhatsApp Summary', lines.join('\n'));
+            } catch(e) { alert('Error: ' + e.message); }
+        }
+
+        async function showVlogWhatsAppSummary() {
+            try {
+                const [enrollSnap, subSnap] = await Promise.all([
+                    db.ref('youthfest-enrollments').once('value'),
+                    db.ref('vlogChallenge').once('value')
+                ]);
+
+                // Build submissions map: classYear (lower) → array of submission records (up to 2 teams per class)
+                const subMap = {};
+                if (subSnap.exists()) subSnap.forEach(ch => {
+                    const d = ch.val();
+                    const cls = (d.classYear || d.class || '').trim().toLowerCase();
+                    if (!cls) return;
+                    if (!subMap[cls]) subMap[cls] = [];
+                    subMap[cls].push(d);
+                });
+
+                // Group enrollments by class → teamNum → members
+                const byClass = {};
+                if (enrollSnap.exists()) enrollSnap.forEach(ch => {
+                    const d = ch.val();
+                    if (d.event !== 'Vlog') return;
+                    const cls = (d.classYear || d.class || 'Unknown').trim();
+                    const teamNum = d.teamNum || 1;
+                    if (!byClass[cls]) byClass[cls] = {};
+                    if (!byClass[cls][teamNum]) byClass[cls][teamNum] = { members: [], topic: d.topic || '—' };
+                    byClass[cls][teamNum].members.push(d.name || d.memberName || '—');
+                });
+
+                if (!Object.keys(byClass).length) { alert('No vlog enrollments found.'); return; }
+
+                const now = new Date().toLocaleDateString('en-IN',{day:'2-digit',month:'long',year:'numeric'});
+                const lines = [];
+                lines.push('📹 *VLOG — Summary Report*');
+                lines.push('📅 ' + now);
+                lines.push('━━━━━━━━━━━━━━━━━━━━━━━━');
+
+                let idx = 1;
+                let submitted = 0, notSubmitted = 0;
+                Object.keys(byClass).sort().forEach(cls => {
+                    const subs = subMap[cls.toLowerCase()] || [];
+                    const teams = Object.keys(byClass[cls]).sort();
+                    lines.push('');
+                    lines.push('🏫 *' + cls + '*');
+                    teams.forEach((teamNum, ti) => {
+                        const team = byClass[cls][teamNum];
+                        const sub = subs[ti] || null;
+                        const memberStr = team.members.join(' & ') || '—';
+                        lines.push('');
+                        lines.push('   ' + idx + '. 👥 *' + memberStr + '*');
+                        lines.push('      📌 Topic: ' + (sub ? sub.topic : team.topic || '—'));
+                        if (sub) {
+                            lines.push('      🔗 URL: ' + (sub.link || '—'));
+                            if (sub.handle) lines.push('      📸 Handle: ' + sub.handle);
+                            lines.push('      ✅ Submitted');
+                            submitted++;
+                        } else {
+                            lines.push('      🔗 URL: ⏳ Not submitted yet');
+                            notSubmitted++;
+                        }
+                        idx++;
+                    });
+                });
+
+                lines.push('');
+                lines.push('━━━━━━━━━━━━━━━━━━━━━━━━');
+                lines.push('📊 Total Teams: ' + (submitted + notSubmitted));
+                lines.push('✅ Submitted: ' + submitted + '  |  ⏳ Pending: ' + notSubmitted);
+                lines.push('🏫 Classes: ' + Object.keys(byClass).length);
+
+                _showWaSummaryModal('📹 Vlog WhatsApp Summary', lines.join('\n'));
+            } catch(e) { alert('Error: ' + e.message); }
+        }
+
+        async function showYtAdWhatsAppSummary() {
+            try {
+                const [enrollSnap, subSnap] = await Promise.all([
+                    db.ref('youthfest-enrollments').once('value'),
+                    db.ref('youtubeAd').once('value')
+                ]);
+
+                // Build submissions map: classYear (lower) → submission record
+                const subMap = {};
+                if (subSnap.exists()) subSnap.forEach(ch => {
+                    const d = ch.val();
+                    const cls = (d.classYear || d.class || '').trim().toLowerCase();
+                    if (cls) subMap[cls] = d;
+                });
+
+                // Group enrollments by class → collect all members + product
+                const byClass = {};
+                if (enrollSnap.exists()) enrollSnap.forEach(ch => {
+                    const d = ch.val();
+                    if (d.event !== 'YouTube Advertisement') return;
+                    const cls = (d.classYear || d.class || 'Unknown').trim();
+                    if (!byClass[cls]) byClass[cls] = { members: [], product: d.product || '—' };
+                    byClass[cls].members.push(d.name || d.memberName || '—');
+                    if (d.product && byClass[cls].product === '—') byClass[cls].product = d.product;
+                });
+
+                if (!Object.keys(byClass).length) { alert('No YouTube Ad enrollments found.'); return; }
+
+                const now = new Date().toLocaleDateString('en-IN',{day:'2-digit',month:'long',year:'numeric'});
+                const lines = [];
+                lines.push('📺 *YOUTUBE AD — Summary Report*');
+                lines.push('📅 ' + now);
+                lines.push('━━━━━━━━━━━━━━━━━━━━━━━━');
+
+                let idx = 1;
+                let submitted = 0, notSubmitted = 0;
+                Object.keys(byClass).sort().forEach(cls => {
+                    const sub = subMap[cls.toLowerCase()] || null;
+                    const team = byClass[cls];
+                    lines.push('');
+                    lines.push(idx + '. 🏫 *' + cls + '*');
+                    lines.push('   👥 Members: ' + (team.members.join(', ') || '—'));
+                    lines.push('   📌 Product: ' + (sub ? (sub.product || team.product || '—') : (team.product || '—')));
+                    if (sub) {
+                        lines.push('   🎬 Title: ' + (sub.adTitle || '—'));
+                        lines.push('   🔗 URL: ' + (sub.ytLink || '—'));
+                        lines.push('   ✅ Submitted');
+                        submitted++;
+                    } else {
+                        lines.push('   🎬 Title: —');
+                        lines.push('   🔗 URL: ⏳ Not submitted yet');
+                        notSubmitted++;
+                    }
+                    idx++;
+                });
+
+                lines.push('');
+                lines.push('━━━━━━━━━━━━━━━━━━━━━━━━');
+                lines.push('📊 Total Classes Enrolled: ' + Object.keys(byClass).length);
+                lines.push('✅ Submitted: ' + submitted + '  |  ⏳ Pending: ' + notSubmitted);
+
+                _showWaSummaryModal('📺 YouTube Ad WhatsApp Summary', lines.join('\n'));
+            } catch(e) { alert('Error: ' + e.message); }
+        }
 
         // ══════════════════════════════════════════════════════════════
-        // BEST OUT OF WASTE — SHANKAR B C — ENTRY VERIFICATION
         // ══════════════════════════════════════════════════════════════
+
+        // Expose to window so onclick attributes can reach them
+        window.showPodcastWhatsAppSummary = showPodcastWhatsAppSummary;
+        window.showVlogWhatsAppSummary    = showVlogWhatsAppSummary;
+        window.showYtAdWhatsAppSummary    = showYtAdWhatsAppSummary;
 
         async function loadShankarBowPanel() {
             const listEl    = document.getElementById('shankarBowList');
@@ -17412,7 +17763,7 @@
                 if (form) form.style.display = 'block';
                 if (lockMsg) lockMsg.style.display = 'none';
                 autoFillVlogMembers();
-                initVlogDailyScreenshots(); // build daily screenshot slots
+                initVlogDailyScreenshots(); loadVlogExistingScreenshots(window.currentCRClass||crClass); // build daily screenshot slots
             }
             // Check monitoring visibility
             const mSnap = await db.ref('vlogSettings/monitoringVisible').once('value');
@@ -18344,21 +18695,24 @@
                 const juryData     = jurySnap.exists()  ? jurySnap.val()  : {};
                 const scheduleData = schedSnap.exists() ? schedSnap.val() : {};
 
+                // Build schedule map with flexible key matching (case-insensitive, trim)
                 const schedMap = {};
                 Object.values(scheduleData).forEach(ev => {
                     if (ev.name) schedMap[ev.name.toLowerCase().trim()] = ev;
                 });
 
-                const events = Object.keys(juryData).sort();
+                const events = (typeof ES_DEFAULT_EVENTS !== 'undefined' && ES_DEFAULT_EVENTS.length)
+                    ? ES_DEFAULT_EVENTS.map(e => e.name)
+                    : Object.keys(juryData).sort();
                 if (!events.length) {
-                    container.innerHTML = '<p style="color:#999;text-align:center;padding:30px">No jury setups found. Configure jury in Jury Setup tab first.</p>';
+                    container.innerHTML = '<p style="color:#999;text-align:center;padding:30px">No events found.</p>';
                     return;
                 }
 
                 // Helper: encode event name safely for HTML attr
                 function safeEvt(n) { return encodeURIComponent(n); }
 
-                // Helper: editable cell — shows value + ✏️ pencil; click pencil → inline input + 💾
+                // Helper: editable cell
                 function editCell(eventName, field, value, bgColor, textColor) {
                     const safeVal  = (value || '').replace(/'/g, '&#39;').replace(/"/g, '&quot;');
                     const safeEvtEnc = safeEvt(eventName);
@@ -18382,9 +18736,32 @@
                             </div>`;
                 }
 
-                const rows = events.map((eventName, i) => {
+                // Build stageType fallback map from static ES_DEFAULT_EVENTS
+                const _stageTypeMap = {};
+                if (typeof ES_DEFAULT_EVENTS !== 'undefined') {
+                    ES_DEFAULT_EVENTS.forEach(ev => { _stageTypeMap[ev.name.toLowerCase().trim()] = ev.stageType || 'Off stage'; });
+                }
+                function _getStage(name, sch) {
+                    return sch.stageType || _stageTypeMap[name.toLowerCase().trim()] || 'Off stage';
+                }
+
+                // Build event rows, sort: On stage first, then Off stage
+                const eventRows = events.map(eventName => {
                     const setup = juryData[eventName] || {};
                     const sch   = schedMap[eventName.toLowerCase().trim()] || {};
+                    return { eventName, setup, sch };
+                });
+                eventRows.sort((a, b) => {
+                    const aStage = _getStage(a.eventName, a.sch) === 'On stage' ? 0 : 1;
+                    const bStage = _getStage(b.eventName, b.sch) === 'On stage' ? 0 : 1;
+                    if (aStage !== bStage) return aStage - bStage;
+                    return a.eventName.localeCompare(b.eventName);
+                });
+
+                // Section divider index
+                const firstOffIdx = eventRows.findIndex(r => _getStage(r.eventName, r.sch) !== 'On stage');
+
+                const rows = eventRows.map(({ eventName, setup, sch }, i) => {
                     const j1name = setup.jury1Name     || '';
                     const j1pwd  = setup.jury1Password || '';
                     const j2name = setup.jury2Name     || '';
@@ -18393,11 +18770,13 @@
                     const startTime = sch.startTime || '—';
                     const endDate   = sch.endDate   || '—';
                     const endTime   = sch.endTime   || '—';
-                    const stageBadge = sch.stageType
-                        ? `<span style="background:${sch.stageType==='On stage'?'#e3f2fd':'#fff3e0'};color:${sch.stageType==='On stage'?'#1565c0':'#e65100'};border-radius:8px;padding:2px 8px;font-size:.75em;font-weight:700;white-space:nowrap;margin-left:6px">${sch.stageType}</span>`
-                        : '';
-                    const rowBg = i % 2 === 0 ? '#fafafa' : 'white';
-                    return `<tr style="background:${rowBg};border-bottom:1px solid #eee">
+                    const isOnStage = _getStage(eventName, sch) === 'On stage';
+                    const stageBadge = `<span style="background:${isOnStage?'#e3f2fd':'#fff3e0'};color:${isOnStage?'#1565c0':'#e65100'};border-radius:8px;padding:2px 8px;font-size:.75em;font-weight:700;white-space:nowrap;margin-left:6px">${isOnStage?'On stage':'Off stage'}</span>`;
+                    const sectionDivider = (i === firstOffIdx && firstOffIdx > 0)
+                        ? `<tr><td colspan="5" style="background:linear-gradient(135deg,#fff3e0,#fce4ec);color:#e65100;font-weight:800;font-size:.82em;padding:8px 14px;border-top:3px solid #ffab40;letter-spacing:.5px">📋 OFF STAGE EVENTS</td></tr>`
+                        : (i === 0 ? `<tr><td colspan="5" style="background:linear-gradient(135deg,#e3f2fd,#e8f5e9);color:#1565c0;font-weight:800;font-size:.82em;padding:8px 14px;letter-spacing:.5px">🎭 ON STAGE EVENTS</td></tr>` : '');
+                    const rowBg = isOnStage ? (i%2===0?'#f0f7ff':'#f8fbff') : (i%2===0?'#fffdf0':'white');
+                    return sectionDivider + `<tr style="background:${rowBg};border-bottom:1px solid #eee">
                         <td style="padding:10px 12px;font-weight:700;color:#6a1b9a;white-space:nowrap;vertical-align:top">${eventName}${stageBadge}</td>
                         <td style="padding:10px 12px;vertical-align:top;min-width:170px">
                             ${editCell(eventName, 'jury1Name',     j1name, '#f3e5f5', '#6a1b9a')}
@@ -18439,9 +18818,327 @@
                 </div>
                 <p style="color:#aaa;font-size:.78em;margin-top:10px">✏️ Click the pencil icon next to any name or password to edit inline. Changes save directly to Firebase — Jury Setup tab reflects the same values.</p>`;
 
+                // Store data for WhatsApp summary functions
+                window._jurySummaryData = eventRows;
+
             } catch(err) {
                 container.innerHTML = '<p style="color:#c62828;text-align:center;padding:20px">❌ Error: ' + err.message + '</p>';
             }
+        }
+
+        function showJuryEventSummaryWA() {
+            const data = window._jurySummaryData;
+            if (!data || !data.length) { alert('Please refresh the report first.'); return; }
+            const now = new Date().toLocaleDateString('en-IN',{day:'2-digit',month:'long',year:'numeric'});
+            const lines = [];
+            lines.push('🎓 *SPURTHI YOUTH FEST 2026*');
+            lines.push('📊 *Jury & Event Schedule Summary*');
+            lines.push('📅 ' + now);
+            lines.push('━━━━━━━━━━━━━━━━━━━━━━━━');
+
+            // On stage
+            const _stMap = {};
+            if (typeof ES_DEFAULT_EVENTS !== 'undefined') ES_DEFAULT_EVENTS.forEach(ev => { _stMap[ev.name.toLowerCase().trim()] = ev.stageType || 'Off stage'; });
+            const _gs = r => r.sch.stageType || _stMap[r.eventName.toLowerCase().trim()] || 'Off stage';
+            const onStage  = data.filter(r => _gs(r) === 'On stage');
+            const offStage = data.filter(r => _gs(r) !== 'On stage');
+
+            function formatBlock(rows) {
+                rows.forEach((r, i) => {
+                    const s = r.setup; const sc = r.sch;
+                    const start = sc.startDate ? sc.startDate + (sc.startTime ? ' @ ' + sc.startTime : '') : '—';
+                    const end   = sc.endDate   ? sc.endDate   + (sc.endTime   ? ' @ ' + sc.endTime   : '') : '—';
+                    lines.push('');
+                    lines.push((i+1) + '. 🎯 *' + r.eventName + '*');
+                    lines.push('   👨‍⚖️ Jury 1: ' + (s.jury1Name || '—'));
+                    lines.push('   👩‍⚖️ Jury 2: ' + (s.jury2Name || '—'));
+                    lines.push('   📅 Start: ' + start);
+                    if (sc.endDate) lines.push('   🏁 End: ' + end);
+                });
+            }
+
+            if (onStage.length) {
+                lines.push('');
+                lines.push('🎭 *ON STAGE EVENTS*');
+                lines.push('─────────────────────');
+                formatBlock(onStage);
+            }
+            if (offStage.length) {
+                lines.push('');
+                lines.push('📋 *OFF STAGE EVENTS*');
+                lines.push('─────────────────────');
+                formatBlock(offStage);
+            }
+
+            lines.push('');
+            lines.push('━━━━━━━━━━━━━━━━━━━━━━━━');
+            lines.push('📊 Total Events: ' + data.length);
+            lines.push('🎭 On Stage: ' + onStage.length + '  |  📋 Off Stage: ' + offStage.length);
+
+            _showWaSummaryModal('📊 Jury Event Summary — WhatsApp', lines.join('\n'));
+        }
+
+        function _buildJuryMap() {
+            const data = window._jurySummaryData;
+            if (!data || !data.length) return null;
+            const juryMap = {};
+            data.forEach(r => {
+                const s = r.setup; const sc = r.sch;
+                const eventInfo = {
+                    name      : r.eventName,
+                    stage     : sc.stageType || '',
+                    startDate : sc.startDate || '',
+                    startTime : sc.startTime || '',
+                    endDate   : sc.endDate   || '',
+                    endTime   : sc.endTime   || ''
+                };
+                if (s.jury1Name && s.jury1Name !== 'abc' && s.jury1Name !== 'xyz') {
+                    if (!juryMap[s.jury1Name]) juryMap[s.jury1Name] = { events: [], pwd: s.jury1Password || '—' };
+                    juryMap[s.jury1Name].events.push(eventInfo);
+                }
+                if (s.jury2Name && s.jury2Name !== 'abc' && s.jury2Name !== 'xyz') {
+                    if (!juryMap[s.jury2Name]) juryMap[s.jury2Name] = { events: [], pwd: s.jury2Password || '—' };
+                    juryMap[s.jury2Name].events.push(eventInfo);
+                }
+            });
+            return juryMap;
+        }
+
+        function showJuryInvitationWA() {
+            const data = window._jurySummaryData;
+            if (!data || !data.length) { alert('Please refresh the report first.'); return; }
+
+            const juryMap = _buildJuryMap();
+            const names = Object.keys(juryMap).sort();
+            if (!names.length) { alert('No jury names configured yet. Please update jury names first.'); return; }
+
+            // --- By Person buttons ---
+            const personBtns = names.map(name => {
+                const safe = name.replace(/'/g, "\\'");
+                return `<button onclick="showSingleJuryInvitationWA('${safe}')"
+                    style="background:linear-gradient(135deg,#128C7E,#075E54);color:white;border:none;border-radius:10px;
+                           padding:10px 16px;font-weight:700;cursor:pointer;font-size:0.87em;text-align:left;width:100%">
+                    💌 ${name}
+                    <span style="display:block;font-size:0.74em;font-weight:400;opacity:0.85;margin-top:2px">
+                        ${juryMap[name].events.map(e=>e.name).join(' · ')}
+                    </span>
+                </button>`;
+            }).join('');
+
+            // --- By Event buttons ---
+            const eventBtns = data.map(r => {
+                const s = r.setup;
+                const j1 = s.jury1Name && s.jury1Name !== 'abc' && s.jury1Name !== 'xyz' ? s.jury1Name : null;
+                const j2 = s.jury2Name && s.jury2Name !== 'abc' && s.jury2Name !== 'xyz' ? s.jury2Name : null;
+                if (!j1 && !j2) return '';
+                const safeEvt = r.eventName.replace(/'/g, "\\'");
+                const juryLine = [j1, j2].filter(Boolean).join(' & ');
+                return `<button onclick="showEventJuryInvitationWA('${safeEvt}')"
+                    style="background:linear-gradient(135deg,#1565c0,#0d47a1);color:white;border:none;border-radius:10px;
+                           padding:10px 16px;font-weight:700;cursor:pointer;font-size:0.87em;text-align:left;width:100%">
+                    🎯 ${r.eventName}
+                    <span style="display:block;font-size:0.74em;font-weight:400;opacity:0.85;margin-top:2px">
+                        👨‍⚖️ ${juryLine}
+                    </span>
+                </button>`;
+            }).filter(Boolean).join('');
+
+            const html = `<div style="padding:6px 0">
+                <div style="display:flex;gap:0;margin-bottom:14px;border-radius:10px;overflow:hidden;border:2px solid #128C7E">
+                    <button id="juryTabPerson" onclick="juryTabSwitch('person')"
+                        style="flex:1;background:#128C7E;color:white;border:none;padding:9px 0;font-weight:700;font-size:0.88em;cursor:pointer">
+                        👤 By Person (${names.length})
+                    </button>
+                    <button id="juryTabEvent" onclick="juryTabSwitch('event')"
+                        style="flex:1;background:white;color:#128C7E;border:none;padding:9px 0;font-weight:700;font-size:0.88em;cursor:pointer">
+                        🎯 By Event (${data.length})
+                    </button>
+                </div>
+                <p style="color:#555;margin-bottom:12px;font-size:0.85em">Tap to open that invitation — ready to copy &amp; send on WhatsApp.</p>
+                <div id="juryPanelPerson" style="display:flex;flex-direction:column;gap:9px">${personBtns}</div>
+                <div id="juryPanelEvent"  style="display:none;flex-direction:column;gap:9px">${eventBtns}</div>
+            </div>`;
+
+            _showWaSummaryModal('💌 Jury Invitations', html, true);
+        }
+
+        function juryTabSwitch(tab) {
+            const pBtn = document.getElementById('juryTabPerson');
+            const eBtn = document.getElementById('juryTabEvent');
+            const pPanel = document.getElementById('juryPanelPerson');
+            const ePanel = document.getElementById('juryPanelEvent');
+            if (tab === 'person') {
+                if (pBtn) { pBtn.style.background='#128C7E'; pBtn.style.color='white'; }
+                if (eBtn) { eBtn.style.background='white';   eBtn.style.color='#128C7E'; }
+                if (pPanel) pPanel.style.display = 'flex';
+                if (ePanel) ePanel.style.display = 'none';
+            } else {
+                if (eBtn) { eBtn.style.background='#128C7E'; eBtn.style.color='white'; }
+                if (pBtn) { pBtn.style.background='white';   pBtn.style.color='#128C7E'; }
+                if (ePanel) ePanel.style.display = 'flex';
+                if (pPanel) pPanel.style.display = 'none';
+            }
+        }
+
+        // Helper: get incharge faculty + phone + classes for an event
+        function _getEventInchargeInfo(eventName) {
+            const evtLower = eventName.toLowerCase().trim();
+            const matches = [];
+            const fl = window.FACULTY_LIST || [];
+            Object.keys(FACULTY_EVENT_MAP).forEach(fName => {
+                FACULTY_EVENT_MAP[fName].forEach(ev => {
+                    if (ev.name.toLowerCase().trim() === evtLower) {
+                        const fRec = fl.find(f => f.name === fName);
+                        matches.push({ name: fName, phone: fRec ? fRec.phone : '—', classes: ev.classes });
+                    }
+                });
+            });
+            return matches; // array of { name, phone, classes }
+        }
+
+        // Helper: format date nicely e.g. "13-03-2026" → "13th March 2026"
+        function _fmtDate(d) {
+            if (!d) return 'TBD';
+            const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+            const parts = d.match(/(\d{2})-(\d{2})-(\d{4})/);
+            if (!parts) return d;
+            const day = parseInt(parts[1]);
+            const suf = day===1||day===21||day===31?'st':day===2||day===22?'nd':day===3||day===23?'rd':'th';
+            return day + suf + ' ' + months[parseInt(parts[2])-1] + ' ' + parts[3];
+        }
+
+        function showEventJuryInvitationWA(eventName) {
+            const data = window._jurySummaryData;
+            if (!data) { alert('Data not available. Please refresh.'); return; }
+            const row = data.find(r => r.eventName === eventName);
+            if (!row) { alert('Event not found.'); return; }
+            const s = row.setup; const sc = row.sch;
+
+            const fmtStart = _fmtDate(sc.startDate) + (sc.startTime ? ' at *' + sc.startTime + '*' : '');
+            const fmtEnd   = sc.endDate ? _fmtDate(sc.endDate) + (sc.endTime ? ' at ' + sc.endTime : '') : '';
+
+            const j1 = s.jury1Name && s.jury1Name !== 'abc' && s.jury1Name !== 'xyz' ? s.jury1Name : null;
+            const j2 = s.jury2Name && s.jury2Name !== 'abc' && s.jury2Name !== 'xyz' ? s.jury2Name : null;
+            const jurors = [j1, j2].filter(Boolean);
+            if (!jurors.length) { alert('No jury names configured for this event.'); return; }
+
+            const incharges = _getEventInchargeInfo(eventName);
+            const lines = [];
+
+            jurors.forEach((juryName, idx) => {
+                if (idx > 0) { lines.push(''); lines.push('━━━━━━━━━━━━━━━━━━━━━━━━'); lines.push(''); }
+                const pwd = idx === 0 ? (s.jury1Password || '—') : (s.jury2Password || '—');
+
+                lines.push('💌 *JURY INVITATION*');
+                lines.push('🎓 *Spurthi Youth Fest 2026*');
+                lines.push('🏫 *Davan Nutana College, Davangere*');
+                lines.push('');
+                lines.push('Respected *' + juryName + '*,');
+                lines.push('');
+                lines.push('We are delighted to invite you as a *Jury Member* for the');
+                lines.push('🎯 *' + eventName + '*' + (sc.stageType ? ' (' + sc.stageType + ')' : ''));
+                lines.push('at *Spurthi Youth Fest 2026*.');
+                lines.push('');
+                lines.push('📅 *Event Schedule:*');
+                lines.push('   📌 Start: ' + fmtStart);
+                if (fmtEnd) lines.push('   🏁 End:   ' + fmtEnd);
+                lines.push('');
+                lines.push('⏰ *Please arrive at least 15 minutes before the event.*');
+                lines.push('   _(Be present by ' + (sc.startTime || 'the scheduled time') + ' or earlier)_');
+                lines.push('');
+                if (incharges.length) {
+                    lines.push('📞 *Event Incharge:*');
+                    incharges.forEach(ic => {
+                        lines.push('   👩‍🏫 *' + ic.name + '* — 📱 ' + ic.phone);
+                    });
+                    lines.push('');
+                    lines.push('📲 *Please call the incharge faculty before coming to confirm your arrival.*');
+                    lines.push('');
+                }
+                lines.push('🔐 *Your Login Credentials:*');
+                lines.push('   🌐 https://harshgujjar.github.io/Spurthi-youth-fest-2026/');
+                lines.push('   👤 Name: *' + juryName + '*');
+                lines.push('   🔑 Password: *' + pwd + '*');
+                lines.push('');
+                lines.push('📲 *How to Login & Score:*');
+                lines.push('   1️⃣ Open the portal link above');
+                lines.push('   2️⃣ Select *"Jury"* from the *Select Your Role* dropdown');
+                lines.push('   3️⃣ Choose *' + eventName + '* from the *Select Event* dropdown');
+                lines.push('   4️⃣ Enter your *Jury Password*: *' + pwd + '*');
+                lines.push('   5️⃣ Select your *Jury Number* (Jury 1 or Jury 2)');
+                lines.push('   6️⃣ Tap *Login as Jury*');
+                lines.push('   7️⃣ You will see the participant list — enter scores for each criterion');
+                lines.push('   8️⃣ Tap *💾 Save Score* after scoring each participant ✅');
+                lines.push('');
+                lines.push('Your time and expertise are truly valued. 🙏');
+                lines.push('');
+                lines.push('— *Spurthi Youth Fest 2026 Committee*');
+                lines.push('   Davan Nutana College, Davangere');
+            });
+
+            _showWaSummaryModal('🎯 Jury Invitation — ' + eventName, lines.join('\n'));
+        }
+
+        function showSingleJuryInvitationWA(juryName) {
+            const juryMap = _buildJuryMap();
+            if (!juryMap || !juryMap[juryName]) { alert('Data not available. Please refresh.'); return; }
+            const info = juryMap[juryName];
+
+            const lines = [];
+            lines.push('💌 *JURY INVITATION*');
+            lines.push('🎓 *Spurthi Youth Fest 2026*');
+            lines.push('🏫 *Davan Nutana College, Davangere*');
+            lines.push('');
+            lines.push('Respected *' + juryName + '*,');
+            lines.push('');
+            if (info.events.length === 1) {
+                lines.push('We are delighted to invite you as a *Jury Member* for *Spurthi Youth Fest 2026*.');
+            } else {
+                lines.push('We are delighted to invite you as a *Jury Member* for *' + info.events.length + ' events* at *Spurthi Youth Fest 2026*.');
+            }
+            lines.push('');
+            lines.push('📋 *Your Assigned Event(s):*');
+
+            info.events.forEach((ev, ei) => {
+                const incharges = _getEventInchargeInfo(ev.name);
+                const fmtStart = _fmtDate(ev.startDate) + (ev.startTime ? ' at *' + ev.startTime + '*' : '');
+                const fmtEnd   = ev.endDate ? _fmtDate(ev.endDate) + (ev.endTime ? ' at ' + ev.endTime : '') : '';
+                lines.push('');
+                lines.push('   ' + (ei+1) + '. 🎯 *' + ev.name + '*' + (ev.stage ? ' (' + ev.stage + ')' : ''));
+                lines.push('      📌 Start: ' + fmtStart);
+                if (fmtEnd) lines.push('      🏁 End:   ' + fmtEnd);
+                lines.push('      ⏰ Arrive 15 min before start');
+                if (incharges.length) {
+                    incharges.forEach(ic => {
+                        lines.push('      👩‍🏫 Incharge: *' + ic.name + '* — 📱 ' + ic.phone);
+                    });
+                }
+            });
+
+            lines.push('');
+            lines.push('📲 *Please call the respective incharge faculty before coming to confirm your arrival.*');
+            lines.push('');
+            lines.push('🔐 *Your Login Credentials:*');
+            lines.push('   🌐 https://harshgujjar.github.io/Spurthi-youth-fest-2026/');
+            lines.push('   👤 Name: *' + juryName + '*');
+            lines.push('   🔑 Password: *' + info.pwd + '*');
+            lines.push('');
+            lines.push('📲 *How to Login & Score* (repeat for each event):');
+            lines.push('   1️⃣ Open the portal link above');
+            lines.push('   2️⃣ Select *"Jury"* from the *Select Your Role* dropdown');
+            lines.push('   3️⃣ Choose your *Event* from the *Select Event* dropdown');
+            lines.push('   4️⃣ Enter your *Jury Password*: *' + info.pwd + '*');
+            lines.push('   5️⃣ Select your *Jury Number* (Jury 1 or Jury 2)');
+            lines.push('   6️⃣ Tap *Login as Jury*');
+            lines.push('   7️⃣ Enter scores for each participant → tap *💾 Save Score* ✅');
+            lines.push('   _(Log out and repeat steps 3–7 for your next event)_');
+            lines.push('');
+            lines.push('Your time and expertise are truly valued. 🙏');
+            lines.push('');
+            lines.push('— *Spurthi Youth Fest 2026 Committee*');
+            lines.push('   Davan Nutana College, Davangere');
+
+            _showWaSummaryModal('💌 Invitation — ' + juryName, lines.join('\n'));
         }
 
         // ── Inline edit helpers for Jury Summary ──
@@ -18502,8 +19199,13 @@
             w.print();
         }
 
-        window.loadJurySummaryReport = loadJurySummaryReport;
-        window.printJurySummary      = printJurySummary;
+        window.loadJurySummaryReport      = loadJurySummaryReport;
+        window.showJuryEventSummaryWA     = showJuryEventSummaryWA;
+        window.showJuryInvitationWA       = showJuryInvitationWA;
+        window.showSingleJuryInvitationWA = showSingleJuryInvitationWA;
+        window.showEventJuryInvitationWA  = showEventJuryInvitationWA;
+        window.juryTabSwitch              = juryTabSwitch;
+        window.printJurySummary        = printJurySummary;
         window.jsrStartEdit          = jsrStartEdit;
         window.jsrCancelEdit         = jsrCancelEdit;
         window.jsrSave               = jsrSave;
@@ -39360,7 +40062,7 @@ export default {
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;" id="devTriggerVersion">
-                <strong>Version:</strong> 7.12 — Fix: Handwriting Competition event date in Attendance panel now pulled live from Firebase eventSchedule instead of hardcoded<strong>Last Updated:</strong> Mar 06, 2026, 11:10 AM IST</p>
+                <strong>Version:</strong> 7.29 — Fix: Jury Summary and Invitation now shows all 15 events from ES_DEFAULT_EVENTS master list — not just events that have jury setup in Firebase<strong>Last Updated:</strong> Mar 06, 2026, 03:30 PM IST</p>
             <!-- ============================================ -->
             
             <p style="color: #c44569; font-size: 0.85em; font-weight: 600; margin-bottom: 8px;">
@@ -42063,6 +42765,23 @@ function scAdminPing() {
      v7.10 | Mar 06, 2026, 11:10 AM IST | Quiz Ended notification shows "Quiz of 5th March 2026 has ended at 11:59 PM"
      v7.11 | Mar 06, 2026, 11:10 AM IST | Fix: Event Schedule public table now uses real-time Firebase listener — admin edits reflect instantly without page reload
      v7.12 | Mar 06, 2026, 11:10 AM IST | Fix: Handwriting Competition event date in Attendance panel now pulled live from Firebase eventSchedule instead of hardcoded
+     v7.13 | Mar 06, 2026, 11:10 AM IST | New: WhatsApp Summary report for Podcast, Vlog, YouTube Ad — available to Super Admin and incharge faculty
+     v7.14 | Mar 06, 2026, 11:10 AM IST | Fix: WhatsApp Summary modal display bug fixed; functions exposed to window scope
+     v7.15 | Mar 06, 2026, 11:10 AM IST | Fix: WhatsApp Summary now shows ALL enrolled participants; unsubmitted shown as pending; updates live from Firebase
+     v7.16 | Mar 06, 2026, 11:10 AM IST | Fix: Podcast WhatsApp Summary now shows sub-topic from enrollment (podSubtopic) for all participants including unsubmitted
+     v7.17 | Mar 06, 2026, 11:10 AM IST | Fix: Vlog summary handles 2 teams per class via teamNum grouping; YT Ad shows all members + product from enrollment
+     v7.18 | Mar 06, 2026, 11:10 AM IST | Jury Summary: On stage first then Off stage; WhatsApp Event Summary + professional Jury Invitation messages
+     v7.19 | Mar 06, 2026, 11:10 AM IST | YT Ad: monitor shows ALL enrolled classes with member names & product; CR screenshot split into per-slot independent Submit buttons
+     v7.20 | Mar 06, 2026, 11:45 AM IST | Fix: removed orphaned catch block causing SyntaxError at line 18847 which broke handleUserTypeChange and all JS after it
+     v7.21 | Mar 06, 2026, 12:05 PM IST | Fix: removed duplicate WA buttons in Jury Summary; Jury Invitation now shows per-person selector — tap a name to get that jury member's individual message
+     v7.22 | Mar 06, 2026, 12:45 PM IST | Jury Invitation WA: tabbed By-Person + By-Event selector, each event opens combined message for both its jury members; Vlog screenshots: each slot has own independent 📤 Submit button saving to Cloudinary separately
+     v7.23 | Mar 06, 2026, 01:15 PM IST | Jury invitations: real-time date/time from Firebase, college name, portal URL, arrive 15 min early, incharge faculty + phone per event, call-before-coming note — applied to both By-Person and By-Event messages
+     v7.24 | Mar 06, 2026, 02:00 PM IST | Jury invitations: college name fixed to Davan Nutana College; date/time fully dynamic from Firebase; login+scoring steps added; same jury across multiple events → single message lists all events; incharge phone per event
+     v7.25 | Mar 06, 2026, 02:20 PM IST | Fix: Jury Invitation selector modal now fully scrollable — all events visible regardless of count; header sticky at top, page scrolls naturally
+     v7.26 | Mar 06, 2026, 02:35 PM IST | Fix: Jury invitation login steps corrected to match actual UI — Select Role→Jury, Select Event, Enter Password, Select Jury Number, Login as Jury, Save Score per participant
+     v7.27 | Mar 06, 2026, 02:50 PM IST | Fix: Jury selector modal properly scrollable — overlay is flex backdrop, inner card scrolls with overflow-y:auto; HTML selector mode grows to full content; text mode capped at 60vh
+     v7.28 | Mar 06, 2026, 03:05 PM IST | Fix: Jury modal now uses full viewport height; scroll body has flex:1 and min-height:0 so all 15 events reachable by scrolling inside modal
+     v7.29 | Mar 06, 2026, 03:30 PM IST | Fix: Jury Summary and Invitation now shows all 15 events from ES_DEFAULT_EVENTS master list — not just events that have jury setup in Firebase
      ═══════════════════════════════════════════════════════════════════ -->
 
 
