@@ -12474,7 +12474,7 @@
         // FACULTY ADMIN PANEL
         // ══════════════════════════════════════════════════════════════
         const FACULTY_LIST = [
-            { sl:1,  name:'Priyanka V',             class:'I BCA',   phone:'8088783099' },
+            { sl:1,  name:'Priyanka V',             class:'I BCA',    phone:'8088783099' },
             { sl:2,  name:'Roopa M.C',              class:'I BCA',   phone:'9449683234' },
             { sl:3,  name:'Smitha',                 class:'II BCA A', phone:'9972442555' },
             { sl:4,  name:'Kotrappa K',             class:'II BCA B', phone:'9731067467' },
@@ -12514,29 +12514,34 @@
 
         // Direct class-to-incharge mapping (for manual registration form)
         const CLASS_INCHARGE_MAP = {
-            '1st B.Com': 'Priyanka V',
-            '2nd B.Com': 'Hemavathi Desai',
+            '1st B.Com': 'Dr. Shilpa R Y',
+            '1ST B.COM': 'Dr. Shilpa R Y',
+            '2nd B.Com': 'Lalitha S K',
+            '2ND B.COM': 'Lalitha S K',
             '3rd B.Com': 'Chandan G B',
-            '1st BCA': 'Roopa M.C',
-            '1ST BCA': 'Roopa M.C',
-            '2nd BCA': 'Smitha',
-            '2ND BCA': 'Smitha',
+            '3RD B.COM': 'Chandan G B',
+            '1st BCA':   'Priyanka V & Roopa M.C',
+            '1ST BCA':   'Priyanka V & Roopa M.C',
+            '2nd BCA':   'Smitha',
+            '2ND BCA':   'Smitha',
             '2ND BCA A SEC': 'Smitha',
-            '2ND BCA A': 'Smitha',
-            '2ND BCA B SEC': 'Anitha N',
-            '2ND BCA B': 'Anitha N',
-            '3rd BCA': 'Pooja C',
-            '3RD BCA': 'Pooja C',
-            '3RD BCA A': 'Anitha N',
+            '2ND BCA A':     'Smitha',
+            '2ND BCA B SEC': 'Kotrappa K',
+            '2ND BCA B':     'Kotrappa K',
+            '3rd BCA':       'Anitha N',
+            '3RD BCA':       'Anitha N',
+            '3RD BCA A':     'Anitha N',
             '3RD BCA A SEC': 'Anitha N',
-            '3RD BCA B': 'Anitha N',
-            '3RD BCA B SEC': 'Anitha N',
-            '3RD BCA C': 'Kotrappa K',
-            '3RD BCA C SEC': 'Kotrappa K',
-            '2nd BBA': 'Hemavathi Desai',
-            '2ND BBA': 'Hemavathi Desai',
-            '3rd BBA': 'Shankar B C',
-            '3RD BBA': 'Shankar B C',
+            '3RD BCA B':     'Pooja C',
+            '3RD BCA B SEC': 'Pooja C',
+            '3RD BCA C':     'Anitha N',
+            '3RD BCA C SEC': 'Anitha N',
+            '1st BBA':   'Dr. Shilpa R Y',
+            '1ST BBA':   'Dr. Shilpa R Y',
+            '2nd BBA':   'Hemavathi Desai',
+            '2ND BBA':   'Hemavathi Desai',
+            '3rd BBA':   'Shankar B C',
+            '3RD BBA':   'Shankar B C',
         };
 
         // -- All events from Event Schedule mapped to faculty names --
@@ -24087,24 +24092,8 @@ Davan Institute Team`;
                 
                 await loadQuizManagementStats();
                 console.log('Questions saved successfully for date:', selectedDate);
-
-                // ── AUTO-NOTIFY: if saved date is TODAY, fire full notification chain ──
-                const today = getQuizToday();
-                if (selectedDate === today) {
-                    // Auto-publish so students can see the quiz immediately
-                    await db.ref(`quizPublished/${today}`).set({
-                        published: true,
-                        publishedAt: new Date().toISOString(),
-                        publishedBy: 'Super Admin'
-                    }).catch(function(){});
-                    // Fire full notification chain: banner + pulse + FCM + toast
-                    if (typeof qnOnQuizPublished === 'function') {
-                        qnOnQuizPublished(today);
-                    }
-                    // Update publish status display
-                    const statusDiv = document.getElementById('publishStatusDisplayAdmin');
-                    if (statusDiv) statusDiv.innerHTML = '✅ Published & notified — ' + new Date().toLocaleTimeString();
-                }
+                // NOTE: Saving quiz does NOT auto-publish or send notifications.
+                // Use the PUBLISH Quiz button in Notifications tab to go live.
             } catch (err) {
                 console.error('Save error:', err);
                 alert('❌ Error saving questions: ' + err.message);
@@ -35205,16 +35194,9 @@ Proceed?`)) return;
             if (!approved.length) return;
             listEl.innerHTML = approved.map(function(it) {
                 var className = it.name || it.classYear || 'Class';
-                // Use saved incharge field first, fallback to CLASS_INCHARGE_MAP lookup
-                var incharge  = it.incharge;
-                if (!incharge || incharge === 'Not assigned') {
-                    // Try to look up from CLASS_INCHARGE_MAP if not saved
-                    incharge = getIncharge(className);
-                }
-                // If still empty, mark as not assigned
-                if (!incharge) {
-                    incharge = '—';
-                }
+                // Always use CLASS_INCHARGE_MAP as source of truth — overrides stale Firebase saved value
+                var incharge = getIncharge(className);
+                if (!incharge) incharge = it.incharge || '—';
                 // Date & time approved (reviewedAt), fallback to registeredAt
                 var dtRaw = it.reviewedAt || it.registeredAt || '';
                 var dtStr = '';
@@ -39244,7 +39226,7 @@ export default {
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;" id="devTriggerVersion">
-                <strong>Version:</strong> 7.03 — Fix: Not Enrolled shows missing classes per event as red pills<strong>Last Updated:</strong> Mar 05, 2026, 05:55 PM IST</p>
+                <strong>Version:</strong> 7.05 — Fix: CLASS_INCHARGE_MAP always overrides Firebase saved incharge<strong>Last Updated:</strong> Mar 06, 2026, 09:20 AM IST</p>
             <!-- ============================================ -->
             
             <p style="color: #c44569; font-size: 0.85em; font-weight: 600; margin-bottom: 8px;">
@@ -41716,6 +41698,8 @@ function scAdminPing() {
      v7.01 | Mar 05, 2026, 03:10 PM IST | New: 16 event live banners added (SH, SSC, Mime, Skit, Dance, MadAds, RampWalk, Nukkad, Talent, YTAd, Podcast, Vlog, Handwriting, Waste, Case, Inter) each unique color; admin panel in Notifications tab with Show/Hide buttons per event
      v7.02 | Mar 05, 2026, 03:25 PM IST | Fix: Not Enrolled filter now works — when class selected shows events that class hasn't joined; status badge shows per-class enrollment; without class shows events with zero total enrollments
      v7.03 | Mar 05, 2026, 05:55 PM IST | Fix: Not Enrolled (no class) now shows ALL 15 events with red ❌ pills for missing classes per event + collapsible enrolled list; column header updates to show context
+     v7.04 | Mar 06, 2026, 09:02 AM IST | Fix: quiz Save no longer auto-publishes or fires notifications — save is save only; PUBLISH button is the only trigger; Q&A toast message corrected to show yesterday date not today
+     v7.05 | Mar 06, 2026, 09:20 AM IST | Fix: CLASS_INCHARGE_MAP corrected — 1st B.Com→Dr.Shilpa R Y, 2nd B.Com→Lalitha S K, 1ST BCA→Roopa M.C, 2ND BCA B→Kotrappa K, 3RD BCA B→Pooja C, 3RD BCA C→Anitha N; Priyanka V faculty class=I BCA
      ═══════════════════════════════════════════════════════════════════ -->
 
 
