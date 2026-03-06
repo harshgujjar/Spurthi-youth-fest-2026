@@ -5412,6 +5412,19 @@
                     <p style="font-size:.75em;color:#888;margin:6px 0 0">Fires automatically when admin publishes quiz. Toast appears for 11s, repeats up to 3 visits.</p>
                 </div>
 
+                <!-- Quiz Ended Manual Notification -->
+                <div style="background:#fff8e1;border-radius:12px;padding:16px;border:1.5px solid #ffe082;margin-bottom:14px">
+                    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px">
+                        <strong style="color:#e65100;font-size:.95em">⏰ Quiz Ended Notification</strong>
+                        <span style="font-size:.78em;color:#e65100;font-weight:700;background:#fff3e0;padding:3px 10px;border-radius:20px;border:1px solid #ffcc80">🕥 Auto-fires at 11:30 PM daily</span>
+                    </div>
+                    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+                        <span style="flex:1;min-width:200px;padding:8px 12px;background:#fff3e0;border:1.5px solid #ffe082;border-radius:8px;font-size:.85em;color:#bf360c">⏰ Quiz has ended! Results coming soon. Stay tuned 🏆</span>
+                        <button type="button" onclick="qnSendQuizEndedNow()" style="background:linear-gradient(135deg,#e65100,#bf360c);color:white;border:none;padding:9px 18px;border-radius:8px;font-weight:700;font-size:.82em;cursor:pointer">📤 Send Now</button>
+                    </div>
+                    <p style="font-size:.75em;color:#888;margin:6px 0 0">Auto-fires once at 11:30 PM via Service Worker. Use Send Now only if the automatic notification didn't go out.</p>
+                </div>
+
                 <!-- Quiz Published Q&A Notification -->
                 <div style="background:#f9f0ff;border-radius:12px;padding:16px;border:1.5px solid #e0d0f0;margin-bottom:14px">
                     <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px">
@@ -18675,6 +18688,30 @@
             
             db.ref('jurySetup/'+event).set(setupData).then(() => {
                 showSetupMessage('Setup saved successfully! Event type: ' + (eventType === 'individual' ? '🧑 Individual' : eventType === 'multiteam' ? '👥 Multi-Team' : '🏫 Class-based'), 'success');
+                // ── Sync back to Jury Summary table display cells if the report is loaded ──
+                try {
+                    const safeEvtEnc = encodeURIComponent(event);
+                    const syncFields = {
+                        jury1Name:     jury1Name || 'Jury 1',
+                        jury2Name:     jury2Name || 'Jury 2',
+                        jury1Password: jury1Pwd,
+                        jury2Password: jury2Pwd
+                    };
+                    Object.entries(syncFields).forEach(([field, val]) => {
+                        const valEl = document.getElementById('jsr_' + safeEvtEnc + '_' + field + '_val');
+                        if (valEl) valEl.textContent = val;
+                    });
+                    // Also update _jurySummaryData cache so WA invitations use fresh values
+                    if (window._jurySummaryData) {
+                        const row = window._jurySummaryData.find(r => r.eventName === event);
+                        if (row) {
+                            row.setup.jury1Name     = jury1Name || 'Jury 1';
+                            row.setup.jury2Name     = jury2Name || 'Jury 2';
+                            row.setup.jury1Password = jury1Pwd;
+                            row.setup.jury2Password = jury2Pwd;
+                        }
+                    }
+                } catch(syncErr) {}
             }).catch(err => {
                 showSetupMessage('Error: '+err.message, 'error');
             });
@@ -18913,35 +18950,46 @@
             if (!names.length) { alert('No jury names configured yet. Please update jury names first.'); return; }
 
             // --- By Person buttons ---
-            const personBtns = names.map(name => {
+            const personBtns = names.map((name, idx) => {
                 const safe = name.replace(/'/g, "\\'");
                 return `<button onclick="showSingleJuryInvitationWA('${safe}')"
                     style="background:linear-gradient(135deg,#128C7E,#075E54);color:white;border:none;border-radius:10px;
                            padding:10px 16px;font-weight:700;cursor:pointer;font-size:0.87em;text-align:left;width:100%">
-                    💌 ${name}
+                    ${idx + 1}. 💌 ${name}
                     <span style="display:block;font-size:0.74em;font-weight:400;opacity:0.85;margin-top:2px">
                         ${juryMap[name].events.map(e=>e.name).join(' · ')}
                     </span>
                 </button>`;
             }).join('');
 
-            // --- By Event buttons ---
-            const eventBtns = data.map(r => {
+            // --- By Event buttons (all 15 events, with serial numbers) ---
+            const eventBtns = data.map((r, idx) => {
                 const s = r.setup;
                 const j1 = s.jury1Name && s.jury1Name !== 'abc' && s.jury1Name !== 'xyz' ? s.jury1Name : null;
                 const j2 = s.jury2Name && s.jury2Name !== 'abc' && s.jury2Name !== 'xyz' ? s.jury2Name : null;
-                if (!j1 && !j2) return '';
                 const safeEvt = r.eventName.replace(/'/g, "\\'");
                 const juryLine = [j1, j2].filter(Boolean).join(' & ');
+                const hasJury = !!(j1 || j2);
+                const serialNum = idx + 1;
+                if (!hasJury) {
+                    return `<button disabled
+                        style="background:linear-gradient(135deg,#90a4ae,#78909c);color:white;border:none;border-radius:10px;
+                               padding:10px 16px;font-weight:700;cursor:not-allowed;font-size:0.87em;text-align:left;width:100%;opacity:0.65">
+                        ${serialNum}. 🎯 ${r.eventName}
+                        <span style="display:block;font-size:0.74em;font-weight:400;opacity:0.85;margin-top:2px">
+                            ⚙️ Jury not configured yet
+                        </span>
+                    </button>`;
+                }
                 return `<button onclick="showEventJuryInvitationWA('${safeEvt}')"
                     style="background:linear-gradient(135deg,#1565c0,#0d47a1);color:white;border:none;border-radius:10px;
                            padding:10px 16px;font-weight:700;cursor:pointer;font-size:0.87em;text-align:left;width:100%">
-                    🎯 ${r.eventName}
+                    ${serialNum}. 🎯 ${r.eventName}
                     <span style="display:block;font-size:0.74em;font-weight:400;opacity:0.85;margin-top:2px">
                         👨‍⚖️ ${juryLine}
                     </span>
                 </button>`;
-            }).filter(Boolean).join('');
+            }).join('');
 
             const html = `<div style="padding:6px 0">
                 <div style="display:flex;gap:0;margin-bottom:14px;border-radius:10px;overflow:hidden;border:2px solid #128C7E">
@@ -19170,9 +19218,23 @@
             if (msgEl) { msgEl.textContent = '…'; msgEl.style.color = '#888'; msgEl.style.display = 'inline'; }
             try {
                 await db.ref('jurySetup/' + eventName + '/' + field).set(newVal);
-                // Update display value
+                // Update display value in Summary table
                 if (valEl)  valEl.textContent = newVal;
                 if (msgEl) { msgEl.textContent = '✅'; msgEl.style.color = '#1b5e20'; }
+                // ── Sync back to Jury Setup tab if the same event is currently selected ──
+                const setupSel = document.getElementById('setupEventSelect');
+                if (setupSel && setupSel.value === eventName) {
+                    const domMap = {
+                        jury1Name:     'jury1Name',
+                        jury2Name:     'jury2Name',
+                        jury1Password: 'jury1Password',
+                        jury2Password: 'jury2Password'
+                    };
+                    if (domMap[field]) {
+                        const el = document.getElementById(domMap[field]);
+                        if (el) el.value = newVal;
+                    }
+                }
                 setTimeout(() => jsrCancelEdit(safeEvtEnc, field), 600);
             } catch(e) {
                 if (msgEl) { msgEl.textContent = '❌ ' + e.message; msgEl.style.color = '#c62828'; msgEl.style.display = 'inline'; }
@@ -26735,8 +26797,6 @@ Davan Institute Team`;
                 console.log('Verification read:', JSON.stringify(verifySnap.val()));
                 
                 showQuizMsg('quizAdminDashMessage', '✅ Quiz unpublished successfully!', 'success');
-                // ── Trigger quiz ended notification ──
-                if (window.qnOnQuizEnded) qnOnQuizEnded(today);
                 
                 // Direct DOM manipulation - force the UI to update immediately
                 const statusDivAdmin = document.getElementById('publishStatusDisplayAdmin');
@@ -38207,9 +38267,7 @@ async function swCheckSchedule() {
                 }
             }
 
-            // 5. Schedule auto-end notification after slot duration
-            const durMs = (s.duration || 45) * 60 * 1000;
-            setTimeout(() => swFireQuizEnded(today, cfg), durMs);
+            // Quiz Ended fires at fixed 11:30 PM daily — handled by swCheckQuizEnded(), not here
         }
 
         // Daily cleanup: remove fired slot keys older than 2 days
@@ -38264,6 +38322,31 @@ async function swFireQuizEnded(today, cfg) {
     } catch(err) { swLog('quiz_ended_error', err.message); }
 }
 
+// ── Dedicated 11:30 PM Quiz Ended checker (fires ONCE per day via Firebase guard) ──
+async function swCheckQuizEnded() {
+    try {
+        const now   = new Date();
+        const nowH  = now.getHours();
+        const nowM  = now.getMinutes();
+        // Only run at exactly 23:30 (11:30 PM)
+        if (nowH !== 23 || nowM !== 30) return;
+        const today = getToday();
+        const endedKey = 'quiz_ended_' + today;
+        // Firebase fired-key guard — prevents double-fire across reloads/tabs
+        const firedResp = await fetch(FIREBASE_URL + '/sw_fired_slots/' + endedKey + '.json');
+        const alreadyFired = firedResp.ok && await firedResp.json() === true;
+        if (alreadyFired) return;
+        // Mark fired immediately
+        await fetch(FIREBASE_URL + '/sw_fired_slots/' + endedKey + '.json', {
+            method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: 'true'
+        }).catch(() => {});
+        // Read cfg for FCM flag
+        const cfgResp = await fetch(FIREBASE_URL + '/quizNotifConfig.json');
+        const cfg = cfgResp.ok ? (await cfgResp.json() || {}) : {};
+        await swFireQuizEnded(today, cfg);
+    } catch(err) { swLog('quiz_ended_check_error', err.message); }
+}
+
 async function swCleanFiredSlots() {
     try {
         const resp = await fetch(FIREBASE_URL + '/sw_fired_slots.json');
@@ -38285,6 +38368,8 @@ function startScheduleChecker() {
     // Slots repeat automatically every day (same time daily) until deleted.
     setTimeout(swCheckSchedule, 5000);
     setInterval(swCheckSchedule, 60000);
+    // Quiz Ended fires at fixed 11:30 PM daily — separate dedicated checker
+    setInterval(swCheckQuizEnded, 60000);
 }`
 
     function showSwJsCode() {
@@ -40062,7 +40147,7 @@ export default {
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;" id="devTriggerVersion">
-                <strong>Version:</strong> 7.29 — Fix: Jury Summary and Invitation now shows all 15 events from ES_DEFAULT_EVENTS master list — not just events that have jury setup in Firebase<strong>Last Updated:</strong> Mar 06, 2026, 03:30 PM IST</p>
+                <strong>Version:</strong> 7.32 — Fix: Jury password/name changes now sync both ways — Jury Setup tab ↔ Jury Summary table; both paths update Firebase + each other's display cells instantly<strong>Last Updated:</strong> Mar 06, 2026, 04:45 PM IST</p>
             <!-- ============================================ -->
             
             <p style="color: #c44569; font-size: 0.85em; font-weight: 600; margin-bottom: 8px;">
@@ -41580,6 +41665,31 @@ function qnSendQuizLiveNow() {
     alert('✅ Quiz live notification sent!');
 }
 
+function qnSendQuizEndedNow() {
+    var db = window.db || (window.firebase && window.firebase.database());
+    if (!db) return;
+    var today = (typeof getQuizToday === 'function') ? getQuizToday() : new Date().toISOString().slice(0,10);
+    var _p = today.split('-');
+    var _months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    var _d = parseInt(_p[2]||0);
+    var _s = (_d===1||_d===21||_d===31)?'st':(_d===2||_d===22)?'nd':(_d===3||_d===23)?'rd':'th';
+    var _label = _p.length===3 ? (_d+_s+' '+_months[parseInt(_p[1],10)-1]+' '+_p[0]) : today;
+    var msg = '⏰ Quiz of ' + _label + ' has ended at 11:30 PM! Results coming soon. Stay tuned 🏆';
+    var toastId = 'quiz_ended_manual_' + Date.now();
+    // Update quiz status to ended
+    db.ref('quizAnnouncements/latest').update({ status: 'ended', endedAt: Date.now() }).catch(function(){});
+    var banner = document.getElementById('qnLiveBanner');
+    if (banner) banner.style.display = 'none';
+    qnPulseQuizTab(false);
+    // Broadcast to all open pages
+    db.ref('live_notifications/latest').set({
+        title: '⏰ Quiz Ended!', body: msg, sentAt: Date.now(), id: toastId, qnType: 'quiz'
+    }).catch(function(){});
+    qnBroadcastFCM('⏰ Quiz Ended!', msg, toastId, 'quiz');
+    qnShowToast({ id: toastId, icon: '⏰', type: 'qnToastQuiz', title: 'Quiz Ended!', msg: msg });
+    alert('✅ Quiz ended notification sent!');
+}
+
 // ── Quiz Correct Answer Peer Nudge — 30+ templates ───────────────────────────
 // Fires to all registered students who haven't submitted today yet
 // Cycles through templates in order: index = (correctCount % total)
@@ -42019,9 +42129,7 @@ function qnCheckSchedule() {
                         });
                     }
                 });
-                // Schedule quiz end after duration
-                var durMs = (s.duration || 45) * 60 * 1000;
-                setTimeout(function() { qnOnQuizEnded(today); }, durMs);
+                // Schedule quiz end after duration — handled by Service Worker at 11:30 PM only
             }
         });
     });
@@ -42782,6 +42890,9 @@ function scAdminPing() {
      v7.27 | Mar 06, 2026, 02:50 PM IST | Fix: Jury selector modal properly scrollable — overlay is flex backdrop, inner card scrolls with overflow-y:auto; HTML selector mode grows to full content; text mode capped at 60vh
      v7.28 | Mar 06, 2026, 03:05 PM IST | Fix: Jury modal now uses full viewport height; scroll body has flex:1 and min-height:0 so all 15 events reachable by scrolling inside modal
      v7.29 | Mar 06, 2026, 03:30 PM IST | Fix: Jury Summary and Invitation now shows all 15 events from ES_DEFAULT_EVENTS master list — not just events that have jury setup in Firebase
+     v7.30 | Mar 06, 2026, 04:00 PM IST | Fix: Jury Invitation By-Event now shows all 15 events with serial numbers; unconfigured events shown as disabled grey buttons; By-Person also has serial numbers
+     v7.31 | Mar 06, 2026, 04:30 PM IST | Fix: Quiz Ended notification now fires ONLY at 11:30 PM via dedicated SW checker with Firebase guard; removed from Unpublish button and slot-duration setTimeout; SA manual Send Now card added
+     v7.32 | Mar 06, 2026, 04:45 PM IST | Fix: Jury password/name changes now sync both ways — Jury Setup tab ↔ Jury Summary table; both paths update Firebase + each other's display cells instantly
      ═══════════════════════════════════════════════════════════════════ -->
 
 
