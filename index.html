@@ -37495,7 +37495,16 @@ async function swCheckSchedule() {
 
 async function swFireQuizEnded(today, cfg) {
     try {
-        const endMsg = '⏰ Quiz has ended! Results coming soon.';
+        const _swDateParts = today ? today.split('-') : [];
+        const _swFullMonths = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+        const _swDayNum = _swDateParts.length === 3 ? parseInt(_swDateParts[2], 10) : 0;
+        const _swOrd = (_swDayNum === 1 || _swDayNum === 21 || _swDayNum === 31) ? 'st'
+                     : (_swDayNum === 2 || _swDayNum === 22) ? 'nd'
+                     : (_swDayNum === 3 || _swDayNum === 23) ? 'rd' : 'th';
+        const _swDateLabel = (_swDateParts.length === 3)
+            ? (_swDayNum + _swOrd + ' ' + _swFullMonths[parseInt(_swDateParts[1],10)-1] + ' ' + _swDateParts[0])
+            : today;
+        const endMsg = '⏰ Quiz of ' + _swDateLabel + ' has ended at 11:59 PM! Results coming soon.';
         const endToastId = 'quiz_ended_' + today;
         // Update status to ended
         fetch(FIREBASE_URL + '/quizAnnouncements/latest.json', {
@@ -39326,7 +39335,7 @@ export default {
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;" id="devTriggerVersion">
-                <strong>Version:</strong> 7.08 — Fix: PeerNudge admin panel — dropdown, random, preview added<strong>Last Updated:</strong> Mar 06, 2026, 10:15 AM IST</p>
+                <strong>Version:</strong> 7.10 — Quiz Ended notification shows "Quiz of 5th March 2026 has ended at 11:59 PM"<strong>Last Updated:</strong> Mar 06, 2026, 11:10 AM IST</p>
             <!-- ============================================ -->
             
             <p style="color: #c44569; font-size: 0.85em; font-weight: 600; margin-bottom: 8px;">
@@ -40657,7 +40666,17 @@ function _qnDoEnded(date, cfg) {
     var db = window.db || (window.firebase && window.firebase.database());
     if (!db) return;
     var toastId = 'quiz_ended_' + date;
-    var msg = '⏰ Quiz has ended! Results coming soon. Stay tuned 🏆';
+    // Format date as "5th March 2026" with ordinal suffix
+    var _dateParts = date ? date.split('-') : [];
+    var _fullMonthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    var _dayNum = _dateParts.length === 3 ? parseInt(_dateParts[2], 10) : 0;
+    var _ord = (_dayNum === 1 || _dayNum === 21 || _dayNum === 31) ? 'st'
+             : (_dayNum === 2 || _dayNum === 22) ? 'nd'
+             : (_dayNum === 3 || _dayNum === 23) ? 'rd' : 'th';
+    var _dateLabel = (_dateParts.length === 3)
+        ? (_dayNum + _ord + ' ' + _fullMonthNames[parseInt(_dateParts[1],10)-1] + ' ' + _dateParts[0])
+        : date;
+    var msg = '⏰ Quiz of ' + _dateLabel + ' has ended at 11:59 PM! Results coming soon. Stay tuned 🏆';
     // Reset seen-count so ended toast always shows on unpublish
     localStorage.removeItem('qn_seen_' + toastId);
     // Always update quizAnnouncements/latest to ended + hide banner + stop pulse
@@ -42015,6 +42034,8 @@ function scAdminPing() {
      v7.06 | Mar 06, 2026, 10:15 AM IST | New: Quiz Peer Nudge — 35 rotating templates auto-fire to un-answered students when any student gets both correct; cycles A-G styles (Competitive/FOMO/Mystery/Leaderboard/Nudge/Urgency/Fun); includes name+class+time; admin manual Send Now panel; never reveals correct/wrong
      v7.07 | Mar 06, 2026, 10:45 AM IST | Fix: PeerNudge 4 bugs — (1) senderKey now passed in trigger call (2) receiver checks senderKey instantly before async read so sender never sees own toast (3) dead timeStr/dateStr removed from manual send (4) getQuizToday exposed to window for correct server-time date in receiver
      v7.08 | Mar 06, 2026, 11:10 AM IST | Fix: PeerNudge admin panel — added dropdown (all 35 templates labelled by style), Random option, Preview box with sample output, custom message input shown only when custom selected
+     v7.09 | Mar 06, 2026, 11:10 AM IST | Quiz Ended notification now includes the date of the ended quiz
+     v7.10 | Mar 06, 2026, 11:10 AM IST | Quiz Ended notification shows "Quiz of 5th March 2026 has ended at 11:59 PM"
      ═══════════════════════════════════════════════════════════════════ -->
 
 
