@@ -1257,6 +1257,378 @@
     }
     </style>
 
+    <!-- ═══════════════════════════════════════════════════════
+         FEATURE CSS: Tooltips · Badge · Skeleton · Tab Blink
+         ═══════════════════════════════════════════════════════ -->
+    <style>
+    /* ── 1. TOOLTIP ─────────────────────────────────────────── */
+    .spf-tip {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+    }
+    .spf-tip::after {
+        content: attr(data-tip);
+        position: absolute;
+        bottom: calc(100% + 7px);
+        left: 50%;
+        transform: translateX(-50%);
+        background: #1a0030;
+        color: #fff;
+        font-size: 0.72em;
+        font-weight: 600;
+        padding: 5px 10px;
+        border-radius: 7px;
+        white-space: nowrap;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity .18s ease, transform .18s ease;
+        transform: translateX(-50%) translateY(4px);
+        z-index: 99999;
+        box-shadow: 0 4px 14px rgba(0,0,0,0.25);
+        max-width: 220px;
+        white-space: normal;
+        text-align: center;
+        line-height: 1.4;
+    }
+    .spf-tip::before {
+        content: '';
+        position: absolute;
+        bottom: calc(100% + 2px);
+        left: 50%;
+        transform: translateX(-50%);
+        border: 5px solid transparent;
+        border-top-color: #1a0030;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity .18s ease;
+        z-index: 99999;
+    }
+    .spf-tip:hover::after,
+    .spf-tip:hover::before { opacity: 1; transform: translateX(-50%) translateY(0); }
+    .spf-tip::before { transform: translateX(-50%); }
+
+    /* Tooltip pointing DOWN (for items near top of page) */
+    .spf-tip.tip-down::after {
+        bottom: auto;
+        top: calc(100% + 7px);
+        transform: translateX(-50%) translateY(-4px);
+    }
+    .spf-tip.tip-down::before {
+        bottom: auto;
+        top: calc(100% + 2px);
+        border-top-color: transparent;
+        border-bottom-color: #1a0030;
+        transform: translateX(-50%);
+    }
+    .spf-tip.tip-down:hover::after { transform: translateX(-50%) translateY(0); }
+
+    /* ── 2. NOTIFICATION BADGE ──────────────────────────────── */
+    .spf-badge-wrap {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+    }
+    .spf-badge {
+        position: absolute;
+        top: -7px;
+        right: -10px;
+        background: #e53935;
+        color: #fff;
+        font-size: 0.65em;
+        font-weight: 800;
+        min-width: 18px;
+        height: 18px;
+        border-radius: 9px;
+        padding: 0 4px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        pointer-events: none;
+        z-index: 10;
+        border: 2px solid white;
+        animation: spfBadgePop .3s cubic-bezier(.36,.07,.19,.97);
+        line-height: 1;
+    }
+    @keyframes spfBadgePop {
+        0%   { transform: scale(0); }
+        70%  { transform: scale(1.3); }
+        100% { transform: scale(1); }
+    }
+    .spf-badge[data-count="0"] { display: none; }
+
+    /* ── 3. SKELETON LOADER ─────────────────────────────────── */
+    .spf-skeleton {
+        border-radius: 6px;
+        background: linear-gradient(90deg, #ece9f0 25%, #f5f3f8 50%, #ece9f0 75%);
+        background-size: 400px 100%;
+        animation: spfSkelShimmer 1.4s ease-in-out infinite;
+        display: block;
+    }
+    @keyframes spfSkelShimmer {
+        0%   { background-position: -400px 0; }
+        100% { background-position: 400px 0; }
+    }
+    .spf-skeleton-row {
+        display: flex;
+        gap: 10px;
+        padding: 12px 16px;
+        border-bottom: 1px solid #f0edf4;
+        align-items: center;
+    }
+    .spf-skeleton-row .spf-skeleton.col-name  { height: 14px; flex: 2; border-radius: 4px; }
+    .spf-skeleton-row .spf-skeleton.col-mid   { height: 14px; flex: 3; border-radius: 4px; }
+    .spf-skeleton-row .spf-skeleton.col-small { height: 14px; flex: 1; border-radius: 4px; }
+    .spf-skeleton-row .spf-skeleton.col-badge { height: 22px; width: 44px; border-radius: 11px; flex: none; }
+
+    /* ── 4. TAB TITLE BLINK ─────────────────────────────────── */
+    /* Handled entirely in JS — no CSS needed */
+    </style>
+
+    <!-- Live Events Banner CSS -->
+    <style>
+    /* ── LIVE EVENTS BANNER — REDESIGNED ──────────────────────── */
+    #liveEventsBanner {
+        position: relative;
+        overflow: hidden;
+    }
+
+    /* Animated shimmer overlay on header */
+    @keyframes lebHeaderShimmer {
+        0%   { background-position: -600px 0; }
+        100% { background-position: 600px 0; }
+    }
+    @keyframes lebPulseGlow {
+        0%, 100% { box-shadow: 0 0 0 0 rgba(196,69,105,0); }
+        50%       { box-shadow: 0 0 24px 4px rgba(196,69,105,0.35); }
+    }
+    @keyframes lebChipFloat {
+        0%, 100% { transform: translateY(0); }
+        50%       { transform: translateY(-2px); }
+    }
+    @keyframes lebBadgeBlink {
+        0%, 100% { opacity: 1; }
+        50%       { opacity: 0.5; }
+    }
+    @keyframes lebSpin {
+        from { transform: rotate(0deg); }
+        to   { transform: rotate(360deg); }
+    }
+    @keyframes lebSlideIn {
+        from { opacity: 0; transform: translateY(-10px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Header */
+    .leb-header {
+        background: linear-gradient(120deg, #0d001a 0%, #3d0060 40%, #c44569 80%, #ff6b35 100%);
+        background-size: 200% 100%;
+        animation: lebHeaderShimmer 4s linear infinite;
+        padding: 13px 20px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 8px;
+        position: relative;
+        overflow: hidden;
+    }
+    .leb-header::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.06) 50%, transparent 100%);
+        background-size: 600px 100%;
+        animation: lebHeaderShimmer 2.5s linear infinite;
+        pointer-events: none;
+    }
+    .leb-header-left {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .leb-icon {
+        font-size: 1.4em;
+        animation: lebSpin 6s linear infinite;
+        display: inline-block;
+    }
+    .leb-title {
+        color: white;
+        font-weight: 900;
+        font-size: 1em;
+        letter-spacing: 1.5px;
+        text-shadow: 0 0 12px rgba(255,107,53,0.8);
+    }
+    .leb-date-pill {
+        background: rgba(255,255,255,0.15);
+        color: #ffe0b2;
+        font-size: 0.76em;
+        font-weight: 700;
+        padding: 3px 10px;
+        border-radius: 20px;
+        border: 1px solid rgba(255,255,255,0.2);
+        backdrop-filter: blur(4px);
+    }
+    .leb-count-pill {
+        background: linear-gradient(135deg,#ff6b35,#c44569);
+        color: white;
+        font-size: 0.72em;
+        font-weight: 800;
+        padding: 4px 12px;
+        border-radius: 20px;
+        animation: lebBadgeBlink 2s ease-in-out infinite;
+        box-shadow: 0 2px 10px rgba(196,69,105,0.5);
+        letter-spacing: 0.5px;
+    }
+
+    /* Body */
+    .leb-body {
+        background: linear-gradient(180deg, #1a0030 0%, #2d0050 100%);
+        padding: 14px 18px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        animation: lebSlideIn 0.4s ease;
+    }
+
+    /* Each priority row */
+    .leb-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+        padding: 8px 12px;
+        border-radius: 10px;
+        border: 1px solid rgba(255,255,255,0.08);
+        position: relative;
+        overflow: hidden;
+    }
+    .leb-row::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        opacity: 0.04;
+        pointer-events: none;
+        background: radial-gradient(ellipse at 0% 50%, white 0%, transparent 70%);
+    }
+    .leb-row-last  { background: rgba(198,40,40,0.15);  border-color: rgba(198,40,40,0.3); }
+    .leb-row-today { background: rgba(46,125,50,0.15);  border-color: rgba(46,125,50,0.3); }
+    .leb-row-on    { background: rgba(13,71,161,0.15);  border-color: rgba(13,71,161,0.3); }
+
+    /* Row labels */
+    .leb-row-label {
+        font-size: 0.7em;
+        font-weight: 900;
+        padding: 4px 10px;
+        border-radius: 20px;
+        white-space: nowrap;
+        flex-shrink: 0;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+    }
+    .leb-label-last  {
+        background: linear-gradient(135deg,#c62828,#e53935);
+        color: white;
+        box-shadow: 0 2px 8px rgba(198,40,40,0.5);
+        animation: lebBadgeBlink 1.5s ease-in-out infinite;
+    }
+    .leb-label-today {
+        background: linear-gradient(135deg,#2e7d32,#43a047);
+        color: white;
+        box-shadow: 0 2px 8px rgba(46,125,50,0.5);
+    }
+    .leb-label-on {
+        background: linear-gradient(135deg,#1565c0,#1976d2);
+        color: white;
+        box-shadow: 0 2px 8px rgba(21,101,192,0.4);
+    }
+
+    /* Chips */
+    .leb-chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 7px;
+        flex: 1;
+    }
+    .leb-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 14px;
+        border-radius: 22px;
+        font-size: 0.8em;
+        font-weight: 700;
+        white-space: nowrap;
+        cursor: default;
+        transition: transform .2s ease, box-shadow .2s ease;
+        position: relative;
+        overflow: hidden;
+        animation: lebChipFloat 3s ease-in-out infinite;
+    }
+    .leb-chip:nth-child(2) { animation-delay: 0.4s; }
+    .leb-chip:nth-child(3) { animation-delay: 0.8s; }
+    .leb-chip:nth-child(4) { animation-delay: 1.2s; }
+    .leb-chip:hover {
+        transform: translateY(-3px) scale(1.04);
+        box-shadow: 0 6px 18px rgba(0,0,0,0.35);
+    }
+    .leb-chip::before {
+        content: '';
+        position: absolute;
+        top: 0; left: -100%;
+        width: 60%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+        transition: left 0.4s ease;
+    }
+    .leb-chip:hover::before { left: 150%; }
+
+    .leb-chip-last {
+        background: linear-gradient(135deg,#b71c1c,#e53935);
+        color: white;
+        box-shadow: 0 3px 12px rgba(183,28,28,0.5);
+        border: 1px solid rgba(255,255,255,0.15);
+    }
+    .leb-chip-today {
+        background: linear-gradient(135deg,#1b5e20,#388e3c);
+        color: white;
+        box-shadow: 0 3px 12px rgba(27,94,32,0.5);
+        border: 1px solid rgba(255,255,255,0.15);
+    }
+    .leb-chip-on {
+        background: linear-gradient(135deg,#0d47a1,#1976d2);
+        color: white;
+        box-shadow: 0 3px 12px rgba(13,71,161,0.45);
+        border: 1px solid rgba(255,255,255,0.15);
+    }
+    .leb-chip-time {
+        font-size: 0.82em;
+        font-weight: 600;
+        opacity: 0.82;
+        background: rgba(255,255,255,0.15);
+        padding: 1px 6px;
+        border-radius: 8px;
+    }
+    .leb-time-sep {
+        font-size: 0.72em;
+        font-weight: 800;
+        color: #ff9800;
+        background: rgba(255,152,0,0.15);
+        padding: 3px 9px;
+        border-radius: 10px;
+        border: 1px solid rgba(255,152,0,0.3);
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+
+    /* Mobile */
+    @media (max-width: 600px) {
+        .leb-chips { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 3px; }
+        .leb-chips::-webkit-scrollbar { height: 3px; }
+        .leb-chips::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.3); border-radius: 3px; }
+        .leb-title { font-size: 0.85em; letter-spacing: 0.8px; }
+    }
+    </style>
 
     <div id="inAppNotifToast" style="display:none;position:fixed;top:0;left:0;right:0;z-index:999999;background:linear-gradient(135deg,#c44569,#6a1b9a);color:#fff;padding:16px 20px;">
         <div style="display:flex;align-items:flex-start;gap:12px">
@@ -1317,6 +1689,27 @@
         <div id="activityBannersContainer" style="width:100%;max-width:1200px;margin:0 auto"></div>
         <!-- ============================================================ -->
         <!-- END ACTIVITY BANNERS                                         -->
+        <!-- ============================================================ -->
+
+        <!-- ============================================================ -->
+        <!-- LIVE EVENTS BANNER — auto-built from Firebase eventSchedule  -->
+        <!-- Shows today's active/starting/ending events as priority chips -->
+        <!-- ============================================================ -->
+        <div id="liveEventsBanner" style="display:none;width:100%;max-width:1200px;margin:0 auto 22px;border-radius:16px;overflow:hidden;box-shadow:0 8px 32px rgba(106,27,154,0.35),0 2px 8px rgba(0,0,0,0.2);animation:lebPulseGlow 3s ease-in-out infinite">
+            <!-- Header strip -->
+            <div class="leb-header">
+                <div class="leb-header-left">
+                    <span class="leb-icon">🎡</span>
+                    <span class="leb-title">TODAY'S EVENTS</span>
+                    <span class="leb-date-pill" id="lebTodayDate"></span>
+                </div>
+                <span class="leb-count-pill" id="lebEventCount"></span>
+            </div>
+            <!-- Priority rows -->
+            <div class="leb-body" id="lebBody"></div>
+        </div>
+        <!-- ============================================================ -->
+        <!-- END LIVE EVENTS BANNER                                       -->
         <!-- ============================================================ -->
 
         <!-- Login/Logout Section (Visible to all) -->
@@ -2894,7 +3287,7 @@
                 <button class="tab super-admin-only" onclick="showTab('cloudinaryInspector')" id="cloudinaryInspectorTab">☁️ Cloudinary</button>
                 <button class="tab super-admin-only" onclick="showTab('firebaseDownloadMonitor')" id="firebaseDownloadMonitorTab">🔥 Download Monitor</button>
                 <button class="tab super-admin-only" onclick="showTab('chatInboxPanel');chatAdminLoadInbox();chatLoadPermToggles()" id="chatInboxPanelTab">💬 Chat Inbox <span id="chatInboxTabBadge"></span></button>
-                <button class="tab super-admin-only" onclick="showTab('quizNotifSchedulePanel');qnLoadConfig();qnLoadSlots();setTimeout(function(){if(typeof checkPublishStatusForAdmin==='function')checkPublishStatusForAdmin();},600)" id="quizNotifSchedulePanelTab">🔔 Notifications</button>
+                <button class="tab super-admin-only" onclick="showTab('quizNotifSchedulePanel');qnLoadConfig();qnLoadSlots();setTimeout(function(){if(typeof checkPublishStatusForAdmin==='function')checkPublishStatusForAdmin();},600)" id="quizNotifSchedulePanelTab"><span class="spf-badge-wrap">🔔 Notifications<span class="spf-badge" id="notifTabBadge" data-count="0"></span></span></button>
                 <button class="tab super-admin-only" onclick="showTab('managerPermissionsPanel')" id="managerPermissionsPanelTab">👔 Manager Permissions</button>
                 <button class="tab super-admin-only" onclick="showTab('vlogAdminPanel');loadVlogAdminPanel()" id="vlogAdminPanelTab">📹 Vlog Admin</button>
                 <button class="tab super-admin-only" onclick="showTab('podcastAdminPanel');loadPodcastAdminPanel()" id="podcastAdminPanelTab">🎙️ Podcast Admin</button>
@@ -3055,13 +3448,29 @@
                     <h2 style="color:#c44569;margin-bottom:6px">📊 Jury Summary Report</h2>
                     <p style="color:#888;margin-bottom:18px;font-size:.9em">All events with jury names, passwords, and event date/time pulled from Jury Setup + Event Schedule. Use this as a quick reference sheet.</p>
                     <div style="display:flex;gap:10px;align-items:center;margin-bottom:18px;flex-wrap:wrap">
-                        <button class="btn btn-info" onclick="loadJurySummaryReport()">🔄 Refresh</button>
+                        <button class="btn btn-info spf-tip" data-tip="Reload jury names, passwords & event dates from Firebase" onclick="loadJurySummaryReport()">🔄 Refresh</button>
                         <button class="btn btn-small" onclick="printJurySummary()" style="background:#1b5e20;color:white;border:none">🖨️ Print / Save PDF</button>
                         <button class="btn btn-small" onclick="showJuryEventSummaryWA()" style="background:#25D366;color:white;border:none;font-weight:700">📋 Event Overview (WhatsApp)</button>
                         <button class="btn btn-small" onclick="showJuryInvitationWA()" style="background:#128C7E;color:white;border:none;font-weight:700">💌 Jury Invitation (WhatsApp)</button>
                     </div>
                     <div id="jurySummaryContainer">
-                        <p style="color:#aaa;text-align:center;padding:30px">Loading…</p>
+                        <div id="jurySkelRows" style="border-radius:12px;border:2px solid #ce93d8;overflow:hidden;background:white">
+                            <div style="background:linear-gradient(135deg,#6a1b9a,#c44569);padding:11px 14px;display:flex;gap:20px">
+                                <span class="spf-skeleton" style="height:13px;flex:2;opacity:.4"></span>
+                                <span class="spf-skeleton" style="height:13px;flex:2;opacity:.4"></span>
+                                <span class="spf-skeleton" style="height:13px;flex:2;opacity:.4"></span>
+                                <span class="spf-skeleton" style="height:13px;flex:1;opacity:.4"></span>
+                                <span class="spf-skeleton" style="height:13px;flex:1;opacity:.4"></span>
+                            </div>
+                            <div class="spf-skeleton-row"><span class="spf-skeleton col-name"></span><span class="spf-skeleton col-mid"></span><span class="spf-skeleton col-mid"></span><span class="spf-skeleton col-small"></span><span class="spf-skeleton col-small"></span></div>
+                            <div class="spf-skeleton-row"><span class="spf-skeleton col-name"></span><span class="spf-skeleton col-mid"></span><span class="spf-skeleton col-mid"></span><span class="spf-skeleton col-small"></span><span class="spf-skeleton col-small"></span></div>
+                            <div class="spf-skeleton-row"><span class="spf-skeleton col-name"></span><span class="spf-skeleton col-mid"></span><span class="spf-skeleton col-mid"></span><span class="spf-skeleton col-small"></span><span class="spf-skeleton col-small"></span></div>
+                            <div class="spf-skeleton-row"><span class="spf-skeleton col-name"></span><span class="spf-skeleton col-mid"></span><span class="spf-skeleton col-mid"></span><span class="spf-skeleton col-small"></span><span class="spf-skeleton col-small"></span></div>
+                            <div class="spf-skeleton-row"><span class="spf-skeleton col-name"></span><span class="spf-skeleton col-mid"></span><span class="spf-skeleton col-mid"></span><span class="spf-skeleton col-small"></span><span class="spf-skeleton col-small"></span></div>
+                            <div class="spf-skeleton-row"><span class="spf-skeleton col-name"></span><span class="spf-skeleton col-mid"></span><span class="spf-skeleton col-mid"></span><span class="spf-skeleton col-small"></span><span class="spf-skeleton col-small"></span></div>
+                            <div class="spf-skeleton-row"><span class="spf-skeleton col-name"></span><span class="spf-skeleton col-mid"></span><span class="spf-skeleton col-mid"></span><span class="spf-skeleton col-small"></span><span class="spf-skeleton col-small"></span></div>
+                            <div class="spf-skeleton-row"><span class="spf-skeleton col-name"></span><span class="spf-skeleton col-mid"></span><span class="spf-skeleton col-mid"></span><span class="spf-skeleton col-small"></span><span class="spf-skeleton col-small"></span></div>
+                        </div>
                     </div>
 
                     <!-- ── Quiz Final Results — Super Admin publish panel ── -->
@@ -3450,7 +3859,7 @@
                                     <option value="1">One Correct (1/2)</option>
                                     <option value="0">None Correct (0/2)</option>
                                 </select>
-                                <button class="btn btn-info btn-small" onclick="loadQuizSubmissionsAdmin()">🔄 Refresh</button>
+                                <button class="btn btn-info btn-small spf-tip" data-tip="Reload today's quiz submissions from Firebase" onclick="loadQuizSubmissionsAdmin()">🔄 Refresh</button>
                             </div>
                         </div>
                         <div class="table-wrapper">
@@ -25639,6 +26048,12 @@ Davan Institute Team`;
         
         async function loadQuizSubmissionsAdmin() {
             const today = getQuizToday();
+            // Show skeleton rows while loading
+            const tbodyEarly = document.getElementById('quizSubmissionsTableAdmin');
+            if (tbodyEarly) {
+                const skelRow = `<tr><td><span class="spf-skeleton" style="height:12px;width:20px;display:block;border-radius:4px"></span></td><td><span class="spf-skeleton col-name" style="height:12px;display:block;border-radius:4px"></span></td><td><span class="spf-skeleton col-mid" style="height:12px;display:block;border-radius:4px"></span></td><td><span class="spf-skeleton col-small" style="height:12px;display:block;border-radius:4px"></span></td><td><span class="spf-skeleton col-mid" style="height:12px;display:block;border-radius:4px"></span></td><td><span class="spf-skeleton col-badge" style="display:block"></span></td><td><span class="spf-skeleton col-small" style="height:12px;display:block;border-radius:4px"></span></td></tr>`;
+                tbodyEarly.innerHTML = skelRow.repeat(6);
+            }
             try {
                 const snap = await db.ref(`quizSubmissions/${today}`).once('value');
                 const tbody = document.getElementById('quizSubmissionsTableAdmin');
@@ -36809,6 +37224,138 @@ Proceed?`)) return;
         }
     }
 
+    // ── LIVE EVENTS BANNER ────────────────────────────────────────────────
+    // Reads eventSchedule from Firebase, figures out today's active/starting/
+    // ending events, groups by priority and renders chips with time labels.
+    // ─────────────────────────────────────────────────────────────────────
+
+    function _lebParseDate(str) {
+        // Accepts "DD-MM-YYYY"
+        if (!str || str === '—') return null;
+        const p = str.match(/^(\d{2})-(\d{2})-(\d{4})$/);
+        if (!p) return null;
+        return new Date(parseInt(p[3]), parseInt(p[2])-1, parseInt(p[1]));
+    }
+
+    function _lebTodayStr() {
+        const d = new Date();
+        const dd = String(d.getDate()).padStart(2,'0');
+        const mm = String(d.getMonth()+1).padStart(2,'0');
+        return `${dd}-${mm}-${d.getFullYear()}`;
+    }
+
+    function _lebFriendlyDate(str) {
+        const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+        const p = str.match(/^(\d{2})-(\d{2})-(\d{4})$/);
+        if (!p) return str;
+        const day = parseInt(p[1]);
+        const suf = day===1||day===21||day===31?'st':day===2||day===22?'nd':day===3||day===23?'rd':'th';
+        return `${day}${suf} ${months[parseInt(p[2])-1]}`;
+    }
+
+    function renderLiveEventsBanner(snap) {
+        const banner  = document.getElementById('liveEventsBanner');
+        const body    = document.getElementById('lebBody');
+        const dateEl  = document.getElementById('lebTodayDate');
+        const countEl = document.getElementById('lebEventCount');
+        if (!banner || !body) return;
+
+        if (!snap || !snap.exists()) { banner.style.display = 'none'; return; }
+
+        const todayDate  = new Date(); todayDate.setHours(0,0,0,0);
+        const todayStr   = _lebTodayStr();
+        const items      = Object.values(snap.val()).sort((a,b)=>(a.sl||999)-(b.sl||999));
+
+        // Classify each event
+        const lastDay  = [];  // endDate === today
+        const starting = [];  // startDate === today
+        const ongoing  = [];  // startDate < today <= endDate (or no endDate yet)
+
+        items.forEach(ev => {
+            if (!ev.name) return;
+            const start = _lebParseDate(ev.startDate);
+            const end   = _lebParseDate(ev.endDate);
+            if (!start) return; // no start date set — skip
+
+            const startMs = start.getTime();
+            const endMs   = end ? end.getTime() : null;
+            const todayMs = todayDate.getTime();
+
+            if (endMs && endMs === todayMs) {
+                lastDay.push(ev);
+            } else if (startMs === todayMs) {
+                starting.push(ev);
+            } else if (startMs < todayMs && (!endMs || endMs > todayMs)) {
+                ongoing.push(ev);
+            }
+        });
+
+        const total = lastDay.length + starting.length + ongoing.length;
+        if (total === 0) { banner.style.display = 'none'; return; }
+
+        // Group by time within each priority bucket
+        function groupByTime(events) {
+            const map = {};
+            events.forEach(ev => {
+                const key = ev.startTime || '__notime__';
+                if (!map[key]) map[key] = [];
+                map[key].push(ev);
+            });
+            return map;
+        }
+
+        function buildChip(ev, cls) {
+            const timeHtml = ev.startTime
+                ? `<span class="leb-chip-time">${ev.startTime}</span>`
+                : '';
+            const stageDot = ev.stageType === 'On stage' ? '🎭' : '📋';
+            return `<span class="leb-chip ${cls}" title="${ev.stageType||''} — Incharge: ${ev.incharge||'—'}">${stageDot} ${ev.name}${timeHtml}</span>`;
+        }
+
+        function buildRow(labelText, labelCls, chipCls, rowCls, events) {
+            if (!events.length) return '';
+            const groups = groupByTime(events);
+            const timeKeys = Object.keys(groups).sort((a,b)=> a==='__notime__'?1:b==='__notime__'?-1:a.localeCompare(b));
+
+            if (timeKeys.length > 1 || (timeKeys.length === 1 && timeKeys[0] !== '__notime__')) {
+                return timeKeys.map(tk => {
+                    const evList = groups[tk];
+                    const timeLabel = tk !== '__notime__' ? `<span class="leb-time-sep">⏰ ${tk}</span>` : '';
+                    return `<div class="leb-row ${rowCls}">
+                        <span class="leb-row-label ${labelCls}">${labelText}</span>
+                        ${timeLabel}
+                        <div class="leb-chips">${evList.map(e=>buildChip(e,chipCls)).join('')}</div>
+                    </div>`;
+                }).join('');
+            }
+            return `<div class="leb-row ${rowCls}">
+                <span class="leb-row-label ${labelCls}">${labelText}</span>
+                <div class="leb-chips">${events.map(e=>buildChip(e,chipCls)).join('')}</div>
+            </div>`;
+        }
+
+        const html =
+            buildRow('⚠️ Last Day',    'leb-label-last',  'leb-chip-last',  'leb-row-last',  lastDay)  +
+            buildRow('🟢 Starts Today','leb-label-today', 'leb-chip-today', 'leb-row-today', starting) +
+            buildRow('🔵 Ongoing',     'leb-label-on',    'leb-chip-on',    'leb-row-on',    ongoing);
+
+        body.innerHTML = html;
+
+        // Header meta
+        if (dateEl) dateEl.textContent = _lebFriendlyDate(todayStr);
+        if (countEl) countEl.textContent = `🔥 ${total} event${total>1?'s':''} active today`;
+
+        banner.style.display = 'block';
+    }
+
+    // Refresh live events banner every 60s — catches midnight date rollover
+    setInterval(function() {
+        if (!window.db) return;
+        getDb().ref(ES_FB_PATH).once('value').then(function(snap) {
+            renderLiveEventsBanner(snap);
+        }).catch(function(){});
+    }, 60000);
+
     // Auto-init public sections when Firebase is ready
     // PDF uses REST API — load immediately on DOMContentLoaded, no Firebase wait needed
     document.addEventListener('DOMContentLoaded', function() { initPublicPdfHandouts(); });
@@ -36819,6 +37366,7 @@ Proceed?`)) return;
                 // Real-time listener — public table stays in sync with any admin edits instantly
                 getDb().ref(ES_FB_PATH).on('value', function(snap) {
                     _esDrawPublicRows(snap);
+                    renderLiveEventsBanner(snap);
                 }, function(err) {
                     console.info('esPublicTable realtime listener error —', err.message);
                 });
@@ -40147,7 +40695,7 @@ export default {
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;" id="devTriggerVersion">
-                <strong>Version:</strong> 7.33 — Fix: Peer nudge now pushes to live_notifications/peer (unique node per submission) instead of overwriting /latest — all submissions fire independently; dedicated child_added listener added<strong>Last Updated:</strong> Mar 07, 2026, 09:30 AM IST</p>
+                <strong>Version:</strong> 7.38 — Redesign: Live Events Banner — dark gradient body, glowing animated chips, spinning icon, shimmer header, coloured rows per priority<strong>Last Updated:</strong> Mar 07, 2026, 11:20 AM IST</p>
             <!-- ============================================ -->
             
             <p style="color: #c44569; font-size: 0.85em; font-weight: 600; margin-bottom: 8px;">
@@ -42178,8 +42726,131 @@ function qnCheckLiveOnLoad() {
     }, 500);
 })();
 
-// ══════════════════════════════════════════
-// ADMIN INBOX
+// ══════════════════════════════════════════════════════════════
+// FEATURE JS: Tooltip · Badge · Skeleton · Tab Title Blink
+// ══════════════════════════════════════════════════════════════
+
+// ── 1. NOTIFICATION BADGE COUNTER ────────────────────────────
+// Increments badge on 🔔 Notifications tab when a new notification fires
+// Resets to 0 when admin opens the Notifications tab
+var _notifBadgeCount = 0;
+
+function spfBumpBadge() {
+    _notifBadgeCount++;
+    var badge = document.getElementById('notifTabBadge');
+    if (!badge) return;
+    badge.textContent = _notifBadgeCount > 99 ? '99+' : String(_notifBadgeCount);
+    badge.setAttribute('data-count', _notifBadgeCount);
+    badge.style.display = 'flex';
+}
+
+function spfClearBadge() {
+    _notifBadgeCount = 0;
+    var badge = document.getElementById('notifTabBadge');
+    if (!badge) return;
+    badge.textContent = '0';
+    badge.setAttribute('data-count', '0');
+    badge.style.display = 'none';
+}
+
+// Hook: bump badge whenever a toast fires (quiz live, ended, peer nudge, results, etc.)
+// Patch qnShowToast to also bump badge
+(function() {
+    var _origQnShowToast = window.qnShowToast || null;
+    function _patchBadge() {
+        if (typeof qnShowToast === 'function' && !qnShowToast._badgePatched) {
+            var orig = qnShowToast;
+            qnShowToast = function(opts) {
+                orig(opts);
+                // Only bump if Notifications tab is NOT currently open
+                var notifTab = document.getElementById('quizNotifSchedulePanel');
+                var isOpen = notifTab && notifTab.classList.contains('active');
+                if (!isOpen) spfBumpBadge();
+            };
+            qnShowToast._badgePatched = true;
+            window.qnShowToast = qnShowToast;
+        }
+    }
+    // Try immediately and retry until qnShowToast is defined
+    var _bp = setInterval(function() { if (typeof qnShowToast === 'function') { _patchBadge(); clearInterval(_bp); } }, 300);
+})();
+
+// Clear badge when Notifications tab is opened
+(function() {
+    var _origShowTab = window.showTab || null;
+    function _patchShowTab() {
+        if (typeof showTab === 'function' && !showTab._badgePatched) {
+            var orig = showTab;
+            showTab = function(tabId) {
+                orig(tabId);
+                if (tabId === 'quizNotifSchedulePanel') spfClearBadge();
+            };
+            showTab._badgePatched = true;
+            window.showTab = showTab;
+        }
+    }
+    var _sp = setInterval(function() { if (typeof showTab === 'function') { _patchShowTab(); clearInterval(_sp); } }, 300);
+})();
+
+// ── 2. TAB TITLE BLINK when Quiz is LIVE ─────────────────────
+var _tabBlinkInterval = null;
+var _tabOrigTitle = document.title;
+
+function spfStartTabBlink() {
+    if (_tabBlinkInterval) return; // already blinking
+    var blink = true;
+    _tabBlinkInterval = setInterval(function() {
+        document.title = blink ? '🔴 Quiz LIVE! — Spurthi' : _tabOrigTitle;
+        blink = !blink;
+    }, 1200);
+}
+
+function spfStopTabBlink() {
+    if (_tabBlinkInterval) { clearInterval(_tabBlinkInterval); _tabBlinkInterval = null; }
+    document.title = _tabOrigTitle;
+}
+
+// Hook into quizAnnouncements listener — start/stop blink based on status
+(function() {
+    var _tbl = setInterval(function() {
+        var db = window.db || (window.firebase && window.firebase.database && window.firebase.database());
+        if (!db) return;
+        clearInterval(_tbl);
+        db.ref('quizAnnouncements/latest').on('value', function(snap) {
+            if (!snap.exists()) return;
+            var n = snap.val();
+            if (!n) return;
+            if (n.status === 'live') {
+                spfStartTabBlink();
+            } else {
+                spfStopTabBlink();
+            }
+        });
+    }, 600);
+})();
+
+// Also check on page load
+(function() {
+    var _tbc = setInterval(function() {
+        var db = window.db || (window.firebase && window.firebase.database && window.firebase.database());
+        if (!db) return;
+        clearInterval(_tbc);
+        db.ref('quizAnnouncements/latest').once('value').then(function(snap) {
+            if (!snap.exists()) return;
+            var n = snap.val();
+            if (n && n.status === 'live') spfStartTabBlink();
+        });
+    }, 600);
+})();
+
+// Stop blink when user focuses the tab (they've seen it)
+document.addEventListener('visibilitychange', function() {
+    if (!document.hidden && _tabBlinkInterval) {
+        // Keep blinking until quiz actually ends — just restore title momentarily
+        document.title = _tabOrigTitle;
+    }
+});
+
 // ══════════════════════════════════════════
 // ── All conversations cache for filter/search ──
 var _chatAllConvs = [];
@@ -42903,6 +43574,11 @@ function scAdminPing() {
      v7.31 | Mar 06, 2026, 04:30 PM IST | Fix: Quiz Ended notification now fires ONLY at 11:30 PM via dedicated SW checker with Firebase guard; removed from Unpublish button and slot-duration setTimeout; SA manual Send Now card added
      v7.32 | Mar 06, 2026, 04:45 PM IST | Fix: Jury password/name changes now sync both ways — Jury Setup tab ↔ Jury Summary table; both paths update Firebase + each other's display cells instantly
      v7.33 | Mar 07, 2026, 09:30 AM IST | Fix: Peer nudge now pushes to live_notifications/peer (unique node per submission) instead of overwriting /latest — all submissions fire independently; dedicated child_added listener added
+     v7.34 | Mar 07, 2026, 10:15 AM IST | New: 4 UI features added — (1) Tooltips on all key buttons via .spf-tip, (2) Red badge counter on 🔔 Notifications tab, (3) Skeleton loader on Jury Summary + Quiz Submissions tables, (4) Tab title blinks 🔴 Quiz LIVE! when quiz is active
+     v7.35 | Mar 07, 2026, 10:30 AM IST | Fix: broken HTML from v7.34 — missing div#inAppNotifToast opening tag restored; raw CSS was rendering on screen
+     v7.36 | Mar 07, 2026, 11:00 AM IST | New: Live Events Banner on main page — reads Firebase eventSchedule, shows today's active events grouped by Last Day/Starts Today/Ongoing with time slots, priority chips, real-time + 60s refresh
+     v7.37 | Mar 07, 2026, 11:10 AM IST | Fix: broken HTML recurring bug — div#inAppNotifToast opening tag restored again; CSS style block was merging with div tag on each new style addition
+     v7.38 | Mar 07, 2026, 11:20 AM IST | Redesign: Live Events Banner — full dark theme, shimmer header, glowing animated chips, gradient rows per priority, spinning icon, floating animation
      ═══════════════════════════════════════════════════════════════════ -->
 
 
