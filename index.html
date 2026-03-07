@@ -2156,7 +2156,7 @@
                 <button class="tab" onclick="showCRTab('crView')">View Enrollments</button>
                 <button class="tab" onclick="showCRTab('crQuizStats');loadCRQuizStats()">🧠 Quiz Stats</button>
                 <button class="tab" onclick="showCRTab('crScavengerStats');loadCRScavengerStats()">🗺️ Scavenger Hunt</button>
-                <button class="tab" onclick="showCRTab('crVlogChallenge');checkVlogEventActive();loadVlogSubmissions();initVlogDailyScreenshots();loadVlogExistingScreenshots(window.currentCRClass||crClass)">📹 Vlog Challenge</button>
+                <button class="tab" onclick="showCRTab('crVlogChallenge');checkVlogEventActive();autoFillVlogMembers();loadVlogSubmissions();">📹 Vlog Challenge</button>
                 <button class="tab" onclick="showCRTab('crPodCasting');checkPodcastEventActive();loadPodcastSubmissions()">🎙️ Pod Casting</button>
                 <button class="tab" onclick="showCRTab('crBestOutWaste');loadBOWSubmissions()">♻️ Best Out of Waste</button>
                 <button class="tab" id="crYtAdTab" onclick="showCRTab('crYtAd');checkYtAdEventActive();loadYtAdSubmissions()">📺 YT Advertisement</button>
@@ -2413,37 +2413,9 @@
                     </div>
                 </div>
 
-                <!-- Hashtag Tracking Box -->
-                <div style="background:linear-gradient(135deg,#fce4ec,#f3e5f5);border-radius:12px;padding:16px 18px;margin-bottom:20px;border:1px solid #f48fb1">
-                    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:10px">
-                        <h4 style="color:#880e4f;margin:0;font-size:0.93em">🔖 Official Challenge Hashtag</h4>
-                        <span style="background:#e91e63;color:white;padding:3px 12px;border-radius:20px;font-size:0.75em;font-weight:700">Phase 2 — Auto-Tracking Ready</span>
-                    </div>
-                    <div style="background:white;border-radius:10px;padding:14px 16px;border:2px dashed #f48fb1;text-align:center;margin-bottom:12px">
-                        <div style="font-size:1.4em;font-weight:900;color:#e91e63;letter-spacing:1px" id="vlogHashtagDisplay">#SpurthiVlogChallenge2026</div>
-                        <div style="color:#aaa;font-size:0.78em;margin-top:4px">⚙️ Admin can update this hashtag before launch</div>
-                    </div>
-                    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;text-align:center" class="vlog-track-grid">
-                        <div style="background:white;border-radius:8px;padding:10px 8px;border:1px solid #f8bbd0">
-                            <div style="font-size:1.3em">👁️</div>
-                            <div style="font-size:0.78em;font-weight:700;color:#880e4f;margin-top:3px">Monitors Hashtag</div>
-                            <div style="font-size:0.72em;color:#999">Scans all posts using the tag</div>
-                        </div>
-                        <div style="background:white;border-radius:8px;padding:10px 8px;border:1px solid #f8bbd0">
-                            <div style="font-size:1.3em">🔍</div>
-                            <div style="font-size:0.78em;font-weight:700;color:#880e4f;margin-top:3px">Detects New Posts</div>
-                            <div style="font-size:0.72em;color:#999">Links matched to submitted entries</div>
-                        </div>
-                        <div style="background:white;border-radius:8px;padding:10px 8px;border:1px solid #f8bbd0">
-                            <div style="font-size:1.3em">📊</div>
-                            <div style="font-size:0.78em;font-weight:700;color:#880e4f;margin-top:3px">Live Leaderboard</div>
-                            <div style="font-size:0.72em;color:#999">Updates scores in real-time</div>
-                        </div>
-                    </div>
-                    <div style="background:rgba(136,14,79,0.06);border-radius:8px;padding:9px 14px;margin-top:10px;font-size:0.8em;color:#880e4f">
-                        ⚠️ <strong>Important:</strong> Participants <em>must</em> use the official hashtag in their Instagram Reel caption — otherwise the post won't be tracked automatically in Phase 2.
-                    </div>
-                </div>
+
+                <!-- Hidden hashtag value (used by submit logic) -->
+                <span id="vlogHashtagDisplay" style="display:none">#SpurthiVlogChallenge2026</span>
 
                 <!-- Submission Form -->
                 <!-- Event Locked Message (shown when Super Admin hasn't activated) -->
@@ -2451,6 +2423,28 @@
                     <div style="font-size:2.5em;margin-bottom:8px">🔒</div>
                     <h3 style="color:#e65100;margin:0 0 8px">Event Not Yet Started</h3>
                     <p style="color:#666;font-size:0.9em;margin:0">The Vlog Challenge has not been activated by the Super Admin yet. Please check back soon!</p>
+                </div>
+
+                <!-- Start date gate banner (event active but not yet started) -->
+                <div id="vlogStartDateBanner" style="display:none;background:linear-gradient(135deg,#e8f5e9,#e3f2fd);border-radius:12px;padding:20px 24px;margin-bottom:20px;border:2px solid #81c784">
+                    <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+                        <span style="font-size:2em">📅</span>
+                        <div>
+                            <div style="font-weight:800;color:#1b5e20;font-size:1em;margin-bottom:4px">Enrollment is Open — Submissions start on <span id="vlogStartDateText" style="color:#c44569">—</span></div>
+                            <div style="color:#555;font-size:0.85em">Your team is enrolled below. The Reel submission form will unlock on the start date. Make sure to prepare your Instagram Reel by then!</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- No enrollment warning (shown when class has no Vlog enrollment) -->
+                <div id="vlogNoEnrollMsg" style="display:none;background:linear-gradient(135deg,#fff3e0,#fce4ec);border-radius:12px;padding:20px 24px;margin-bottom:20px;border:2px solid #ffab40">
+                    <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+                        <span style="font-size:2em">📋</span>
+                        <div>
+                            <div style="font-weight:800;color:#e65100;font-size:1em;margin-bottom:4px">Enrollment Required Before Submitting</div>
+                            <div style="color:#666;font-size:0.85em">Your class has not enrolled in the Vlog Challenge yet. Please visit the <strong>Enrollment</strong> tab first, enroll your team members, then come back to submit your Instagram Reel.</div>
+                        </div>
+                    </div>
                 </div>
 
                 <div id="vlogSubmitFormWrapper">
@@ -2510,6 +2504,7 @@
                     </div>
 
                     <div id="vlogSubmitMsg" style="display:none;margin-top:12px;padding:10px 14px;border-radius:8px;font-size:0.88em;font-weight:600"></div>
+                    <input type="hidden" id="vlogEditEntryId" value="">
                     <div style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap">
                         <button class="btn" id="vlogSubmitBtn" onclick="submitVlogEntry()" style="background:linear-gradient(135deg,#833ab4,#fd1d1d,#fcb045);border:none;flex:1;min-width:160px">📤 Submit Instagram Reel Link</button>
                         <button class="btn" id="vlogEditBtn" onclick="enableVlogEdit()" style="background:linear-gradient(135deg,#1565c0,#1976d2);border:none;flex:0;min-width:120px">✏️ Edit</button>
@@ -2519,30 +2514,7 @@
                 </div><!-- end vlogSubmitFormWrapper -->
 
                 <!-- ═══════════════════════════════════════════════════════════════ -->
-                <!-- SEPARATE: Instagram Reel Insights Screenshot Upload Section    -->
-                <!-- Shown only AFTER the Reel Link has been submitted              -->
-                <!-- ═══════════════════════════════════════════════════════════════ -->
-                <div id="vlogInsightScreenshotSection" style="display:block;margin-top:20px">
-                    <div style="background:linear-gradient(135deg,#f3e5f5,#e8f5e9);border-radius:14px;border:2px solid #ce93d8;padding:22px">
-                        <!-- Header -->
-                        <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
-                            <span style="font-size:1.4em">📊</span>
-                            <div>
-                                <h3 style="color:#6a1b9a;margin:0;font-size:1.05em">Instagram Reel Insights Screenshot <span style="color:#888;font-weight:400;font-size:0.85em">(upload daily — one per day)</span></h3>
-                            </div>
-                        </div>
-                        <!-- Info banner -->
-                        <div style="background:rgba(106,27,154,0.08);border-radius:8px;padding:9px 14px;margin-bottom:16px;font-size:0.82em;color:#4a148c;border-left:4px solid #9c27b0;line-height:1.6">
-                            ℹ️ Each day during the event period, open your Reel → tap <strong>⋯</strong> → <strong>View Insights</strong> → screenshot showing <strong>Views, Likes, Comments</strong> → upload for that date.<br>
-                            This helps the admin enter your social score accurately every day.
-                        </div>
-                        <!-- Screenshot slots (rendered by initVlogDailyScreenshots) -->
-                        <div id="vlogDailyScreenshotsContainer" style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px">
-                            <!-- Per-slot submit buttons rendered by initVlogDailyScreenshots() -->
-                        </div>
-                    </div>
-                </div>
-                <!-- ═══════════════════════════════════════════════════════════════ -->
+                <!-- Screenshot section is now inline inside each Approved team banner -->
 
                 <!-- Submissions Table -->
                 <div style="background:white;border-radius:14px;border:2px solid #e0c8f5;overflow:hidden">
@@ -2551,9 +2523,13 @@
                         <button class="btn btn-small" onclick="loadVlogSubmissions()" style="background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.5);color:white;font-size:0.8em">🔄 Refresh</button>
                     </div>
                     <div id="vlogTableWrap" style="padding:16px">
+                        <!-- Point 4: Per-team approval status banners (CR only sees this) -->
+                        <div id="vlogApprovalBanners"></div>
+
                         <div id="vlogEmptyMsg" style="text-align:center;color:#aaa;padding:30px;font-size:0.9em">
                             No teams submitted yet for your class. Register your team! 🎬
                         </div>
+                        <!-- Detail score table hidden from CR — only shown in admin panels -->
                         <div class="table-wrapper" style="margin:0;display:none" id="vlogTableContainer">
                             <table id="vlogTable">
                                 <thead>
@@ -2575,22 +2551,7 @@
                     </div>
                 </div>
 
-                <!-- Phase 2 Coming Soon -->
-                <div style="background:linear-gradient(135deg,#e3f2fd,#fce4ec);border:1px dashed #90caf9;border-radius:12px;padding:16px 18px;margin-top:18px">
-                    <h4 style="color:#1565c0;margin:0 0 8px;font-size:0.92em">🔮 Phase 2 — Coming Soon: Auto-Hashtag Tracking via Instagram Graph API</h4>
-                    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px" class="vlog-phase2-grid">
-                        <div style="background:white;border-radius:8px;padding:8px 10px;font-size:0.78em;text-align:center;border:1px solid #bbdefb">
-                            <div>🔖</div><div style="font-weight:700;color:#1565c0;margin-top:3px">Monitors Hashtag</div><div style="color:#888">Scans all posts automatically</div>
-                        </div>
-                        <div style="background:white;border-radius:8px;padding:8px 10px;font-size:0.78em;text-align:center;border:1px solid #bbdefb">
-                            <div>⚡</div><div style="font-weight:700;color:#1565c0;margin-top:3px">Detects New Posts</div><div style="color:#888">Matches to registered teams</div>
-                        </div>
-                        <div style="background:white;border-radius:8px;padding:8px 10px;font-size:0.78em;text-align:center;border:1px solid #bbdefb">
-                            <div>📊</div><div style="font-weight:700;color:#1565c0;margin-top:3px">Live Leaderboard</div><div style="color:#888">Updates scores in real-time</div>
-                        </div>
-                    </div>
-                    <p style="color:#555;font-size:0.8em;margin:0;line-height:1.7">Apply for Instagram Graph API now (approval takes 3–7 days). Once live, likes + comments + views will be tracked automatically and combined with jury scores for final rankings. Your Phase 1 link submissions are ready to go!</p>
-                </div>
+
 
                 <!-- ── MONITORING SECTION (hidden until Super Admin enables) ── -->
                 <div id="vlogMonitoringSection" style="display:none;margin-top:18px">
@@ -3289,7 +3250,8 @@
                 <button class="tab super-admin-only" onclick="showTab('chatInboxPanel');chatAdminLoadInbox();chatLoadPermToggles()" id="chatInboxPanelTab">💬 Chat Inbox <span id="chatInboxTabBadge"></span></button>
                 <button class="tab super-admin-only" onclick="showTab('quizNotifSchedulePanel');qnLoadConfig();qnLoadSlots();setTimeout(function(){if(typeof checkPublishStatusForAdmin==='function')checkPublishStatusForAdmin();},600)" id="quizNotifSchedulePanelTab"><span class="spf-badge-wrap">🔔 Notifications<span class="spf-badge" id="notifTabBadge" data-count="0"></span></span></button>
                 <button class="tab super-admin-only" onclick="showTab('managerPermissionsPanel')" id="managerPermissionsPanelTab">👔 Manager Permissions</button>
-                <button class="tab super-admin-only" onclick="showTab('vlogAdminPanel');loadVlogAdminPanel()" id="vlogAdminPanelTab">📹 Vlog Admin</button>
+                <button class="tab super-admin-only" onclick="showTab('vlogAdminPanel');loadVlogAdminPanel();loadVlogSummaryReport()" id="vlogAdminPanelTab">📹 Vlog Admin</button>
+                <button class="tab super-admin-only" onclick="showTab('vlogReviewPanel');loadVlogReviewPanel()" id="vlogReviewPanelTab">📹 Vlog Review</button>
                 <button class="tab super-admin-only" onclick="showTab('podcastAdminPanel');loadPodcastAdminPanel()" id="podcastAdminPanelTab">🎙️ Podcast Admin</button>
                 <button class="tab super-admin-only" onclick="showTab('bowResultsPublisher');bowRpLoad()" id="superJuryMgmtTab">♻️ BOW Results</button>
                 <button class="tab super-admin-only" onclick="showTab('nukkadAdminPanel');loadNukkadAdminPanel()" id="nukkadAdminTab">🎭 Nukkad Admin</button>
@@ -6295,11 +6257,91 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- ── SUMMARY REPORT (Point 3) ── -->
+                <div style="background:white;border-radius:14px;border:2px solid #c5cae9;overflow:hidden;margin-top:20px">
+                    <div style="background:linear-gradient(135deg,#1a237e,#283593);padding:14px 18px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
+                        <h4 style="color:white;margin:0;font-size:0.95em">📊 Vlog Summary Report — Enrollments vs Submissions</h4>
+                        <button onclick="loadVlogSummaryReport()" style="background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.4);color:white;border-radius:8px;padding:5px 14px;font-size:0.8em;cursor:pointer;font-weight:700">🔄 Refresh</button>
+                    </div>
+                    <div style="padding:16px">
+                        <!-- Filters -->
+                        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;align-items:center">
+                            <select id="vsrClassFilter" onchange="loadVlogSummaryReport()" style="padding:7px 12px;border:2px solid #9fa8da;border-radius:8px;font-size:0.85em;outline:none">
+                                <option value="">All Classes</option>
+                            </select>
+                            <select id="vsrStatusFilter" onchange="loadVlogSummaryReport()" style="padding:7px 12px;border:2px solid #9fa8da;border-radius:8px;font-size:0.85em;outline:none">
+                                <option value="">All Statuses</option>
+                                <option value="Pending Review">⏳ Pending Review</option>
+                                <option value="Approved">✅ Approved</option>
+                                <option value="Rejected">❌ Rejected</option>
+                            </select>
+                            <select id="vsrTopicFilter" onchange="loadVlogSummaryReport()" style="padding:7px 12px;border:2px solid #9fa8da;border-radius:8px;font-size:0.85em;outline:none">
+                                <option value="">All Topics</option>
+                            </select>
+                            <button onclick="vsrClearFilters()" style="background:#e8eaf6;color:#1a237e;border:none;border-radius:8px;padding:7px 14px;font-size:0.82em;cursor:pointer;font-weight:700">✕ Clear</button>
+                        </div>
+                        <div id="vlogSummaryReportContainer">
+                            <p style="color:#aaa;text-align:center;padding:30px">Click 🔄 Refresh above to load summary.</p>
+                        </div>
+                    </div>
+                </div>
             </div>
             <!-- END VLOG ADMIN PANEL -->
 
             <!-- ══════════════════════════════════════════════════════════════════
-                 POD CASTING ADMIN PANEL
+                 VLOG REVIEW PANEL — Faculty (Manager) view
+                 Enrollments list + Submissions with approve/reject
+            ══════════════════════════════════════════════════════════════════ -->
+            <div id="vlogReviewPanel" class="form-section super-admin-only" style="margin-top:20px">
+                <h2 style="color:#833ab4;margin-bottom:4px">📹 Vlog Challenge — Faculty Review</h2>
+                <p style="color:#888;margin-bottom:20px;font-size:.9em">View all class enrollments and student submissions. Approve or reject entries for Chandan G B's final decision.</p>
+
+                <!-- Sub-tabs -->
+                <div style="display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap">
+                    <button id="vrTab_enroll" onclick="vrShowTab('enroll')" style="padding:8px 20px;border-radius:20px;border:none;font-weight:700;font-size:0.88em;cursor:pointer;background:linear-gradient(135deg,#833ab4,#c44569);color:white;box-shadow:0 3px 10px rgba(131,58,180,0.3)">📋 Enrollments</button>
+                    <button id="vrTab_submit" onclick="vrShowTab('submit')" style="padding:8px 20px;border-radius:20px;border:2px solid #833ab4;font-weight:700;font-size:0.88em;cursor:pointer;background:white;color:#833ab4">📤 Submissions</button>
+                </div>
+
+                <!-- Enrollments sub-panel -->
+                <div id="vrEnrollPanel">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+                        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+                            <select id="vrEnrollClassFilter" onchange="loadVrEnrollments()" style="padding:7px 12px;border:2px solid #ce93d8;border-radius:8px;font-size:0.85em;outline:none">
+                                <option value="">All Classes</option>
+                            </select>
+                            <button onclick="loadVrEnrollments()" style="background:#9c27b0;color:white;border:none;border-radius:8px;padding:7px 14px;font-size:0.82em;font-weight:700;cursor:pointer">🔄 Refresh</button>
+                        </div>
+                        <span id="vrEnrollCount" style="font-size:0.82em;color:#666;font-weight:600"></span>
+                    </div>
+                    <div id="vrEnrollContainer">
+                        <p style="color:#aaa;text-align:center;padding:30px">Loading enrollments…</p>
+                    </div>
+                </div>
+
+                <!-- Submissions sub-panel -->
+                <div id="vrSubmitPanel" style="display:none">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+                        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+                            <select id="vrSubmitClassFilter" onchange="loadVrSubmissions()" style="padding:7px 12px;border:2px solid #ce93d8;border-radius:8px;font-size:0.85em;outline:none">
+                                <option value="">All Classes</option>
+                            </select>
+                            <select id="vrSubmitStatusFilter" onchange="loadVrSubmissions()" style="padding:7px 12px;border:2px solid #ce93d8;border-radius:8px;font-size:0.85em;outline:none">
+                                <option value="">All Statuses</option>
+                                <option value="Pending Review">⏳ Pending Review</option>
+                                <option value="Approved">✅ Approved</option>
+                                <option value="Rejected">❌ Rejected</option>
+                            </select>
+                            <button onclick="loadVrSubmissions()" style="background:#9c27b0;color:white;border:none;border-radius:8px;padding:7px 14px;font-size:0.82em;font-weight:700;cursor:pointer">🔄 Refresh</button>
+                        </div>
+                        <span id="vrSubmitCount" style="font-size:0.82em;color:#666;font-weight:600"></span>
+                    </div>
+                    <div id="vrSubmitContainer">
+                        <p style="color:#aaa;text-align:center;padding:30px">Loading submissions…</p>
+                    </div>
+                </div>
+            </div>
+            <!-- END VLOG REVIEW PANEL -->
             ══════════════════════════════════════════════════════════════════ -->
             <div id="podcastAdminPanel" class="form-section super-admin-only" style="margin-top:20px">
                 <h2 style="color:#1db954;margin-bottom:6px">🎙️ Pod Casting — Super Admin Control</h2>
@@ -7042,6 +7084,64 @@
                             <div style="text-align:center;color:#aaa;padding:30px">Loading Vlog submissions…</div>
                         </div>
 
+                    </div>
+
+                    <!-- ── Vlog Review & Approval Panel (Chandan G B only) ── -->
+                    <div id="chandanVlogReviewPanel" style="display:none;margin-top:24px">
+                        <div style="background:linear-gradient(135deg,#f3e5f5,#ede7f6);border-radius:14px;padding:18px;border:2px solid #ce93d8;margin-bottom:16px">
+                            <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:10px">
+                                <div>
+                                    <h3 style="color:#6a1b9a;margin:0 0 4px;font-size:1.05em">📹 Vlog Challenge — Review & Approval</h3>
+                                    <p style="color:#555;font-size:0.82em;margin:0">All enrolled teams with submission status. Approve or reject each team's reel.</p>
+                                </div>
+                                <div style="display:flex;gap:8px;flex-wrap:wrap">
+                                    <button onclick="cvrRemoveDuplicates()" style="background:#ff6f00;color:white;border:none;border-radius:8px;padding:6px 14px;font-size:0.82em;font-weight:700;cursor:pointer">🧹 Remove Duplicates</button>
+                                    <button id="cvr_btn_enroll" onclick="cvrShowTab('enroll')" style="background:linear-gradient(135deg,#833ab4,#c44569);color:white;border:none;border-radius:8px;padding:6px 14px;font-size:0.82em;font-weight:700;cursor:pointer">📋 Teams & Approval</button>
+                                    <button id="cvr_btn_submit" onclick="cvrShowTab('submit')" style="background:white;color:#833ab4;border:2px solid #833ab4;border-radius:8px;padding:6px 14px;font-size:0.82em;font-weight:700;cursor:pointer">📤 Submissions Detail</button>
+                                    <button onclick="cvrRefresh()" style="background:#9c27b0;color:white;border:none;border-radius:8px;padding:6px 14px;font-size:0.82em;font-weight:700;cursor:pointer">🔄 Refresh</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Summary strip ALWAYS visible at top — Point 2 fix -->
+                        <div id="cvr_summaryStrip" style="margin-bottom:16px;background:linear-gradient(135deg,#1a237e,#283593);border-radius:12px;padding:14px 18px">
+                            <div style="color:rgba(255,255,255,0.7);font-weight:800;font-size:0.75em;letter-spacing:1px;text-transform:uppercase;margin-bottom:10px">📹 Vlog Challenge — Overall Summary</div>
+                            <div id="cvr_statsRow" style="display:flex;gap:10px;flex-wrap:wrap">
+                                <div style="color:rgba(255,255,255,0.5);font-size:0.82em">Loading…</div>
+                            </div>
+                        </div>
+
+                        <!-- Enrollment + Approval sub-panel (default) -->
+                        <div id="cvr_enrollPanel">
+                            <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;align-items:center">
+                                <select id="cvr_classFilter" onchange="cvrLoadEnrollments()" style="padding:7px 12px;border:2px solid #ce93d8;border-radius:8px;font-size:0.85em;outline:none">
+                                    <option value="">All Classes</option>
+                                </select>
+                                <span id="cvr_enrollCount" style="font-size:0.82em;color:#666;font-weight:600"></span>
+                            </div>
+                            <div id="cvr_enrollContainer">
+                                <div style="text-align:center;color:#aaa;padding:30px">Loading teams…</div>
+                            </div>
+                        </div>
+
+                        <!-- Submission detail sub-panel -->
+                        <div id="cvr_submitPanel" style="display:none">
+                            <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;align-items:center">
+                                <select id="cvr_subClassFilter" onchange="cvrLoadSubmissions()" style="padding:7px 12px;border:2px solid #ce93d8;border-radius:8px;font-size:0.85em;outline:none">
+                                    <option value="">All Classes</option>
+                                </select>
+                                <select id="cvr_subStatusFilter" onchange="cvrLoadSubmissions()" style="padding:7px 12px;border:2px solid #ce93d8;border-radius:8px;font-size:0.85em;outline:none">
+                                    <option value="">All Statuses</option>
+                                    <option value="Pending Review">⏳ Pending</option>
+                                    <option value="Approved">✅ Approved</option>
+                                    <option value="Rejected">❌ Rejected</option>
+                                </select>
+                                <span id="cvr_submitCount" style="font-size:0.82em;color:#666;font-weight:600"></span>
+                            </div>
+                            <div id="cvr_submitContainer">
+                                <div style="text-align:center;color:#aaa;padding:30px">Loading submissions…</div>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- ── Pod Casting Approval Panel (Chandan G B + Hemavathi Desai) ── -->
@@ -8681,6 +8781,7 @@
             populateClassSelects();
             populateEventSelects();
             loadData();
+            buildVlogEditModal(); // pre-build edit modal
             
             // Firebase connection status
             const connectedRef = db.ref('.info/connected');
@@ -8740,7 +8841,7 @@
                 if (snap.exists()) {
                     snap.forEach(child => {
                         childCount++;
-                        const data = {id: child.key, ...child.val()};
+                        const data = Object.assign({ id: child.key }, child.val());
                         console.log('Child #' + childCount + ':', child.key, '→', data.classYear, '-', data.event, '-', data.name);
                         all.push(data);
                     });
@@ -9071,7 +9172,7 @@
                 all = [];
                 if (snap.exists()) {
                     snap.forEach(child => {
-                        const data = {id: child.key, ...child.val()};
+                        const data = Object.assign({ id: child.key }, child.val());
                         all.push(data);
                     });
                 }
@@ -9155,7 +9256,7 @@
                 all = [];
                 if (snap.exists()) {
                     snap.forEach(child => {
-                        const data = {id: child.key, ...child.val()};
+                        const data = Object.assign({ id: child.key }, child.val());
                         all.push(data);
                     });
                 }
@@ -9231,7 +9332,7 @@
                 all = [];
                 if (snap.exists()) {
                     snap.forEach(child => {
-                        const data = {id: child.key, ...child.val()};
+                        const data = Object.assign({ id: child.key }, child.val());
                         all.push(data);
                     });
                 }
@@ -9288,7 +9389,7 @@
                 all = [];
                 if (snap.exists()) {
                     snap.forEach(child => {
-                        const data = {id: child.key, ...child.val()};
+                        const data = Object.assign({ id: child.key }, child.val());
                         all.push(data);
                     });
                 }
@@ -9338,7 +9439,7 @@
             ref.once('value', snap => {
                 all = [];
                 if (snap.exists()) {
-                    snap.forEach(child => { all.push({id: child.key, ...child.val()}); });
+                    snap.forEach(child => { all.push(Object.assign({ id: child.key }, child.val())); });
                 }
                 updateStats();
                 if (managerPermissions.viewRegistrations) { updateMaster(); updateEvents(); }
@@ -9396,7 +9497,7 @@
             ref.once('value', snap => {
                 all = [];
                 if (snap.exists()) {
-                    snap.forEach(child => { all.push({id: child.key, ...child.val()}); });
+                    snap.forEach(child => { all.push(Object.assign({ id: child.key }, child.val())); });
                 }
             });
         }
@@ -9664,7 +9765,7 @@
                     const bowEnrollments = [];
                     if (enrollSnap.exists()) enrollSnap.forEach(ch => {
                         const d = ch.val();
-                        if ((d.event||'').toLowerCase().trim() === 'best out of waste') bowEnrollments.push({ id: ch.key, ...d });
+                        if ((d.event||'').toLowerCase().trim() === 'best out of waste') bowEnrollments.push(Object.assign({ id: ch.key }, d));
                     });
                     const bowByClass = {};
                     bowEnrollments.forEach(e => {
@@ -9720,7 +9821,7 @@
                 const snap = await db.ref('youthfest-enrollments').once('value');
                 const allEnrollments = [];
                 let mainCount = 0;
-                if (snap.exists()) snap.forEach(ch => { allEnrollments.push({ id: ch.key, ...ch.val() }); mainCount++; });
+                if (snap.exists()) snap.forEach(ch => { allEnrollments.push(Object.assign({ id: ch.key }, ch.val())); mainCount++; });
                 pathCounts['youthfest-enrollments'] = mainCount;
 
                 // Also fetch from Vlog, Podcast, and BOW separate paths and normalize
@@ -9729,7 +9830,7 @@
                     const vlogSnap = await db.ref('vlogChallenge').once('value');
                     if (vlogSnap.exists()) vlogSnap.forEach(ch => {
                         const d = ch.val();
-                        allEnrollments.push({ id: ch.key, event: 'Vlog', classYear: d.classYear || d.class || 'Unknown', name: d.members || d.member1 || '', ...d });
+                        allEnrollments.push(Object.assign({ id: ch.key, event: 'Vlog', classYear: d.classYear || d.class || 'Unknown', name: d.members || d.member1 || '' }, d));
                         vlogCount++;
                     });
                 } catch(e2) { console.warn('vlogChallenge fetch failed', e2); }
@@ -9740,7 +9841,7 @@
                     const podSnap = await db.ref('podcastChallenge').once('value');
                     if (podSnap.exists()) podSnap.forEach(ch => {
                         const d = ch.val();
-                        allEnrollments.push({ id: ch.key, event: 'Pod Casting', classYear: d.classYear || d.class || 'Unknown', name: d.memberName || '', ...d });
+                        allEnrollments.push(Object.assign({ id: ch.key, event: 'Pod Casting', classYear: d.classYear || d.class || 'Unknown', name: d.memberName || '' }, d));
                         podCount++;
                     });
                 } catch(e3) { console.warn('podcastChallenge fetch failed', e3); }
@@ -9751,7 +9852,7 @@
                     const bowSnap = await db.ref('bowRegistrations').once('value');
                     if (bowSnap.exists()) bowSnap.forEach(ch => {
                         const d = ch.val();
-                        allEnrollments.push({ id: ch.key, event: 'Best out of Waste', classYear: d.classYear || d.class || 'Unknown', name: d.memberName || '', ...d });
+                        allEnrollments.push(Object.assign({ id: ch.key, event: 'Best out of Waste', classYear: d.classYear || d.class || 'Unknown', name: d.memberName || '' }, d));
                         bowCount++;
                     });
                 } catch(e4) { console.warn('bowRegistrations fetch failed', e4); }
@@ -10137,7 +10238,7 @@
                 if (snap.exists()) {
                     snap.forEach(child => {
                         childCount++;
-                        const data = {id: child.key, ...child.val()};
+                        const data = Object.assign({ id: child.key }, child.val());
                         console.log('Loading child #' + childCount + ':', child.key, data);
                         all.push(data);
                     });
@@ -10707,7 +10808,7 @@
 
             // Submit all members
             const promises = members.map(m => {
-                const data = {...baseData, name: m.name, phone: m.phone, role: m.role};
+                const data = Object.assign({}, baseData, { name: m.name, phone: m.phone, role: m.role });
                 return ref.push(data);
             });
             
@@ -11084,7 +11185,7 @@
 
             // Submit all members
             const promises = members.map(m => {
-                const data = {...baseData, name: m.name, phone: m.phone, role: m.role};
+                const data = Object.assign({}, baseData, { name: m.name, phone: m.phone, role: m.role });
                 return ref.push(data);
             });
 
@@ -11309,10 +11410,11 @@
                 if (!r) { showMsg('❌ Upload failed. Please try again.', false); return; }
 
                 // Find this class's vlog entry and save independently under dailyScreenshots[iso]
-                const snap = await db.ref('vlogChallenge').orderByChild('classYear').equalTo(cls).once('value');
+                const snap = await db.ref('vlogChallenge').once('value');
                 let updated = 0;
                 const updates = {};
                 snap.forEach(ch => {
+                    const v = ch.val(); if (!v || (v.classYear||'').trim() !== cls) return;
                     const isoKey = iso.replace(/-/g, '_');
                     updates['vlogChallenge/' + ch.key + '/dailyScreenshots/' + isoKey] = r.url;
                     updates['vlogChallenge/' + ch.key + '/screenshotUrl'] = r.url;
@@ -11343,16 +11445,86 @@
         async function loadVlogExistingScreenshots(cls) {
             if (!cls) return;
             try {
-                const snap = await db.ref('vlogChallenge').orderByChild('classYear').equalTo(cls).once('value');
+                const snap = await db.ref('vlogChallenge').once('value');
                 snap.forEach(ch => {
-                    const daily = ch.val().dailyScreenshots || {};
+                    const cv = ch.val(); if (!cv || (cv.classYear||'').trim() !== cls) return;
+                    const daily = cv.dailyScreenshots || {};
                     Object.keys(daily).forEach(isoKey => {
                         const iso = isoKey.replace(/_/g, '-');
+                        // Mark already-uploaded in both old and inline containers
                         const el = document.getElementById('vlogAlready_' + iso);
                         if (el) { el.style.display = 'block'; }
+                        const el2 = document.getElementById('vlogAlready_' + ch.key + '_' + iso);
+                        if (el2) { el2.style.display = 'block'; }
                     });
                 });
             } catch(e) {}
+        }
+
+        // -- Inline screenshot slots rendered inside each Approved team banner --
+        function initVlogDailyScreenshotsInline(container, entryId, cls) {
+            if (!container) return;
+            container.innerHTML = '';
+            const slots = [
+                { iso: VLOG_SCREENSHOT_START, label: '📅 Screenshot 1 — Start of Event (04 Mar 2026)' },
+                { iso: VLOG_SCREENSHOT_END,   label: '📅 Screenshot 2 — End of Event (07 Mar 2026)' }
+            ];
+            slots.forEach(function(slot) {
+                const fileId   = 'vlogShotFile_'   + entryId + '_' + slot.iso;
+                const nameId   = 'vlogShotName_'   + entryId + '_' + slot.iso;
+                const imgId    = 'vlogShotImg_'    + entryId + '_' + slot.iso;
+                const prevId   = 'vlogShotPrev_'   + entryId + '_' + slot.iso;
+                const statusId = 'vlogShotSts_'    + entryId + '_' + slot.iso;
+                const alrId    = 'vlogAlready_'    + entryId + '_' + slot.iso;
+                const btnId    = 'vlogShotBtn_'    + entryId + '_' + slot.iso;
+                container.insertAdjacentHTML('beforeend',
+                    '<div style="background:white;border-radius:8px;padding:10px 12px;border:1px solid #c8e6c9">'
+                    + '<div style="font-size:0.8em;font-weight:700;color:#1b5e20;margin-bottom:6px">' + slot.label + '</div>'
+                    + '<div id="' + alrId + '" style="display:none;background:#e8f5e9;color:#1b5e20;border-radius:6px;padding:4px 10px;font-size:0.76em;font-weight:700;margin-bottom:6px">✅ Already uploaded for this date</div>'
+                    + '<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">'
+                    + '<label style="background:#6a1b9a;color:white;padding:5px 12px;border-radius:6px;font-size:0.78em;font-weight:700;cursor:pointer">📷 Choose File'
+                    + '<input type="file" id="' + fileId + '" accept="image/*" style="display:none" onchange="(function(el,ni,ii,pi){var f=el.files[0];if(!f)return;var n=document.getElementById(ni);if(n)n.textContent=f.name;var r=new FileReader();r.onload=function(e){var i=document.getElementById(ii);var p=document.getElementById(pi);if(i)i.src=e.target.result;if(p)p.style.display=\'block\';};r.readAsDataURL(f);})(this,' + JSON.stringify(nameId) + ',' + JSON.stringify(imgId) + ',' + JSON.stringify(prevId) + ')">'
+                    + '</label>'
+                    + '<span id="' + nameId + '" style="font-size:0.76em;color:#888;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">No file chosen</span>'
+                    + '<button id="' + btnId + '" onclick="submitInlineShot(' + JSON.stringify(entryId) + ',' + JSON.stringify(slot.iso) + ',' + JSON.stringify(fileId) + ',' + JSON.stringify(statusId) + ',' + JSON.stringify(btnId) + ',' + JSON.stringify(cls) + ')" style="background:#4caf50;color:white;border:none;border-radius:6px;padding:5px 12px;font-size:0.78em;font-weight:700;cursor:pointer">📤 Submit</button>'
+                    + '</div>'
+                    + '<div id="' + prevId + '" style="display:none;margin-top:6px"><img id="' + imgId + '" style="max-width:120px;border-radius:6px;border:2px solid #ce93d8" alt="preview"></div>'
+                    + '<div id="' + statusId + '" style="font-size:0.76em;margin-top:4px;font-weight:600"></div>'
+                    + '</div>'
+                );
+            });
+            // Load existing badges
+            loadVlogExistingScreenshots(cls);
+        }
+
+        async function submitInlineShot(entryId, iso, fileId, statusId, btnId, cls) {
+            const fileEl = document.getElementById(fileId);
+            const statusEl = document.getElementById(statusId);
+            const btnEl = document.getElementById(btnId);
+            if (!fileEl || !fileEl.files[0]) { if (statusEl) { statusEl.style.color='#c62828'; statusEl.textContent='⚠️ Please choose a file first.'; } return; }
+            if (btnEl) { btnEl.disabled=true; btnEl.textContent='⏳ Uploading…'; }
+            if (statusEl) { statusEl.style.color='#555'; statusEl.textContent='⏳ Uploading to Cloudinary…'; }
+            try {
+                const formData = new FormData();
+                formData.append('file', fileEl.files[0]);
+                formData.append('upload_preset', 'scavenger_hunt');
+                formData.append('folder', 'vlog_insights/' + iso);
+                const res  = await fetch('https://api.cloudinary.com/v1_1/dat0khbet/image/upload', { method:'POST', body:formData });
+                const data = await res.json();
+                if (!data.secure_url) throw new Error('Upload failed');
+                const isoKey = iso.replace(/-/g,'_');
+                const updates = {};
+                updates['vlogChallenge/' + entryId + '/dailyScreenshots/' + isoKey] = data.secure_url;
+                updates['vlogChallenge/' + entryId + '/screenshotUrl'] = data.secure_url;
+                await (window.db || db).ref().update(updates);
+                if (statusEl) { statusEl.style.color='#1b5e20'; statusEl.textContent='✅ Uploaded successfully!'; }
+                const alrEl = document.getElementById('vlogAlready_' + entryId + '_' + iso);
+                if (alrEl) alrEl.style.display = 'block';
+            } catch(err) {
+                if (statusEl) { statusEl.style.color='#c62828'; statusEl.textContent='❌ Error: ' + err.message; }
+            } finally {
+                if (btnEl) { btnEl.disabled=false; btnEl.textContent='📤 Submit'; }
+            }
         }
 
         // -- Separate screenshot-only submission (called after reel link submit) --
@@ -11383,13 +11555,14 @@
                 }
 
                 // Find the team entry for this CR's class and update it with screenshot data
-                const snap = await db.ref('vlogChallenge').orderByChild('classYear').equalTo(cls).once('value');
+                const snap = await db.ref('vlogChallenge').once('value');
                 let updated = 0;
                 const updates = {};
                 snap.forEach(ch => {
+                    const sv = ch.val(); if (!sv || (sv.classYear||'').trim() !== cls) return;
                     const today = new Date().toISOString().slice(0,10);
                     const todayKey = today.replace(/-/g,'_');
-                    const existing = ch.val().dailyScreenshots || {};
+                    const existing = sv.dailyScreenshots || {};
                     Object.assign(existing, dailyScreenshots);
                     updates['vlogChallenge/' + ch.key + '/dailyScreenshots'] = existing;
                     if (dailyScreenshots[todayKey]) {
@@ -11483,19 +11656,46 @@
             btnEl.disabled = true;
             btnEl.textContent = '⏳ Checking slots…';
 
-            // (Screenshots are submitted separately after reel link submission)
-
             try {
-                const snap = await db.ref('vlogChallenge').orderByChild('classYear').equalTo(cls).once('value');
+                // Check if this is an UPDATE (Edit mode) or new submission
+                const editIdEl = document.getElementById('vlogEditEntryId');
+                const editId = editIdEl ? editIdEl.value.trim() : '';
+
+                if (editId) {
+                    // ── UPDATE MODE ──
+                    btnEl.textContent = '⏳ Saving update…';
+                    await (window.db || db).ref('vlogChallenge/' + editId).update({
+                        handle    : handle,
+                        link      : link,
+                        title     : title,
+                        status    : 'Pending Review',   // reset approval
+                        editedAt  : new Date().toISOString()
+                    });
+                    showMsg('✅ Reel link updated! Status reset to Pending Review — Chandan will re-approve.', true);
+                    if (editIdEl) editIdEl.value = '';
+                    const submitBtn2 = document.getElementById('vlogSubmitBtn');
+                    if (submitBtn2) submitBtn2.textContent = '📤 Submit Instagram Reel Link';
+                    loadVlogSubmissions();
+                    return;
+                }
+
+                const snap = await (window.db || db).ref('vlogChallenge').once('value');
                 const existing = [];
-                if (snap.exists()) snap.forEach(ch => existing.push(ch.val()));
+                if (snap.exists()) snap.forEach(ch => { const v = ch.val(); if (v && v.member1 && (v.classYear||'').trim() === cls) existing.push(Object.assign({ id: ch.key }, v)); });
+
+                // Block if this exact team (same member1) already submitted
+                const alreadySubmitted = existing.find(e =>
+                    (e.member1||'').toLowerCase().trim() === member1.toLowerCase().trim()
+                );
+                if (alreadySubmitted) {
+                    showMsg('⚠️ ' + member1 + ' has already submitted a reel. Use the Edit button to update it.', false);
+                    return;
+                }
 
                 if (existing.length >= 2) {
                     showMsg('❌ Your class already has 2 teams registered. No more slots available.', false);
                     return;
                 }
-
-                // Note: two teams from same class may share a topic — no topic uniqueness check needed
 
                 const hashtag = document.getElementById('vlogHashtagDisplay').textContent || '#SpurthiVlogChallenge2026';
                 const entry = {
@@ -11520,7 +11720,7 @@
 
                 btnEl.textContent = '⏳ Saving…';
                 await db.ref('vlogChallenge').push(entry);
-                showMsg('✅ Team submitted! ' + member1 + ' & ' + member2 + ' — "' + topic + '" registered successfully. Now upload your daily Insight screenshots below ⬇️', true);
+                showMsg('✅ Reel link submitted for ' + member1 + ' & ' + member2 + ' (' + topic + '). Waiting for Chandan G B to review and approve.', true);
                 // Show submitted date/time
                 const now = new Date();
                 const fmted = now.toLocaleDateString('en-IN', {day:'2-digit',month:'short',year:'numeric'}) + ' at ' + now.toLocaleTimeString('en-IN', {hour:'2-digit',minute:'2-digit'});
@@ -11529,14 +11729,7 @@
                 if (vlogInfoEl) vlogInfoEl.style.display = 'block';
                 if (vlogDtEl) vlogDtEl.textContent = fmted;
                 clearVlogForm();
-                loadVlogSubmissions();
-                // Reveal the separate screenshot section and build its slots
-                const shotSection = document.getElementById('vlogInsightScreenshotSection');
-                if (shotSection) {
-                    shotSection.style.display = 'block';
-                    initVlogDailyScreenshots(); loadVlogExistingScreenshots(window.currentCRClass||crClass); // populate screenshot date slots
-                    shotSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                }
+                loadVlogSubmissions(); // loadVlogSubmissions handles screenshot visibility based on approval status
             } catch(err) {
                 showMsg('❌ Error: ' + err.message, false);
             } finally {
@@ -11554,6 +11747,11 @@
             if (tp) tp.value = '';
             const msg = document.getElementById('vlogSubmitMsg');
             if (msg) msg.style.display = 'none';
+            // Clear edit mode
+            const editIdEl = document.getElementById('vlogEditEntryId');
+            if (editIdEl) editIdEl.value = '';
+            const submitBtn = document.getElementById('vlogSubmitBtn');
+            if (submitBtn) submitBtn.textContent = '📤 Submit Instagram Reel Link';
             // Reset screenshot
             removeVlogScreenshot();
             const statusEl = document.getElementById('vlogScreenshotUploadStatus');
@@ -11566,14 +11764,85 @@
         }
 
         function enableVlogEdit() {
-            ['vlogLink','vlogTitle','vlogHandle'].forEach(id => {
-                const el = document.getElementById(id);
-                if (el) { el.removeAttribute('readonly'); el.style.background=''; el.style.borderColor='#833ab4'; }
-            });
-            const submitBtn = document.getElementById('vlogSubmitBtn');
-            if (submitBtn) { submitBtn.textContent = '📤 Update Reel Link'; submitBtn.disabled = false; }
             const msg = document.getElementById('vlogSubmitMsg');
-            if (msg) { msg.style.display='block'; msg.style.background='#f3e5f5'; msg.style.color='#4a148c'; msg.style.border='1px solid #ce93d8'; msg.textContent='✏️ You can now edit the fields. Click "Update Reel Link" when done.'; }
+            if (msg) { msg.style.display='block'; msg.style.background='#fff3e0'; msg.style.color='#e65100'; msg.style.border='1px solid #ffcc02'; msg.textContent='⏳ Loading your existing submission…'; }
+
+            const cls = (window.currentCRClass || crClass || '').trim();
+            if (!cls) {
+                if (msg) { msg.style.background='#fce4ec'; msg.style.color='#880e4f'; msg.style.border='1px solid #e91e63'; msg.textContent='❌ Class not found. Please re-login.'; }
+                return;
+            }
+
+            // Find which team is currently selected in the dropdown
+            const sel = document.getElementById('vlogTeamSelect');
+            const selVal = sel ? (sel.value || '') : '';
+            const m1El = document.getElementById('vlogMember1');
+            const currentM1 = (m1El ? m1El.value : '').trim();
+            const matchHint = (currentM1 || selVal).toLowerCase();
+
+            (window.db || db).ref('vlogChallenge').once('value').then(function(snap) {
+                let found = null;
+                if (snap && snap.exists()) {
+                    snap.forEach(function(ch) {
+                        try {
+                            const v = ch.val();
+                            if (!v || typeof v !== 'object') return;
+                            if ((v.classYear||'').trim() !== cls) return;
+                            if (matchHint) {
+                                const first = matchHint.split(' ')[0];
+                                if ((v.member1||'').toLowerCase().includes(first) || (v.member2||'').toLowerCase().includes(first)) {
+                                    found = Object.assign({ id: ch.key }, v);
+                                }
+                            } else {
+                                if (!found) found = Object.assign({ id: ch.key }, v);
+                            }
+                        } catch(e2) {}
+                    });
+                }
+
+                if (found) {
+                    // Store entry ID for update
+                    const idField = document.getElementById('vlogEditEntryId');
+                    if (idField) idField.value = found.id;
+
+                    // Pre-fill form fields
+                    const linkEl   = document.getElementById('vlogLink');
+                    const titleEl  = document.getElementById('vlogTitle');
+                    const handleEl = document.getElementById('vlogHandle');
+                    if (linkEl)   { linkEl.value   = found.link   || ''; linkEl.removeAttribute('readonly');   linkEl.style.borderColor='#833ab4'; }
+                    if (titleEl)  { titleEl.value  = found.title  || ''; titleEl.removeAttribute('readonly');  titleEl.style.borderColor='#833ab4'; }
+                    if (handleEl) { handleEl.value = found.handle || ''; handleEl.removeAttribute('readonly'); handleEl.style.borderColor='#833ab4'; }
+
+                    const submitBtn = document.getElementById('vlogSubmitBtn');
+                    if (submitBtn) { submitBtn.textContent = '💾 Update Reel Link'; submitBtn.disabled = false; }
+
+                    const wasApproved = found.status === 'Approved';
+                    if (msg) {
+                        msg.style.display='block';
+                        msg.style.background = wasApproved ? '#fff3e0' : '#f3e5f5';
+                        msg.style.color = wasApproved ? '#e65100' : '#4a148c';
+                        msg.style.border = wasApproved ? '1px solid #ffcc02' : '1px solid #ce93d8';
+                        msg.textContent = wasApproved
+                            ? '⚠️ This team is Approved. Editing will reset status to Pending Review — Chandan must re-approve.'
+                            : '✏️ Data loaded. Edit the fields and click "Update Reel Link" when done.';
+                    }
+                } else {
+                    // No existing entry — just unlock fields for new submit
+                    ['vlogLink','vlogTitle','vlogHandle'].forEach(function(id) {
+                        const el = document.getElementById(id);
+                        if (el) { el.removeAttribute('readonly'); el.style.borderColor='#833ab4'; }
+                    });
+                    const submitBtn = document.getElementById('vlogSubmitBtn');
+                    if (submitBtn) { submitBtn.textContent = '📤 Submit Instagram Reel Link'; submitBtn.disabled = false; }
+                    if (msg) { msg.style.display='block'; msg.style.background='#f3e5f5'; msg.style.color='#4a148c'; msg.style.border='1px solid #ce93d8'; msg.textContent='✏️ No existing submission found. Fill in the fields and submit.'; }
+                }
+            }).catch(function() {
+                ['vlogLink','vlogTitle','vlogHandle'].forEach(function(id) {
+                    const el = document.getElementById(id);
+                    if (el) { el.removeAttribute('readonly'); el.style.borderColor='#833ab4'; }
+                });
+                if (msg) { msg.style.display='block'; msg.style.background='#fce4ec'; msg.style.color='#880e4f'; msg.style.border='1px solid #e91e63'; msg.textContent='❌ Could not load data. Check connection and retry.'; }
+            });
         }
 
         function enablePodcastEdit() {
@@ -11593,94 +11862,160 @@
             if (lbl) lbl.textContent = cls;
             if (!cls) return;
 
-            db.ref('vlogChallenge').orderByChild('classYear').equalTo(cls).once('value').then(snap => {
-                const entries = [];
-                if (snap.exists()) snap.forEach(ch => entries.push({ id: ch.key, ...ch.val() }));
-                entries.sort((a, b) => new Date(a.submittedAt) - new Date(b.submittedAt));
+            const bannerEl  = document.getElementById('vlogApprovalBanners');
+            if (bannerEl) bannerEl.innerHTML = '<div style="color:#888;padding:10px;font-size:0.85em">🔄 Loading…</div>';
+            const emptyMsgEl = document.getElementById('vlogEmptyMsg');
+            if (emptyMsgEl) emptyMsgEl.style.display = 'none';
 
-                const badge     = document.getElementById('vlogCountBadge');
-                const empty     = document.getElementById('vlogEmptyMsg');
-                const container = document.getElementById('vlogTableContainer');
-                const tbody     = document.getElementById('vlogTableBody');
-                const slotsInfo = document.getElementById('vlogTeamSlotsInfo');
-                const topicSel  = document.getElementById('vlogTopic');
-
-                const usedSlots = entries.length;
-                if (badge) badge.textContent = usedSlots + ' / 2 slots used';
-
-                // Update slots info banner
-                if (slotsInfo) {
-                    if (usedSlots >= 2) {
-                        slotsInfo.style.background = '#fce4ec';
-                        slotsInfo.style.borderLeftColor = '#e91e63';
-                        slotsInfo.style.color = '#880e4f';
-                        slotsInfo.textContent = '🚫 Both team slots are full for your class. No more submissions allowed.';
-                        const btn = document.getElementById('vlogSubmitBtn');
-                        if (btn) { btn.disabled = true; btn.style.opacity = '0.5'; }
-                    } else {
-                        slotsInfo.style.background = '#e8f5e9';
-                        slotsInfo.style.borderLeftColor = '#4caf50';
-                        slotsInfo.style.color = '#1b5e20';
-                        slotsInfo.textContent = '✅ ' + (2 - usedSlots) + ' team slot(s) remaining for your class.';
-                        const btn = document.getElementById('vlogSubmitBtn');
-                        if (btn) { btn.disabled = false; btn.style.opacity = '1'; }
+            (window.db || db).ref('vlogChallenge').once('value').then(function(snap) {
+                try {
+                    const entries = [];
+                    if (snap && snap.exists()) {
+                        snap.forEach(function(ch) {
+                            try {
+                                const v = ch.val();
+                                if (v && typeof v === 'object' && v.member1 && (v.classYear||'').trim() === cls) {
+                                    entries.push(Object.assign({ id: ch.key }, v));
+                                }
+                            } catch(e2) { console.warn('vlog forEach skip:', e2); }
+                        });
                     }
-                }
+                    entries.sort(function(a, b) { return new Date(a.submittedAt||0) - new Date(b.submittedAt||0); });
 
-                // Grey out taken topics in dropdown
-                if (topicSel) {
-                    const takenTopics = entries.map(e => e.topic);
-                    Array.from(topicSel.options).forEach(opt => {
-                        if (opt.value && takenTopics.includes(opt.value)) {
-                            opt.disabled = true;
-                            opt.textContent = opt.textContent.replace(' ✅ Taken', '') + ' ✅ Taken';
-                            opt.style.color = '#aaa';
-                        } else if (opt.value) {
-                            opt.disabled = false;
-                            opt.textContent = opt.textContent.replace(' ✅ Taken', '');
-                            opt.style.color = '';
+                    const badge     = document.getElementById('vlogCountBadge');
+                    const empty     = document.getElementById('vlogEmptyMsg');
+                    const slotsInfo = document.getElementById('vlogTeamSlotsInfo');
+                    const topicSel  = document.getElementById('vlogTopic');
+                    const bannerEl2 = document.getElementById('vlogApprovalBanners');
+                    const shotSection = document.getElementById('vlogInsightScreenshotSection');
+
+                    const usedSlots = entries.length;
+                    if (badge) badge.textContent = usedSlots + ' / 2 slots used';
+
+                    // ── Slot info banner ──
+                    if (slotsInfo) {
+                        if (usedSlots >= 2) {
+                            slotsInfo.style.background = '#fce4ec';
+                            slotsInfo.style.borderLeftColor = '#e91e63';
+                            slotsInfo.style.color = '#880e4f';
+                            slotsInfo.textContent = '🚫 Both team slots are full for your class. No more submissions allowed.';
+                            const btn = document.getElementById('vlogSubmitBtn');
+                            if (btn) { btn.disabled = true; btn.style.opacity = '0.5'; }
+                        } else {
+                            slotsInfo.style.background = '#e8f5e9';
+                            slotsInfo.style.borderLeftColor = '#4caf50';
+                            slotsInfo.style.color = '#1b5e20';
+                            slotsInfo.textContent = '✅ ' + (2 - usedSlots) + ' team slot(s) remaining for your class.';
+                            const btn = document.getElementById('vlogSubmitBtn');
+                            if (btn) { btn.disabled = false; btn.style.opacity = '1'; }
+                        }
+                    }
+
+                    // ── Grey out taken topics (only applies if vlogTopic is a <select>) ──
+                    if (topicSel && topicSel.tagName === 'SELECT' && topicSel.options) {
+                        const takenTopics = entries.map(function(e) { return e.topic; });
+                        Array.from(topicSel.options).forEach(function(opt) {
+                            if (opt.value && takenTopics.includes(opt.value)) {
+                                opt.disabled = true;
+                                opt.textContent = opt.textContent.replace(' ✅ Taken', '') + ' ✅ Taken';
+                                opt.style.color = '#aaa';
+                            } else if (opt.value) {
+                                opt.disabled = false;
+                                opt.textContent = opt.textContent.replace(' ✅ Taken', '');
+                                opt.style.color = '';
+                            }
+                        });
+                    }
+
+                    // ── No submissions yet ──
+                    if (entries.length === 0) {
+                        if (empty) { empty.style.display = 'block'; }
+                        if (bannerEl2) bannerEl2.innerHTML = '';
+                        if (shotSection) shotSection.style.display = 'block';
+                        if (typeof initVlogDailyScreenshots === 'function') initVlogDailyScreenshots();
+                        if (typeof loadVlogExistingScreenshots === 'function') loadVlogExistingScreenshots(window.currentCRClass || crClass);
+                        return;
+                    }
+                    if (empty) empty.style.display = 'none';
+
+                    // ── Per-team approval banners ──
+                    let approvalBanners = '';
+
+                    entries.forEach(function(e, i) {
+                        const isApproved = e.status === 'Approved';
+                        const isRejected = e.status === 'Rejected';
+                        const icon   = isApproved ? '✅' : isRejected ? '❌' : '⏳';
+                        const bg     = isApproved ? 'linear-gradient(135deg,#e8f5e9,#c8e6c9)' : isRejected ? 'linear-gradient(135deg,#fce4ec,#ffcdd2)' : 'linear-gradient(135deg,#fffde7,#fff9c4)';
+                        const border = isApproved ? '#4caf50' : isRejected ? '#e91e63' : '#ffc107';
+                        const col    = isApproved ? '#1b5e20' : isRejected ? '#880e4f' : '#f57f17';
+                        const dt     = e.submittedAt ? new Date(e.submittedAt).toLocaleString('en-IN', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' }) : '—';
+                        const statusLine = isApproved
+                            ? '✅ Approved by Chandan — Upload your daily Insight screenshots below.'
+                            : isRejected
+                                ? '❌ Rejected — Please check with Chandan and resubmit your reel link.'
+                                : '⏳ Submitted successfully! Waiting for Chandan G B to review and approve.';
+
+                        // For approved teams: show inline screenshot upload section
+                        const screenshotHtml = isApproved ? `
+                            <div style="margin-top:12px;background:rgba(255,255,255,0.7);border-radius:10px;padding:12px 14px;border:1px solid #a5d6a7">
+                                <div style="font-size:0.82em;font-weight:700;color:#1b5e20;margin-bottom:8px">📊 Daily Insight Screenshots <span style="font-weight:400;color:#555">(upload once per day)</span></div>
+                                <div style="font-size:0.78em;color:#4a148c;background:rgba(106,27,154,0.07);border-radius:6px;padding:6px 10px;margin-bottom:10px;border-left:3px solid #9c27b0">
+                                    Open your Reel → tap <strong>⋯</strong> → <strong>View Insights</strong> → screenshot Views, Likes, Comments → upload below.
+                                </div>
+                                <div id="vlogDailyScreenshotsContainer_${e.id}" style="display:flex;flex-direction:column;gap:8px"></div>
+                            </div>` : '';
+
+                        // Show submitted insight screenshots if any exist
+                        const dailyUrls = e.dailyScreenshots ? Object.values(e.dailyScreenshots).filter(Boolean) : [];
+                        const primaryShot = e.screenshotUrl || (dailyUrls.length ? dailyUrls[dailyUrls.length - 1] : null);
+                        const shotThumbsHtml = primaryShot ? (function() {
+                            const allShots = e.dailyScreenshots ? Object.entries(e.dailyScreenshots).sort((a,b)=>a[0].localeCompare(b[0])) : [];
+                            const thumbs = allShots.length > 0
+                                ? allShots.map(([day, url]) => url
+                                    ? '<a href="' + url + '" target="_blank" rel="noopener" title="' + day + '"><img src="' + url + '" style="width:44px;height:44px;object-fit:cover;border-radius:6px;border:2px solid rgba(0,0,0,0.15);cursor:pointer" alt="' + day + '"></a>'
+                                    : '').join('')
+                                : '<a href="' + primaryShot + '" target="_blank" rel="noopener"><img src="' + primaryShot + '" style="width:44px;height:44px;object-fit:cover;border-radius:6px;border:2px solid rgba(0,0,0,0.15);cursor:pointer" alt="Screenshot"></a>';
+                            return '<div style="margin-top:8px;display:flex;align-items:center;gap:6px;flex-wrap:wrap">'
+                                + '<span style="font-size:0.76em;color:#555;font-weight:600">📊 Insight screenshots:</span>'
+                                + thumbs
+                                + '</div>';
+                        })() : '';
+
+                        approvalBanners += '<div style="background:' + bg + ';border-radius:12px;padding:14px 18px;margin-bottom:12px;border-left:5px solid ' + border + '">'
+                            + '<div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:8px">'
+                            + '<div><span style="font-size:1.2em">' + icon + '</span>'
+                            + '<span style="font-weight:800;color:' + col + ';font-size:0.95em;margin-left:6px">Team ' + (i+1) + ': ' + (e.member1||'—') + ' &amp; ' + (e.member2||'—') + '</span>'
+                            + '<span style="background:rgba(0,0,0,0.07);color:#444;padding:2px 9px;border-radius:10px;font-size:0.74em;font-weight:700;margin-left:6px">📌 ' + (e.topic||'—') + '</span>'
+                            + '</div><span style="font-size:0.76em;color:#666;white-space:nowrap">🕒 ' + dt + '</span></div>'
+                            + '<div style="margin-top:8px;font-size:0.85em;color:' + col + ';font-weight:600">' + statusLine + '</div>'
+                            + (e.link ? '<div style="margin-top:5px;font-size:0.8em"><a href="' + e.link + '" target="_blank" rel="noopener" style="color:#e91e63;font-weight:700;text-decoration:none">📸 View your Reel →</a><span style="color:#888;margin-left:8px;font-size:0.9em">' + (e.handle||'') + '</span></div>' : '')
+                            + shotThumbsHtml
+                            + screenshotHtml
+                            + '</div>';
+                    });
+
+                    if (bannerEl2) bannerEl2.innerHTML = approvalBanners;
+
+                    // Init screenshot slots inline inside each Approved team's banner
+                    entries.forEach(function(e) {
+                        if (e.status !== 'Approved') return;
+                        const container = document.getElementById('vlogDailyScreenshotsContainer_' + e.id);
+                        if (!container) return;
+                        if (typeof initVlogDailyScreenshotsInline === 'function') {
+                            initVlogDailyScreenshotsInline(container, e.id, window.currentCRClass || crClass);
                         }
                     });
-                }
 
-                if (entries.length === 0) {
-                    if (empty) empty.style.display = 'block';
-                    if (container) container.style.display = 'none';
-                    return;
+                } catch(innerErr) {
+                    console.error('Vlog render error:', innerErr);
+                    const b = document.getElementById('vlogApprovalBanners');
+                    if (b) b.innerHTML = '<div style="color:#c62828;padding:10px;background:#fce4ec;border-radius:8px;border-left:4px solid #e91e63">⚠️ Error rendering data: ' + innerErr.message + '<br><button onclick="loadVlogSubmissions()" style="margin-top:6px;background:#e91e63;color:white;border:none;border-radius:6px;padding:4px 12px;cursor:pointer;font-size:0.82em">🔄 Retry</button></div>';
                 }
-                if (empty) empty.style.display = 'none';
-                if (container) container.style.display = 'block';
-
-                // If team(s) already submitted, reveal the separate screenshot section
-                const shotSection = document.getElementById('vlogInsightScreenshotSection');
-                if (shotSection) {
-                    shotSection.style.display = 'block';
-                    initVlogDailyScreenshots(); loadVlogExistingScreenshots(window.currentCRClass||crClass); // populate screenshot date slots
-                }
-
-                const VLOG_MAX_SOCIAL = 1000; // adjust when API is live
-                let rows = '';
-                entries.forEach((e, i) => {
-                    const statusColor = e.status === 'Approved' ? '#155724' : e.status === 'Rejected' ? '#721c24' : '#856404';
-                    const statusBg    = e.status === 'Approved' ? '#d4edda'  : e.status === 'Rejected' ? '#f8d7da'  : '#fff3cd';
-                    const dt = e.submittedAt ? new Date(e.submittedAt).toLocaleString('en-IN', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' }) : '—';
-                    const socialStr = (e.socialScore != null && e.socialScore > 0) ? e.socialScore : '—';
-                    const juryStr   = (e.juryScore   != null) ? e.juryScore + '/100' : '—';
-                    const finalStr  = (e.finalScore  != null) ? '<strong>' + e.finalScore + '</strong>' : '—';
-                    rows += `<tr>
-                        <td style="text-align:center;font-weight:700;color:#833ab4">${i+1}</td>
-                        <td style="font-size:0.85em"><strong>${e.member1||'—'}</strong><br><span style="color:#888">${e.member2||''}</span></td>
-                        <td style="font-size:0.82em;font-weight:600;color:#4a148c">${e.topic||'—'}</td>
-                        <td style="text-align:center"><a href="${e.link}" target="_blank" rel="noopener" style="color:#e91e63;font-size:0.85em;text-decoration:none;font-weight:600">📸 Reel</a></td>
-                        <td style="font-size:0.82em;color:#777">${e.handle||'—'}</td>
-                        <td style="text-align:center;font-size:0.85em">${socialStr}</td>
-                        <td style="text-align:center;font-size:0.85em">${juryStr}</td>
-                        <td style="text-align:center"><span style="background:${statusBg};color:${statusColor};padding:3px 10px;border-radius:12px;font-size:0.75em;font-weight:700">${e.status||'Pending'}</span></td>
-                        <td style="font-size:0.78em;color:#666">${dt}</td>
-                    </tr>`;
-                });
-                if (tbody) tbody.innerHTML = rows;
-            }).catch(err => console.error('Vlog load error:', err));
+            }).catch(function(err) {
+                console.error('Vlog Firebase error:', err);
+                const b = document.getElementById('vlogApprovalBanners');
+                if (b) b.innerHTML = '<div style="color:#c62828;padding:10px;background:#fce4ec;border-radius:8px;border-left:4px solid #e91e63">⚠️ Firebase error: ' + err.message + '<br><button onclick="loadVlogSubmissions()" style="margin-top:6px;background:#e91e63;color:white;border:none;border-radius:6px;padding:4px 12px;cursor:pointer;font-size:0.82em">🔄 Retry</button></div>';
+            });
         }
         // ══════════════════════════════════════════════════════════════
         // END VLOG CHALLENGE
@@ -11722,18 +12057,27 @@
                 if (memberRecords.length === 0) {
                     if (listEl) listEl.innerHTML = '<span style="color:#c62828">⚠️ No Vlog enrollment found for your class. Please enroll in the Vlog event first.</span>';
                     if (selectEl) selectEl.innerHTML = '<option value="">— No enrolled teams found —</option>';
+                    // Hide submit form — enrollment is required before submitting
+                    const form = document.getElementById('vlogSubmitFormWrapper');
+                    if (form) form.style.display = 'none';
+                    const noEnrollMsg = document.getElementById('vlogNoEnrollMsg');
+                    if (noEnrollMsg) noEnrollMsg.style.display = 'block';
                     return;
                 }
+                // Has enrollment — make sure submit form is visible and no-enroll msg is hidden
+                const noEnrollMsg = document.getElementById('vlogNoEnrollMsg');
+                if (noEnrollMsg) noEnrollMsg.style.display = 'none';
+                const form = document.getElementById('vlogSubmitFormWrapper');
+                if (form) form.style.display = 'block';
 
                 // Pair members strictly in sequential groups of 2 — max 2 teams
                 // NOTE: teamNum is assigned per-individual in enrollment (not per team), so we ignore it
                 for (let i = 0; i < memberRecords.length && vlogEnrolledTeams.length < 2; i += 2) {
                     const pair = memberRecords.slice(i, i + 2);
-                    vlogEnrolledTeams.push({
-                        ...pair[0],
+                    vlogEnrolledTeams.push(Object.assign({}, pair[0], {
                         _allMembers: pair,
                         topic: pair[0].topic || ''
-                    });
+                    }));
                 }
 
                 if (!listEl || !selectEl) return;
@@ -11822,13 +12166,81 @@
             document.getElementById('vlogMember2').value = names[1] || '';
             document.getElementById('vlogTopic').value   = topic;
 
-            if (enr.instagramHandle) {
-                const hEl = document.getElementById('vlogHandle');
-                if (hEl && !hEl.value) hEl.value = enr.instagramHandle;
-            }
-
             if (dispEl) dispEl.style.display = 'block';
             if (infoEl) infoEl.innerHTML = `<strong>${names.join(' & ')}</strong>${topic ? ' &nbsp;·&nbsp; 📌 ' + topic : ''}`;
+
+            // ── Auto-load any existing submission for this team from Firebase ──
+            const cls   = (window.currentCRClass || crClass || '').trim();
+            const m1Key = (names[0] || '').toLowerCase().trim();
+            const msgEl = document.getElementById('vlogSubmitMsg');
+            const editIdEl = document.getElementById('vlogEditEntryId');
+
+            // Clear previous edit state while loading
+            if (editIdEl) editIdEl.value = '';
+            const hEl = document.getElementById('vlogHandle');
+            const lEl = document.getElementById('vlogLink');
+            const tEl = document.getElementById('vlogTitle');
+            const submitBtn = document.getElementById('vlogSubmitBtn');
+
+            if (msgEl) { msgEl.style.display='block'; msgEl.style.background='#f3e5f5'; msgEl.style.color='#6a1b9a'; msgEl.style.border='1px solid #ce93d8'; msgEl.textContent='🔄 Checking for existing submission…'; }
+
+            (window.db || db).ref('vlogChallenge').once('value').then(function(snap) {
+                let found = null;
+                if (snap && snap.exists()) {
+                    snap.forEach(function(ch) {
+                        try {
+                            const v = ch.val();
+                            if (!v || typeof v !== 'object') return;
+                            if ((v.classYear||'').trim() !== cls) return;
+                            if ((v.member1||'').toLowerCase().trim() === m1Key) {
+                                found = Object.assign({ id: ch.key }, v);
+                            }
+                        } catch(e2) {}
+                    });
+                }
+
+                if (found) {
+                    // Pre-fill form fields with existing submission data
+                    if (hEl) hEl.value = found.handle || '';
+                    if (lEl) lEl.value = found.link   || '';
+                    if (tEl) tEl.value = found.title  || '';
+                    if (editIdEl) editIdEl.value = found.id;
+
+                    const isApproved = found.status === 'Approved';
+                    if (submitBtn) {
+                        submitBtn.textContent = '💾 Update Reel Link';
+                        submitBtn.disabled = false;
+                    }
+                    if (msgEl) {
+                        msgEl.style.display  = 'block';
+                        if (isApproved) {
+                            msgEl.style.background = '#fff3e0';
+                            msgEl.style.color      = '#e65100';
+                            msgEl.style.border     = '1px solid #ffcc02';
+                            msgEl.textContent = '⚠️ This team is already Approved. Editing will cancel the approval and send it for re-review by Chandan.';
+                        } else {
+                            msgEl.style.background = '#e8f5e9';
+                            msgEl.style.color      = '#1b5e20';
+                            msgEl.style.border     = '1px solid #a5d6a7';
+                            msgEl.textContent = '✏️ Existing submission loaded. You can update the fields and click "Update Reel Link".';
+                        }
+                    }
+                } else {
+                    // No existing submission — clear fields, normal submit mode
+                    if (hEl && !enr.instagramHandle) hEl.value = '';
+                    else if (hEl && enr.instagramHandle && !hEl.value) hEl.value = enr.instagramHandle;
+                    if (lEl) lEl.value = '';
+                    if (tEl) tEl.value = '';
+                    if (editIdEl) editIdEl.value = '';
+                    if (submitBtn) { submitBtn.textContent = '📤 Submit Instagram Reel Link'; submitBtn.disabled = false; }
+                    if (msgEl) { msgEl.style.display = 'none'; }
+                }
+            }).catch(function(err) {
+                console.warn('vlogOnTeamSelect fetch error:', err);
+                // On error, just restore handle from enrollment if available
+                if (hEl && enr.instagramHandle && !hEl.value) hEl.value = enr.instagramHandle;
+                if (msgEl) { msgEl.style.display = 'none'; }
+            });
         }
 
 
@@ -11894,7 +12306,7 @@
             const classFilter = (document.getElementById('vlogAdminClassFilter') || {}).value || '';
             const snap = await db.ref('vlogChallenge').once('value');
             const all = [];
-            if (snap.exists()) snap.forEach(ch => all.push({ id: ch.key, ...ch.val() }));
+            if (snap.exists()) snap.forEach(ch => { const _v = ch.val(); if (_v && typeof _v === 'object') all.push(Object.assign({ id: ch.key }, _v)); });
 
             // Populate class filter
             const clsSel = document.getElementById('vlogAdminClassFilter');
@@ -11970,10 +12382,763 @@
         }
 
         function approveVlogEntry(id) {
-            db.ref('vlogChallenge/' + id + '/status').set('Approved').then(() => { loadVlogAdminPanel(); });
+            db.ref('vlogChallenge/' + id + '/status').set('Approved').then(() => { loadVlogAdminPanel(); if(document.getElementById('vrSubmitPanel') && document.getElementById('vrSubmitPanel').style.display!=='none') loadVrSubmissions(); });
         }
         function rejectVlogEntry(id) {
-            db.ref('vlogChallenge/' + id + '/status').set('Rejected').then(() => { loadVlogAdminPanel(); });
+            db.ref('vlogChallenge/' + id + '/status').set('Rejected').then(() => { loadVlogAdminPanel(); if(document.getElementById('vrSubmitPanel') && document.getElementById('vrSubmitPanel').style.display!=='none') loadVrSubmissions(); });
+        }
+
+        // ══════════════════════════════════════════════════════════════
+        // VLOG REVIEW PANEL — Faculty (Manager) functions
+        // ══════════════════════════════════════════════════════════════
+
+        function loadVlogReviewPanel() {
+            vrShowTab('enroll');
+            loadVrEnrollments();
+        }
+
+        function vrShowTab(tab) {
+            const enrollPanel  = document.getElementById('vrEnrollPanel');
+            const submitPanel  = document.getElementById('vrSubmitPanel');
+            const btnEnroll    = document.getElementById('vrTab_enroll');
+            const btnSubmit    = document.getElementById('vrTab_submit');
+
+            if (tab === 'enroll') {
+                if (enrollPanel) enrollPanel.style.display = 'block';
+                if (submitPanel) submitPanel.style.display = 'none';
+                if (btnEnroll) { btnEnroll.style.background = 'linear-gradient(135deg,#833ab4,#c44569)'; btnEnroll.style.color = 'white'; btnEnroll.style.border = 'none'; }
+                if (btnSubmit) { btnSubmit.style.background = 'white'; btnSubmit.style.color = '#833ab4'; btnSubmit.style.border = '2px solid #833ab4'; }
+                loadVrEnrollments();
+            } else {
+                if (enrollPanel) enrollPanel.style.display = 'none';
+                if (submitPanel) submitPanel.style.display = 'block';
+                if (btnSubmit) { btnSubmit.style.background = 'linear-gradient(135deg,#833ab4,#c44569)'; btnSubmit.style.color = 'white'; btnSubmit.style.border = 'none'; }
+                if (btnEnroll) { btnEnroll.style.background = 'white'; btnEnroll.style.color = '#833ab4'; btnEnroll.style.border = '2px solid #833ab4'; }
+                loadVrSubmissions();
+            }
+        }
+
+        async function loadVrEnrollments() {
+            const container = document.getElementById('vrEnrollContainer');
+            const countEl   = document.getElementById('vrEnrollCount');
+            const clsSel    = document.getElementById('vrEnrollClassFilter');
+            const clsFilter = clsSel ? clsSel.value : '';
+
+            if (container) container.innerHTML = '<p style="color:#aaa;text-align:center;padding:20px">🔄 Loading…</p>';
+
+            try {
+                const snap = await db.ref('youthfest-enrollments').once('value');
+                const records = [];
+                if (snap.exists()) {
+                    snap.forEach(ch => {
+                        const d = ch.val();
+                        if (d.event === 'Vlog') records.push(Object.assign({ id: ch.key }, d));
+                    });
+                }
+                records.sort((a,b) => (a.classYear||'').localeCompare(b.classYear||''));
+
+                // Populate class filter
+                if (clsSel && clsSel.options.length <= 1) {
+                    const classes = [...new Set(records.map(r => r.classYear||r.class||'').filter(Boolean))].sort();
+                    classes.forEach(c => { const o = document.createElement('option'); o.value=c; o.textContent=c; clsSel.appendChild(o); });
+                }
+
+                const filtered = clsFilter ? records.filter(r => (r.classYear||r.class||'') === clsFilter) : records;
+
+                if (countEl) countEl.textContent = `${filtered.length} enrolled student${filtered.length!==1?'s':''}`;
+
+                if (!filtered.length) {
+                    if (container) container.innerHTML = '<p style="text-align:center;color:#aaa;padding:30px">No Vlog enrollments found.</p>';
+                    return;
+                }
+
+                // Group by class
+                const byClass = {};
+                filtered.forEach(r => {
+                    const cls = r.classYear || r.class || '—';
+                    if (!byClass[cls]) byClass[cls] = [];
+                    byClass[cls].push(r);
+                });
+
+                let html = '';
+                Object.keys(byClass).sort().forEach(cls => {
+                    const rows = byClass[cls];
+                    html += `<div style="margin-bottom:16px;border-radius:12px;overflow:hidden;border:2px solid #e1bee7">
+                        <div style="background:linear-gradient(135deg,#6a1b9a,#c44569);padding:9px 16px;display:flex;align-items:center;justify-content:space-between">
+                            <span style="color:white;font-weight:800;font-size:0.9em">🎓 ${cls}</span>
+                            <span style="background:rgba(255,255,255,0.2);color:white;font-size:0.75em;font-weight:700;padding:2px 10px;border-radius:12px">${rows.length} student${rows.length!==1?'s':''}</span>
+                        </div>
+                        <div class="table-wrapper" style="margin:0">
+                        <table style="font-size:0.84em">
+                            <thead><tr><th>#</th><th>Name</th><th>Phone</th><th>Role</th><th>Topic</th><th>Team #</th><th>Enrolled On</th></tr></thead>
+                            <tbody>
+                            ${rows.map((r,i) => `<tr>
+                                <td style="text-align:center;color:#833ab4;font-weight:700">${i+1}</td>
+                                <td><strong>${r.name||'—'}</strong></td>
+                                <td style="color:#666">${r.phone||'—'}</td>
+                                <td><span style="background:#f3e5f5;color:#6a1b9a;padding:2px 8px;border-radius:10px;font-size:0.85em;font-weight:700">${r.role||'—'}</span></td>
+                                <td style="color:#4a148c;font-weight:600">${r.topic||'—'}</td>
+                                <td style="text-align:center">${r.teamNum||'—'}</td>
+                                <td style="color:#888;font-size:0.82em">${r.enrolledAt ? new Date(r.enrolledAt).toLocaleDateString('en-IN',{day:'2-digit',month:'short'}) : '—'}</td>
+                            </tr>`).join('')}
+                            </tbody>
+                        </table></div>
+                    </div>`;
+                });
+                if (container) container.innerHTML = html;
+            } catch(err) {
+                if (container) container.innerHTML = `<p style="color:#c62828;padding:20px">❌ Error: ${err.message}</p>`;
+            }
+        }
+
+        async function loadVrSubmissions() {
+            const container  = document.getElementById('vrSubmitContainer');
+            const countEl    = document.getElementById('vrSubmitCount');
+            const clsSel     = document.getElementById('vrSubmitClassFilter');
+            const statusSel  = document.getElementById('vrSubmitStatusFilter');
+            const clsFilter  = clsSel    ? clsSel.value    : '';
+            const statFilter = statusSel ? statusSel.value : '';
+
+            if (container) container.innerHTML = '<p style="color:#aaa;text-align:center;padding:20px">🔄 Loading…</p>';
+
+            try {
+                const snap = await db.ref('vlogChallenge').once('value');
+                const all  = [];
+                if (snap.exists()) snap.forEach(ch => { const _v = ch.val(); if (_v) all.push(Object.assign({ id: ch.key }, _v)); });
+
+                // Populate class filter
+                if (clsSel && clsSel.options.length <= 1) {
+                    const classes = [...new Set(all.map(e => e.classYear||'').filter(Boolean))].sort();
+                    classes.forEach(c => { const o = document.createElement('option'); o.value=c; o.textContent=c; clsSel.appendChild(o); });
+                }
+
+                let filtered = all;
+                if (clsFilter)  filtered = filtered.filter(e => e.classYear === clsFilter);
+                if (statFilter) filtered = filtered.filter(e => (e.status||'Pending Review') === statFilter);
+                filtered.sort((a,b) => (a.classYear||'').localeCompare(b.classYear||''));
+
+                const pending  = all.filter(e => !e.status || e.status === 'Pending Review').length;
+                const approved = all.filter(e => e.status === 'Approved').length;
+                const rejected = all.filter(e => e.status === 'Rejected').length;
+
+                if (countEl) countEl.innerHTML = `${filtered.length} shown &nbsp;·&nbsp; <span style="color:#856404">⏳ ${pending} pending</span> &nbsp;·&nbsp; <span style="color:#155724">✅ ${approved} approved</span> &nbsp;·&nbsp; <span style="color:#721c24">❌ ${rejected} rejected</span>`;
+
+                if (!filtered.length) {
+                    if (container) container.innerHTML = '<p style="text-align:center;color:#aaa;padding:30px">No submissions match the selected filters.</p>';
+                    return;
+                }
+
+                let rows = '';
+                filtered.forEach((e, i) => {
+                    const statusColor = e.status === 'Approved' ? '#155724' : e.status === 'Rejected' ? '#721c24' : '#856404';
+                    const statusBg    = e.status === 'Approved' ? '#d4edda'  : e.status === 'Rejected' ? '#f8d7da'  : '#fff3cd';
+                    const dt = e.submittedAt ? new Date(e.submittedAt).toLocaleString('en-IN', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' }) : '—';
+                    rows += `<tr>
+                        <td style="text-align:center;font-weight:700;color:#833ab4">${i+1}</td>
+                        <td style="font-weight:700;color:#1565c0;font-size:0.85em">${e.classYear||'—'}</td>
+                        <td style="font-size:0.82em"><strong>${e.member1||'—'}</strong><br><span style="color:#888">${e.member2||''}</span></td>
+                        <td style="font-size:0.82em;color:#4a148c;font-weight:600">${e.topic||'—'}</td>
+                        <td><a href="${e.link||'#'}" target="_blank" rel="noopener" style="color:#e91e63;font-weight:700;font-size:0.85em;text-decoration:none">📸 View Reel</a></td>
+                        <td style="font-size:0.8em;color:#777">${e.handle||'—'}</td>
+                        <td style="text-align:center"><span style="background:${statusBg};color:${statusColor};padding:3px 10px;border-radius:12px;font-size:0.75em;font-weight:700">${e.status||'Pending Review'}</span></td>
+                        <td style="font-size:0.78em;color:#666">${dt}</td>
+                        <td style="text-align:center;white-space:nowrap">
+                            <button onclick="vrApprove('${e.id}')" style="background:#28a745;color:white;border:none;border-radius:6px;padding:4px 10px;cursor:pointer;font-size:0.75em;margin:2px;font-weight:700">✅ Approve</button>
+                            <button onclick="vrReject('${e.id}')" style="background:#dc3545;color:white;border:none;border-radius:6px;padding:4px 10px;cursor:pointer;font-size:0.75em;margin:2px;font-weight:700">❌ Reject</button>
+                        </td>
+                    </tr>`;
+                });
+
+                if (container) container.innerHTML = `<div class="table-wrapper" style="margin:0"><table style="font-size:0.84em">
+                    <thead><tr><th>#</th><th>Class</th><th>Members</th><th>Topic</th><th>Reel</th><th>Handle</th><th>Status</th><th>Submitted</th><th>Actions</th></tr></thead>
+                    <tbody>${rows}</tbody>
+                </table></div>`;
+
+            } catch(err) {
+                if (container) container.innerHTML = `<p style="color:#c62828;padding:20px">❌ Error: ${err.message}</p>`;
+            }
+        }
+
+        async function vrApprove(id) {
+            await db.ref('vlogChallenge/' + id + '/status').set('Approved');
+            loadVrSubmissions();
+            if (typeof loadVlogAdminPanel === 'function') loadVlogAdminPanel();
+        }
+        async function vrReject(id) {
+            await db.ref('vlogChallenge/' + id + '/status').set('Rejected');
+            loadVrSubmissions();
+            if (typeof loadVlogAdminPanel === 'function') loadVlogAdminPanel();
+        }
+
+        function vsrClearFilters() {
+            ['vsrClassFilter','vsrStatusFilter','vsrTopicFilter'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.value = '';
+            });
+            loadVlogSummaryReport();
+        }
+
+        // ══════════════════════════════════════════════════════════════
+        // CHANDAN FACULTY: Vlog Review & Approval Panel functions
+        // ══════════════════════════════════════════════════════════════
+
+        var _cvrActiveTab = 'enroll';
+
+        function cvrShowTab(tab) {
+            _cvrActiveTab = tab;
+            const ep  = document.getElementById('cvr_enrollPanel');
+            const sp  = document.getElementById('cvr_submitPanel');
+            const be  = document.getElementById('cvr_btn_enroll');
+            const bs  = document.getElementById('cvr_btn_submit');
+            const on  = 'linear-gradient(135deg,#833ab4,#c44569)';
+            const off = 'white';
+            if (tab === 'enroll') {
+                if (ep) ep.style.display = 'block';
+                if (sp) sp.style.display = 'none';
+                if (be) { be.style.background = on; be.style.color = 'white'; be.style.border = 'none'; }
+                if (bs) { bs.style.background = off; bs.style.color = '#833ab4'; bs.style.border = '2px solid #833ab4'; }
+                cvrLoadEnrollments();
+            } else {
+                if (ep) ep.style.display = 'none';
+                if (sp) sp.style.display = 'block';
+                if (bs) { bs.style.background = on; bs.style.color = 'white'; bs.style.border = 'none'; }
+                if (be) { be.style.background = off; be.style.color = '#833ab4'; be.style.border = '2px solid #833ab4'; }
+                cvrLoadSubmissions();
+            }
+        }
+
+        function cvrRefresh() {
+            if (_cvrActiveTab === 'enroll') cvrLoadEnrollments();
+            else cvrLoadSubmissions();
+            cvrLoadSummaryStrip();
+        }
+
+        async function cvrLoadEnrollments() {
+            const container = document.getElementById('cvr_enrollContainer');
+            const countEl   = document.getElementById('cvr_enrollCount');
+            const clsSel    = document.getElementById('cvr_classFilter');
+            const clsFilter = clsSel ? clsSel.value : '';
+            if (container) container.innerHTML = '<div style="text-align:center;color:#aaa;padding:20px">🔄 Loading…</div>';
+            try {
+                // Load both enrollments AND submission statuses together
+                const [enrollSnap, subSnap] = await Promise.all([
+                    db.ref('youthfest-enrollments').once('value'),
+                    db.ref('vlogChallenge').once('value')
+                ]);
+
+                const records = [];
+                if (enrollSnap.exists()) enrollSnap.forEach(ch => { const d = ch.val(); if (d.event === 'Vlog') records.push(Object.assign({ id: ch.key }, d)); });
+                records.sort((a,b) => {
+                    const cc = (a.classYear||'').localeCompare(b.classYear||'');
+                    if (cc !== 0) return cc;
+                    return (a.teamNum||0) - (b.teamNum||0);
+                });
+
+                // Build submission lookup: classYear → [submission entries]
+                const subsByClass = {};
+                if (subSnap.exists()) subSnap.forEach(ch => {
+                    const d = ch.val(); const c = d.classYear||'';
+                    if (!subsByClass[c]) subsByClass[c] = [];
+                    subsByClass[c].push(Object.assign({ id: ch.key }, d));
+                });
+
+                if (clsSel && clsSel.options.length <= 1) {
+                    const classes = [...new Set(records.map(r=>r.classYear||r.class||'').filter(Boolean))].sort();
+                    classes.forEach(c => { const o = document.createElement('option'); o.value=c; o.textContent=c; clsSel.appendChild(o); });
+                }
+                const filtered = clsFilter ? records.filter(r=>(r.classYear||r.class||'')===clsFilter) : records;
+                const teamCount = [...new Set(filtered.map(r=>r.classYear+'_'+r.teamNum))].length;
+                if (countEl) countEl.textContent = `${filtered.length} students · ${teamCount} team${teamCount!==1?'s':''}`;
+
+                if (!filtered.length) { if (container) container.innerHTML = '<p style="text-align:center;color:#aaa;padding:30px">No Vlog enrollments found.</p>'; return; }
+
+                // Group by class first
+                const membersByClass = {};
+                filtered.forEach(r => {
+                    const c = r.classYear||r.class||'—';
+                    if (!membersByClass[c]) membersByClass[c] = [];
+                    membersByClass[c].push(r);
+                });
+
+                let html = '';
+                Object.keys(membersByClass).sort().forEach(cls => {
+                    const members = membersByClass[cls];
+                    const clsSubs = subsByClass[cls] || [];
+
+                    // Sort: by teamNum asc, then Captain before Member
+                    members.sort((a,b) => {
+                        const ta = parseInt(a.teamNum)||0, tb = parseInt(b.teamNum)||0;
+                        if (ta !== tb) return ta - tb;
+                        const ra = (a.role||'').toLowerCase(), rb = (b.role||'').toLowerCase();
+                        return ra.includes('captain') ? -1 : rb.includes('captain') ? 1 : 0;
+                    });
+
+                    // Group into teams: by teamNum if present, else pair sequentially
+                    const teams = {};
+                    const hasTeamNums = members.some(m => m.teamNum && String(m.teamNum).trim() !== '');
+                    if (hasTeamNums) {
+                        members.forEach(m => {
+                            const t = String(m.teamNum||'1');
+                            if (!teams[t]) teams[t] = [];
+                            teams[t].push(m);
+                        });
+                    } else {
+                        // Pair sequentially: every 2 students = 1 team
+                        for (let i = 0; i < members.length; i += 2) {
+                            const t = String(Math.floor(i/2) + 1);
+                            teams[t] = members.slice(i, i + 2);
+                        }
+                    }
+
+                    const teamKeys = Object.keys(teams).sort((a,b)=>parseInt(a)-parseInt(b));
+                    html += `<div style="margin-bottom:16px;border-radius:12px;overflow:hidden;border:2px solid #e1bee7">
+                        <div style="background:linear-gradient(135deg,#6a1b9a,#c44569);padding:9px 16px;display:flex;align-items:center;justify-content:space-between">
+                            <span style="color:white;font-weight:800;font-size:0.9em">🎓 ${cls}</span>
+                            <span style="background:rgba(255,255,255,0.2);color:white;font-size:0.75em;font-weight:700;padding:2px 10px;border-radius:12px">${teamKeys.length} team${teamKeys.length!==1?'s':''}</span>
+                        </div>`;
+
+                    teamKeys.forEach(tKey => {
+                        const tMembers = teams[tKey];
+                        const topic = tMembers[0].topic || '—';
+                        const names = tMembers.map(m=>m.name||'').filter(Boolean);
+                        const matchedSub = clsSubs.find(s =>
+                            names.some(n => {
+                                const first = n.toLowerCase().split(' ')[0];
+                                return (s.member1||'').toLowerCase().includes(first) || (s.member2||'').toLowerCase().includes(first);
+                            })
+                        ) || clsSubs.find(s => (s.topic||'') === topic);
+
+                        const hasSubmission = !!matchedSub;
+                        const status = matchedSub ? (matchedSub.status || 'Pending Review') : null;
+                        const sc = status==='Approved'?'#155724':status==='Rejected'?'#721c24':status?'#856404':'#666';
+                        const sb = status==='Approved'?'#d4edda':status==='Rejected'?'#f8d7da':status?'#fff3cd':'#f5f5f5';
+                        const statusLabel = status || 'Not Submitted';
+                        const memberLine = tMembers.map(m=>`<strong>${m.name||'—'}</strong> <span style="color:#888;font-size:0.8em">(${m.role||''})</span>`).join(' &amp; ');
+
+                        html += `<div style="padding:12px 16px;border-bottom:1px solid #f3e5f5;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+                            <div>
+                                <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px">
+                                    <span style="background:#e8eaf6;color:#3949ab;font-size:0.75em;font-weight:800;padding:2px 9px;border-radius:10px">Team ${tKey}</span>
+                                    <span style="color:#4a148c;font-size:0.82em;font-weight:600">📌 ${topic}</span>
+                                </div>
+                                <div style="font-size:0.9em">${memberLine}</div>
+                                ${hasSubmission && matchedSub.link ? `<div style="margin-top:4px"><a href="${matchedSub.link}" target="_blank" rel="noopener" style="color:#e91e63;font-size:0.8em;font-weight:700;text-decoration:none">📸 View Reel</a>&nbsp;·&nbsp;<span style="color:#888;font-size:0.76em">${matchedSub.handle||''}</span></div>` : `<div style="margin-top:4px;font-size:0.78em;color:#aaa">No reel submitted yet</div>`}
+                            </div>
+                            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+                                <span style="background:${sb};color:${sc};padding:4px 12px;border-radius:12px;font-size:0.77em;font-weight:700">${statusLabel}</span>
+                                ${hasSubmission ? `
+                                <button onclick="cvrApprove('${matchedSub.id}')" style="background:#28a745;color:white;border:none;border-radius:8px;padding:5px 14px;cursor:pointer;font-size:0.78em;font-weight:700">✅ Approve</button>
+                                <button onclick="cvrReject('${matchedSub.id}')" style="background:#dc3545;color:white;border:none;border-radius:8px;padding:5px 14px;cursor:pointer;font-size:0.78em;font-weight:700">❌ Reject</button>
+                                <button onclick="cvrOpenEdit('${matchedSub.id}',${JSON.stringify(matchedSub.member1||'')},${JSON.stringify(matchedSub.member2||'')},${JSON.stringify(matchedSub.topic||'')},${JSON.stringify(matchedSub.link||'')},${JSON.stringify(matchedSub.handle||'')})" style="background:#1565c0;color:white;border:none;border-radius:8px;padding:5px 14px;cursor:pointer;font-size:0.78em;font-weight:700">✏️ Edit</button>
+                                ` : `<span style="color:#aaa;font-size:0.78em;font-style:italic">Awaiting submission</span>`}
+                            </div>
+                        </div>`;
+                    });
+                    html += `</div>`;
+                });
+                if (container) container.innerHTML = html;
+                cvrLoadSummaryStrip();
+            } catch(err) {
+                if (container) container.innerHTML = `<p style="color:#c62828;padding:20px">❌ Error: ${err.message}</p>`;
+            }
+        }
+
+        async function cvrLoadSubmissions() {
+            const container  = document.getElementById('cvr_submitContainer');
+            const countEl    = document.getElementById('cvr_submitCount');
+            const clsSel     = document.getElementById('cvr_subClassFilter');
+            const statusSel  = document.getElementById('cvr_subStatusFilter');
+            const clsFilter  = clsSel    ? clsSel.value    : '';
+            const statFilter = statusSel ? statusSel.value : '';
+            if (container) container.innerHTML = '<div style="text-align:center;color:#aaa;padding:20px">🔄 Loading…</div>';
+            try {
+                const snap = await db.ref('vlogChallenge').once('value');
+                const all  = [];
+                if (snap.exists()) snap.forEach(ch => { const _v = ch.val(); if (_v) all.push(Object.assign({ id: ch.key }, _v)); });
+
+                if (clsSel && clsSel.options.length <= 1) {
+                    const classes = [...new Set(all.map(e=>e.classYear||'').filter(Boolean))].sort();
+                    classes.forEach(c => { const o = document.createElement('option'); o.value=c; o.textContent=c; clsSel.appendChild(o); });
+                }
+
+                let filtered = all;
+                if (clsFilter)  filtered = filtered.filter(e=>e.classYear===clsFilter);
+                if (statFilter) filtered = filtered.filter(e=>(e.status||'Pending Review')===statFilter);
+                filtered.sort((a,b)=>(a.classYear||'').localeCompare(b.classYear||''));
+
+                const pending  = all.filter(e=>!e.status||e.status==='Pending Review').length;
+                const approved = all.filter(e=>e.status==='Approved').length;
+                const rejected = all.filter(e=>e.status==='Rejected').length;
+                if (countEl) countEl.innerHTML = `${filtered.length} shown &nbsp;·&nbsp; <span style="color:#856404">⏳ ${pending}</span> &nbsp;·&nbsp; <span style="color:#155724">✅ ${approved}</span> &nbsp;·&nbsp; <span style="color:#721c24">❌ ${rejected}</span>`;
+
+                if (!filtered.length) { if(container) container.innerHTML='<p style="text-align:center;color:#aaa;padding:30px">No submissions match.</p>'; cvrLoadSummaryStrip(); return; }
+
+                let rows = '';
+                filtered.forEach((e,i) => {
+                    const sc = e.status==='Approved'?'#155724':e.status==='Rejected'?'#721c24':'#856404';
+                    const sb = e.status==='Approved'?'#d4edda':e.status==='Rejected'?'#f8d7da':'#fff3cd';
+                    const dt = e.submittedAt ? new Date(e.submittedAt).toLocaleString('en-IN',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}) : '—';
+                    rows += `<tr>
+                        <td style="text-align:center;font-weight:700;color:#833ab4">${i+1}</td>
+                        <td style="font-weight:700;color:#1565c0;font-size:0.84em">${e.classYear||'—'}</td>
+                        <td style="font-size:0.82em"><strong>${e.member1||'—'}</strong><br><span style="color:#888">${e.member2||''}</span></td>
+                        <td style="color:#4a148c;font-weight:600;font-size:0.82em">${e.topic||'—'}</td>
+                        <td><a href="${e.link||'#'}" target="_blank" rel="noopener" style="color:#e91e63;font-weight:700;font-size:0.84em">📸 Reel</a></td>
+                        <td style="font-size:0.78em;color:#777">${e.handle||'—'}</td>
+                        <td><span style="background:${sb};color:${sc};padding:3px 9px;border-radius:10px;font-size:0.74em;font-weight:700">${e.status||'Pending Review'}</span></td>
+                        <td style="font-size:0.76em;color:#666">${dt}</td>
+                        <td style="white-space:nowrap">
+                            <button onclick="cvrApprove('${e.id}')" style="background:#28a745;color:white;border:none;border-radius:6px;padding:4px 9px;cursor:pointer;font-size:0.74em;font-weight:700;margin:1px">✅</button>
+                            <button onclick="cvrReject('${e.id}')" style="background:#dc3545;color:white;border:none;border-radius:6px;padding:4px 9px;cursor:pointer;font-size:0.74em;font-weight:700;margin:1px">❌</button>
+                            <button onclick="cvrOpenEdit('${e.id}',${JSON.stringify(e.member1||'')},${JSON.stringify(e.member2||'')},${JSON.stringify(e.topic||'')},${JSON.stringify(e.link||'')},${JSON.stringify(e.handle||'')})" style="background:#1565c0;color:white;border:none;border-radius:6px;padding:4px 9px;cursor:pointer;font-size:0.74em;font-weight:700;margin:1px">✏️</button>
+                        </td>
+                    </tr>`;
+                });
+                if (container) container.innerHTML = `<div class="table-wrapper" style="margin:0"><table style="font-size:0.83em">
+                    <thead><tr><th>#</th><th>Class</th><th>Members</th><th>Topic</th><th>Reel</th><th>Handle</th><th>Status</th><th>Submitted</th><th>Actions</th></tr></thead>
+                    <tbody>${rows}</tbody></table></div>`;
+                cvrLoadSummaryStrip();
+            } catch(err) {
+                if (container) container.innerHTML = `<p style="color:#c62828;padding:20px">❌ Error: ${err.message}</p>`;
+            }
+        }
+
+        async function cvrApprove(id) {
+            // Visual feedback on the button
+            event.target.textContent = '⏳';
+            event.target.disabled = true;
+            try {
+                await db.ref('vlogChallenge/' + id + '/status').set('Approved');
+            } catch(e) { alert('Error: ' + e.message); event.target.textContent = '✅ Approve'; event.target.disabled = false; return; }
+            // Refresh whichever tab is active
+            if (_cvrActiveTab === 'submit') cvrLoadSubmissions();
+            else cvrLoadEnrollments();
+            cvrLoadSummaryStrip();
+            if (typeof loadVlogAdminPanel === 'function' && (isSuperAdmin || isAdmin)) loadVlogAdminPanel();
+        }
+        async function cvrReject(id) {
+            event.target.textContent = '⏳';
+            event.target.disabled = true;
+            try {
+                await db.ref('vlogChallenge/' + id + '/status').set('Rejected');
+            } catch(e) { alert('Error: ' + e.message); event.target.textContent = '❌ Reject'; event.target.disabled = false; return; }
+            if (_cvrActiveTab === 'submit') cvrLoadSubmissions();
+            else cvrLoadEnrollments();
+            cvrLoadSummaryStrip();
+            if (typeof loadVlogAdminPanel === 'function' && (isSuperAdmin || isAdmin)) loadVlogAdminPanel();
+        }
+
+        async function cvrLoadSummaryStrip() {
+            const strip    = document.getElementById('cvr_summaryStrip');
+            const statsRow = document.getElementById('cvr_statsRow');
+            if (!strip || !statsRow) return;
+            statsRow.innerHTML = '<div style="color:rgba(255,255,255,0.5);font-size:0.82em">Loading…</div>';
+            try {
+                const [enrollSnap, subSnap] = await Promise.all([
+                    db.ref('youthfest-enrollments').once('value'),
+                    db.ref('vlogChallenge').once('value')
+                ]);
+                let enrolled = 0; const teamSet = new Set();
+                if (enrollSnap.exists()) enrollSnap.forEach(ch => {
+                    const d = ch.val();
+                    if (d.event==='Vlog') { enrolled++; if(d.classYear && d.teamNum) teamSet.add(d.classYear+'_'+d.teamNum); }
+                });
+                let total=0, pending=0, approved=0, rejected=0;
+                if (subSnap.exists()) subSnap.forEach(ch => {
+                    total++;
+                    const s = ch.val().status;
+                    if (!s||s==='Pending Review') pending++;
+                    else if (s==='Approved') approved++;
+                    else rejected++;
+                });
+                statsRow.innerHTML = [
+                    ['👥 Enrolled', enrolled, '#e3f2fd','#0d47a1', ''],
+                    ['👫 Teams', teamSet.size, '#ede7f6','#4a148c', ''],
+                    ['📤 Submitted', total, '#f3e5f5','#6a1b9a', 'all'],
+                    ['⏳ Pending', pending, '#fff3e0','#e65100', 'Pending Review'],
+                    ['✅ Approved', approved, '#e8f5e9','#1b5e20', 'Approved'],
+                    ['❌ Rejected', rejected, '#fce4ec','#b71c1c', 'Rejected'],
+                    ['🔄 Show All', '↺', '#f5f5f5','#555', 'reset'],
+                ].map(([l,v,bg,col,filter]) => {
+                    const isReset = filter === 'reset';
+                    const clickable = filter !== '' ? `onclick="cvrFilterByStatus('${filter}')" style="cursor:pointer;background:${bg};border-radius:10px;padding:10px 14px;text-align:center;min-width:${isReset?'60px':'72px'};transition:transform 0.1s,box-shadow 0.1s" onmouseover="this.style.transform='scale(1.06)';this.style.boxShadow='0 4px 12px rgba(0,0,0,0.15)'" onmouseout="this.style.transform='';this.style.boxShadow=''"` : `style="background:${bg};border-radius:10px;padding:10px 14px;text-align:center;min-width:72px"`;
+                    return `<div ${clickable} title="${filter ? (isReset ? 'Show all submissions' : 'Click to filter: ' + filter) : ''}">
+                        <div style="font-size:${isReset?'1.8em':'1.5em'};font-weight:900;color:${col}">${v}</div>
+                        <div style="font-size:0.7em;font-weight:700;color:${col}">${l}</div>
+                        ${filter && !isReset ? '<div style="font-size:0.6em;color:' + col + ';opacity:0.7;margin-top:2px">click to filter</div>' : ''}
+                    </div>`;
+                }).join('');
+            } catch(e) { if(statsRow) statsRow.innerHTML = '<div style="color:rgba(255,255,255,0.4);font-size:0.8em">Could not load summary</div>'; }
+        }
+
+        // ── Click a summary card to filter Submissions Detail by that status ──
+        function cvrFilterByStatus(statusVal) {
+            // Make sure Chandan panel is visible first
+            const panel = document.getElementById('chandanVlogReviewPanel');
+            if (panel) panel.style.display = 'block';
+
+            const statSel = document.getElementById('cvr_subStatusFilter');
+            const clsSel  = document.getElementById('cvr_subClassFilter');
+            const clsEnrollSel = document.getElementById('cvr_classFilter');
+
+            if (statusVal === 'reset') {
+                // Clear ALL filters and go to Teams & Approval (shows all enrolled teams)
+                if (statSel) statSel.value = '';
+                if (clsSel)  clsSel.value  = '';
+                if (clsEnrollSel) clsEnrollSel.value = '';
+                cvrShowTab('enroll');  // show ALL teams in Teams & Approval tab
+            } else {
+                // Set status filter BEFORE cvrShowTab triggers cvrLoadSubmissions
+                if (statSel) statSel.value = statusVal === 'all' ? '' : statusVal;
+                cvrShowTab('submit');
+            }
+
+            if (panel) setTimeout(() => panel.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
+        }
+
+        // ══════════════════════════════════════════════════════════════
+        // POINT 5: Remove duplicate vlogChallenge entries — keep latest per team
+        // A duplicate = same classYear + member1 with more than one Firebase node
+        // ══════════════════════════════════════════════════════════════
+        async function cvrRemoveDuplicates() {
+            if (!confirm('🧹 This will scan Firebase for duplicate vlog submissions (same class + member1) and delete the OLDER ones, keeping only the most recent.\n\nContinue?')) return;
+            try {
+                const snap = await db.ref('vlogChallenge').once('value');
+                if (!snap.exists()) { alert('No submissions found.'); return; }
+                // Group by classYear + member1 (lowercase)
+                const groups = {};
+                snap.forEach(ch => {
+                    const v = ch.val();
+                    if (!v || !v.member1) return;
+                    const key = (v.classYear||'').toLowerCase() + '|' + (v.member1||'').toLowerCase().trim();
+                    if (!groups[key]) groups[key] = [];
+                    groups[key].push(Object.assign({ id: ch.key, submittedAt: v.submittedAt || '1970-01-01' }, v));
+                });
+                const toDelete = [];
+                Object.values(groups).forEach(arr => {
+                    if (arr.length <= 1) return;
+                    // Sort descending by submittedAt — keep first (latest), delete rest
+                    arr.sort((a, b) => new Date(b.submittedAt) - new Date(a.submittedAt));
+                    arr.slice(1).forEach(dup => toDelete.push(dup.id));
+                });
+                if (!toDelete.length) { alert('✅ No duplicates found! Database is clean.'); return; }
+                if (!confirm(`Found ${toDelete.length} duplicate(s) to remove. Proceed with deletion?`)) return;
+                const updates = {};
+                toDelete.forEach(id => { updates['vlogChallenge/' + id] = null; });
+                await db.ref().update(updates);
+                alert(`✅ Removed ${toDelete.length} duplicate(s). Database is now clean.`);
+                cvrRefresh();
+            } catch(e) {
+                alert('❌ Error during deduplication: ' + e.message);
+            }
+        }
+
+        // ══════════════════════════════════════════════════════════════
+        // POINT 6: Edit vlog submission
+        // ══════════════════════════════════════════════════════════════
+        let _editingVlogId = null;
+
+        function cvrOpenEdit(id, member1, member2, topic, link, handle) {
+            _editingVlogId = id;
+            const modal = document.getElementById('vlogEditModal');
+            document.getElementById('vlogEditMember1').value  = member1 || '';
+            document.getElementById('vlogEditMember2').value  = member2 || '';
+            document.getElementById('vlogEditTopic').value    = topic   || '';
+            document.getElementById('vlogEditLink').value     = link    || '';
+            document.getElementById('vlogEditHandle').value   = handle  || '';
+            document.getElementById('vlogEditMsg').textContent = '';
+            document.getElementById('vlogEditModal').style.display = 'flex';
+        }
+
+        function buildVlogEditModal() {
+            const div = document.createElement('div');
+            div.id = 'vlogEditModal';
+            div.style.cssText = 'display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);z-index:9999;align-items:center;justify-content:center;padding:20px;box-sizing:border-box';
+            div.innerHTML = `
+                <div style="background:white;border-radius:16px;padding:24px;width:100%;max-width:480px;box-shadow:0 8px 40px rgba(0,0,0,0.3)">
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+                        <h3 style="color:#6a1b9a;margin:0;font-size:1.05em">✏️ Edit Vlog Submission</h3>
+                        <button onclick="document.getElementById('vlogEditModal').style.display='none'" style="background:none;border:none;font-size:1.3em;cursor:pointer;color:#888">✕</button>
+                    </div>
+                    <div style="display:flex;flex-direction:column;gap:10px">
+                        <label style="font-size:0.82em;font-weight:700;color:#555">Member 1 (Captain)</label>
+                        <input id="vlogEditMember1" style="padding:8px 12px;border:2px solid #ce93d8;border-radius:8px;font-size:0.88em;outline:none;width:100%">
+                        <label style="font-size:0.82em;font-weight:700;color:#555">Member 2</label>
+                        <input id="vlogEditMember2" style="padding:8px 12px;border:2px solid #ce93d8;border-radius:8px;font-size:0.88em;outline:none;width:100%">
+                        <label style="font-size:0.82em;font-weight:700;color:#555">Topic</label>
+                        <input id="vlogEditTopic" style="padding:8px 12px;border:2px solid #ce93d8;border-radius:8px;font-size:0.88em;outline:none;width:100%">
+                        <label style="font-size:0.82em;font-weight:700;color:#555">Reel Link</label>
+                        <input id="vlogEditLink" style="padding:8px 12px;border:2px solid #ce93d8;border-radius:8px;font-size:0.88em;outline:none;width:100%" placeholder="https://www.instagram.com/reel/...">
+                        <label style="font-size:0.82em;font-weight:700;color:#555">Instagram Handle</label>
+                        <input id="vlogEditHandle" style="padding:8px 12px;border:2px solid #ce93d8;border-radius:8px;font-size:0.88em;outline:none;width:100%" placeholder="@username">
+                    </div>
+                    <div id="vlogEditMsg" style="margin-top:10px;font-size:0.82em;color:#c62828;min-height:20px"></div>
+                    <div style="display:flex;gap:10px;margin-top:16px;justify-content:flex-end">
+                        <button onclick="document.getElementById('vlogEditModal').style.display='none'" style="background:#f5f5f5;color:#555;border:none;border-radius:8px;padding:8px 18px;cursor:pointer;font-weight:700">Cancel</button>
+                        <button onclick="cvrSaveEdit()" style="background:linear-gradient(135deg,#833ab4,#c44569);color:white;border:none;border-radius:8px;padding:8px 20px;cursor:pointer;font-weight:700">💾 Save Changes</button>
+                    </div>
+                </div>`;
+            document.body.appendChild(div);
+        }
+
+        async function cvrSaveEdit() {
+            const id     = _editingVlogId;
+            const member1 = (document.getElementById('vlogEditMember1').value||'').trim();
+            const member2 = (document.getElementById('vlogEditMember2').value||'').trim();
+            const topic   = (document.getElementById('vlogEditTopic').value||'').trim();
+            const link    = (document.getElementById('vlogEditLink').value||'').trim();
+            const handle  = (document.getElementById('vlogEditHandle').value||'').trim();
+            const msgEl   = document.getElementById('vlogEditMsg');
+            if (!id)     { if(msgEl) msgEl.textContent='❌ No submission ID found.'; return; }
+            if (!member1){ if(msgEl) msgEl.textContent='❌ Member 1 is required.'; return; }
+            if (!link)   { if(msgEl) msgEl.textContent='❌ Reel link is required.'; return; }
+            if (msgEl) msgEl.textContent = '⏳ Saving…';
+            try {
+                await db.ref('vlogChallenge/' + id).update({
+                    member1, member2, topic, link, handle,
+                    members: member2 ? member1 + ' & ' + member2 : member1,
+                    editedAt: new Date().toISOString()
+                });
+                if (msgEl) msgEl.style.color = '#2e7d32';
+                if (msgEl) msgEl.textContent = '✅ Saved successfully!';
+                setTimeout(() => { document.getElementById('vlogEditModal').style.display='none'; cvrRefresh(); loadVlogSubmissions(); }, 800);
+            } catch(e) {
+                if (msgEl) { msgEl.style.color='#c62828'; msgEl.textContent='❌ Error: '+e.message; }
+            }
+        }
+        // Adds an "📊 Summary" sub-tab inside vlogAdminPanel
+        // ══════════════════════════════════════════════════════════════
+
+        async function loadVlogSummaryReport() {
+            const container = document.getElementById('vlogSummaryReportContainer');
+            if (!container) return;
+            container.innerHTML = '<p style="color:#aaa;text-align:center;padding:20px">🔄 Loading summary…</p>';
+
+            const clsFilter    = (document.getElementById('vsrClassFilter')    || {}).value || '';
+            const statusFilter = (document.getElementById('vsrStatusFilter')   || {}).value || '';
+            const topicFilter  = (document.getElementById('vsrTopicFilter')    || {}).value || '';
+
+            try {
+                const [enrollSnap, subSnap] = await Promise.all([
+                    db.ref('youthfest-enrollments').once('value'),
+                    db.ref('vlogChallenge').once('value')
+                ]);
+
+                // Build enrollment map: class → count of enrolled students for Vlog
+                const enrollByClass = {};
+                const topicSet = new Set();
+                if (enrollSnap.exists()) {
+                    enrollSnap.forEach(ch => {
+                        const d = ch.val();
+                        if (d.event !== 'Vlog') return;
+                        const cls = d.classYear || d.class || '—';
+                        enrollByClass[cls] = (enrollByClass[cls] || 0) + 1;
+                        if (d.topic) topicSet.add(d.topic);
+                    });
+                }
+
+                // Build submissions array
+                let subs = [];
+                if (subSnap.exists()) subSnap.forEach(ch => { const sv=ch.val(); if(sv) { subs.push(Object.assign({ id: ch.key }, sv)); if(sv.topic) topicSet.add(sv.topic); } });
+
+                // Populate filter dropdowns
+                const clsSel = document.getElementById('vsrClassFilter');
+                if (clsSel && clsSel.options.length <= 1) {
+                    const classes = [...new Set([...Object.keys(enrollByClass), ...subs.map(s => s.classYear||'')].filter(Boolean))].sort();
+                    classes.forEach(c => { const o = document.createElement('option'); o.value=c; o.textContent=c; clsSel.appendChild(o); });
+                }
+                const topSel = document.getElementById('vsrTopicFilter');
+                if (topSel && topSel.options.length <= 1) {
+                    [...topicSet].sort().forEach(t => { const o = document.createElement('option'); o.value=t; o.textContent=t; topSel.appendChild(o); });
+                }
+
+                // Apply filters
+                let filtSubs = subs;
+                if (clsFilter)    filtSubs = filtSubs.filter(s => s.classYear === clsFilter);
+                if (statusFilter) filtSubs = filtSubs.filter(s => (s.status||'Pending Review') === statusFilter);
+                if (topicFilter)  filtSubs = filtSubs.filter(s => s.topic === topicFilter);
+
+                // Stats cards
+                const total    = subs.length;
+                const pending  = subs.filter(s => !s.status || s.status === 'Pending Review').length;
+                const approved = subs.filter(s => s.status === 'Approved').length;
+                const rejected = subs.filter(s => s.status === 'Rejected').length;
+                const totalEnroll = Object.values(enrollByClass).reduce((a,b)=>a+b,0);
+
+                const statsHtml = `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:20px">
+                    ${[
+                        ['👥 Enrolled Students', totalEnroll, '#0d47a1','#e3f2fd'],
+                        ['📤 Submissions', total, '#6a1b9a','#f3e5f5'],
+                        ['⏳ Pending', pending, '#e65100','#fff3e0'],
+                        ['✅ Approved', approved, '#1b5e20','#e8f5e9'],
+                        ['❌ Rejected', rejected, '#b71c1c','#fce4ec'],
+                    ].map(([label,val,col,bg]) => `<div style="background:${bg};border-radius:12px;padding:14px 16px;text-align:center;border:2px solid ${col}22">
+                        <div style="font-size:1.6em;font-weight:900;color:${col}">${val}</div>
+                        <div style="font-size:0.73em;color:${col};font-weight:700;margin-top:2px">${label}</div>
+                    </div>`).join('')}
+                </div>`;
+
+                // Per-class breakdown table
+                const allClasses = [...new Set([...Object.keys(enrollByClass), ...subs.map(s=>s.classYear||'')].filter(Boolean))].sort();
+                let filtClasses = clsFilter ? [clsFilter] : allClasses;
+
+                let classRows = '';
+                filtClasses.forEach(cls => {
+                    const enrolCount = enrollByClass[cls] || 0;
+                    const clsSubs = subs.filter(s => s.classYear === cls);
+                    const clsApproved = clsSubs.filter(s => s.status === 'Approved').length;
+                    const clsPending  = clsSubs.filter(s => !s.status || s.status === 'Pending Review').length;
+                    const clsRejected = clsSubs.filter(s => s.status === 'Rejected').length;
+                    classRows += `<tr>
+                        <td style="font-weight:700;color:#1565c0">${cls}</td>
+                        <td style="text-align:center">${enrolCount}</td>
+                        <td style="text-align:center;font-weight:700;color:#6a1b9a">${clsSubs.length}</td>
+                        <td style="text-align:center"><span style="background:#fff3cd;color:#856404;padding:2px 8px;border-radius:10px;font-size:0.8em;font-weight:700">${clsPending}</span></td>
+                        <td style="text-align:center"><span style="background:#d4edda;color:#155724;padding:2px 8px;border-radius:10px;font-size:0.8em;font-weight:700">${clsApproved}</span></td>
+                        <td style="text-align:center"><span style="background:#f8d7da;color:#721c24;padding:2px 8px;border-radius:10px;font-size:0.8em;font-weight:700">${clsRejected}</span></td>
+                        <td style="text-align:center;font-weight:700;color:${enrolCount>0?(clsSubs.length/enrolCount*100).toFixed(0)>=100?'#1b5e20':'#0d47a1':'#aaa'}">${enrolCount > 0 ? (clsSubs.length / enrolCount * 100).toFixed(0) + '%' : '—'}</td>
+                    </tr>`;
+                });
+
+                // Filtered submissions detail table
+                let subRows = '';
+                filtSubs.sort((a,b)=>(a.classYear||'').localeCompare(b.classYear||'')).forEach((e,i)=>{
+                    const statusColor = e.status === 'Approved' ? '#155724' : e.status === 'Rejected' ? '#721c24' : '#856404';
+                    const statusBg    = e.status === 'Approved' ? '#d4edda'  : e.status === 'Rejected' ? '#f8d7da'  : '#fff3cd';
+                    const dt = e.submittedAt ? new Date(e.submittedAt).toLocaleString('en-IN',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}) : '—';
+                    subRows += `<tr>
+                        <td style="text-align:center;font-weight:700;color:#833ab4">${i+1}</td>
+                        <td style="color:#1565c0;font-weight:700;font-size:0.85em">${e.classYear||'—'}</td>
+                        <td style="font-size:0.82em"><strong>${e.member1||'—'}</strong> &amp; ${e.member2||''}</td>
+                        <td style="color:#4a148c;font-weight:600;font-size:0.82em">${e.topic||'—'}</td>
+                        <td><a href="${e.link||'#'}" target="_blank" rel="noopener" style="color:#e91e63;font-weight:700;font-size:0.85em">📸 Reel</a></td>
+                        <td style="font-size:0.78em;color:#666">${e.handle||'—'}</td>
+                        <td><span style="background:${statusBg};color:${statusColor};padding:3px 10px;border-radius:12px;font-size:0.75em;font-weight:700">${e.status||'Pending Review'}</span></td>
+                        <td style="font-size:0.78em;color:#666">${dt}</td>
+                    </tr>`;
+                });
+
+                container.innerHTML = statsHtml +
+                    `<div style="margin-bottom:20px;border-radius:12px;overflow:hidden;border:2px solid #e0c8f5">
+                        <div style="background:linear-gradient(135deg,#6a1b9a,#c44569);padding:10px 16px"><span style="color:white;font-weight:800;font-size:0.9em">📊 Class-wise Breakdown</span></div>
+                        <div class="table-wrapper" style="margin:0"><table style="font-size:0.85em">
+                            <thead><tr><th>Class</th><th>Enrolled</th><th>Submissions</th><th>⏳ Pending</th><th>✅ Approved</th><th>❌ Rejected</th><th>Submit Rate</th></tr></thead>
+                            <tbody>${classRows}</tbody>
+                        </table></div>
+                    </div>` +
+                    (filtSubs.length ? `<div style="border-radius:12px;overflow:hidden;border:2px solid #e0c8f5">
+                        <div style="background:linear-gradient(135deg,#833ab4,#fd1d1d);padding:10px 16px;display:flex;justify-content:space-between;align-items:center">
+                            <span style="color:white;font-weight:800;font-size:0.9em">📋 Filtered Submissions (${filtSubs.length})</span>
+                        </div>
+                        <div class="table-wrapper" style="margin:0"><table style="font-size:0.83em">
+                            <thead><tr><th>#</th><th>Class</th><th>Members</th><th>Topic</th><th>Reel</th><th>Handle</th><th>Status</th><th>Submitted</th></tr></thead>
+                            <tbody>${subRows}</tbody>
+                        </table></div>
+                    </div>` : '<p style="text-align:center;color:#aaa;padding:20px">No submissions match the selected filters.</p>');
+
+            } catch(err) {
+                container.innerHTML = `<p style="color:#c62828;padding:20px">❌ Error: ${err.message}</p>`;
+            }
         }
         function saveSocialScore(id) {
             const inp = document.getElementById('socialInp_' + id);
@@ -12270,7 +13435,7 @@
                 // Full read + client-side filter — avoids Firebase index/permission issues
                 const snap = await db.ref('youtubeAd').once('value');
                 const rows = [];
-                if (snap.exists()) snap.forEach(ch => { const d = ch.val(); if (d.classYear === cls) rows.push({ id: ch.key, ...d }); });
+                if (snap.exists()) snap.forEach(ch => { const d = ch.val(); if (d.classYear === cls) rows.push(Object.assign({ id: ch.key }, d)); });
 
                 if (badge) badge.textContent = rows.length + ' / 1 slot used';
 
@@ -12335,7 +13500,7 @@
             const classFilter = (document.getElementById('ytAdAdminClassFilter') || {}).value || '';
             const snap = await db.ref('youtubeAd').once('value');
             const all = [];
-            if (snap.exists()) snap.forEach(ch => all.push({ id: ch.key, ...ch.val() }));
+            if (snap.exists()) snap.forEach(ch => { const _v = ch.val(); if (_v) all.push(Object.assign({ id: ch.key }, _v)); });
 
             // Populate class filter
             const clsSel = document.getElementById('ytAdAdminClassFilter');
@@ -12514,7 +13679,7 @@
             try {
                 const snap = await db.ref('youtubeAd').once('value');
                 const teams = [];
-                if (snap.exists()) snap.forEach(ch => teams.push({ id: ch.key, ...ch.val() }));
+                if (snap.exists()) snap.forEach(ch => teams.push(Object.assign({ id: ch.key }, ch.val())));
                 if (teams.length === 0) { cont.innerHTML = '<p style="color:#999;text-align:center;padding:20px">No submissions yet.</p>'; return; }
 
                 teams.sort((a,b) => (a.classYear||'').localeCompare(b.classYear||''));
@@ -12874,7 +14039,7 @@
                 const subMap = {};
                 if (snap.exists()) snap.forEach(ch => {
                     const d = ch.val();
-                    if (d && d.classYear) subMap[d.classYear.trim()] = { id: ch.key, ...d };
+                    if (d && d.classYear) subMap[d.classYear.trim()] = Object.assign({ id: ch.key }, d);
                 });
 
                 const allClasses = Object.keys(enrollByClass).sort();
@@ -13429,6 +14594,7 @@
                 const hasDanceAccess   = isAnitha || isPooja;
                 const hasQuizMaster    = isSmitha;
                 document.getElementById('chandanSocialPanel').style.display   = hasVlogAccess    ? 'block' : 'none';
+                document.getElementById('chandanVlogReviewPanel').style.display = isChandan ? 'block' : 'none';
                 document.getElementById('chandanPodcastPanel').style.display  = hasPodcastAccess ? 'block' : 'none';
                 document.getElementById('shankarBowPanel').style.display      = hasBowAccess     ? 'block' : 'none';
                 document.getElementById('roopaSmitraYtAdPanel').style.display = hasYtAdAccess    ? 'block' : 'none';
@@ -13446,6 +14612,7 @@
                 const roleLbl = document.getElementById('facultyDashRole');
                 if (roleLbl && roleInfo) roleLbl.textContent = roleInfo.role;
                 if (hasVlogAccess)    loadChandanPanel();
+                if (isChandan)        { cvrShowTab('enroll'); cvrLoadSummaryStrip(); }
                 if (hasPodcastAccess) loadChandanPodcastPanel();
                 if (hasBowAccess)     loadShankarBowPanel();
                 if (hasYtAdAccess)    loadYtAdMonitorPanel();
@@ -13522,6 +14689,7 @@
                 const hasQuizMaster    = isSmitha;
                 document.getElementById('chandanSocialPanel').style.display   = hasVlogAccess    ? 'block' : 'none';
                 document.getElementById('chandanPodcastPanel').style.display  = hasPodcastAccess ? 'block' : 'none';
+                document.getElementById('chandanVlogReviewPanel').style.display = isChandan ? 'block' : 'none';
                 document.getElementById('shankarBowPanel').style.display      = hasBowAccess     ? 'block' : 'none';
                 document.getElementById('roopaSmitraYtAdPanel').style.display = hasYtAdAccess    ? 'block' : 'none';
                 document.getElementById('nukkadPrePanel').style.display       = hasNukkadPre     ? 'block' : 'none';
@@ -13539,6 +14707,7 @@
                 if (roleLbl && roleInfo) roleLbl.textContent = roleInfo.role;
                 if (hasVlogAccess)    loadChandanPanel();
                 if (hasPodcastAccess) loadChandanPodcastPanel();
+                if (isChandan)        { cvrShowTab('enroll'); cvrLoadSummaryStrip(); }
                 if (hasBowAccess)     loadShankarBowPanel();
                 if (hasYtAdAccess)    loadYtAdMonitorPanel();
                 if (hasNukkadPre)     loadNukkadPrePanel();
@@ -13566,7 +14735,7 @@
             const msg = document.getElementById('facultyLoginMsg');
             if (msg) msg.style.display = 'none';
             // Reset all functional panels
-            const resetIds = ['chandanSocialPanel','chandanPodcastPanel','shankarBowPanel','roopaSmitraYtAdPanel','nukkadPrePanel','nukkadPostPanel','hwAttendancePanel','thAttendancePanel','danceInchargePanel','smithaQuizPanel','genericInchargePanel','facultyComingSoon'];
+            const resetIds = ['chandanSocialPanel','chandanVlogReviewPanel','chandanPodcastPanel','shankarBowPanel','roopaSmitraYtAdPanel','nukkadPrePanel','nukkadPostPanel','hwAttendancePanel','thAttendancePanel','danceInchargePanel','smithaQuizPanel','genericInchargePanel','facultyComingSoon'];
             resetIds.forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
         }
 
@@ -13593,7 +14762,7 @@
                     db.ref('youthfest-enrollments').once('value'),
                     db.ref('groupDance').once('value')
                 ]);
-                if (enrollSnap.exists()) enrollSnap.forEach(ch => { allEnrollments.push({ id: ch.key, ...ch.val() }); });
+                if (enrollSnap.exists()) enrollSnap.forEach(ch => { allEnrollments.push(Object.assign({ id: ch.key }, ch.val())); });
                 danceStories = storySnap.val() || {};
             } catch(e) {
                 list.innerHTML = '<div style="color:#c62828;padding:16px">❌ Error loading enrollments: ' + e.message + '</div>';
@@ -13819,7 +14988,11 @@
             // Load all vlog submissions
             const snap = await withTimeout(db.ref('vlogChallenge').once('value'), 10000);
             const teams = [];
-            if (snap.exists()) snap.forEach(ch => teams.push({ id: ch.key, ...ch.val() }));
+            if (snap.exists()) snap.forEach(ch => {
+                const v = ch.val();
+                if (v && typeof v === 'object' && v.classYear) teams.push(Object.assign({ id: ch.key }, v));
+            });
+            console.log('[loadChandanPanel] vlogChallenge entries:', teams.length, teams.map(t=>t.classYear));
 
             if (teams.length === 0) {
                 const today = now.toISOString().slice(0,10);
@@ -14067,13 +15240,21 @@
                 const scoreColor = hasScore ? '#1b5e20' : '#aaa';
                 const scoreBg    = hasScore ? '#e8f5e9' : '#f5f5f5';
                 const hasShot = !!(t.screenshotUrl || Object.keys(t.dailyScreenshots||{}).length);
-                return `<tr style="border-bottom:1px solid #f0e6f6">
+                const status = t.status || 'Pending Review';
+                const statusBadge = status === 'Approved'
+                    ? '<span style="background:#d4edda;color:#155724;padding:3px 10px;border-radius:12px;font-size:0.75em;font-weight:700;white-space:nowrap">✅ Approved</span>'
+                    : status === 'Rejected'
+                        ? '<span style="background:#f8d7da;color:#721c24;padding:3px 10px;border-radius:12px;font-size:0.75em;font-weight:700;white-space:nowrap">❌ Rejected</span>'
+                        : '<span style="background:#fff3cd;color:#856404;padding:3px 10px;border-radius:12px;font-size:0.75em;font-weight:700;white-space:nowrap">⏳ Pending</span>';
+                const rowBg = status === 'Approved' ? 'background:#f0fff4;' : status === 'Rejected' ? 'background:#fff5f5;' : '';
+                return `<tr style="border-bottom:1px solid #f0e6f6;${rowBg}">
                     <td style="padding:9px 10px;font-size:0.82em;font-weight:700;color:#4a148c;white-space:nowrap">
                         <span style="background:linear-gradient(135deg,#833ab4,#e91e63);color:white;border-radius:12px;padding:2px 9px;font-size:0.78em;font-weight:700;margin-right:6px">T${i+1}</span>
                         ${t.classYear||'—'}
                     </td>
                     <td style="padding:9px 10px;font-size:0.82em;color:#333">${t.member1||'—'} &amp; ${t.member2||'—'}</td>
                     <td style="padding:9px 10px;font-size:0.78em;color:#9c27b0">${t.topic||'—'}</td>
+                    <td style="padding:9px 10px;text-align:center">${statusBadge}</td>
                     <td style="padding:9px 10px;font-size:0.82em;text-align:center">${hasShot ? '<span style="color:#4caf50;font-weight:700">✅</span>' : '<span style="color:#bbb">—</span>'}</td>
                     <td style="padding:9px 10px;font-size:0.82em;text-align:center;color:#555">${latest.views||'—'}</td>
                     <td style="padding:9px 10px;font-size:0.82em;text-align:center;color:#555">${latest.likes||'—'}</td>
@@ -14103,6 +15284,7 @@
                             <th style="padding:8px 10px;font-size:0.75em;color:#6a1b9a;text-align:left;font-weight:700;white-space:nowrap">Team / Class</th>
                             <th style="padding:8px 10px;font-size:0.75em;color:#6a1b9a;text-align:left;font-weight:700">Members</th>
                             <th style="padding:8px 10px;font-size:0.75em;color:#6a1b9a;text-align:left;font-weight:700">Topic</th>
+                            <th style="padding:8px 10px;font-size:0.75em;color:#6a1b9a;text-align:center;font-weight:700">Status</th>
                             <th style="padding:8px 10px;font-size:0.75em;color:#6a1b9a;text-align:center;font-weight:700">📸</th>
                             <th style="padding:8px 10px;font-size:0.75em;color:#6a1b9a;text-align:center;font-weight:700">👁 Views</th>
                             <th style="padding:8px 10px;font-size:0.75em;color:#6a1b9a;text-align:center;font-weight:700">🔥 Likes</th>
@@ -14436,7 +15618,7 @@
             const clsFilter = (document.getElementById('vlogJuryClassFilter') || {}).value || '';
             const snap = await db.ref('vlogChallenge').once('value');
             const teams = [];
-            if (snap.exists()) snap.forEach(ch => teams.push({ id: ch.key, ...ch.val() }));
+            if (snap.exists()) snap.forEach(ch => teams.push(Object.assign({ id: ch.key }, ch.val())));
             const filtered = clsFilter ? teams.filter(t => t.classYear === clsFilter) : teams;
             filtered.sort((a,b) => (a.classYear||'').localeCompare(b.classYear||''));
 
@@ -14585,7 +15767,7 @@
                     snap.forEach(ch => {
                         const d = ch.val();
                         if (d.event === 'Pod Casting' && (d.classYear || d.class || '').trim() === cls) {
-                            members.push({ ...d, _key: ch.key });
+                            members.push(Object.assign({}, d, { _key: ch.key  }));
                         }
                     });
                 }
@@ -14645,7 +15827,7 @@
             try {
                 const snap = await db.ref('podcastChallenge').orderByChild('classYear').equalTo(cls).once('value');
                 let existing = null;
-                if (snap.exists()) snap.forEach(ch => { if (ch.val().memberName === name) { existing = { key: ch.key, ...ch.val() }; } });
+                if (snap.exists()) snap.forEach(ch => { if (ch.val().memberName === name) { existing = Object.assign({ key: ch.key }, ch.val()); } });
                 if (existing) {
                     // Pre-fill fields with existing submission
                     window._podcastEditKey = existing.key;
@@ -14725,7 +15907,7 @@
             try {
                 const snap = await db.ref('podcastChallenge').orderByChild('classYear').equalTo(cls).once('value');
                 const existing = [];
-                if (snap.exists()) snap.forEach(ch => existing.push({ key: ch.key, ...ch.val() }));
+                if (snap.exists()) snap.forEach(ch => existing.push(Object.assign({ key: ch.key }, ch.val())));
 
                 if (existing.length >= 3 && !window._podcastEditKey) {
                     showMsg('❌ Your class already has 3 submissions. No more slots available.', false); return;
@@ -14807,7 +15989,7 @@
 
             db.ref('podcastChallenge').orderByChild('classYear').equalTo(cls).once('value').then(snap => {
                 const entries = [];
-                if (snap.exists()) snap.forEach(ch => entries.push({ id: ch.key, ...ch.val() }));
+                if (snap.exists()) snap.forEach(ch => entries.push(Object.assign({ id: ch.key }, ch.val())));
                 entries.sort((a, b) => new Date(a.submittedAt) - new Date(b.submittedAt));
 
                 const badge     = document.getElementById('podcastCountBadge');
@@ -14940,9 +16122,9 @@
                 if (submitSnap.exists()) {
                     submitSnap.forEach(ch => {
                         const d = ch.val();
-                        submissions[ch.key] = { id: ch.key, ...d };
+                        submissions[ch.key] = Object.assign({ id: ch.key }, d);
                         // Also index by enrollmentKey if stored
-                        if (d.enrollmentKey) submissions[d.enrollmentKey] = { id: ch.key, ...d };
+                        if (d.enrollmentKey) submissions[d.enrollmentKey] = Object.assign({ id: ch.key }, d);
                     });
                 }
 
@@ -14951,7 +16133,7 @@
                 if (enrollSnap.exists()) {
                     enrollSnap.forEach(ch => {
                         const d = ch.val();
-                        if (d.event === 'Pod Casting') enrolled.push({ enrollKey: ch.key, ...d });
+                        if (d.event === 'Pod Casting') enrolled.push(Object.assign({ enrollKey: ch.key }, d));
                     });
                 }
 
@@ -14960,7 +16142,7 @@
                 if (submitSnap.exists()) {
                     submitSnap.forEach(ch => {
                         const d = ch.val();
-                        submissionList.push({ id: ch.key, ...d });
+                        submissionList.push(Object.assign({ id: ch.key }, d));
                     });
                 }
 
@@ -15273,7 +16455,7 @@
             try {
                 const allSnap = await db.ref('podcastChallenge').once('value');
                 const all = [];
-                if (allSnap.exists()) allSnap.forEach(ch => all.push({ id: ch.key, ...ch.val() }));
+                if (allSnap.exists()) allSnap.forEach(ch => all.push(Object.assign({ id: ch.key }, ch.val())));
                 if (!all.length) { wrapEl.innerHTML = '<p style="text-align:center;color:#aaa;padding:20px">No submissions yet.</p>'; return; }
                 all.sort((a,b) => (a.classYear||'').localeCompare(b.classYear||'') || new Date(a.submittedAt)-new Date(b.submittedAt));
                 wrapEl.innerHTML = `
@@ -15623,7 +16805,7 @@
                         const d = ch.val();
                         const evName = (d.event || '').toLowerCase().replace(/\s/g,'');
                         if (evName === 'bestoutofwaste' || evName === 'best out of waste' || d.event === 'Best out of Waste') {
-                            entries.push({ key: ch.key, ...d });
+                            entries.push(Object.assign({ key: ch.key }, d));
                         }
                     });
                 }
@@ -15908,7 +17090,7 @@
                         const d = ch.val();
                         const evNorm = (d.event||'').toLowerCase().replace(/\s/g,'');
                         if ((evNorm === 'bestoutofwaste') && (d.classYear||d.class||'').trim() === cls) {
-                            members.push({ key: ch.key, ...d });
+                            members.push(Object.assign({ key: ch.key }, d));
                         }
                     });
                 }
@@ -16059,7 +17241,7 @@
                 btnEl.textContent = '⏳ Checking duplicates…';
                 const existSnap = await db.ref('bowRegistrations').orderByChild('classYear').equalTo(cls).once('value');
                 const existing = [];
-                if (existSnap.exists()) existSnap.forEach(ch => existing.push({ id: ch.key, ...ch.val() }));
+                if (existSnap.exists()) existSnap.forEach(ch => existing.push(Object.assign({ id: ch.key }, ch.val())));
 
                 const dupTheme = existing.find(e => e.enrollmentKey !== entryKey &&
                     e.theme.toLowerCase().trim() === theme.toLowerCase().trim());
@@ -16142,7 +17324,7 @@
                     db.ref('bowAttendance').once('value')
                 ]);
                 const regs = [];
-                if (regSnap.exists()) regSnap.forEach(ch => regs.push({ id: ch.key, ...ch.val() }));
+                if (regSnap.exists()) regSnap.forEach(ch => regs.push(Object.assign({ id: ch.key }, ch.val())));
                 const attData = attSnap.val() || {};
 
                 // -- Update Step 2 select with pre-registered participants --
@@ -17010,7 +18192,7 @@
                 ]);
                 const att = attSnap.val() || {};
                 let entries = [];
-                if (fullSnap.exists()) fullSnap.forEach(ch => { const d = ch.val(); if (d.event === 'Hand Writing') entries.push({ key: ch.key, ...d }); });
+                if (fullSnap.exists()) fullSnap.forEach(ch => { const d = ch.val(); if (d.event === 'Hand Writing') entries.push(Object.assign({ key: ch.key }, d)); });
 
                 // Populate class filter
                 const clsSel = document.getElementById('hwClassFilter');
@@ -17089,7 +18271,7 @@
                 ]);
                 const att = attSnap.val() || {};
                 let entries = [];
-                if (fullSnap.exists()) fullSnap.forEach(ch => { const d = ch.val(); if (d.event === 'Talent Hunt') entries.push({ key: ch.key, ...d }); });
+                if (fullSnap.exists()) fullSnap.forEach(ch => { const d = ch.val(); if (d.event === 'Talent Hunt') entries.push(Object.assign({ key: ch.key }, d)); });
 
                 // Populate filters
                 const clsSel = document.getElementById('thClassFilter');
@@ -17176,7 +18358,7 @@
                     db.ref('handwriting/juryScores').once('value')
                 ]);
                 let entries = [];
-                if (fullSnap.exists()) fullSnap.forEach(ch => { const d = ch.val(); if (d.event === 'Hand Writing') entries.push({ key: ch.key, ...d }); });
+                if (fullSnap.exists()) fullSnap.forEach(ch => { const d = ch.val(); if (d.event === 'Hand Writing') entries.push(Object.assign({ key: ch.key }, d)); });
                 const att   = attSnap.val()  || {};
                 const jury  = jurySnap.val() || {};
 
@@ -17259,7 +18441,7 @@
                     db.ref('talenthunt/juryScores').once('value')
                 ]);
                 let entries = [];
-                if (fullSnap.exists()) fullSnap.forEach(ch => { const d = ch.val(); if (d.event === 'Talent Hunt') entries.push({ key: ch.key, ...d }); });
+                if (fullSnap.exists()) fullSnap.forEach(ch => { const d = ch.val(); if (d.event === 'Talent Hunt') entries.push(Object.assign({ key: ch.key }, d)); });
                 const att  = attSnap.val()  || {};
                 const jury = jurySnap.val() || {};
 
@@ -17627,7 +18809,7 @@
                         const d = ch.val(); const key = ch.key;
                         if (d.event !== 'Hand Writing') return;
                         const att  = (attendSnap.val() || {})[key] || {};
-                        entries.push({ ...d, _key: key, _status: att.status || 'pending' });
+                        entries.push(Object.assign({}, d, { _key: key, _status: att.status || 'pending'  }));
                     });
                 }
                 // Assign sequential sitting codes (use DB stored code if present, else use index)
@@ -17714,7 +18896,7 @@
                         const d = ch.val(); const key = ch.key;
                         if (d.event !== 'Talent Hunt') return;
                         const att  = (attendSnap.val() || {})[key] || {};
-                        entries.push({ ...d, _key: key, _status: att.status || 'pending' });
+                        entries.push(Object.assign({}, d, { _key: key, _status: att.status || 'pending'  }));
                     });
                 }
                 // Assign sequential sitting codes (use DB stored code if present, else use index)
@@ -18178,14 +19360,59 @@
             const active = snap.val() === true;
             const form = document.getElementById('vlogSubmitFormWrapper');
             const lockMsg = document.getElementById('vlogLockedMsg');
+            const startBanner = document.getElementById('vlogStartDateBanner');
+
+            // ── Point 2: Check event start date from eventSchedule ─────────
+            // Read Vlog start date — gate form if today < startDate
+            let startDateStr = null;
+            try {
+                const esSnap = await db.ref('eventSchedule').once('value');
+                if (esSnap.exists()) {
+                    esSnap.forEach(ch => {
+                        const d = ch.val();
+                        if ((d.name || '').toLowerCase().includes('vlog') && d.startDate) {
+                            startDateStr = d.startDate; // "DD-MM-YYYY"
+                        }
+                    });
+                }
+            } catch(e) { /* eventSchedule not available — ignore */ }
+
+            let beforeStart = false;
+            if (startDateStr) {
+                const p = startDateStr.match(/^(\d{2})-(\d{2})-(\d{4})$/);
+                if (p) {
+                    const startD = new Date(parseInt(p[3]), parseInt(p[2])-1, parseInt(p[1]));
+                    const today  = new Date(); today.setHours(0,0,0,0);
+                    beforeStart  = today < startD;
+                }
+            }
+
             if (!active) {
                 if (form) form.style.display = 'none';
                 if (lockMsg) lockMsg.style.display = 'block';
+                if (startBanner) startBanner.style.display = 'none';
+            } else if (beforeStart) {
+                // Event activated but not yet started — show enrollment-open banner
+                if (form) form.style.display = 'none';
+                if (lockMsg) lockMsg.style.display = 'none';
+                if (startBanner) {
+                    startBanner.style.display = 'block';
+                    const sdEl = document.getElementById('vlogStartDateText');
+                    if (sdEl) {
+                        // Friendly format: "04 Mar 2026"
+                        const p2 = startDateStr.match(/^(\d{2})-(\d{2})-(\d{4})$/);
+                        const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+                        sdEl.textContent = p2 ? `${parseInt(p2[1])} ${months[parseInt(p2[2])-1]} ${p2[3]}` : startDateStr;
+                    }
+                }
+                autoFillVlogMembers(); // still show enrolled teams
+                initVlogDailyScreenshots(); loadVlogExistingScreenshots(window.currentCRClass||crClass);
             } else {
                 if (form) form.style.display = 'block';
                 if (lockMsg) lockMsg.style.display = 'none';
+                if (startBanner) startBanner.style.display = 'none';
                 autoFillVlogMembers();
-                initVlogDailyScreenshots(); loadVlogExistingScreenshots(window.currentCRClass||crClass); // build daily screenshot slots
+                initVlogDailyScreenshots(); loadVlogExistingScreenshots(window.currentCRClass||crClass);
             }
             // Check monitoring visibility
             const mSnap = await db.ref('vlogSettings/monitoringVisible').once('value');
@@ -18301,7 +19528,7 @@
 
             // Check vlog, podcast, yt ad submission status
             Promise.all([
-                db.ref('vlogChallenge').orderByChild('classYear').equalTo(cls).once('value').catch(()=>null),
+                db.ref('vlogChallenge').once('value').catch(()=>null),
                 db.ref('podcastChallenge').orderByChild('classYear').equalTo(cls).once('value').catch(()=>null),
                 db.ref('youtubeAd').once('value').catch(()=>null)
             ]).then(([vSnap, pSnap, ytSnap]) => {
@@ -18958,7 +20185,7 @@
 
             db.ref('vlogChallenge').once('value').then(snap => {
                 const teams = [];
-                if (snap.exists()) snap.forEach(ch => teams.push({ id: ch.key, ...ch.val() }));
+                if (snap.exists()) snap.forEach(ch => teams.push(Object.assign({ id: ch.key }, ch.val())));
                 if (teams.length === 0) {
                     cont.innerHTML = '<p style="color:#aaa;font-size:0.85em;padding:10px;text-align:center">No Vlog submissions yet.</p>';
                     return;
@@ -20517,7 +21744,7 @@
                     let count = 0;
                     snap.forEach(child => {
                         count++;
-                        const enrollment = {id: child.key, ...child.val()};
+                        const enrollment = Object.assign({ id: child.key }, child.val());
                         all.push(enrollment);
                         if (count <= 5) {
                             console.log('Enrollment ' + count + ':', enrollment);
@@ -30986,7 +32213,7 @@ Davan Institute Team`;
             let rows = [];
             Object.entries(allSubs).forEach(([sk,ss]) => {
                 Object.entries(ss).forEach(([tid,sub]) => {
-                    rows.push({studentKey:sk, taskId:tid, ...sub});
+                    rows.push(Object.assign({studentKey:sk, taskId:tid}, sub));
                 });
             });
 
@@ -33762,7 +34989,7 @@ Proceed?`)) return;
         try {
             const snap = await window.db.ref('speedSlide/submissions').once('value');
             ssaAllSubs = [];
-            snap.forEach(c => ssaAllSubs.push({ key: c.key, ...c.val() }));
+            snap.forEach(c => ssaAllSubs.push(Object.assign({ key: c.key }, c.val())));
             ssaAllSubs.sort((a,b) => b.solvedAt > a.solvedAt ? 1 : -1);
             let rows = ssaAllSubs.filter(r =>
                 (!diff   || r.difficulty === diff) &&
@@ -37012,7 +38239,7 @@ Proceed?`)) return;
             await getDb().ref(ES_FB_PATH).remove();
             // Then add the 15 defaults
             for (const ev of ES_DEFAULT_EVENTS) {
-                await getDb().ref(ES_FB_PATH).push({...ev, createdAt: new Date().toISOString()});
+                await getDb().ref(ES_FB_PATH).push(Object.assign({}, ev, { createdAt: new Date().toISOString() }));
             }
             alert('✅ 15 default events loaded! All previous events were replaced.');
             esLoadEvents();
@@ -40695,7 +41922,7 @@ export default {
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;" id="devTriggerVersion">
-                <strong>Version:</strong> 7.38 — Redesign: Live Events Banner — dark gradient body, glowing animated chips, spinning icon, shimmer header, coloured rows per priority<strong>Last Updated:</strong> Mar 07, 2026, 11:20 AM IST</p>
+                <strong>Version:</strong> 7.57 — Vlog team select auto-loads existing submission data + screenshot thumbnails on CR page<strong>Last Updated:</strong> Mar 07, 2026, 09:45 PM IST</p>
             <!-- ============================================ -->
             
             <p style="color: #c44569; font-size: 0.85em; font-weight: 600; margin-bottom: 8px;">
@@ -43579,6 +44806,25 @@ function scAdminPing() {
      v7.36 | Mar 07, 2026, 11:00 AM IST | New: Live Events Banner on main page — reads Firebase eventSchedule, shows today's active events grouped by Last Day/Starts Today/Ongoing with time slots, priority chips, real-time + 60s refresh
      v7.37 | Mar 07, 2026, 11:10 AM IST | Fix: broken HTML recurring bug — div#inAppNotifToast opening tag restored again; CSS style block was merging with div tag on each new style addition
      v7.38 | Mar 07, 2026, 11:20 AM IST | Redesign: Live Events Banner — full dark theme, shimmer header, glowing animated chips, gradient rows per priority, spinning icon, floating animation
+     v7.39 | Mar 07, 2026, 12:15 PM IST | Vlog flow: (1) Faculty 📹 Vlog Review panel with enrollments list + submissions + approve/reject via managerPermissions.vlogReview, (2) Start date gate in CR form reads eventSchedule Vlog startDate, (3) Summary report with Class/Status/Topic filters inside Vlog Admin panel for Chandan
+     v7.40 | Mar 07, 2026, 12:45 PM IST | Fix: Vlog Review + Admin both super-admin-only (removed from manager); enrollment gate shows "Enroll first" if class not in youthfest-enrollments for Vlog; approve/reject syncs both Admin and Review panels
+     v7.41 | Mar 07, 2026, 01:15 PM IST | Fix: Vlog Review & Approval moved into Chandan's faculty dashboard (chandanVlogReviewPanel) — Enrollments/Submissions sub-tabs, Approve/Reject buttons, Summary strip; auto-loads on faculty login
+     v7.42 | Mar 07, 2026, 01:45 PM IST | 5 fixes: (1) Enroll view: teams paired (2 students = 1 team row) with submission status + approve/reject per team; (2) Summary renamed "📹 Vlog Challenge — Overall Summary" moved to TOP; (3) Team-paired display replaces 4-row table; (4) CR sees per-team approval banners (✅/❌/⏳) above table; (5) Chandan's default tab = Teams & Approval so info visible immediately
+     v7.43 | Mar 07, 2026, 02:15 PM IST | Fix: (1) Approve/Reject buttons now work — refresh current active tab (enroll or submit) + visual ⏳ feedback on click + error handling; (2) CR submission view shows only approval banners, detail score table hidden
+     v7.44 | Mar 07, 2026, 03:00 PM IST | Fix: (1) Block duplicate submission — checks if member1 already submitted before saving; (2) Guard ch.val() null in all Firebase forEach loops — fixes Symbol.iterator crash in loadVlogSubmissions; (3) Smart team grouping — uses teamNum if present, else pairs students sequentially (Captain+Member = Team 1 etc.)
+     v7.45 | Mar 07, 2026, 03:00 PM IST | Fix: Full CR flow fix: correct per-team state machine — ⏳Pending shows awaiting approval, ✅Approved shows screenshot upload, ❌Rejected shows resubmit; screenshot section hidden until approval; no premature reveal on submit
+     v7.46 | Mar 07, 2026, 04:30 PM IST | 6 fixes: (1) Status badge accurate; (2) Load error replaced with retry button; (3) Phase 2 Coming Soon removed; (4) Screenshot tab always visible; (5) Duplicate Firebase cleaner added; (6) Edit button on all submission rows
+     v7.47 | Mar 07, 2026, 05:15 PM IST | Fix: CR submission list now loads correctly — all vlogChallenge queries changed from orderByChild index (caused silent failures) to full read + client-side classYear filter; Edit button pre-fills existing reel data; empty message hidden during load
+     v7.48 | Mar 07, 2026, 05:45 PM IST | Fix: Symbol.iterator crash — replaced all spread {...v} with Object.assign; loadVlogSubmissions fully rewritten with try/catch inside then; removed leftover duplicate code block; both load and edit now use window.db fallback
+     v7.49 | Mar 07, 2026, 06:00 PM IST | Fix: "Symbol.iterator, items is undefined" — vlogTopic is a hidden input not a select; guarded Array.from(topicSel.options) with tagName==='SELECT' check before iterating
+     v7.50 | Mar 07, 2026, 06:30 PM IST | (1) Screenshot upload moved inline inside Approved team banner — no separate block; (2) loadVlogAdminPanel spread crash fixed — all approved teams now show; (3) Summary cards clickable — click Pending/Approved/Rejected to filter Submissions Detail instantly
+     v7.51 | Mar 07, 2026, 07:00 PM IST | (1) Edit pre-fills link/title/handle, stores entryId, update resets status to Pending Review; (2) fixed remaining spread crashes in submitVlogEntry+cvrLoadSubmissions; (3) Show All ↺ card added to summary to reset all filters
+     v7.52 | Mar 07, 2026, 07:30 PM IST | (1) autoFillVlogMembers() on Vlog tab click — team dropdown loads immediately; (2) ALL spread crashes fixed globally (loadChandanPanel now shows all teams); (3) cvrFilterByStatus filter set before tab switch so correct data loads; panel auto-shown on click
+     v7.53 | Mar 07, 2026, 08:00 PM IST | DEEP FIX: Found spread crash in autoFillVlogMembers (pair[0]) and child.val() patterns across all panels — ALL object spreads eliminated; loadChandanPanel now null-guards entries; cvrFilterByStatus shows panel before scrolling
+     v7.54 | Mar 07, 2026, 08:30 PM IST | (1) Show All → Teams & Approval tab with all filters cleared; (2) Removed readonly locking — form fields always editable, no Edit button needed to type; (3) Phase 2 Auto-Tracking Ready badge removed
+     v7.55 | Mar 07, 2026, 08:45 PM IST | All Teams Overview: added Status column (✅ Approved / ⏳ Pending / ❌ Rejected) with row colour-coding — green for approved, red for rejected
+     v7.56 | Mar 07, 2026, 09:00 PM IST | Removed entire Official Challenge Hashtag / Phase 2 tracking block (Monitors Hashtag, Detects New Posts, Live Leaderboard cards + Important note); hidden hashtag value kept for submit logic
+     v7.57 | Mar 07, 2026, 09:45 PM IST | (1) vlogOnTeamSelect auto-fills handle/link/title from Firebase on team selection + warns if Approved status will reset to re-review; (2) CR approval banners now show uploaded insight screenshot thumbnails
      ═══════════════════════════════════════════════════════════════════ -->
 
 
