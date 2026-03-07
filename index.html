@@ -40147,7 +40147,7 @@ export default {
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;" id="devTriggerVersion">
-                <strong>Version:</strong> 7.32 — Fix: Jury password/name changes now sync both ways — Jury Setup tab ↔ Jury Summary table; both paths update Firebase + each other's display cells instantly<strong>Last Updated:</strong> Mar 06, 2026, 04:45 PM IST</p>
+                <strong>Version:</strong> 7.33 — Fix: Peer nudge now pushes to live_notifications/peer (unique node per submission) instead of overwriting /latest — all submissions fire independently; dedicated child_added listener added<strong>Last Updated:</strong> Mar 07, 2026, 09:30 AM IST</p>
             <!-- ============================================ -->
             
             <p style="color: #c44569; font-size: 0.85em; font-weight: 600; margin-bottom: 8px;">
@@ -41758,17 +41758,17 @@ async function qnFirePeerNudge(studentName, studentClass, submittedAt, today, se
         var msg = QN_PEER_TEMPLATES[idx](studentName, studentClass, timeStr, dateStr);
 
         var toastId = 'quiz_peer_' + today + '_' + count;
-        localStorage.removeItem('qn_seen_' + toastId);
 
-        // Write to live_notifications — all open pages will receive this instantly
-        // senderKey included so sender's own page skips showing the toast
-        await db.ref('live_notifications/latest').set({
+        // Write to live_notifications/peer using PUSH so every submission gets its own node
+        // (writing to /latest overwrites previous nudges — late page-openers miss them)
+        await db.ref('live_notifications/peer').push({
             title: '📝 Quiz Update!',
             body: msg,
             sentAt: Date.now(),
             id: toastId,
             qnType: 'quiz_peer',
-            senderKey: senderKey || ''
+            senderKey: senderKey || '',
+            today: today
         });
 
         // FCM push to all devices
@@ -41868,9 +41868,10 @@ async function qnSendPeerNudgeNow() {
     }
 
     localStorage.removeItem('qn_seen_' + toastId);
-    await db.ref('live_notifications/latest').set({
+    await db.ref('live_notifications/peer').push({
         title: '📝 Quiz Update!', body: msg,
-        sentAt: Date.now(), id: toastId, qnType: 'quiz_peer', senderKey: ''
+        sentAt: Date.now(), id: toastId, qnType: 'quiz_peer', senderKey: '',
+        today: today
     });
     qnBroadcastFCM('📝 Quiz Update!', msg, toastId, 'quiz');
     qnShowToast({ id: toastId, icon: '📝', type: 'qnToastQuiz', title: '📝 Quiz Update!', msg: msg });
@@ -41922,31 +41923,8 @@ function qnStartLiveListener() {
             qnShowToastQuizQA(toastId, n.body || '📋 Quiz published! Check questions & answers.', n.quizDate);
             return;
         }
-        // Special handling for quiz_peer — only show to students who haven't submitted today
-        if (n.qnType === 'quiz_peer') {
-            var db2 = window.db || (window.firebase && window.firebase.database());
-            var todayKey = (typeof getQuizToday === 'function') ? getQuizToday() : new Date().toISOString().slice(0,10);
-            var currentUser = window.quizCurrentUser || null;
-            if (!currentUser) return; // not logged in, skip
-            // Immediately skip if this device is the sender — no async needed
-            if (n.senderKey && currentUser.key && n.senderKey === currentUser.key) return;
-            // Check if this student already submitted (catches any other case)
-            db2.ref('quizSubmissions/' + todayKey).once('value').then(function(subSnap) {
-                var alreadySubmitted = false;
-                if (subSnap.exists()) {
-                    subSnap.forEach(function(ch) {
-                        if (ch.val().studentKey === currentUser.key) alreadySubmitted = true;
-                    });
-                }
-                if (alreadySubmitted) return; // already played — don't nudge
-                qnShowToast({
-                    id: toastId, icon: '📝', type: 'qnToastQuiz',
-                    title: '📝 Quiz Update!', msg: n.body || '',
-                    btnLabel: 'Play Now →', btnAction: function() { qnGoToQuiz && qnGoToQuiz(); }
-                });
-            }).catch(function(){});
-            return;
-        }
+        // quiz_peer is now handled by the /peer child_added listener below — skip here
+        if (n.qnType === 'quiz_peer') return;
         qnShowToast({
             id: toastId,
             icon: iconMap[n.qnType] || '🔔',
@@ -41954,6 +41932,37 @@ function qnStartLiveListener() {
             title: n.title || 'Spurthi Notification',
             msg:   n.body  || ''
         });
+    });
+
+    // ── Peer nudge listener — child_added on /peer so EVERY submission fires independently ──
+    // Each student's submission pushes a unique node; no nudge overwrites another.
+    // Only shows to students who haven't submitted today yet.
+    var _peerSeenAt = Date.now();
+    db.ref('live_notifications/peer').orderByChild('sentAt').startAt(_peerSeenAt).on('child_added', function(snap) {
+        if (!snap.exists()) return;
+        var n = snap.val();
+        if (!n || !n.sentAt) return;
+        var currentUser = window.quizCurrentUser || null;
+        if (!currentUser) return; // not logged in — skip
+        if (n.senderKey && currentUser.key && n.senderKey === currentUser.key) return; // skip own submission
+        var todayKey = (typeof getQuizToday === 'function') ? getQuizToday() : new Date().toISOString().slice(0,10);
+        if (n.today && n.today !== todayKey) return; // different day — skip
+        var db2 = window.db || (window.firebase && window.firebase.database());
+        db2.ref('quizSubmissions/' + todayKey).once('value').then(function(subSnap) {
+            var alreadySubmitted = false;
+            if (subSnap.exists()) {
+                subSnap.forEach(function(ch) {
+                    if (ch.val().studentKey === currentUser.key) alreadySubmitted = true;
+                });
+            }
+            if (alreadySubmitted) return;
+            var toastId = n.id || ('peer_' + n.sentAt);
+            qnShowToast({
+                id: toastId, icon: '📝', type: 'qnToastQuiz',
+                title: '📝 Quiz Update!', msg: n.body || '',
+                btnLabel: 'Play Now →', btnAction: function() { qnGoToQuiz && qnGoToQuiz(); }
+            });
+        }).catch(function(){});
     });
     // Also show latest qn notification on page load (for late visitors)
     db.ref(QN_PATH + '/latest').once('value').then(function(snap) {
@@ -42893,6 +42902,7 @@ function scAdminPing() {
      v7.30 | Mar 06, 2026, 04:00 PM IST | Fix: Jury Invitation By-Event now shows all 15 events with serial numbers; unconfigured events shown as disabled grey buttons; By-Person also has serial numbers
      v7.31 | Mar 06, 2026, 04:30 PM IST | Fix: Quiz Ended notification now fires ONLY at 11:30 PM via dedicated SW checker with Firebase guard; removed from Unpublish button and slot-duration setTimeout; SA manual Send Now card added
      v7.32 | Mar 06, 2026, 04:45 PM IST | Fix: Jury password/name changes now sync both ways — Jury Setup tab ↔ Jury Summary table; both paths update Firebase + each other's display cells instantly
+     v7.33 | Mar 07, 2026, 09:30 AM IST | Fix: Peer nudge now pushes to live_notifications/peer (unique node per submission) instead of overwriting /latest — all submissions fire independently; dedicated child_added listener added
      ═══════════════════════════════════════════════════════════════════ -->
 
 
