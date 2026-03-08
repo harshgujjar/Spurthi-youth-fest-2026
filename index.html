@@ -41953,7 +41953,7 @@ export default {
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;" id="devTriggerVersion">
-                <strong>Version:</strong> 7.61 — CR monitoring shows social score tracking only; no results/leaderboard ever visible to CRs<strong>Last Updated:</strong> Mar 08, 2026, 11:15 AM IST</p>
+                <strong>Version:</strong> 7.63 — Removed Quiz LIVE browser tab title blink feature entirely<strong>Last Updated:</strong> Mar 08, 2026, 11:45 AM IST</p>
             <!-- ============================================ -->
             
             <p style="color: #c44569; font-size: 0.85em; font-weight: 600; margin-bottom: 8px;">
@@ -44050,64 +44050,6 @@ function spfClearBadge() {
     var _sp = setInterval(function() { if (typeof showTab === 'function') { _patchShowTab(); clearInterval(_sp); } }, 300);
 })();
 
-// ── 2. TAB TITLE BLINK when Quiz is LIVE ─────────────────────
-var _tabBlinkInterval = null;
-var _tabOrigTitle = document.title;
-
-function spfStartTabBlink() {
-    if (_tabBlinkInterval) return; // already blinking
-    var blink = true;
-    _tabBlinkInterval = setInterval(function() {
-        document.title = blink ? '🔴 Quiz LIVE! — Spurthi' : _tabOrigTitle;
-        blink = !blink;
-    }, 1200);
-}
-
-function spfStopTabBlink() {
-    if (_tabBlinkInterval) { clearInterval(_tabBlinkInterval); _tabBlinkInterval = null; }
-    document.title = _tabOrigTitle;
-}
-
-// Hook into quizAnnouncements listener — start/stop blink based on status
-(function() {
-    var _tbl = setInterval(function() {
-        var db = window.db || (window.firebase && window.firebase.database && window.firebase.database());
-        if (!db) return;
-        clearInterval(_tbl);
-        db.ref('quizAnnouncements/latest').on('value', function(snap) {
-            if (!snap.exists()) return;
-            var n = snap.val();
-            if (!n) return;
-            if (n.status === 'live') {
-                spfStartTabBlink();
-            } else {
-                spfStopTabBlink();
-            }
-        });
-    }, 600);
-})();
-
-// Also check on page load
-(function() {
-    var _tbc = setInterval(function() {
-        var db = window.db || (window.firebase && window.firebase.database && window.firebase.database());
-        if (!db) return;
-        clearInterval(_tbc);
-        db.ref('quizAnnouncements/latest').once('value').then(function(snap) {
-            if (!snap.exists()) return;
-            var n = snap.val();
-            if (n && n.status === 'live') spfStartTabBlink();
-        });
-    }, 600);
-})();
-
-// Stop blink when user focuses the tab (they've seen it)
-document.addEventListener('visibilitychange', function() {
-    if (!document.hidden && _tabBlinkInterval) {
-        // Keep blinking until quiz actually ends — just restore title momentarily
-        document.title = _tabOrigTitle;
-    }
-});
 
 // ══════════════════════════════════════════
 // ── All conversations cache for filter/search ──
@@ -44860,6 +44802,8 @@ function scAdminPing() {
      v7.59 | Mar 08, 2026, 10:45 AM IST | Fix: leaderboardPublished now atomically writes BOTH vlogSettings/leaderboardPublished AND jurySetup/Vlog/resultsPublished — both publish systems now in sync; Results dropdown shows/hides Vlog correctly for all roles
      v7.60 | Mar 08, 2026, 11:00 AM IST | Vlog CR results now gated by monitoringVisible — CRs see leaderboard only when SA turns it ON; if leaderboardPublished=false shows Coming Soon; own class highlighted with pin
      v7.61 | Mar 08, 2026, 11:15 AM IST | Reverted CR monitoring to social score tracking only — no results/leaderboard shown to CRs; results tab remains admin-only
+     v7.62 | Mar 08, 2026, 11:30 AM IST | Fix: Quiz LIVE tab blink now checks sentAt timestamp — stale live status (>3hrs old) no longer triggers blink on every page load; visibilitychange now fully stops blink when user focuses tab
+     v7.63 | Mar 08, 2026, 11:45 AM IST | Removed: Quiz LIVE browser tab title blink feature entirely
      ═══════════════════════════════════════════════════════════════════ -->
 
 
