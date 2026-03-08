@@ -1387,7 +1387,151 @@
 
     <!-- Live Events Banner CSS -->
     <style>
-    /* ── LIVE EVENTS BANNER — REDESIGNED ──────────────────────── */
+    /* ── PROMO CARD ROTATOR ──────────────────────────────────────── */
+    #promoCardBanner {
+        width: 100%; max-width: 1200px; margin: 0 auto 18px;
+        border-radius: 18px; overflow: hidden;
+        box-shadow: 0 8px 32px rgba(106,27,154,0.3);
+        display: none;
+        position: relative;
+    }
+    @keyframes promoSlideIn {
+        from { opacity: 0; transform: translateX(60px) scale(0.97); }
+        to   { opacity: 1; transform: translateX(0) scale(1); }
+    }
+    @keyframes promoSlideOut {
+        from { opacity: 1; transform: translateX(0) scale(1); }
+        to   { opacity: 0; transform: translateX(-60px) scale(0.97); }
+    }
+    @keyframes promoPulse {
+        0%,100% { box-shadow: 0 0 0 0 rgba(255,255,255,0); }
+        50%      { box-shadow: 0 0 20px 6px rgba(255,255,255,0.15); }
+    }
+    @keyframes promoShimmer {
+        0%   { background-position: -800px 0; }
+        100% { background-position: 800px 0; }
+    }
+    @keyframes promoFloat {
+        0%,100% { transform: translateY(0px); }
+        50%      { transform: translateY(-4px); }
+    }
+    @keyframes promoBadgePop {
+        0%   { transform: scale(0.8); opacity:0; }
+        60%  { transform: scale(1.15); }
+        100% { transform: scale(1); opacity:1; }
+    }
+    .promo-card {
+        display: none;
+        animation: promoSlideIn 0.5s cubic-bezier(.34,1.56,.64,1) both;
+    }
+    .promo-card.active { display: flex; }
+    .promo-card-inner {
+        width: 100%;
+        background: linear-gradient(135deg, #1a0033 0%, #4a0080 40%, #c44569 80%, #ff6b35 100%);
+        background-size: 200% 100%;
+        padding: 16px 20px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        flex-wrap: wrap;
+        position: relative;
+        overflow: hidden;
+        animation: promoPulse 3s ease-in-out infinite;
+    }
+    .promo-card-inner::before {
+        content: '';
+        position: absolute; inset: 0;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent);
+        background-size: 800px 100%;
+        animation: promoShimmer 3s linear infinite;
+        pointer-events: none;
+    }
+    .promo-thumb {
+        width: 80px; height: 56px; border-radius: 10px;
+        object-fit: cover; flex-shrink: 0;
+        border: 2px solid rgba(255,255,255,0.3);
+        box-shadow: 0 4px 14px rgba(0,0,0,0.4);
+        animation: promoFloat 3s ease-in-out infinite;
+        background: rgba(255,255,255,0.1);
+    }
+    .promo-thumb-placeholder {
+        width: 80px; height: 56px; border-radius: 10px;
+        flex-shrink: 0; border: 2px solid rgba(255,255,255,0.3);
+        background: rgba(255,255,255,0.12);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 2em;
+        animation: promoFloat 3s ease-in-out infinite;
+    }
+    .promo-content { flex: 1; min-width: 0; }
+    .promo-type-badge {
+        display: inline-block;
+        background: rgba(255,255,255,0.22);
+        color: #fff; font-size: 0.68em; font-weight: 800;
+        padding: 2px 10px; border-radius: 20px;
+        letter-spacing: 0.8px; margin-bottom: 4px;
+        animation: promoBadgePop 0.4s ease both;
+    }
+    .promo-title {
+        color: #fff; font-weight: 800; font-size: 0.95em;
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        text-shadow: 0 1px 4px rgba(0,0,0,0.3);
+    }
+    .promo-class {
+        color: rgba(255,255,255,0.8); font-size: 0.75em; margin-top: 2px;
+    }
+    .promo-cta {
+        display: flex; gap: 8px; flex-wrap: wrap; flex-shrink: 0;
+    }
+    .promo-cta a {
+        background: rgba(255,255,255,0.2);
+        border: 1.5px solid rgba(255,255,255,0.5);
+        color: #fff; font-size: 0.78em; font-weight: 700;
+        padding: 6px 14px; border-radius: 20px;
+        text-decoration: none; white-space: nowrap;
+        transition: background 0.2s, transform 0.15s;
+    }
+    .promo-cta a:hover { background: rgba(255,255,255,0.35); transform: scale(1.05); }
+    .promo-dots {
+        position: absolute; bottom: 8px; left: 50%;
+        transform: translateX(-50%);
+        display: flex; gap: 5px;
+    }
+    .promo-dot {
+        width: 6px; height: 6px; border-radius: 50%;
+        background: rgba(255,255,255,0.35); transition: all 0.3s;
+    }
+    .promo-dot.active { background: #fff; width: 18px; border-radius: 4px; }
+    /* ── PROMO TOAST ──────────────────────────────────────────────── */
+    @keyframes promoToastIn {
+        from { opacity:0; transform: translateY(-30px) scale(0.9); }
+        to   { opacity:1; transform: translateY(0) scale(1); }
+    }
+    @keyframes promoToastOut {
+        from { opacity:1; transform: translateY(0) scale(1); }
+        to   { opacity:0; transform: translateY(-20px) scale(0.95); }
+    }
+    #promoToast {
+        position: fixed; top: 18px; left: 50%; transform: translateX(-50%);
+        z-index: 99998; display: none;
+        background: linear-gradient(135deg,#4a0080,#c44569);
+        border-radius: 18px; padding: 12px 18px;
+        box-shadow: 0 8px 30px rgba(106,27,154,0.5);
+        max-width: 380px; width: calc(100% - 32px);
+        border: 1.5px solid rgba(255,255,255,0.2);
+    }
+    #promoToast.show { display: flex; gap: 12px; align-items: center; animation: promoToastIn 0.4s cubic-bezier(.34,1.56,.64,1) both; }
+    #promoToast.hide { animation: promoToastOut 0.3s ease both; }
+    /* ── PROMO ADMIN BUTTON ───────────────────────────────────────── */
+    .promo-send-btn {
+        background: linear-gradient(135deg,#25D366,#128C7E);
+        color: white; border: none; border-radius: 10px;
+        padding: 8px 16px; font-size: 0.82em; font-weight: 700;
+        cursor: pointer; display: flex; align-items: center; gap: 6px;
+        box-shadow: 0 3px 10px rgba(37,211,102,0.3);
+        transition: transform 0.15s;
+    }
+    .promo-send-btn:hover { transform: scale(1.04); }
+
     #liveEventsBanner {
         position: relative;
         overflow: hidden;
@@ -1688,6 +1832,28 @@
         <!-- ============================================================ -->
         <!-- END LIVE EVENTS BANNER                                       -->
         <!-- ============================================================ -->
+
+        <!-- ============================================================ -->
+        <!-- PROMO CARD ROTATOR — Vlog / Podcast / YT Ad submissions      -->
+        <!-- ============================================================ -->
+        <div id="promoCardBanner">
+            <div id="promoCardTrack"></div>
+            <div class="promo-dots" id="promoDots"></div>
+        </div>
+        <!-- ============================================================ -->
+        <!-- END PROMO CARD ROTATOR                                       -->
+        <!-- ============================================================ -->
+
+        <!-- Promo Toast (fixed, global) -->
+        <div id="promoToast">
+            <div id="promoToastThumb" style="width:48px;height:36px;border-radius:8px;flex-shrink:0;overflow:hidden;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;font-size:1.4em"></div>
+            <div style="flex:1;min-width:0">
+                <div id="promoToastBadge" style="font-size:0.65em;font-weight:800;color:rgba(255,255,255,0.8);letter-spacing:0.8px;margin-bottom:2px"></div>
+                <div id="promoToastTitle" style="color:#fff;font-weight:700;font-size:0.88em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></div>
+                <div id="promoToastClass" style="color:rgba(255,255,255,0.75);font-size:0.74em"></div>
+            </div>
+            <a id="promoToastLink" href="#" target="_blank" style="background:rgba(255,255,255,0.2);border:1.5px solid rgba(255,255,255,0.45);color:#fff;font-size:0.75em;font-weight:700;padding:5px 12px;border-radius:14px;text-decoration:none;white-space:nowrap;flex-shrink:0">▶ Watch</a>
+        </div>
 
         <!-- ============================================================ -->
         <!-- ANNOUNCEMENT BANNER (Dynamic - controlled via Firebase)      -->
@@ -3251,7 +3417,6 @@
                 <button class="tab super-admin-only" onclick="showTab('quizNotifSchedulePanel');qnLoadConfig();qnLoadSlots();setTimeout(function(){if(typeof checkPublishStatusForAdmin==='function')checkPublishStatusForAdmin();},600)" id="quizNotifSchedulePanelTab"><span class="spf-badge-wrap">🔔 Notifications<span class="spf-badge" id="notifTabBadge" data-count="0"></span></span></button>
                 <button class="tab super-admin-only" onclick="showTab('managerPermissionsPanel')" id="managerPermissionsPanelTab">👔 Manager Permissions</button>
                 <button class="tab super-admin-only" onclick="showTab('vlogAdminPanel');loadVlogAdminPanel();loadVlogSummaryReport()" id="vlogAdminPanelTab">📹 Vlog Admin</button>
-                <button class="tab super-admin-only" onclick="showTab('vlogReviewPanel');loadVlogReviewPanel()" id="vlogReviewPanelTab">📹 Vlog Review</button>
                 <button class="tab super-admin-only" onclick="showTab('podcastAdminPanel');loadPodcastAdminPanel()" id="podcastAdminPanelTab">🎙️ Podcast Admin</button>
                 <button class="tab super-admin-only" onclick="showTab('bowResultsPublisher');bowRpLoad()" id="superJuryMgmtTab">♻️ BOW Results</button>
                 <button class="tab super-admin-only" onclick="showTab('nukkadAdminPanel');loadNukkadAdminPanel()" id="nukkadAdminTab">🎭 Nukkad Admin</button>
@@ -3266,7 +3431,7 @@
                 <button class="tab super-admin-only" onclick="showTab('siteSettingsPanel');loadSiteSettings()" id="siteSettingsPanelTab">⚙️ Site Settings</button>
                 <button class="tab super-admin-only" onclick="showTab('feedbackAdminPanel');loadFeedbackAdmin()" id="feedbackAdminPanelTab">📋 Feedback Admin</button>
                 <button class="tab super-admin-only" onclick="showTab('liveUsersPanel');initLiveUsersPanel()" id="liveUsersPanelTab">🟢 Live Now</button>
-                <button class="tab super-admin-only" onclick="showTab('pushNotifPanel');initPushNotifPanel()" id="pushNotifPanelTab">📣 Notifications</button>
+                <button class="tab super-admin-only" onclick="showTab('pushNotifPanel');initPushNotifPanel()" id="pushNotifPanelTab">📣 Push & Promo</button>
             </div><!-- end .tabs -->
 
             <div class="content" id="adminContentBox">
@@ -6228,6 +6393,7 @@
                                 <option value="">All Classes</option>
                             </select>
                             <button class="btn btn-small" onclick="showVlogWhatsAppSummary()" style="background:#25D366;border:1px solid #128C7E;color:white;font-size:0.8em;font-weight:700">📋 WhatsApp Summary</button>
+                            <button class="btn btn-small promo-send-btn" onclick="sendPromoToAllChats()" title="Send current promo card to all chats">📲 Send Promo to Chats</button>
                             <button class="btn btn-small" onclick="loadVlogAdminPanel()" style="background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.5);color:white;font-size:0.8em">🔄 Refresh</button>
                         </div>
                     </div>
@@ -6289,60 +6455,7 @@
             </div>
             <!-- END VLOG ADMIN PANEL -->
 
-            <!-- ══════════════════════════════════════════════════════════════════
-                 VLOG REVIEW PANEL — Faculty (Manager) view
-                 Enrollments list + Submissions with approve/reject
-            ══════════════════════════════════════════════════════════════════ -->
-            <div id="vlogReviewPanel" class="form-section super-admin-only" style="margin-top:20px">
-                <h2 style="color:#833ab4;margin-bottom:4px">📹 Vlog Challenge — Faculty Review</h2>
-                <p style="color:#888;margin-bottom:20px;font-size:.9em">View all class enrollments and student submissions. Approve or reject entries for Chandan G B's final decision.</p>
 
-                <!-- Sub-tabs -->
-                <div style="display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap">
-                    <button id="vrTab_enroll" onclick="vrShowTab('enroll')" style="padding:8px 20px;border-radius:20px;border:none;font-weight:700;font-size:0.88em;cursor:pointer;background:linear-gradient(135deg,#833ab4,#c44569);color:white;box-shadow:0 3px 10px rgba(131,58,180,0.3)">📋 Enrollments</button>
-                    <button id="vrTab_submit" onclick="vrShowTab('submit')" style="padding:8px 20px;border-radius:20px;border:2px solid #833ab4;font-weight:700;font-size:0.88em;cursor:pointer;background:white;color:#833ab4">📤 Submissions</button>
-                </div>
-
-                <!-- Enrollments sub-panel -->
-                <div id="vrEnrollPanel">
-                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px">
-                        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-                            <select id="vrEnrollClassFilter" onchange="loadVrEnrollments()" style="padding:7px 12px;border:2px solid #ce93d8;border-radius:8px;font-size:0.85em;outline:none">
-                                <option value="">All Classes</option>
-                            </select>
-                            <button onclick="loadVrEnrollments()" style="background:#9c27b0;color:white;border:none;border-radius:8px;padding:7px 14px;font-size:0.82em;font-weight:700;cursor:pointer">🔄 Refresh</button>
-                        </div>
-                        <span id="vrEnrollCount" style="font-size:0.82em;color:#666;font-weight:600"></span>
-                    </div>
-                    <div id="vrEnrollContainer">
-                        <p style="color:#aaa;text-align:center;padding:30px">Loading enrollments…</p>
-                    </div>
-                </div>
-
-                <!-- Submissions sub-panel -->
-                <div id="vrSubmitPanel" style="display:none">
-                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px">
-                        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-                            <select id="vrSubmitClassFilter" onchange="loadVrSubmissions()" style="padding:7px 12px;border:2px solid #ce93d8;border-radius:8px;font-size:0.85em;outline:none">
-                                <option value="">All Classes</option>
-                            </select>
-                            <select id="vrSubmitStatusFilter" onchange="loadVrSubmissions()" style="padding:7px 12px;border:2px solid #ce93d8;border-radius:8px;font-size:0.85em;outline:none">
-                                <option value="">All Statuses</option>
-                                <option value="Pending Review">⏳ Pending Review</option>
-                                <option value="Approved">✅ Approved</option>
-                                <option value="Rejected">❌ Rejected</option>
-                            </select>
-                            <button onclick="loadVrSubmissions()" style="background:#9c27b0;color:white;border:none;border-radius:8px;padding:7px 14px;font-size:0.82em;font-weight:700;cursor:pointer">🔄 Refresh</button>
-                        </div>
-                        <span id="vrSubmitCount" style="font-size:0.82em;color:#666;font-weight:600"></span>
-                    </div>
-                    <div id="vrSubmitContainer">
-                        <p style="color:#aaa;text-align:center;padding:30px">Loading submissions…</p>
-                    </div>
-                </div>
-            </div>
-            <!-- END VLOG REVIEW PANEL -->
-            ══════════════════════════════════════════════════════════════════ -->
             <div id="podcastAdminPanel" class="form-section super-admin-only" style="margin-top:20px">
                 <h2 style="color:#1db954;margin-bottom:6px">🎙️ Pod Casting — Super Admin Control</h2>
                 <p style="color:#888;margin-bottom:20px;font-size:.9em">Activate the event, set jury criteria, publish results, and view all submissions.</p>
@@ -6616,6 +6729,7 @@
                                 <option value="">All Classes</option>
                             </select>
                             <button onclick="loadNukkadAdminPanel()" style="background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.5);color:white;font-size:0.8em;padding:5px 12px;border-radius:8px;cursor:pointer;font-weight:700">🔄 Refresh</button>
+                            <button onclick="nukkadWhatsAppSummary()" style="background:#25D366;border:none;color:white;font-size:0.8em;padding:5px 12px;border-radius:8px;cursor:pointer;font-weight:700">📲 WhatsApp Summary</button>
                         </div>
                     </div>
                     <div style="padding:16px">
@@ -7786,7 +7900,7 @@
         <!-- 📣 PUSH NOTIFICATIONS PANEL                 -->
         <!-- ============================================ -->
         <div id="pushNotifPanel" class="form-section super-admin-only" style="margin-top:20px">
-            <h2 style="color:#ffd700;margin-bottom:12px;text-shadow:0 2px 8px rgba(0,0,0,0.4)">📣 Push Notifications</h2>
+            <h2 style="color:#ffd700;margin-bottom:12px;text-shadow:0 2px 8px rgba(0,0,0,0.4)">📣 Push Notifications & Promo Auto-Sender</h2>
             <p style="color:rgba(255,255,255,0.7);font-size:13px;margin-bottom:18px">Send a notification to all registered devices — even when the site is closed. Students must have clicked "Allow" on the notification prompt at least once.</p>
 
             <!-- Registered devices count -->
@@ -7820,6 +7934,59 @@
                     <div id="allDevicesInlineList">
                         <p style="color:#aaa;font-size:13px;text-align:center;padding:10px 0">Loading…</p>
                     </div>
+                </div>
+            </div>
+
+            <!-- ── AUTO PROMO NOTIFIER ── -->
+            <div id="autoPromoBox" style="background:linear-gradient(135deg,#0d001a,#2a0050);border:2px solid rgba(179,136,255,0.4);border-radius:16px;padding:20px 22px;margin-bottom:20px;position:relative;overflow:hidden">
+                <div style="position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.03),transparent);background-size:600px 100%;animation:lebHeaderShimmer 3s linear infinite;pointer-events:none"></div>
+                <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap">
+                    <span style="font-size:1.6em">🤖</span>
+                    <div style="flex:1">
+                        <div style="color:#ffd700;font-weight:800;font-size:1em">Auto Promo Notifications</div>
+                        <div style="color:rgba(255,255,255,0.6);font-size:0.75em;margin-top:2px">Automatically rotates Vlog · Podcast · YT Ad promos to all devices on a schedule</div>
+                    </div>
+                    <!-- ON/OFF toggle -->
+                    <label style="display:flex;align-items:center;gap:8px;cursor:pointer;flex-shrink:0">
+                        <div style="position:relative;width:52px;height:28px" onclick="toggleAutoPromo()">
+                            <input type="checkbox" id="autoPromoToggle" style="opacity:0;position:absolute;width:0;height:0">
+                            <div id="autoPromoTrack" style="position:absolute;inset:0;border-radius:14px;background:#444;transition:background 0.3s"></div>
+                            <div id="autoPromoThumb" style="position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;transition:transform 0.3s;box-shadow:0 2px 6px rgba(0,0,0,0.4)"></div>
+                        </div>
+                        <span id="autoPromoStatusLabel" style="color:rgba(255,255,255,0.7);font-size:0.8em;font-weight:700;min-width:36px">OFF</span>
+                    </label>
+                </div>
+
+                <!-- Config row -->
+                <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px">
+                    <div style="background:rgba(255,255,255,0.08);border-radius:10px;padding:8px 14px;display:flex;align-items:center;gap:8px;flex:1;min-width:160px">
+                        <span style="color:rgba(255,255,255,0.6);font-size:0.75em;font-weight:700;white-space:nowrap">📱 Push every</span>
+                        <select id="autoPromoPushInterval" onchange="saveAutoPromoConfig()" style="background:transparent;border:1.5px solid rgba(179,136,255,0.4);color:#fff;border-radius:6px;padding:4px 8px;font-size:0.8em;font-weight:700;outline:none;cursor:pointer">
+                            <option value="15">15 min</option>
+                            <option value="20">20 min</option>
+                            <option value="30" selected>30 min</option>
+                            <option value="45">45 min</option>
+                            <option value="60">60 min</option>
+                        </select>
+                    </div>
+                    <div style="background:rgba(255,255,255,0.08);border-radius:10px;padding:8px 14px;display:flex;align-items:center;gap:8px;flex:1;min-width:160px">
+                        <span style="color:rgba(255,255,255,0.6);font-size:0.75em;font-weight:700;white-space:nowrap">🔔 Toast every</span>
+                        <select id="autoPromoToastInterval" onchange="saveAutoPromoConfig()" style="background:transparent;border:1.5px solid rgba(179,136,255,0.4);color:#fff;border-radius:6px;padding:4px 8px;font-size:0.8em;font-weight:700;outline:none;cursor:pointer">
+                            <option value="10">10 min</option>
+                            <option value="15" selected>15 min</option>
+                            <option value="20">20 min</option>
+                            <option value="30">30 min</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Status / log -->
+                <div id="autoPromoLog" style="background:rgba(0,0,0,0.25);border-radius:8px;padding:8px 12px;font-size:0.73em;color:rgba(255,255,255,0.55);min-height:32px;font-family:monospace">
+                    Waiting to start…
+                </div>
+                <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+                    <button onclick="fireAutoPromoNow()" style="background:linear-gradient(135deg,#c44569,#6a1b9a);color:#fff;border:none;padding:8px 18px;border-radius:20px;font-size:0.8em;font-weight:700;cursor:pointer;flex:1">⚡ Fire Now (Test)</button>
+                    <button onclick="fireAutoPromoPushNow()" style="background:linear-gradient(135deg,#0277bd,#01579b);color:#fff;border:none;padding:8px 18px;border-radius:20px;font-size:0.8em;font-weight:700;cursor:pointer;flex:1">🔔 Push All Now</button>
                 </div>
             </div>
 
@@ -16579,7 +16746,16 @@
                 htmlEl.innerHTML       = '';
                 footerEl.style.display = 'flex';
                 hintEl.textContent     = 'Tap the box → Select All → Copy → Paste in WhatsApp';
-                textEl.value = text;
+
+                // ── Append dynamic WhatsApp share text + website link ──
+                const SITE_URL = 'https://harshgujjar.github.io/Spurthi-youth-fest-2026/';
+                const waTextEl = document.getElementById('ssWhatsappText');
+                const savedWaText = (waTextEl && waTextEl.value.trim()) ? waTextEl.value.trim() : '';
+                // Also try reading from Firebase cache on siteSettings node
+                const waFooter = '\n━━━━━━━━━━━━━━━━━━━━━━━━'
+                    + (savedWaText ? '\n\n' + savedWaText : '')
+                    + '\n\n🔗 ' + SITE_URL;
+                textEl.value = text + waFooter;
             }
             modal.style.display = 'flex';
             if (scrollEl) scrollEl.scrollTop = 0;
@@ -19153,6 +19329,72 @@
             if (msgEl)  { msgEl.style.background='#d4edda'; msgEl.style.color='#155724'; msgEl.textContent='✅ Permission granted!'; }
             if (msgRow) msgRow.style.display = '';
             loadNukkadAdminPanel();
+        }
+
+        // ══════════════════════════════════════════════════════════════
+        // NUKKAD NATAK — WhatsApp Summary Generator
+        // ══════════════════════════════════════════════════════════════
+        async function nukkadWhatsAppSummary() {
+            try {
+                const [enrollSnap, permSnap, preSnap] = await Promise.all([
+                    db.ref('youthfest-enrollments').orderByChild('event').equalTo('Nukkad Natak').once('value'),
+                    db.ref('nukkadNatak/permissions').once('value'),
+                    db.ref('nukkadNatak/pre').once('value')
+                ]);
+
+                const perms   = permSnap.val()  || {};
+                const preData = preSnap.val()   || {};
+
+                // Build class data from enrollments
+                const byClass = {};
+                if (enrollSnap.exists()) {
+                    enrollSnap.forEach(ch => {
+                        const d = ch.val();
+                        const cls = d.classYear || d.class || 'Unknown';
+                        if (!byClass[cls]) byClass[cls] = { members: 0, cause: '' };
+                        byClass[cls].members++;
+                        if (d.cause) byClass[cls].cause = d.cause;
+                    });
+                }
+
+                const classes = Object.keys(byClass).sort();
+                const today = new Date();
+                const dateStr = `${String(today.getDate()).padStart(2,'0')}-${String(today.getMonth()+1).padStart(2,'0')}-${today.getFullYear()}`;
+
+                let msg = `🎭 *NUKKAD NATAK — SPURTHI YOUTH FEST 2026*\n`;
+                msg += `📅 Schedule & Status Update (${dateStr})\n`;
+                msg += `━━━━━━━━━━━━━━━━━━━━━━━━\n\n`;
+
+                classes.forEach((cls, i) => {
+                    const key  = cls.replace(/[.#$/\[\]]/g,'_');
+                    const data = byClass[cls];
+                    const perm = perms[key]   || {};
+                    const pre  = preData[key] || {};
+                    const hasPerm = perm.granted === true;
+
+                    msg += `*${i+1}. ${cls}*\n`;
+                    if (data.cause)     msg += `   🎬 Theme: ${data.cause}\n`;
+                    if (pre.adviserName) msg += `   🎙️ Adviser: ${pre.adviserName}${pre.adviserOrg ? ' (' + pre.adviserOrg + ')' : ''}\n`;
+                    if (pre.place)       msg += `   📍 Venue: ${pre.place}\n`;
+                    if (hasPerm) {
+                        msg += `   📅 Slot: ${perm.date || ''}${perm.time ? ' at ' + perm.time : ''}\n`;
+                        msg += `   ✅ Permission: Granted\n`;
+                    } else {
+                        msg += `   ⏳ Permission: Pending\n`;
+                    }
+                    msg += `\n`;
+                });
+
+                msg += `━━━━━━━━━━━━━━━━━━━━━━━━\n`;
+                msg += `📢 *Dear All,*\n`;
+                msg += `Please join us to support your class teams performing on the streets of Davangere! 🙌\n\n`;
+                msg += `👏 Cheer loud, spread the word & make Spurthi Youth Fest 2026 a grand success!`;
+
+                _showWaSummaryModal('🎭 Nukkad Natak WhatsApp Summary', msg);
+
+            } catch(err) {
+                alert('Error generating summary: ' + err.message);
+            }
         }
 
         // ══════════════════════════════════════════════════════════════
@@ -38257,14 +38499,14 @@ Proceed?`)) return;
         {sl:3, name:'Group Dance', stageType:'On stage', classInfo:"III BCA 'C' / III BCA 'B'", incharge:'Anitha N / Pooja C',           meeting1:'Feb 26th at 1:00–1:15 pm',   meeting2:'March 6th at 1:00–1:15 pm',   startDate:'',           endDate:''},
         {sl:4, name:'Mad Ads', stageType:'On stage', classInfo:'I BCOM / I BCA',          incharge:'Shilpa R Y / Roopa M C',       meeting1:'Feb 27th at 3:15–3:30 pm',   meeting2:'March 9th at 3:15–3:30 pm',   startDate:'',           endDate:''},
         {sl:5, name:'Ramp Walk', stageType:'On stage', classInfo:'II BBA / III B.Com',       incharge:'Hemavathi D / Chandan G B',    meeting1:'Feb 24th at 3:15–3:30 pm',   meeting2:'Feb 28th at 3:15–3:30 pm',    startDate:'',           endDate:''},
-        {sl:6, name:'Pod Casting', stageType:'Off stage', classInfo:'III BCOM / II BBA',      incharge:'Chandan G B / Hemavathi D',    meeting1:'Feb 23rd at 12:45–1:00 pm',  meeting2:'March 2nd at 12:45–1:00 pm',  startDate:'02-03-2026', endDate:'07-03-2026'},
+        {sl:6, name:'Pod Casting', stageType:'Off stage', classInfo:'III BCOM / II BBA',      incharge:'Chandan G B / Hemavathi D',    meeting1:'Feb 23rd at 12:45–1:00 pm',  meeting2:'March 2nd at 12:45–1:00 pm',  startDate:'02-03-2026', endDate:'14-03-2026'},
         {sl:7, name:'Nukkad Natak', stageType:'Off stage', classInfo:'II BCA "B" / III BBA',   incharge:'Kotrappa K / Shankar B C',     meeting1:'Feb 28th at 1:00–1:15 pm',   meeting2:'March 7th at 10:30–10:45 am', startDate:'09-03-2026', endDate:'14-03-2026'},
         {sl:8, name:'Talent Hunt', stageType:'Off stage', classInfo:'III BCA "B" / III BCA A', incharge:'Anitha N / Pooja C',           meeting1:'Feb 28th at 3:15–3:30 pm',   meeting2:'March 9th at 1:00–1:15 pm',   startDate:'',           endDate:'14-03-2026'},
-        {sl:9, name:'YouTube Advertisement', stageType:'Off stage', classInfo:"I BCA 'A' / II BCA 'A'",incharge:'Roopa M C / Smitha M',        meeting1:'Feb 25th at 12:45–1:00 pm',  meeting2:'March 5th at 12:45–1:00 pm',  startDate:'02-03-2026', endDate:'07-03-2026'},
+        {sl:9, name:'YouTube Advertisement', stageType:'Off stage', classInfo:"I BCA 'A' / II BCA 'A'",incharge:'Roopa M C / Smitha M',        meeting1:'Feb 25th at 12:45–1:00 pm',  meeting2:'March 5th at 12:45–1:00 pm',  startDate:'02-03-2026', endDate:'14-03-2026'},
         {sl:10,name:'Case Analysis', stageType:'Off stage', classInfo:"I BCOM / I BCA 'A'",   incharge:'Shilpa R Y / Roopa M C',       meeting1:'Feb 25th at 1:00–1:15 pm',   meeting2:'March 5th at 1:00–1:15 pm',   startDate:'09-03-2026', endDate:'10-03-2026'},
         {sl:11,name:'Interdisciplinary', stageType:'Off stage', classInfo:'II BBA / II BCOM',    incharge:'Hemavathi D / Lalitha S K',    meeting1:'Feb 23rd at 1:00–1:15 pm',   meeting2:'March 2nd at 1:00–1:15 pm',   startDate:'02-03-2026', endDate:'07-03-2026'},
         {sl:12,name:'Quiz', stageType:'Off stage', classInfo:'III BCA "B" / II BCA "A"', incharge:'Smitha M / Pooja C',           meeting1:'Feb 24th at 12:45–1:00 pm',  meeting2:'March 4th at 12:45–1:00 pm',  startDate:'02-03-2026', endDate:'12-03-2026'},
-        {sl:13,name:'Vlog', stageType:'Off stage', classInfo:'III BCOM',               incharge:'Chandan G B / Priyanka V',     meeting1:'Feb 26th at 12:45–1:00 pm',  meeting2:'March 6th at 12:45–1:00 pm',  startDate:'02-03-2026', endDate:'07-03-2026'},
+        {sl:13,name:'Vlog', stageType:'Off stage', classInfo:'III BCOM',               incharge:'Chandan G B / Priyanka V',     meeting1:'Feb 26th at 12:45–1:00 pm',  meeting2:'March 6th at 12:45–1:00 pm',  startDate:'02-03-2026', endDate:'14-03-2026'},
         {sl:14,name:'Hand Writing', stageType:'Off stage', classInfo:'III BCA "A" / III BCA "C"',incharge:'Kotrappa K / Anitha N',        meeting1:'Feb 27th at 12:45–1:00 pm',  meeting2:'March 7th at 12:45–1:00 pm',  startDate:'',           endDate:'11-03-2026'},
         {sl:15,name:'Best Out of Waste', stageType:'Off stage', classInfo:'II BCOM / III BBA',   incharge:'Lalitha S K / Shankar B C',    meeting1:'Feb 28th at 12:45–1:00 pm',  meeting2:'March 7th at 3:15–3:30 pm',   startDate:'',           endDate:'13-03-2026'},
     ];
@@ -38758,10 +39000,403 @@ Proceed?`)) return;
         tryInit();
     })();
 
-    </script>
+    // ══════════════════════════════════════════════════════════════
+    // 🎬 PROMO CARD ROTATOR — Vlog / Podcast / YT Ad
+    // Reads approved submissions, rotates every 6s in banner
+    // Shows animated toast every 15s
+    // SA can broadcast promo to all chats
+    // ══════════════════════════════════════════════════════════════
+    var _promoCards   = [];
+    var _promoIdx     = 0;
+    var _promoTimer   = null;
+    var _promoToastTimer = null;
+    var _promoToastIdx   = 0;
 
-    <!-- ══════════════════════════════════════════════════════════════ -->
-    <!-- DEV QUICK-LOGIN PANEL                                          -->
+    async function initPromoCards() {
+        if (!window.db) { setTimeout(initPromoCards, 800); return; }
+        try {
+            const [vlogSnap, podSnap, ytSnap] = await Promise.all([
+                getDb().ref('vlogChallenge').once('value'),
+                getDb().ref('podcastChallenge').once('value'),
+                getDb().ref('youtubeAd').once('value')
+            ]);
+            const cards = [];
+
+            // ── Vlog ──
+            if (vlogSnap.exists()) {
+                vlogSnap.forEach(ch => {
+                    const d = ch.val();
+                    if (!d || !d.link) return;
+                    if (d.status !== 'Approved') return;
+                    cards.push({
+                        type: '📹 VLOG CHALLENGE',
+                        title: d.title || ('Vlog by ' + (d.member1||'')),
+                        cls:   (d.classYear||'') + (d.member1 ? ' · ' + d.member1 + (d.member2 ? ' & ' + d.member2 : '') : ''),
+                        link:  d.link,
+                        thumb: d.screenshotUrl || null,
+                        icon:  '📹',
+                        color: 'linear-gradient(135deg,#1a0033,#833ab4,#c44569)'
+                    });
+                });
+            }
+
+            // ── Podcast ──
+            if (podSnap.exists()) {
+                podSnap.forEach(ch => {
+                    const d = ch.val();
+                    if (!d || !d.link) return;
+                    cards.push({
+                        type: '🎙️ POD CASTING',
+                        title: d.episodeTitle || d.topic || ('Podcast by ' + (d.memberName||'')),
+                        cls:   (d.classYear||'') + (d.memberName ? ' · ' + d.memberName : ''),
+                        link:  d.link,
+                        thumb: null,
+                        icon:  '🎙️',
+                        color: 'linear-gradient(135deg,#0d1b2a,#1db954,#004d40)'
+                    });
+                });
+            }
+
+            // ── YT Ad ──
+            if (ytSnap.exists()) {
+                ytSnap.forEach(ch => {
+                    const d = ch.val();
+                    if (!d || !d.ytLink) return;
+                    if (d.status === 'Rejected') return;
+                    // Extract YouTube thumbnail
+                    let thumb = null;
+                    const ytMatch = d.ytLink.match(/(?:v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+                    if (ytMatch) thumb = `https://img.youtube.com/vi/${ytMatch[1]}/mqdefault.jpg`;
+                    cards.push({
+                        type: '📺 YOUTUBE AD',
+                        title: d.adTitle || ('Ad by ' + (d.classYear||'')),
+                        cls:   (d.classYear||'') + (d.channel ? ' · ' + d.channel : ''),
+                        link:  d.ytLink,
+                        thumb: thumb,
+                        icon:  '📺',
+                        color: 'linear-gradient(135deg,#1a0000,#cc0000,#ff6600)'
+                    });
+                });
+            }
+
+            if (!cards.length) return;
+            // Shuffle for variety
+            cards.sort(() => Math.random() - 0.5);
+            _promoCards = cards;
+            _renderPromoCards();
+            _startPromoRotator();
+            _startPromoToast();
+        } catch(e) { console.warn('Promo rotator error:', e.message); }
+    }
+
+    function _renderPromoCards() {
+        const banner = document.getElementById('promoCardBanner');
+        const track  = document.getElementById('promoCardTrack');
+        const dots   = document.getElementById('promoDots');
+        if (!banner || !track) return;
+
+        track.innerHTML = '';
+        if (dots) dots.innerHTML = '';
+
+        _promoCards.forEach((c, i) => {
+            const thumbHtml = c.thumb
+                ? `<img class="promo-thumb" src="${c.thumb}" onerror="this.parentNode.innerHTML='<div class=promo-thumb-placeholder>${c.icon}</div>'" alt="thumbnail">`
+                : `<div class="promo-thumb-placeholder">${c.icon}</div>`;
+
+            const card = document.createElement('div');
+            card.className = 'promo-card' + (i === 0 ? ' active' : '');
+            card.dataset.idx = i;
+            card.innerHTML = `<div class="promo-card-inner" style="background:${c.color};background-size:200% 100%">
+                ${thumbHtml}
+                <div class="promo-content">
+                    <div class="promo-type-badge">${c.type}</div>
+                    <div class="promo-title">${c.title}</div>
+                    <div class="promo-class">🎓 ${c.cls}</div>
+                    <div style="color:rgba(255,255,255,0.7);font-size:0.7em;margin-top:4px">👉 Like · Comment · Share to support them!</div>
+                </div>
+                <div class="promo-cta">
+                    <a href="${c.link}" target="_blank" rel="noopener">▶ Watch Now</a>
+                    <a href="${c.link}" target="_blank" rel="noopener" onclick="navigator.share&&navigator.share({title:'${c.title.replace(/'/g,'')}',url:'${c.link}'}).catch(()=>{})">📤 Share</a>
+                </div>
+            </div>`;
+            track.appendChild(card);
+
+            if (dots) {
+                const dot = document.createElement('div');
+                dot.className = 'promo-dot' + (i === 0 ? ' active' : '');
+                dot.onclick = () => _goToPromoCard(i);
+                dot.style.cursor = 'pointer';
+                dots.appendChild(dot);
+            }
+        });
+
+        banner.style.display = 'block';
+        banner.style.paddingBottom = dots ? '22px' : '0';
+    }
+
+    function _goToPromoCard(idx) {
+        const cards = document.querySelectorAll('.promo-card');
+        const dotEls = document.querySelectorAll('.promo-dot');
+        cards.forEach((c,i) => {
+            c.classList.toggle('active', i === idx);
+            if (i === idx) { c.style.animation = 'none'; void c.offsetWidth; c.style.animation = 'promoSlideIn 0.5s cubic-bezier(.34,1.56,.64,1) both'; }
+        });
+        dotEls.forEach((d,i) => d.classList.toggle('active', i === idx));
+        _promoIdx = idx;
+    }
+
+    function _startPromoRotator() {
+        if (_promoTimer) clearInterval(_promoTimer);
+        _promoTimer = setInterval(() => {
+            if (!_promoCards.length) return;
+            _promoIdx = (_promoIdx + 1) % _promoCards.length;
+            _goToPromoCard(_promoIdx);
+        }, 6000);
+    }
+
+    function _startPromoToast() {
+        if (_promoToastTimer) clearInterval(_promoToastTimer);
+        // Show first toast after 5s, then every 15s
+        setTimeout(() => {
+            _showPromoToast(_promoToastIdx);
+            _promoToastTimer = setInterval(() => {
+                _promoToastIdx = (_promoToastIdx + 1) % _promoCards.length;
+                _showPromoToast(_promoToastIdx);
+            }, 15000);
+        }, 5000);
+    }
+
+    function _showPromoToast(idx) {
+        if (!_promoCards.length) return;
+        const c = _promoCards[idx % _promoCards.length];
+        const t = document.getElementById('promoToast');
+        if (!t) return;
+
+        document.getElementById('promoToastBadge').textContent  = c.type;
+        document.getElementById('promoToastTitle').textContent  = c.title;
+        document.getElementById('promoToastClass').textContent  = '🎓 ' + c.cls + ' · 👍 Like & Comment!';
+        document.getElementById('promoToastLink').href          = c.link;
+        document.getElementById('promoToastLink').textContent   = c.icon === '🎙️' ? '▶ Listen' : '▶ Watch';
+
+        const thumbEl = document.getElementById('promoToastThumb');
+        if (c.thumb) {
+            thumbEl.innerHTML = `<img src="${c.thumb}" style="width:100%;height:100%;object-fit:cover" onerror="this.parentNode.textContent='${c.icon}'">`;
+        } else {
+            thumbEl.textContent = c.icon;
+        }
+
+        t.className = 'show';
+        t.style.display = 'flex';
+        clearTimeout(t._hideTimer);
+        t._hideTimer = setTimeout(() => {
+            t.classList.replace('show','hide');
+            setTimeout(() => { t.style.display = 'none'; t.className = ''; }, 300);
+        }, 5000);
+    }
+
+    // ── SA: Send promo to all chats ──────────────────────────────
+    window.sendPromoToAllChats = async function(card) {
+        if (!card) card = _promoCards[_promoIdx] || _promoCards[0];
+        if (!card) { alert('No promo cards loaded yet.'); return; }
+        const db = scDb(); if (!db) return;
+        const msg = `🎬 *${card.type}*\n\n*${card.title}*\n🎓 ${card.cls}\n\n👍 Like · 💬 Comment · 📤 Share to support them!\n\n🔗 ${card.link}\n\n_Spurthi Youth Fest 2026_`;
+        try {
+            const snap = await db.ref('spurthiChats').once('value');
+            let sent = 0;
+            if (snap.exists()) {
+                const pushes = [];
+                snap.forEach(ch => {
+                    const d = ch.val();
+                    if (!d || ch.key === 'config') return;
+                    pushes.push(
+                        db.ref('spurthiChats/' + ch.key + '/messages').push({ text: msg, sender: 'admin', ts: Date.now() })
+                        .then(() => db.ref('spurthiChats/' + ch.key).update({ lastMessage: msg, lastMessageAt: Date.now(), unreadAdmin: 0 }))
+                        .then(() => { sent++; })
+                        .catch(() => {})
+                    );
+                });
+                await Promise.all(pushes);
+            }
+            // Also write to live_notifications for on-page toast
+            await db.ref('live_notifications/latest').set({
+                type: 'promo', title: card.type, body: card.title + ' — Like & Comment!',
+                link: card.link, ts: Date.now()
+            });
+            alert(`✅ Promo sent to ${sent} chat(s)!`);
+        } catch(e) { alert('Error: ' + e.message); }
+    };
+
+    // Auto-init when Firebase is ready
+    (function() {
+        function tryPromo() {
+            if (window.db) { initPromoCards(); }
+            else setTimeout(tryPromo, 700);
+        }
+        tryPromo();
+    })();
+
+    // ============================================================
+    // AUTO PROMO NOTIFIER
+    // Toast interval -> writes live_notifications/latest (all open pages)
+    // Push interval  -> fires FCM push to all subscribed devices
+    // Config persists in Firebase promoAutoNotif/config
+    // ============================================================
+    var _autoPromoEnabled  = false;
+    var _autoPromoToastMs  = 15 * 60 * 1000;
+    var _autoPromoPushMs   = 30 * 60 * 1000;
+    var _autoPromoToastItv = null;
+    var _autoPromoPushItv  = null;
+    var _autoPromoCardIdx  = 0;
+
+    function getDb() { return window.db || (window.firebase && window.firebase.database()); }
+
+    async function loadAutoPromoConfig() {
+        var db = getDb(); if (!db) return;
+        try {
+            var snap = await db.ref('promoAutoNotif/config').once('value');
+            var cfg  = snap.val() || {};
+            _autoPromoEnabled = !!cfg.enabled;
+            _autoPromoToastMs = (cfg.toastIntervalMin || 15) * 60000;
+            _autoPromoPushMs  = (cfg.pushIntervalMin  || 30) * 60000;
+            _syncAutoPromoUI();
+            if (_autoPromoEnabled) _startAutoPromoTimers();
+        } catch(e) {}
+    }
+
+    function _syncAutoPromoUI() {
+        var track = document.getElementById('autoPromoTrack');
+        var thumb = document.getElementById('autoPromoThumb');
+        var label = document.getElementById('autoPromoStatusLabel');
+        var tSel  = document.getElementById('autoPromoToastInterval');
+        var pSel  = document.getElementById('autoPromoPushInterval');
+        if (track) track.style.background = _autoPromoEnabled ? 'linear-gradient(135deg,#c44569,#6a1b9a)' : '#444';
+        if (thumb) thumb.style.transform  = _autoPromoEnabled ? 'translateX(24px)' : 'translateX(0)';
+        if (label) { label.textContent = _autoPromoEnabled ? 'ON' : 'OFF'; label.style.color = _autoPromoEnabled ? '#ffd700' : 'rgba(255,255,255,0.5)'; }
+        if (tSel)  tSel.value = String(Math.round(_autoPromoToastMs / 60000));
+        if (pSel)  pSel.value = String(Math.round(_autoPromoPushMs  / 60000));
+    }
+
+    window.toggleAutoPromo = async function() {
+        _autoPromoEnabled = !_autoPromoEnabled;
+        _syncAutoPromoUI();
+        await saveAutoPromoConfig();
+        if (_autoPromoEnabled) { _startAutoPromoTimers(); _autoPromoLog('Auto promo ON'); }
+        else                   { _stopAutoPromoTimers();  _autoPromoLog('Auto promo OFF'); }
+    };
+
+    window.saveAutoPromoConfig = async function() {
+        var db = getDb(); if (!db) return;
+        var tSel = document.getElementById('autoPromoToastInterval');
+        var pSel = document.getElementById('autoPromoPushInterval');
+        _autoPromoToastMs = (parseInt((tSel||{}).value) || 15) * 60000;
+        _autoPromoPushMs  = (parseInt((pSel||{}).value) || 30) * 60000;
+        await db.ref('promoAutoNotif/config').set({
+            enabled: _autoPromoEnabled,
+            toastIntervalMin: Math.round(_autoPromoToastMs / 60000),
+            pushIntervalMin:  Math.round(_autoPromoPushMs  / 60000),
+            updatedAt: Date.now()
+        }).catch(function(){});
+        if (_autoPromoEnabled) { _stopAutoPromoTimers(); _startAutoPromoTimers(); _autoPromoLog('Config saved - timers restarted'); }
+    };
+
+    function _startAutoPromoTimers() {
+        _stopAutoPromoTimers();
+        _autoPromoToastItv = setInterval(_fireAutoPromoToast, _autoPromoToastMs);
+        _autoPromoPushItv  = setInterval(_fireAutoPromoPush,  _autoPromoPushMs);
+        _autoPromoLog('Timers ON - toast/' + Math.round(_autoPromoToastMs/60000) + 'm, push/' + Math.round(_autoPromoPushMs/60000) + 'm');
+    }
+
+    function _stopAutoPromoTimers() {
+        clearInterval(_autoPromoToastItv); _autoPromoToastItv = null;
+        clearInterval(_autoPromoPushItv);  _autoPromoPushItv  = null;
+    }
+
+    function _nextPromoCard() {
+        if (!_promoCards.length) return null;
+        var c = _promoCards[_autoPromoCardIdx % _promoCards.length];
+        _autoPromoCardIdx++;
+        return c;
+    }
+
+    async function _fireAutoPromoToast(card) {
+        var db = getDb(); if (!db) return;
+        card = card || _nextPromoCard();
+        if (!card) { _autoPromoLog('No promo cards loaded yet'); return; }
+        try {
+            await db.ref('live_notifications/latest').set({
+                title: card.type + ' - ' + card.title,
+                body:  '🎓 ' + card.cls + '  👍 Like & Comment!',
+                link:  card.link,
+                sentAt: Date.now(), id: 'promo_' + Date.now(),
+                isPromo: true, targetClass: null, targetName: null
+            });
+            var t = new Date().toLocaleTimeString('en-IN', {hour:'2-digit',minute:'2-digit'});
+            _autoPromoLog('Toast sent ' + t + ' - ' + card.title.substring(0,40));
+            await db.ref('promoAutoNotif/log').push({ts:Date.now(), type:'toast', card:card.title}).catch(function(){});
+        } catch(e) { _autoPromoLog('Toast error: ' + e.message); }
+    }
+
+    async function _fireAutoPromoPush(card) {
+        var db = getDb(); if (!db) return;
+        card = card || _nextPromoCard();
+        if (!card) return;
+        try {
+            var snap = await db.ref('fcmTokens').once('value');
+            var subs = Object.values(snap.val() || {}).map(function(t) {
+                try { return typeof t.subscription==='string' ? JSON.parse(t.subscription) : t.subscription; } catch(e){return null;}
+            }).filter(Boolean);
+            if (!subs.length) { _autoPromoLog('Push: 0 subscribed devices'); return; }
+            var resp = await fetch('https://fcm-push.harshgujjar.workers.dev', {
+                method:'POST', headers:{'Content-Type':'application/json'},
+                body: JSON.stringify({ title: 'New ' + card.type + ': ' + card.title, body: '🎓 ' + card.cls + '  👍 Like & Comment!', url: card.link, subscriptions: subs })
+            });
+            var result = await resp.json().catch(function(){return {};});
+            var t = new Date().toLocaleTimeString('en-IN', {hour:'2-digit',minute:'2-digit'});
+            _autoPromoLog('Push sent ' + t + ' to ' + (result.sent||subs.length) + ' devices - ' + card.title.substring(0,30));
+            await db.ref('promoAutoNotif/log').push({ts:Date.now(), type:'push', card:card.title, devices:subs.length}).catch(function(){});
+        } catch(e) { _autoPromoLog('Push error: ' + e.message); }
+    }
+
+    window.fireAutoPromoNow = function() {
+        if (!_promoCards.length) { initPromoCards().then(function(){ if(_promoCards.length) _fireAutoPromoToast(); else _autoPromoLog('No approved promos found'); }); return; }
+        _fireAutoPromoToast();
+    };
+    window.fireAutoPromoPushNow = function() {
+        if (!_promoCards.length) { initPromoCards().then(function(){ if(_promoCards.length) _fireAutoPromoPush(); else _autoPromoLog('No approved promos found'); }); return; }
+        _fireAutoPromoPush();
+    };
+
+    function _autoPromoLog(msg) {
+        var el = document.getElementById('autoPromoLog');
+        if (!el) return;
+        var t = new Date().toLocaleTimeString('en-IN', {hour:'2-digit',minute:'2-digit',second:'2-digit'});
+        el.textContent = '[' + t + '] ' + msg;
+    }
+
+    // Watch Firebase - any SA tab can change config and all tabs respond
+    function _watchAutoPromoConfig() {
+        var db = getDb(); if (!db) return;
+        db.ref('promoAutoNotif/config').on('value', function(snap) {
+            var cfg = snap.val() || {};
+            var was = _autoPromoEnabled;
+            _autoPromoEnabled = !!cfg.enabled;
+            _autoPromoToastMs = (cfg.toastIntervalMin||15)*60000;
+            _autoPromoPushMs  = (cfg.pushIntervalMin ||30)*60000;
+            _syncAutoPromoUI();
+            if (_autoPromoEnabled && !was) { _startAutoPromoTimers(); }
+            if (!_autoPromoEnabled && was) { _stopAutoPromoTimers();  }
+        });
+    }
+
+    (function() {
+        function tryAutoPromoInit() {
+            if (window.db) { loadAutoPromoConfig(); _watchAutoPromoConfig(); }
+            else setTimeout(tryAutoPromoInit, 900);
+        }
+        tryAutoPromoInit();
+    })();
+
+    </script>                                          -->
     <!-- Trigger 1: type /*- in ANY input field on the page            -->
     <!-- Trigger 2: tap version text in footer 5× quickly              -->
     <!-- INVISIBLE to normal users — for testing only                  -->
@@ -41802,7 +42437,8 @@ export default {
     "live_notifications": { ".read": true, ".write": true },
     "quizAnnouncements": { ".read": true, ".write": true },
     "quizNotifications": { ".read": true, ".write": true },
-    "quizNotifConfig": { ".read": true, ".write": true }
+    "quizNotifConfig": { ".read": true, ".write": true },
+    "promoAutoNotif": { ".read": true, ".write": true }
   }
 }`;
 
@@ -42076,7 +42712,7 @@ export default {
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;" id="devTriggerVersion">
-                <strong>Version:</strong> 7.67 — Fix Nukkad banner date parsing + theme from enrollments<strong>Last Updated:</strong> Mar 08, 2026, 12:45 PM IST</p>
+                <strong>Version:</strong> 7.73 — Push & Promo tab renamed; promoAutoNotif added to Firebase rules<strong>Last Updated:</strong> Mar 08, 2026, 02:00 PM IST</p>
             <!-- ============================================ -->
             
             <p style="color: #c44569; font-size: 0.85em; font-weight: 600; margin-bottom: 8px;">
@@ -44931,6 +45567,12 @@ function scAdminPing() {
      v7.65 | Mar 08, 2026, 12:15 PM IST | Moved Live Events Banner to appear immediately below SPURTHI YOUTH FEST heading (above announcement banner)
      v7.66 | Mar 08, 2026, 12:30 PM IST | Nukkad banner now shows only the single next upcoming performance (earliest date from today, first slot by time)
      v7.67 | Mar 08, 2026, 12:45 PM IST | Fix: Nukkad banner date parser now handles both YYYY-MM-DD and DD-MM-YYYY formats; cause/theme now read from enrollments not pre
+     v7.68 | Mar 08, 2026, 01:00 PM IST | Added WhatsApp Summary button to Nukkad Admin panel — generates class-wise schedule msg with venue, adviser, slot, permission status
+     v7.69 | Mar 08, 2026, 01:15 PM IST | All WhatsApp summaries now auto-append dynamic WA share text (from Site Settings) + website link https://harshgujjar.github.io/Spurthi-youth-fest-2026/
+     v7.70 | Mar 08, 2026, 01:30 PM IST | (1) Live banner: Vlog/Podcast/YT Ad end dates extended to 14-03-2026 so they show as Ongoing; (2) Removed Vlog Review tab and panel — all details available in Vlog Admin
+     v7.71 | Mar 08, 2026, 02:00 PM IST | New: Rotating Promo Card Banner for approved Vlog/Podcast/YT Ad — auto-rotates every 6s with thumbnail/title/class/CTA; animated toast every 15s; SA Send Promo to All Chats button in Vlog Admin
+     v7.72 | Mar 08, 2026, 02:30 PM IST | New: Auto Promo Notifier — SA toggle in Notifications panel; configurable toast interval (all open pages via Firebase) + FCM push interval; fire-now test buttons; config persists in Firebase
+     v7.73 | Mar 08, 2026, 02:45 PM IST | (1) Renamed "Notifications" push tab to "Push & Promo" to fix duplicate name confusion; panel heading updated; (2) Added promoAutoNotif to Firebase rules JSON in Check Rules tool
      ═══════════════════════════════════════════════════════════════════ -->
 
 
