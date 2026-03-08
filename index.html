@@ -6191,6 +6191,77 @@
                 </div>
             </div>
 
+                <!-- ── AUTO PROMO NOTIFIER ── -->
+                <div id="autoPromoBox" style="background:linear-gradient(135deg,#1a0030,#2a0050);border:2px solid rgba(179,136,255,0.4);border-radius:16px;padding:20px 22px;margin:18px 0 0;position:relative;overflow:hidden">
+                    <div style="position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.03),transparent);background-size:600px 100%;animation:lebHeaderShimmer 3s linear infinite;pointer-events:none"></div>
+
+                    <!-- Header row -->
+                    <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap">
+                        <span style="font-size:1.6em">🤖</span>
+                        <div style="flex:1">
+                            <div style="color:#ffd700;font-weight:800;font-size:1em">Auto Promo Notifications</div>
+                            <div style="color:rgba(255,255,255,0.6);font-size:0.75em;margin-top:2px">Automatically rotates Vlog · Podcast · YT Ad promos — toast, push & chat</div>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
+                            <div id="autoPromoTrackWrap" onclick="toggleAutoPromo()" style="position:relative;width:52px;height:28px;cursor:pointer;flex-shrink:0">
+                                <div id="autoPromoTrack" style="position:absolute;inset:0;border-radius:14px;background:#444;transition:background 0.3s"></div>
+                                <div id="autoPromoThumb" style="position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;transition:transform 0.3s;box-shadow:0 2px 6px rgba(0,0,0,0.4)"></div>
+                            </div>
+                            <span id="autoPromoStatusLabel" style="color:rgba(255,255,255,0.7);font-size:0.8em;font-weight:700;min-width:36px">OFF</span>
+                        </div>
+                    </div>
+
+                    <!-- Interval config -->
+                    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px">
+                        <div style="background:rgba(255,255,255,0.08);border-radius:10px;padding:8px 14px;display:flex;align-items:center;gap:8px;flex:1;min-width:160px">
+                            <span style="color:rgba(255,255,255,0.6);font-size:0.75em;font-weight:700;white-space:nowrap">📱 Push every</span>
+                            <select id="autoPromoPushInterval" onchange="saveAutoPromoConfig()" style="background:transparent;border:1.5px solid rgba(179,136,255,0.4);color:#fff;border-radius:6px;padding:4px 8px;font-size:0.8em;font-weight:700;outline:none;cursor:pointer">
+                                <option value="15">15 min</option>
+                                <option value="20">20 min</option>
+                                <option value="30" selected>30 min</option>
+                                <option value="45">45 min</option>
+                                <option value="60">60 min</option>
+                            </select>
+                        </div>
+                        <div style="background:rgba(255,255,255,0.08);border-radius:10px;padding:8px 14px;display:flex;align-items:center;gap:8px;flex:1;min-width:160px">
+                            <span style="color:rgba(255,255,255,0.6);font-size:0.75em;font-weight:700;white-space:nowrap">🔔 Toast every</span>
+                            <select id="autoPromoToastInterval" onchange="saveAutoPromoConfig()" style="background:transparent;border:1.5px solid rgba(179,136,255,0.4);color:#fff;border-radius:6px;padding:4px 8px;font-size:0.8em;font-weight:700;outline:none;cursor:pointer">
+                                <option value="10">10 min</option>
+                                <option value="15" selected>15 min</option>
+                                <option value="20">20 min</option>
+                                <option value="30">30 min</option>
+                            </select>
+                        </div>
+                        <div style="background:rgba(255,255,255,0.08);border-radius:10px;padding:8px 14px;display:flex;align-items:center;gap:8px;flex:1;min-width:160px">
+                            <span style="color:rgba(255,255,255,0.6);font-size:0.75em;font-weight:700;white-space:nowrap">💬 Chat every</span>
+                            <select id="autoPromoChatInterval" onchange="saveAutoPromoConfig()" style="background:transparent;border:1.5px solid rgba(179,136,255,0.4);color:#fff;border-radius:6px;padding:4px 8px;font-size:0.8em;font-weight:700;outline:none;cursor:pointer">
+                                <option value="0">Off</option>
+                                <option value="30" selected>30 min</option>
+                                <option value="45">45 min</option>
+                                <option value="60">60 min</option>
+                                <option value="120">2 hrs</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Action buttons -->
+                    <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+                        <button onclick="fireAutoPromoNow()" style="background:linear-gradient(135deg,#c44569,#6a1b9a);color:#fff;border:none;padding:8px 16px;border-radius:20px;font-size:0.8em;font-weight:700;cursor:pointer;flex:1;min-width:120px">⚡ Toast Now</button>
+                        <button onclick="fireAutoPromoPushNow()" style="background:linear-gradient(135deg,#0277bd,#01579b);color:#fff;border:none;padding:8px 16px;border-radius:20px;font-size:0.8em;font-weight:700;cursor:pointer;flex:1;min-width:120px">🔔 Push Now</button>
+                        <button onclick="fireAutoPromoChatNow()" style="background:linear-gradient(135deg,#25D366,#128C7E);color:#fff;border:none;padding:8px 16px;border-radius:20px;font-size:0.8em;font-weight:700;cursor:pointer;flex:1;min-width:120px">💬 Chat Now</button>
+                        <button onclick="autoPromoLoadLog()" style="background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.7);border:1.5px solid rgba(255,255,255,0.2);padding:8px 14px;border-radius:20px;font-size:0.8em;font-weight:700;cursor:pointer">🔄 Log</button>
+                    </div>
+
+                    <!-- Live log (last event) -->
+                    <div id="autoPromoLog" style="background:rgba(0,0,0,0.3);border-radius:8px;padding:7px 12px;font-size:0.72em;color:#a5d6a7;min-height:28px;font-family:monospace;margin-bottom:8px;border-left:3px solid rgba(179,136,255,0.4)">Waiting to start…</div>
+
+                    <!-- Full Firebase log history (collapsible) -->
+                    <div id="autoPromoLogHistory" style="display:none;background:rgba(0,0,0,0.35);border-radius:10px;padding:10px 12px;max-height:200px;overflow-y:auto;font-family:monospace;font-size:0.7em">
+                        <div style="color:rgba(255,255,255,0.4);text-align:center;padding:10px">Loading history…</div>
+                    </div>
+                </div>
+            </div>
+
             <!-- ═══════════════════════════════════════════════════
                  MANAGER PERMISSIONS PANEL
                  ═══════════════════════════════════════════════════ -->
@@ -6494,6 +6565,24 @@
                             <button class="btn btn-small" onclick="loadPodcastAdminPanel()" style="background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.5);color:white;font-size:0.8em">🔄 Refresh</button>
                         </div>
                     </div>
+                    <!-- Filter bar -->
+                    <div style="padding:12px 16px;background:#f9fffe;border-bottom:1.5px solid #c8e6c9;display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+                        <select id="podAdminClassFilter" onchange="podAdminApplyFilters()" style="padding:6px 10px;border:1.5px solid #a5d6a7;border-radius:8px;font-size:0.82em;outline:none;background:white;font-weight:600;cursor:pointer;min-width:120px">
+                            <option value="">All Classes</option>
+                        </select>
+                        <select id="podAdminStatusFilter" onchange="podAdminApplyFilters()" style="padding:6px 10px;border:1.5px solid #a5d6a7;border-radius:8px;font-size:0.82em;outline:none;background:white;font-weight:600;cursor:pointer">
+                            <option value="">All Statuses</option>
+                            <option value="approved">✅ Approved</option>
+                            <option value="pending">⏳ Pending</option>
+                            <option value="rejected">❌ Rejected</option>
+                            <option value="nolink">⚠️ No Link Yet</option>
+                        </select>
+                        <input type="text" id="podAdminSearchFilter" placeholder="🔍 Search name…" oninput="podAdminApplyFilters()" style="padding:6px 10px;border:1.5px solid #a5d6a7;border-radius:8px;font-size:0.82em;outline:none;background:white;min-width:150px">
+                        <button onclick="document.getElementById('podAdminClassFilter').value='';document.getElementById('podAdminStatusFilter').value='';document.getElementById('podAdminSearchFilter').value='';podAdminApplyFilters()" style="background:#eee;border:none;border-radius:8px;padding:6px 12px;font-size:0.78em;font-weight:700;cursor:pointer;color:#555">✕ Clear</button>
+                        <span id="podAdminFilterCount" style="font-size:0.78em;color:#666;font-weight:600;margin-left:auto"></span>
+                    </div>
+                    <!-- Enrollment mismatch alert -->
+                    <div id="podAdminMissingAlert" style="display:none;margin:10px 16px;padding:10px 14px;background:#fff3cd;border:1.5px solid #ffc107;border-radius:8px;font-size:0.82em;color:#856404;font-weight:600"></div>
                     <div id="podcastAdminTableWrap" style="padding:16px">
                         <p style="color:#aaa;text-align:center;padding:20px">Click Refresh to load submissions.</p>
                     </div>
@@ -7936,60 +8025,6 @@
                     </div>
                 </div>
             </div>
-
-            <!-- ── AUTO PROMO NOTIFIER ── -->
-            <div id="autoPromoBox" style="background:linear-gradient(135deg,#0d001a,#2a0050);border:2px solid rgba(179,136,255,0.4);border-radius:16px;padding:20px 22px;margin-bottom:20px;position:relative;overflow:hidden">
-                <div style="position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.03),transparent);background-size:600px 100%;animation:lebHeaderShimmer 3s linear infinite;pointer-events:none"></div>
-                <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap">
-                    <span style="font-size:1.6em">🤖</span>
-                    <div style="flex:1">
-                        <div style="color:#ffd700;font-weight:800;font-size:1em">Auto Promo Notifications</div>
-                        <div style="color:rgba(255,255,255,0.6);font-size:0.75em;margin-top:2px">Automatically rotates Vlog · Podcast · YT Ad promos to all devices on a schedule</div>
-                    </div>
-                    <!-- ON/OFF toggle -->
-                    <label style="display:flex;align-items:center;gap:8px;cursor:pointer;flex-shrink:0">
-                        <div style="position:relative;width:52px;height:28px" onclick="toggleAutoPromo()">
-                            <input type="checkbox" id="autoPromoToggle" style="opacity:0;position:absolute;width:0;height:0">
-                            <div id="autoPromoTrack" style="position:absolute;inset:0;border-radius:14px;background:#444;transition:background 0.3s"></div>
-                            <div id="autoPromoThumb" style="position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;transition:transform 0.3s;box-shadow:0 2px 6px rgba(0,0,0,0.4)"></div>
-                        </div>
-                        <span id="autoPromoStatusLabel" style="color:rgba(255,255,255,0.7);font-size:0.8em;font-weight:700;min-width:36px">OFF</span>
-                    </label>
-                </div>
-
-                <!-- Config row -->
-                <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px">
-                    <div style="background:rgba(255,255,255,0.08);border-radius:10px;padding:8px 14px;display:flex;align-items:center;gap:8px;flex:1;min-width:160px">
-                        <span style="color:rgba(255,255,255,0.6);font-size:0.75em;font-weight:700;white-space:nowrap">📱 Push every</span>
-                        <select id="autoPromoPushInterval" onchange="saveAutoPromoConfig()" style="background:transparent;border:1.5px solid rgba(179,136,255,0.4);color:#fff;border-radius:6px;padding:4px 8px;font-size:0.8em;font-weight:700;outline:none;cursor:pointer">
-                            <option value="15">15 min</option>
-                            <option value="20">20 min</option>
-                            <option value="30" selected>30 min</option>
-                            <option value="45">45 min</option>
-                            <option value="60">60 min</option>
-                        </select>
-                    </div>
-                    <div style="background:rgba(255,255,255,0.08);border-radius:10px;padding:8px 14px;display:flex;align-items:center;gap:8px;flex:1;min-width:160px">
-                        <span style="color:rgba(255,255,255,0.6);font-size:0.75em;font-weight:700;white-space:nowrap">🔔 Toast every</span>
-                        <select id="autoPromoToastInterval" onchange="saveAutoPromoConfig()" style="background:transparent;border:1.5px solid rgba(179,136,255,0.4);color:#fff;border-radius:6px;padding:4px 8px;font-size:0.8em;font-weight:700;outline:none;cursor:pointer">
-                            <option value="10">10 min</option>
-                            <option value="15" selected>15 min</option>
-                            <option value="20">20 min</option>
-                            <option value="30">30 min</option>
-                        </select>
-                    </div>
-                </div>
-
-                <!-- Status / log -->
-                <div id="autoPromoLog" style="background:rgba(0,0,0,0.25);border-radius:8px;padding:8px 12px;font-size:0.73em;color:rgba(255,255,255,0.55);min-height:32px;font-family:monospace">
-                    Waiting to start…
-                </div>
-                <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
-                    <button onclick="fireAutoPromoNow()" style="background:linear-gradient(135deg,#c44569,#6a1b9a);color:#fff;border:none;padding:8px 18px;border-radius:20px;font-size:0.8em;font-weight:700;cursor:pointer;flex:1">⚡ Fire Now (Test)</button>
-                    <button onclick="fireAutoPromoPushNow()" style="background:linear-gradient(135deg,#0277bd,#01579b);color:#fff;border:none;padding:8px 18px;border-radius:20px;font-size:0.8em;font-weight:700;cursor:pointer;flex:1">🔔 Push All Now</button>
-                </div>
-            </div>
-
             <!-- Compose notification -->
             <div style="background:#fff;border-radius:14px;padding:24px;box-shadow:0 4px 15px rgba(0,0,0,0.15);overflow:hidden;position:relative;z-index:1">
                 <h3 style="color:#6a1b9a;margin-bottom:16px;font-size:1.1em">✏️ Compose Notification</h3>
@@ -16015,9 +16050,14 @@
             // Check if this participant already has a submission — if so, pre-fill for editing
             const cls = (window.currentCRClass || crClass || '').trim();
             try {
-                const snap = await db.ref('podcastChallenge').orderByChild('classYear').equalTo(cls).once('value');
+                const snap = await db.ref('podcastChallenge').once('value');
                 let existing = null;
-                if (snap.exists()) snap.forEach(ch => { if (ch.val().memberName === name) { existing = Object.assign({ key: ch.key }, ch.val()); } });
+                if (snap.exists()) snap.forEach(ch => {
+                    const d = ch.val();
+                    if (!d) return;
+                    const recCls = (d.classYear||d.class||'').trim().toLowerCase();
+                    if (recCls === cls.toLowerCase() && d.memberName === name) { existing = Object.assign({ key: ch.key }, d); }
+                });
                 if (existing) {
                     // Pre-fill fields with existing submission
                     window._podcastEditKey = existing.key;
@@ -16095,9 +16135,14 @@
             btnEl.textContent = '⏳ Checking slots…';
 
             try {
-                const snap = await db.ref('podcastChallenge').orderByChild('classYear').equalTo(cls).once('value');
+                const snap = await db.ref('podcastChallenge').once('value');
                 const existing = [];
-                if (snap.exists()) snap.forEach(ch => existing.push(Object.assign({ key: ch.key }, ch.val())));
+                if (snap.exists()) snap.forEach(ch => {
+                    const d = ch.val();
+                    if (!d) return;
+                    const recCls = (d.classYear||d.class||'').trim().toLowerCase();
+                    if (recCls === cls.toLowerCase()) existing.push(Object.assign({ key: ch.key }, d));
+                });
 
                 if (existing.length >= 3 && !window._podcastEditKey) {
                     showMsg('❌ Your class already has 3 submissions. No more slots available.', false); return;
@@ -16177,10 +16222,20 @@
             if (lbl) lbl.textContent = cls;
             if (!cls) return;
 
-            db.ref('podcastChallenge').orderByChild('classYear').equalTo(cls).once('value').then(snap => {
+            // Fetch ALL then filter client-side — avoids Firebase index requirement
+            // which caused only 1 record to return when orderByChild was used
+            db.ref('podcastChallenge').once('value').then(snap => {
                 const entries = [];
-                if (snap.exists()) snap.forEach(ch => entries.push(Object.assign({ id: ch.key }, ch.val())));
-                entries.sort((a, b) => new Date(a.submittedAt) - new Date(b.submittedAt));
+                if (snap.exists()) snap.forEach(ch => {
+                    const d = ch.val();
+                    if (!d) return;
+                    // Match classYear OR class field, case-insensitive trim
+                    const recClass = (d.classYear || d.class || '').trim();
+                    if (recClass.toLowerCase() === cls.toLowerCase()) {
+                        entries.push(Object.assign({ id: ch.key }, d));
+                    }
+                });
+                entries.sort((a, b) => new Date(a.submittedAt||0) - new Date(b.submittedAt||0));
 
                 const badge     = document.getElementById('podcastCountBadge');
                 const empty     = document.getElementById('podcastEmptyMsg');
@@ -16629,6 +16684,8 @@
         }
 
         // -- Super Admin: Load podcast admin panel --
+        var _podAdminAll = [];   // all raw records (submissions + enrolled-not-submitted)
+
         async function loadPodcastAdminPanel() {
             // Load status toggles
             const snap = await db.ref('podcastSettings').once('value');
@@ -16638,48 +16695,165 @@
             if (evEl) evEl.textContent   = settings.eventActive          ? '✅ Active'    : '🔒 Inactive';
             if (lbEl) lbEl.textContent   = settings.leaderboardPublished ? '🚀 Published' : '📦 Unpublished';
 
-            // Load all submissions
             const wrapEl = document.getElementById('podcastAdminTableWrap');
             if (!wrapEl) return;
             wrapEl.innerHTML = '<p style="color:#aaa;text-align:center;padding:20px">Loading…</p>';
+
             try {
-                const allSnap = await db.ref('podcastChallenge').once('value');
-                const all = [];
-                if (allSnap.exists()) allSnap.forEach(ch => all.push(Object.assign({ id: ch.key }, ch.val())));
-                if (!all.length) { wrapEl.innerHTML = '<p style="text-align:center;color:#aaa;padding:20px">No submissions yet.</p>'; return; }
-                all.sort((a,b) => (a.classYear||'').localeCompare(b.classYear||'') || new Date(a.submittedAt)-new Date(b.submittedAt));
-                wrapEl.innerHTML = `
-                    <div class="table-wrapper" style="margin:0">
-                    <table>
-                        <thead><tr>
-                            <th>#</th><th>Participant</th><th>Class</th><th>Topic</th><th>Sub-topic</th>
-                            <th>Episode Title</th><th>Spotify</th><th>Duration</th>
-                            <th>Approval</th><th>Jury Score</th><th>Submitted</th>
-                        </tr></thead>
-                        <tbody>${all.map((e,i) => {
-                            const approval = e.approvalStatus || 'pending';
-                            const approvalColor = approval==='approved'?'#155724':approval==='rejected'?'#721c24':'#856404';
-                            const approvalBg    = approval==='approved'?'#d4edda':approval==='rejected'?'#f8d7da':'#fff3cd';
-                            const approvalLabel = approval==='approved'?'✅ Approved':approval==='rejected'?'❌ Rejected':'⏳ Pending';
-                            const dt = e.submittedAt ? new Date(e.submittedAt).toLocaleString('en-IN',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}) : '—';
-                            return `<tr>
-                                <td style="text-align:center;font-weight:700">${i+1}</td>
-                                <td><strong>${e.memberName||'—'}</strong></td>
-                                <td style="font-size:0.85em">${e.classYear||'—'}</td>
-                                <td style="font-size:0.82em">${e.topic||'—'}</td>
-                                <td style="font-size:0.82em;color:#1565c0;font-weight:600">${e.subtopic||'—'}</td>
-                                <td style="font-size:0.82em;font-weight:600">${e.episodeTitle||'—'}</td>
-                                <td style="text-align:center"><a href="${e.link}" target="_blank" style="color:#1db954;font-weight:700;text-decoration:none">🎵 Listen</a></td>
-                                <td style="text-align:center;font-size:0.85em">${e.duration||'—'} min</td>
-                                <td style="text-align:center"><span style="background:${approvalBg};color:${approvalColor};padding:3px 10px;border-radius:12px;font-size:0.75em;font-weight:700">${approvalLabel}</span></td>
-                                <td style="text-align:center;font-size:0.85em">${e.juryScore!=null?e.juryScore+'/100':'—'}</td>
-                                <td style="font-size:0.78em;color:#666">${dt}</td>
-                            </tr>`;
-                        }).join('')}</tbody>
-                    </table></div>`;
+                // Fetch submissions AND enrollments in parallel
+                const [subSnap, enrollSnap] = await Promise.all([
+                    db.ref('podcastChallenge').once('value'),
+                    db.ref('youthfest-enrollments').orderByChild('event').equalTo('Pod Casting').once('value').catch(() => null)
+                ]);
+
+                // Build submission records
+                const subs = [];
+                const subNameSet = new Set();
+                if (subSnap.exists()) subSnap.forEach(ch => {
+                    const d = Object.assign({ id: ch.key }, ch.val());
+                    subs.push(d);
+                    if (d.memberName) subNameSet.add(d.memberName.trim().toLowerCase());
+                });
+
+                // Build enrollment list — find enrolled people with no submission
+                const missing = [];
+                if (enrollSnap && enrollSnap.exists()) {
+                    enrollSnap.forEach(ch => {
+                        const d = ch.val();
+                        if (!d || !d.memberName) return;
+                        const key = d.memberName.trim().toLowerCase();
+                        if (!subNameSet.has(key)) missing.push(d);
+                    });
+                }
+
+                // Combine: real submissions + ghost rows for missing
+                _podAdminAll = [
+                    ...subs,
+                    ...missing.map(m => ({
+                        id: null,
+                        memberName: m.memberName,
+                        classYear: m.classYear || m.class || '',
+                        _enrolledOnly: true,
+                        approvalStatus: 'not_submitted'
+                    }))
+                ];
+
+                // Populate class filter
+                const classSet = new Set(_podAdminAll.map(r => r.classYear || '').filter(Boolean));
+                const classSel = document.getElementById('podAdminClassFilter');
+                if (classSel) {
+                    const prev = classSel.value;
+                    classSel.innerHTML = '<option value="">All Classes</option>';
+                    [...classSet].sort().forEach(c => {
+                        const opt = document.createElement('option');
+                        opt.value = c; opt.textContent = c;
+                        if (c === prev) opt.selected = true;
+                        classSel.appendChild(opt);
+                    });
+                }
+
+                // Show missing alert
+                const alertEl = document.getElementById('podAdminMissingAlert');
+                if (alertEl) {
+                    if (missing.length) {
+                        alertEl.style.display = 'block';
+                        alertEl.innerHTML = '⚠️ <strong>' + missing.length + ' enrolled student(s) have NOT submitted yet:</strong> '
+                            + missing.map(m => '<span style="background:#ffeeba;padding:1px 7px;border-radius:10px;margin:2px;display:inline-block">' + m.memberName + ' (' + (m.classYear||m.class||'?') + ')</span>').join(' ');
+                    } else {
+                        alertEl.style.display = 'none';
+                    }
+                }
+
+                podAdminApplyFilters();
             } catch(err) {
                 wrapEl.innerHTML = `<p style="color:#c62828;padding:20px">❌ Error: ${err.message}</p>`;
             }
+        }
+
+        function podAdminApplyFilters() {
+            const wrapEl = document.getElementById('podcastAdminTableWrap');
+            if (!wrapEl || !_podAdminAll.length) return;
+
+            const clsF  = (document.getElementById('podAdminClassFilter')  || {}).value || '';
+            const stF   = (document.getElementById('podAdminStatusFilter') || {}).value || '';
+            const srchF = ((document.getElementById('podAdminSearchFilter') || {}).value || '').toLowerCase().trim();
+
+            let filtered = _podAdminAll.filter(e => {
+                if (clsF && (e.classYear||'') !== clsF) return false;
+                if (srchF && !(e.memberName||'').toLowerCase().includes(srchF)) return false;
+                if (stF) {
+                    if (stF === 'nolink' && e.link) return false;
+                    if (stF === 'nolink' && !e.link && e.approvalStatus !== 'not_submitted') return true;
+                    if (stF !== 'nolink' && (e.approvalStatus||'pending') !== stF) return false;
+                }
+                return true;
+            });
+
+            // Sort: class → submittedAt
+            filtered.sort((a,b) => (a.classYear||'').localeCompare(b.classYear||'') || new Date(a.submittedAt||0)-new Date(b.submittedAt||0));
+
+            const countEl = document.getElementById('podAdminFilterCount');
+            if (countEl) countEl.textContent = filtered.length + ' of ' + _podAdminAll.length + ' shown';
+
+            if (!filtered.length) {
+                wrapEl.innerHTML = '<p style="text-align:center;color:#aaa;padding:20px">No records match the filters.</p>';
+                return;
+            }
+
+            wrapEl.innerHTML = `
+                <div class="table-wrapper" style="margin:0">
+                <table>
+                    <thead><tr>
+                        <th>#</th><th>Participant</th><th>Class</th><th>Topic</th><th>Sub-topic</th>
+                        <th>Episode Title</th><th>Spotify</th><th>Duration</th>
+                        <th>Approval</th><th>Jury Score</th><th>Submitted</th><th>Actions</th>
+                    </tr></thead>
+                    <tbody>${filtered.map((e,i) => {
+                        if (e._enrolledOnly) {
+                            return `<tr style="background:#fffde7">
+                                <td style="text-align:center;color:#aaa">${i+1}</td>
+                                <td><strong>${e.memberName||'—'}</strong> <span style="background:#fff3cd;color:#856404;font-size:0.7em;padding:1px 6px;border-radius:8px;font-weight:700">Enrolled</span></td>
+                                <td style="font-size:0.85em">${e.classYear||'—'}</td>
+                                <td colspan="8" style="color:#b8860b;font-size:0.82em;font-style:italic">⚠️ Enrolled but has NOT submitted yet — link not received</td>
+                            </tr>`;
+                        }
+                        const approval = e.approvalStatus || 'pending';
+                        const aColor = approval==='approved'?'#155724':approval==='rejected'?'#721c24':'#856404';
+                        const aBg    = approval==='approved'?'#d4edda':approval==='rejected'?'#f8d7da':'#fff3cd';
+                        const aLabel = approval==='approved'?'✅ Approved':approval==='rejected'?'❌ Rejected':'⏳ Pending';
+                        const hasLink = e.link && e.link.trim().length > 3;
+                        const dt = e.submittedAt ? new Date(e.submittedAt).toLocaleString('en-IN',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}) : '—';
+                        const rowBg = !hasLink ? 'background:#fff8f0' : '';
+                        return `<tr style="${rowBg}">
+                            <td style="text-align:center;font-weight:700">${i+1}</td>
+                            <td><strong>${e.memberName||'—'}</strong></td>
+                            <td style="font-size:0.85em">${e.classYear||'—'}</td>
+                            <td style="font-size:0.82em">${e.topic||'—'}</td>
+                            <td style="font-size:0.82em;color:#1565c0;font-weight:600">${e.subtopic||'—'}</td>
+                            <td style="font-size:0.82em;font-weight:600">${e.episodeTitle||'—'}</td>
+                            <td style="text-align:center">${hasLink ? '<a href="'+e.link+'" target="_blank" style="color:#1db954;font-weight:700;text-decoration:none">🎵 Listen</a>' : '<span style="color:#aaa;font-size:0.8em">No link</span>'}</td>
+                            <td style="text-align:center;font-size:0.85em">${e.duration||'—'} min</td>
+                            <td style="text-align:center"><span style="background:${aBg};color:${aColor};padding:3px 10px;border-radius:12px;font-size:0.75em;font-weight:700">${aLabel}</span></td>
+                            <td style="text-align:center;font-size:0.85em">${e.juryScore!=null?e.juryScore+'/100':'—'}</td>
+                            <td style="font-size:0.78em;color:#666">${dt}</td>
+                            <td style="text-align:center;white-space:nowrap">${e.id ? `
+                                <button onclick="podAdminSetApproval('${e.id}','approved')" title="Approve" style="background:#d4edda;color:#155724;border:none;border-radius:6px;padding:3px 8px;cursor:pointer;font-size:0.75em;font-weight:700;margin:1px">✅</button>
+                                <button onclick="podAdminSetApproval('${e.id}','rejected')" title="Reject" style="background:#f8d7da;color:#721c24;border:none;border-radius:6px;padding:3px 8px;cursor:pointer;font-size:0.75em;font-weight:700;margin:1px">❌</button>
+                                <button onclick="podAdminSetApproval('${e.id}','pending')" title="Reset to Pending" style="background:#fff3cd;color:#856404;border:none;border-radius:6px;padding:3px 8px;cursor:pointer;font-size:0.75em;font-weight:700;margin:1px">⏳</button>
+                            ` : '—'}</td>
+                        </tr>`;
+                    }).join('')}</tbody>
+                </table></div>`;
+        }
+
+        async function podAdminSetApproval(id, status) {
+            try {
+                await db.ref('podcastChallenge/' + id + '/approvalStatus').set(status);
+                // Update local cache so filter re-render is instant
+                const rec = _podAdminAll.find(r => r.id === id);
+                if (rec) rec.approvalStatus = status;
+                podAdminApplyFilters();
+            } catch(e) { alert('❌ Error: ' + e.message); }
         }
 
         // -- Super Admin: Toggle podcast settings --
@@ -39244,8 +39418,10 @@ Proceed?`)) return;
     var _autoPromoEnabled  = false;
     var _autoPromoToastMs  = 15 * 60 * 1000;
     var _autoPromoPushMs   = 30 * 60 * 1000;
+    var _autoPromoChatMs   = 30 * 60 * 1000;   // 0 = off
     var _autoPromoToastItv = null;
     var _autoPromoPushItv  = null;
+    var _autoPromoChatItv  = null;
     var _autoPromoCardIdx  = 0;
 
     function getDb() { return window.db || (window.firebase && window.firebase.database()); }
@@ -39258,6 +39434,7 @@ Proceed?`)) return;
             _autoPromoEnabled = !!cfg.enabled;
             _autoPromoToastMs = (cfg.toastIntervalMin || 15) * 60000;
             _autoPromoPushMs  = (cfg.pushIntervalMin  || 30) * 60000;
+            _autoPromoChatMs  = (cfg.chatIntervalMin  ||  0) * 60000;
             _syncAutoPromoUI();
             if (_autoPromoEnabled) _startAutoPromoTimers();
         } catch(e) {}
@@ -39269,46 +39446,53 @@ Proceed?`)) return;
         var label = document.getElementById('autoPromoStatusLabel');
         var tSel  = document.getElementById('autoPromoToastInterval');
         var pSel  = document.getElementById('autoPromoPushInterval');
+        var cSel  = document.getElementById('autoPromoChatInterval');
         if (track) track.style.background = _autoPromoEnabled ? 'linear-gradient(135deg,#c44569,#6a1b9a)' : '#444';
         if (thumb) thumb.style.transform  = _autoPromoEnabled ? 'translateX(24px)' : 'translateX(0)';
         if (label) { label.textContent = _autoPromoEnabled ? 'ON' : 'OFF'; label.style.color = _autoPromoEnabled ? '#ffd700' : 'rgba(255,255,255,0.5)'; }
         if (tSel)  tSel.value = String(Math.round(_autoPromoToastMs / 60000));
         if (pSel)  pSel.value = String(Math.round(_autoPromoPushMs  / 60000));
+        if (cSel)  cSel.value = String(Math.round(_autoPromoChatMs  / 60000));
     }
 
     window.toggleAutoPromo = async function() {
         _autoPromoEnabled = !_autoPromoEnabled;
         _syncAutoPromoUI();
         await saveAutoPromoConfig();
-        if (_autoPromoEnabled) { _startAutoPromoTimers(); _autoPromoLog('Auto promo ON'); }
-        else                   { _stopAutoPromoTimers();  _autoPromoLog('Auto promo OFF'); }
+        if (_autoPromoEnabled) { _startAutoPromoTimers(); _autoPromoLog('✅ Auto promo ON'); }
+        else                   { _stopAutoPromoTimers();  _autoPromoLog('⏸ Auto promo OFF'); }
     };
 
     window.saveAutoPromoConfig = async function() {
         var db = getDb(); if (!db) return;
         var tSel = document.getElementById('autoPromoToastInterval');
         var pSel = document.getElementById('autoPromoPushInterval');
+        var cSel = document.getElementById('autoPromoChatInterval');
         _autoPromoToastMs = (parseInt((tSel||{}).value) || 15) * 60000;
         _autoPromoPushMs  = (parseInt((pSel||{}).value) || 30) * 60000;
+        _autoPromoChatMs  = (parseInt((cSel||{}).value) ||  0) * 60000;
         await db.ref('promoAutoNotif/config').set({
             enabled: _autoPromoEnabled,
             toastIntervalMin: Math.round(_autoPromoToastMs / 60000),
             pushIntervalMin:  Math.round(_autoPromoPushMs  / 60000),
+            chatIntervalMin:  Math.round(_autoPromoChatMs  / 60000),
             updatedAt: Date.now()
         }).catch(function(){});
-        if (_autoPromoEnabled) { _stopAutoPromoTimers(); _startAutoPromoTimers(); _autoPromoLog('Config saved - timers restarted'); }
+        if (_autoPromoEnabled) { _stopAutoPromoTimers(); _startAutoPromoTimers(); _autoPromoLog('💾 Config saved — timers restarted'); }
     };
 
     function _startAutoPromoTimers() {
         _stopAutoPromoTimers();
         _autoPromoToastItv = setInterval(_fireAutoPromoToast, _autoPromoToastMs);
         _autoPromoPushItv  = setInterval(_fireAutoPromoPush,  _autoPromoPushMs);
-        _autoPromoLog('Timers ON - toast/' + Math.round(_autoPromoToastMs/60000) + 'm, push/' + Math.round(_autoPromoPushMs/60000) + 'm');
+        if (_autoPromoChatMs > 0) _autoPromoChatItv = setInterval(_fireAutoPromoChat, _autoPromoChatMs);
+        _autoPromoLog('▶ ON — toast/' + Math.round(_autoPromoToastMs/60000) + 'm · push/' + Math.round(_autoPromoPushMs/60000) + 'm' + (_autoPromoChatMs>0?' · chat/'+Math.round(_autoPromoChatMs/60000)+'m':' · chat off'));
     }
 
     function _stopAutoPromoTimers() {
         clearInterval(_autoPromoToastItv); _autoPromoToastItv = null;
         clearInterval(_autoPromoPushItv);  _autoPromoPushItv  = null;
+        clearInterval(_autoPromoChatItv);  _autoPromoChatItv  = null;
     }
 
     function _nextPromoCard() {
@@ -39366,6 +39550,72 @@ Proceed?`)) return;
         _fireAutoPromoPush();
     };
 
+    // ── Chat send ──────────────────────────────────────────────
+    async function _fireAutoPromoChat(card) {
+        var db = getDb(); if (!db) return;
+        card = card || _nextPromoCard();
+        if (!card) { _autoPromoLog('No promo cards for chat'); return; }
+        try {
+            var snap = await db.ref('spurthiChats').once('value');
+            var sent = 0;
+            var msg = card.type + '\n\n' + card.title + '\n\uD83C\uDF93 ' + card.cls + '\n\n\uD83D\uDC4D Like \u00B7 \uD83D\uDCAC Comment \u00B7 \uD83D\uDCE4 Share to support them!\n\n\uD83D\uDD17 ' + card.link + '\n\n_Spurthi Youth Fest 2026_';
+            if (snap.exists()) {
+                var pushes = [];
+                snap.forEach(function(ch) {
+                    var d = ch.val();
+                    if (!d || ch.key === 'config') return;
+                    pushes.push(
+                        db.ref('spurthiChats/' + ch.key + '/messages').push({text: msg, sender: 'admin', ts: Date.now()})
+                        .then(function() { return db.ref('spurthiChats/' + ch.key).update({lastMessage: msg, lastMessageAt: Date.now(), unreadAdmin: 0}); })
+                        .then(function() { sent++; })
+                        .catch(function(){})
+                    );
+                });
+                await Promise.all(pushes);
+            }
+            var t = new Date().toLocaleTimeString('en-IN', {hour:'2-digit',minute:'2-digit'});
+            _autoPromoLog('💬 Chat sent ' + t + ' to ' + sent + ' chats — ' + card.title.substring(0,30));
+            await db.ref('promoAutoNotif/log').push({ts:Date.now(), type:'chat', card:card.title, chats:sent}).catch(function(){});
+        } catch(e) { _autoPromoLog('❌ Chat error: ' + e.message); }
+    }
+
+    window.fireAutoPromoChatNow = function() {
+        if (!_promoCards.length) { initPromoCards().then(function(){ if(_promoCards.length) _fireAutoPromoChat(); else _autoPromoLog('No approved promos found'); }); return; }
+        _fireAutoPromoChat();
+    };
+
+    // ── Log history from Firebase ──────────────────────────────
+    window.autoPromoLoadLog = async function() {
+        var histEl = document.getElementById('autoPromoLogHistory');
+        if (!histEl) return;
+        var showing = histEl.style.display !== 'none';
+        if (showing) { histEl.style.display = 'none'; return; }
+        histEl.style.display = 'block';
+        histEl.innerHTML = '<div style="color:rgba(255,255,255,0.4);text-align:center;padding:10px">Loading…</div>';
+        var db = getDb(); if (!db) { histEl.innerHTML = '<div style="color:#f44336;padding:8px">DB not ready</div>'; return; }
+        try {
+            var snap = await db.ref('promoAutoNotif/log').limitToLast(50).once('value');
+            if (!snap.exists()) { histEl.innerHTML = '<div style="color:rgba(255,255,255,0.4);padding:8px">No log entries yet.</div>'; return; }
+            var rows = [];
+            snap.forEach(function(ch) { rows.push(ch.val()); });
+            rows.reverse();
+            var typeIcon = {toast:'🔔', push:'📱', chat:'💬'};
+            var typeColor = {toast:'#ce93d8', push:'#80cbc4', chat:'#a5d6a7'};
+            histEl.innerHTML = rows.map(function(r) {
+                var dt = r.ts ? new Date(r.ts).toLocaleString('en-IN',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}) : '—';
+                var ic = typeIcon[r.type] || '📋';
+                var col = typeColor[r.type] || '#fff';
+                var extra = r.devices ? ' · ' + r.devices + ' devices' : (r.chats ? ' · ' + r.chats + ' chats' : '');
+                return '<div style="padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.07);display:flex;gap:8px;align-items:flex-start">'
+                    + '<span style="color:' + col + ';flex-shrink:0">' + ic + '</span>'
+                    + '<span style="color:rgba(255,255,255,0.55);flex-shrink:0;min-width:110px">' + dt + '</span>'
+                    + '<span style="color:rgba(255,255,255,0.8)">' + (r.card||'—') + extra + '</span>'
+                    + '</div>';
+            }).join('');
+            histEl.scrollTop = 0;
+        } catch(e) { histEl.innerHTML = '<div style="color:#f44336;padding:8px">Error: ' + e.message + '</div>'; }
+    };
+
     function _autoPromoLog(msg) {
         var el = document.getElementById('autoPromoLog');
         if (!el) return;
@@ -39382,6 +39632,7 @@ Proceed?`)) return;
             _autoPromoEnabled = !!cfg.enabled;
             _autoPromoToastMs = (cfg.toastIntervalMin||15)*60000;
             _autoPromoPushMs  = (cfg.pushIntervalMin ||30)*60000;
+            _autoPromoChatMs  = (cfg.chatIntervalMin  ||0)*60000;
             _syncAutoPromoUI();
             if (_autoPromoEnabled && !was) { _startAutoPromoTimers(); }
             if (!_autoPromoEnabled && was) { _stopAutoPromoTimers();  }
@@ -42712,7 +42963,7 @@ export default {
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;" id="devTriggerVersion">
-                <strong>Version:</strong> 7.73 — Push & Promo tab renamed; promoAutoNotif added to Firebase rules<strong>Last Updated:</strong> Mar 08, 2026, 02:00 PM IST</p>
+                <strong>Version:</strong> 7.78 — Fix: CR Podcast shows all class submissions (orderByChild index bug fixed)<strong>Last Updated:</strong> Mar 08, 2026, 02:00 PM IST</p>
             <!-- ============================================ -->
             
             <p style="color: #c44569; font-size: 0.85em; font-weight: 600; margin-bottom: 8px;">
@@ -45573,6 +45824,11 @@ function scAdminPing() {
      v7.71 | Mar 08, 2026, 02:00 PM IST | New: Rotating Promo Card Banner for approved Vlog/Podcast/YT Ad — auto-rotates every 6s with thumbnail/title/class/CTA; animated toast every 15s; SA Send Promo to All Chats button in Vlog Admin
      v7.72 | Mar 08, 2026, 02:30 PM IST | New: Auto Promo Notifier — SA toggle in Notifications panel; configurable toast interval (all open pages via Firebase) + FCM push interval; fire-now test buttons; config persists in Firebase
      v7.73 | Mar 08, 2026, 02:45 PM IST | (1) Renamed "Notifications" push tab to "Push & Promo" to fix duplicate name confusion; panel heading updated; (2) Added promoAutoNotif to Firebase rules JSON in Check Rules tool
+     v7.74 | Mar 08, 2026, 03:00 PM IST | Podcast Admin: full filter bar (Class / Status / Name search), approval action buttons, enrollment cross-check alert for students who enrolled but not submitted (Harshitha SB visibility fix)
+     v7.75 | Mar 08, 2026, 03:15 PM IST | Moved Auto Promo Notifications box into the Notifications tab (quizNotifSchedulePanel) where all notifications live
+     v7.76 | Mar 08, 2026, 03:30 PM IST | Fix: Auto Promo toggle ON/OFF now works correctly — removed label+checkbox double-fire bug; clean div-only toggle
+     v7.77 | Mar 08, 2026, 03:45 PM IST | Auto Promo: added 💬 Chat interval + Chat Now button; full scrollable Firebase log history (🔄 Log button); log shows timestamp+type+card per entry
+     v7.78 | Mar 08, 2026, 04:00 PM IST | Fix: CR Podcast submissions showing only 1 entry — replaced Firebase orderByChild (requires index, silently drops records) with full fetch + client-side class filter in all 3 CR podcast functions
      ═══════════════════════════════════════════════════════════════════ -->
 
 
