@@ -1669,6 +1669,27 @@
         </div>
 
         <!-- ============================================================ -->
+        <!-- LIVE EVENTS BANNER — auto-built from Firebase eventSchedule  -->
+        <!-- Shows today's active/starting/ending events as priority chips -->
+        <!-- ============================================================ -->
+        <div id="liveEventsBanner" style="display:none;width:100%;max-width:1200px;margin:0 auto 22px;border-radius:16px;overflow:hidden;box-shadow:0 8px 32px rgba(106,27,154,0.35),0 2px 8px rgba(0,0,0,0.2);animation:lebPulseGlow 3s ease-in-out infinite">
+            <!-- Header strip -->
+            <div class="leb-header">
+                <div class="leb-header-left">
+                    <span class="leb-icon">🎡</span>
+                    <span class="leb-title">TODAY'S EVENTS</span>
+                    <span class="leb-date-pill" id="lebTodayDate"></span>
+                </div>
+                <span class="leb-count-pill" id="lebEventCount"></span>
+            </div>
+            <!-- Priority rows -->
+            <div class="leb-body" id="lebBody"></div>
+        </div>
+        <!-- ============================================================ -->
+        <!-- END LIVE EVENTS BANNER                                       -->
+        <!-- ============================================================ -->
+
+        <!-- ============================================================ -->
         <!-- ANNOUNCEMENT BANNER (Dynamic - controlled via Firebase)      -->
         <!-- Super Admin can edit text, color, visibility in Site Settings -->
         <!-- ============================================================ -->
@@ -1689,27 +1710,6 @@
         <div id="activityBannersContainer" style="width:100%;max-width:1200px;margin:0 auto"></div>
         <!-- ============================================================ -->
         <!-- END ACTIVITY BANNERS                                         -->
-        <!-- ============================================================ -->
-
-        <!-- ============================================================ -->
-        <!-- LIVE EVENTS BANNER — auto-built from Firebase eventSchedule  -->
-        <!-- Shows today's active/starting/ending events as priority chips -->
-        <!-- ============================================================ -->
-        <div id="liveEventsBanner" style="display:none;width:100%;max-width:1200px;margin:0 auto 22px;border-radius:16px;overflow:hidden;box-shadow:0 8px 32px rgba(106,27,154,0.35),0 2px 8px rgba(0,0,0,0.2);animation:lebPulseGlow 3s ease-in-out infinite">
-            <!-- Header strip -->
-            <div class="leb-header">
-                <div class="leb-header-left">
-                    <span class="leb-icon">🎡</span>
-                    <span class="leb-title">TODAY'S EVENTS</span>
-                    <span class="leb-date-pill" id="lebTodayDate"></span>
-                </div>
-                <span class="leb-count-pill" id="lebEventCount"></span>
-            </div>
-            <!-- Priority rows -->
-            <div class="leb-body" id="lebBody"></div>
-        </div>
-        <!-- ============================================================ -->
-        <!-- END LIVE EVENTS BANNER                                       -->
         <!-- ============================================================ -->
 
         <!-- Login/Logout Section (Visible to all) -->
@@ -6630,6 +6630,7 @@
                                         <th>Members</th>
                                         <th style="background:#6a1b9a">Adviser Name</th>
                                         <th style="background:#6a1b9a">Media House</th>
+                                        <th style="background:#4e342e">Place</th>
                                         <th style="background:#1a237e">Permission</th>
                                         <th style="background:#1a237e">Slot</th>
                                         <th style="background:#c62828">YouTube</th>
@@ -19076,6 +19077,10 @@
                     // Cells
                     const adviserCell = hasAdviser ? `<span style="font-weight:700;color:#4a148c;font-size:0.82em">${pre.adviserName}</span>` : `<span style="color:#aaa;font-size:0.8em">—</span>`;
                     const orgCell     = hasAdviser ? `<span style="font-size:0.8em;color:#555">${pre.adviserOrg||'—'}</span>` : `<span style="color:#aaa;font-size:0.8em">—</span>`;
+                    const placeApprSt = pre.placeApproved === true ? '✅' : pre.placeApproved === false ? '❌' : pre.place ? '⏳' : '';
+                    const placeCell   = pre.place
+                        ? `<span style="font-size:0.78em;color:#3e2723">${pre.place} ${placeApprSt}</span>`
+                        : `<span style="color:#aaa;font-size:0.8em">—</span>`;
                     const permCell    = hasPerm ? `<span style="background:#e8f5e9;color:#2e7d32;padding:2px 8px;border-radius:8px;font-size:0.72em;font-weight:700">✅ Granted</span>` : `<span style="background:#fce4ec;color:#c62828;padding:2px 8px;border-radius:8px;font-size:0.72em;font-weight:700">❌ Not Yet</span>`;
                     const slotCell    = hasPerm ? `<span style="font-size:0.78em;color:#1a237e">${perm.date||''} ${perm.time||''}</span>` : `<span style="color:#aaa;font-size:0.8em">—</span>`;
 
@@ -19108,6 +19113,7 @@
                         <td style="text-align:center;font-weight:700">${data.members.length}</td>
                         <td style="background:#f9f0ff">${adviserCell}</td>
                         <td style="background:#f9f0ff">${orgCell}</td>
+                        <td style="background:#efebe9;max-width:140px">${placeCell}</td>
                         <td style="text-align:center;background:#f0f4ff">${permCell}</td>
                         <td style="text-align:center;background:#f0f4ff">${slotCell}</td>
                         <td style="text-align:center;background:#fff5f5">${ytCell}</td>
@@ -19122,7 +19128,7 @@
                         </td>
                     </tr>
                     <tr id="nukkadAdminMsgRow_${key}" style="display:none">
-                        <td colspan="16"><div id="nukkadPostMsg_${key}" style="font-size:0.78em;font-weight:600;padding:4px 10px;border-radius:6px"></div></td>
+                        <td colspan="17"><div id="nukkadPostMsg_${key}" style="font-size:0.78em;font-weight:600;padding:4px 10px;border-radius:6px"></div></td>
                     </tr>`;
                 });
 
@@ -38606,11 +38612,127 @@ Proceed?`)) return;
         banner.style.display = 'block';
     }
 
-    // Refresh live events banner every 60s — catches midnight date rollover
+    // ── NUKKAD NATAK UPCOMING SLOTS in Live Banner ───────────────
+    function _nukkadDateStr(d) {
+        const dd = String(d.getDate()).padStart(2,'0');
+        const mm = String(d.getMonth()+1).padStart(2,'0');
+        return `${dd}-${mm}-${d.getFullYear()}`;
+    }
+
+    async function renderNukkadUpcomingBanner() {
+        const banner = document.getElementById('liveEventsBanner');
+        const body   = document.getElementById('lebBody');
+        if (!banner || !body) return;
+        try {
+            const [permSnap, preSnap, enrollSnap] = await Promise.all([
+                getDb().ref('nukkadNatak/permissions').once('value'),
+                getDb().ref('nukkadNatak/pre').once('value'),
+                getDb().ref('youthfest-enrollments').orderByChild('event').equalTo('Nukkad Natak').once('value')
+            ]);
+            if (!permSnap.exists()) return;
+
+            const perms   = permSnap.val() || {};
+            const preData = preSnap.val()  || {};
+
+            // Build cause map from enrollments: classKey → cause/theme
+            const causeMap = {};
+            if (enrollSnap.exists()) {
+                enrollSnap.forEach(ch => {
+                    const d = ch.val();
+                    if (d.cause && d.classYear) {
+                        const key = d.classYear.replace(/[.#$/\[\]]/g,'_');
+                        causeMap[key] = d.cause;
+                    }
+                });
+            }
+
+            // Parse date string — handles both DD-MM-YYYY and YYYY-MM-DD
+            function parsePermDate(str) {
+                if (!str) return null;
+                str = str.trim();
+                // YYYY-MM-DD
+                let m = str.match(/^(\d{4})-(\d{2})-(\d{2})/);
+                if (m) return new Date(+m[1], +m[2]-1, +m[3]);
+                // DD-MM-YYYY
+                m = str.match(/^(\d{2})-(\d{2})-(\d{4})/);
+                if (m) return new Date(+m[3], +m[2]-1, +m[1]);
+                return null;
+            }
+
+            function toDisplayDate(d) {
+                const dd = String(d.getDate()).padStart(2,'0');
+                const mm = String(d.getMonth()+1).padStart(2,'0');
+                return `${dd}-${mm}-${d.getFullYear()}`;
+            }
+
+            // Collect ALL future slots from today onwards
+            const today = new Date(); today.setHours(0,0,0,0);
+            const todayMs = today.getTime();
+
+            const allSlots = [];
+            Object.entries(perms).forEach(([key, perm]) => {
+                if (!perm.granted || !perm.date) return;
+                const slotDate = parsePermDate(perm.date);
+                if (!slotDate) return;
+                slotDate.setHours(0,0,0,0);
+                if (slotDate.getTime() < todayMs) return;
+                const pre = preData[key] || {};
+                allSlots.push({
+                    dateMs:  slotDate.getTime(),
+                    dateStr: toDisplayDate(slotDate),
+                    time:    perm.time || '',
+                    cls:     key.replace(/_/g, ' '),
+                    place:   pre.place || '',
+                    cause:   causeMap[key] || ''
+                });
+            });
+
+            if (!allSlots.length) return;
+
+            // Find earliest date and first slot by time
+            const minDateMs = Math.min(...allSlots.map(s => s.dateMs));
+            const first = allSlots
+                .filter(s => s.dateMs === minDateMs)
+                .sort((a, b) => a.time.localeCompare(b.time))[0];
+
+            const diffDays = Math.round((minDateMs - todayMs) / 86400000);
+            const dayLabel = diffDays === 0 ? '📍 Today'
+                           : diffDays === 1 ? '📅 Tomorrow'
+                           : `📅 ${_lebFriendlyDate(first.dateStr)}`;
+
+            let html = `<div style="border-top:1px solid rgba(255,255,255,0.15);margin-top:6px;padding-top:8px">
+                <div style="display:flex;align-items:center;flex-wrap:wrap;gap:8px;padding:6px 14px 8px">
+                    <span style="font-size:1.1em">🎭</span>
+                    <span style="font-weight:800;color:#fff;font-size:0.82em;letter-spacing:0.5px">NUKKAD NATAK — NEXT PERFORMANCE</span>
+                    <span style="background:rgba(255,255,255,0.18);color:#fff;font-size:0.72em;font-weight:700;padding:3px 10px;border-radius:20px">${dayLabel}</span>
+                    <span style="background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.3);border-radius:10px;padding:5px 12px;font-size:0.78em;color:#fff;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+                        <span style="font-weight:700">🎓 ${first.cls}</span>
+                        ${first.time  ? `<span>⏰ ${first.time}</span>`  : ''}
+                        ${first.place ? `<span>📍 ${first.place}</span>` : ''}
+                        ${first.cause ? `<span style="opacity:0.8">🎬 ${first.cause}</span>` : ''}
+                    </span>
+                </div>
+            </div>`;
+
+            if (banner.style.display === 'none') {
+                const dateEl  = document.getElementById('lebTodayDate');
+                const countEl = document.getElementById('lebEventCount');
+                if (dateEl)  dateEl.textContent  = _lebFriendlyDate(_nukkadDateStr(today));
+                if (countEl) countEl.textContent = '🎭 Nukkad Natak Upcoming';
+                body.innerHTML = html;
+                banner.style.display = 'block';
+            } else {
+                body.innerHTML += html;
+            }
+        } catch(e) { console.warn('Nukkad banner error:', e.message); }
+    }
+
+
     setInterval(function() {
         if (!window.db) return;
         getDb().ref(ES_FB_PATH).once('value').then(function(snap) {
             renderLiveEventsBanner(snap);
+            renderNukkadUpcomingBanner();
         }).catch(function(){});
     }, 60000);
 
@@ -38625,6 +38747,7 @@ Proceed?`)) return;
                 getDb().ref(ES_FB_PATH).on('value', function(snap) {
                     _esDrawPublicRows(snap);
                     renderLiveEventsBanner(snap);
+                    renderNukkadUpcomingBanner();
                 }, function(err) {
                     console.info('esPublicTable realtime listener error —', err.message);
                 });
@@ -41953,7 +42076,7 @@ export default {
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;" id="devTriggerVersion">
-                <strong>Version:</strong> 7.63 — Removed Quiz LIVE browser tab title blink feature entirely<strong>Last Updated:</strong> Mar 08, 2026, 11:45 AM IST</p>
+                <strong>Version:</strong> 7.67 — Fix Nukkad banner date parsing + theme from enrollments<strong>Last Updated:</strong> Mar 08, 2026, 12:45 PM IST</p>
             <!-- ============================================ -->
             
             <p style="color: #c44569; font-size: 0.85em; font-weight: 600; margin-bottom: 8px;">
@@ -44804,6 +44927,10 @@ function scAdminPing() {
      v7.61 | Mar 08, 2026, 11:15 AM IST | Reverted CR monitoring to social score tracking only — no results/leaderboard shown to CRs; results tab remains admin-only
      v7.62 | Mar 08, 2026, 11:30 AM IST | Fix: Quiz LIVE tab blink now checks sentAt timestamp — stale live status (>3hrs old) no longer triggers blink on every page load; visibilitychange now fully stops blink when user focuses tab
      v7.63 | Mar 08, 2026, 11:45 AM IST | Removed: Quiz LIVE browser tab title blink feature entirely
+     v7.64 | Mar 08, 2026, 12:00 PM IST | (1) Live banner now shows Nukkad Natak upcoming slots for today + next 2 days; (2) Super admin Nukkad table now includes Place column with approval status
+     v7.65 | Mar 08, 2026, 12:15 PM IST | Moved Live Events Banner to appear immediately below SPURTHI YOUTH FEST heading (above announcement banner)
+     v7.66 | Mar 08, 2026, 12:30 PM IST | Nukkad banner now shows only the single next upcoming performance (earliest date from today, first slot by time)
+     v7.67 | Mar 08, 2026, 12:45 PM IST | Fix: Nukkad banner date parser now handles both YYYY-MM-DD and DD-MM-YYYY formats; cause/theme now read from enrollments not pre
      ═══════════════════════════════════════════════════════════════════ -->
 
 
