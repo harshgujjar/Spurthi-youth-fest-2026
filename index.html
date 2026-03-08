@@ -12255,20 +12255,42 @@
         };
 
         function setVlogSetting(key, value) {
-            db.ref('vlogSettings/' + key).set(value).then(() => {
+            // Always write vlogSettings/key.
+            // leaderboardPublished also syncs to jurySetup/Vlog/resultsPublished
+            // so the main Results dropdown (which reads jurySetup) shows/hides Vlog correctly.
+            const updates = {};
+            updates['vlogSettings/' + key] = value;
+            if (key === 'leaderboardPublished') {
+                updates['jurySetup/Vlog/resultsPublished'] = value;
+            }
+            db.ref('/').update(updates).then(() => {
                 loadVlogSettings();
-                alert('✅ Vlog setting updated: ' + key + ' = ' + value);
-            }).catch(e => alert('Error: ' + e.message));
+                const labelKey = 'vlogStatus' + key.charAt(0).toUpperCase() + key.slice(1);
+                const el = document.getElementById(labelKey);
+                if (el) { el.textContent = '✅ Saved!'; setTimeout(() => loadVlogSettings(), 800); }
+                // Refresh Results dropdown if it is currently open
+                if (typeof loadResultsTab === 'function') {
+                    const resSect = document.getElementById('results');
+                    if (resSect && resSect.style.display !== 'none') loadResultsTab();
+                }
+            }).catch(e => {
+                const labelKey = 'vlogStatus' + key.charAt(0).toUpperCase() + key.slice(1);
+                const el = document.getElementById(labelKey);
+                if (el) { el.style.color='#c62828'; el.textContent = '❌ Error: ' + e.message; }
+            });
         }
 
         function saveVlogHashtag() {
             const val = (document.getElementById('vlogHashtagInput').value || '').trim();
-            if (!val) { alert('Please enter a hashtag'); return; }
+            const statusEl = document.getElementById('vlogStatusHashtag');
+            if (!val) { if (statusEl) { statusEl.style.color='#c62828'; statusEl.textContent='❌ Please enter a hashtag'; } return; }
             const tag = val.startsWith('#') ? val : '#' + val;
             db.ref('vlogSettings/hashtag').set(tag).then(() => {
-                loadVlogSettings();
-                alert('✅ Hashtag saved: ' + tag);
-            }).catch(e => alert('Error: ' + e.message));
+                if (statusEl) { statusEl.style.color='#1b5e20'; statusEl.textContent='✅ Saved: ' + tag; }
+                setTimeout(() => loadVlogSettings(), 800);
+            }).catch(e => {
+                if (statusEl) { statusEl.style.color='#c62828'; statusEl.textContent='❌ Error: ' + e.message; }
+            });
         }
 
         function loadVlogSettings() {
@@ -12289,7 +12311,7 @@
                     const el = document.getElementById(id); if (el) el.textContent = tag;
                 });
                 const inp = document.getElementById('vlogHashtagInput');
-                if (inp && !inp.value) inp.value = tag;
+                if (inp) inp.value = tag;
                 const statusEl = document.getElementById('vlogStatusHashtag');
                 if (statusEl) statusEl.textContent = 'Current: ' + tag;
             });
@@ -19414,7 +19436,7 @@
                 autoFillVlogMembers();
                 initVlogDailyScreenshots(); loadVlogExistingScreenshots(window.currentCRClass||crClass);
             }
-            // Check monitoring visibility
+            // Check monitoring visibility — show CR results only if SA enabled it
             const mSnap = await db.ref('vlogSettings/monitoringVisible').once('value');
             const monVis = mSnap.val() === true;
             const monSection = document.getElementById('vlogMonitoringSection');
@@ -22571,11 +22593,20 @@
                 document.getElementById('resultsContainer').innerHTML = '';
                 return;
             }
-            
-            // Load jury setup to get names and publication status
-            db.ref('jurySetup/'+event).once('value').then(setupSnap => {
+
+            // For Vlog: check vlogSettings/leaderboardPublished in addition to jurySetup
+            const preChecks = [db.ref('jurySetup/'+event).once('value')];
+            if (event === 'Vlog') preChecks.push(db.ref('vlogSettings/leaderboardPublished').once('value'));
+
+            Promise.all(preChecks).then(([setupSnap, vlogLbSnap]) => {
                 const setup = setupSnap.val() || {};
                 console.log('Results published status:', setup.resultsPublished);
+
+                // For Vlog: if leaderboardPublished is explicitly false, block non-SA
+                if (event === 'Vlog' && !isSuperAdmin && vlogLbSnap && vlogLbSnap.val() !== true) {
+                    document.getElementById('resultsContainer').innerHTML = '<p style="text-align:center;padding:40px;color:#999">📦 Vlog results are not yet published. Check back soon!</p>';
+                    return;
+                }
                 
                 if (!isSuperAdmin && !setup.resultsPublished) {
                     document.getElementById('resultsContainer').innerHTML = '<p style="text-align:center;padding:40px;color:#999">Results not yet published by super admin.</p>';
@@ -41922,7 +41953,7 @@ export default {
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;" id="devTriggerVersion">
-                <strong>Version:</strong> 7.57 — Vlog team select auto-loads existing submission data + screenshot thumbnails on CR page<strong>Last Updated:</strong> Mar 07, 2026, 09:45 PM IST</p>
+                <strong>Version:</strong> 7.61 — CR monitoring shows social score tracking only; no results/leaderboard ever visible to CRs<strong>Last Updated:</strong> Mar 08, 2026, 11:15 AM IST</p>
             <!-- ============================================ -->
             
             <p style="color: #c44569; font-size: 0.85em; font-weight: 600; margin-bottom: 8px;">
@@ -44825,6 +44856,10 @@ function scAdminPing() {
      v7.55 | Mar 07, 2026, 08:45 PM IST | All Teams Overview: added Status column (✅ Approved / ⏳ Pending / ❌ Rejected) with row colour-coding — green for approved, red for rejected
      v7.56 | Mar 07, 2026, 09:00 PM IST | Removed entire Official Challenge Hashtag / Phase 2 tracking block (Monitors Hashtag, Detects New Posts, Live Leaderboard cards + Important note); hidden hashtag value kept for submit logic
      v7.57 | Mar 07, 2026, 09:45 PM IST | (1) vlogOnTeamSelect auto-fills handle/link/title from Firebase on team selection + warns if Approved status will reset to re-review; (2) CR approval banners now show uploaded insight screenshot thumbnails
+     v7.58 | Mar 08, 2026, 10:30 AM IST | Settings audit fixes: (1) leaderboardPublished now gates Vlog from Event Results for non-SA; (2) setVlogSetting/saveVlogHashtag replaced alert() with inline status feedback; (3) hashtag input always pre-fills from Firebase on panel open
+     v7.59 | Mar 08, 2026, 10:45 AM IST | Fix: leaderboardPublished now atomically writes BOTH vlogSettings/leaderboardPublished AND jurySetup/Vlog/resultsPublished — both publish systems now in sync; Results dropdown shows/hides Vlog correctly for all roles
+     v7.60 | Mar 08, 2026, 11:00 AM IST | Vlog CR results now gated by monitoringVisible — CRs see leaderboard only when SA turns it ON; if leaderboardPublished=false shows Coming Soon; own class highlighted with pin
+     v7.61 | Mar 08, 2026, 11:15 AM IST | Reverted CR monitoring to social score tracking only — no results/leaderboard shown to CRs; results tab remains admin-only
      ═══════════════════════════════════════════════════════════════════ -->
 
 
