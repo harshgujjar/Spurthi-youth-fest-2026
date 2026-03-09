@@ -808,7 +808,7 @@
             </p>
 
             <p style="color:#666;font-size:0.85em;margin-bottom:8px;" id="devTriggerVersion">
-                <strong>Version:</strong> 1.06 — Email now mandatory for all; autocomplete=off on email (stops browser autofilling wrong values) &nbsp;|&nbsp; <strong>Last Updated:</strong> Mar 09, 2026, 04:45 PM IST
+                <strong>Version:</strong> 1.07 — Fix: after registration scroll goes to password box first (centre screen), then auto-scrolls to login after 4s &nbsp;|&nbsp; <strong>Last Updated:</strong> Mar 09, 2026, 04:45 PM IST
             </p>
 
             <p style="color:#c44569;font-size:0.85em;font-weight:600;margin-bottom:8px;">
@@ -829,6 +829,7 @@
     ═══════════════════════════════════════════════════════════════
     QUIZ PORTAL — VERSION HISTORY
     ═══════════════════════════════════════════════════════════════
+    v1.07 | Mar 09, 2026, 04:45 PM IST | Fix: After registration, page now scrolls to password box first (centre screen, 200ms delay) so user sees their password; then auto-scrolls to login card after 4s
     v1.06 | Mar 09, 2026, 04:45 PM IST | Fix: Email now mandatory for all registrations (was optional); autocomplete="off" on email input to prevent browser autofilling saved credentials (was showing "Super Admin" from browser saved data)
     v1.05 | Mar 09, 2026, 04:45 PM IST | Fix: Promo cards now read correct Firebase nodes (vlogChallenge/podcastChallenge/youtubeAd — was reading non-existent promoCards node, hence nothing showed); duplicate ← Back to Main Page removed (was showing twice); duplicate initInAppNotif IIFE removed (was conflicting with global toast functions); AudioContext now lazy — created on first user gesture, not on page load (fixes "AudioContext prevented from starting automatically" warning); re-init promo every 5min for live updates
     v1.04 | Mar 09, 2026, 04:45 PM IST | Fix: Promo card now matches main page exactly — uses promo-content + promo-cta CSS classes; card uses c.color gradient + c.icon for placeholder; ▶ Watch Now + 📤 Share buttons with native navigator.share; 👉 Like · Comment · Share line; #promoToast floating popup added (top-center, 5s display, 15s cycle, thumbnail + badge + title + Watch link); goPromo uses querySelectorAll; rotation every 6s; startPromoToast() called after render
@@ -1086,7 +1087,14 @@ Davan Institute Team — Spurthi Youth Fest 2026`;
         });
 
         btn.disabled = false; btn.textContent = '🚀 Register & Get Password';
-        setTimeout(() => document.getElementById('loginCard').scrollIntoView({behavior:'smooth',block:'start'}), 800);
+
+        // Scroll to password box immediately, then to login card after user has seen it
+        setTimeout(() => {
+            document.getElementById('regMessage').scrollIntoView({behavior:'smooth', block:'center'});
+        }, 200);
+        setTimeout(() => {
+            document.getElementById('loginCard').scrollIntoView({behavior:'smooth', block:'start'});
+        }, 4000);
 
     } catch(err) {
         console.error('Registration error:', err);
