@@ -1423,20 +1423,23 @@
     .promo-card {
         display: none;
         animation: promoSlideIn 0.5s cubic-bezier(.34,1.56,.64,1) both;
+        width: 100%;
     }
-    .promo-card.active { display: flex; }
+    .promo-card.active { display: block; }
     .promo-card-inner {
         width: 100%;
+        box-sizing: border-box;
         background: linear-gradient(135deg, #1a0033 0%, #4a0080 40%, #c44569 80%, #ff6b35 100%);
         background-size: 200% 100%;
-        padding: 16px 20px;
+        padding: 14px 16px 14px 16px;
         display: flex;
+        flex-direction: row;
         align-items: center;
-        gap: 16px;
-        flex-wrap: wrap;
+        gap: 12px;
         position: relative;
         overflow: hidden;
         animation: promoPulse 3s ease-in-out infinite;
+        min-height: 80px;
     }
     .promo-card-inner::before {
         content: '';
@@ -1445,9 +1448,11 @@
         background-size: 800px 100%;
         animation: promoShimmer 3s linear infinite;
         pointer-events: none;
+        z-index: 0;
     }
+    .promo-card-inner > * { position: relative; z-index: 1; }
     .promo-thumb {
-        width: 80px; height: 56px; border-radius: 10px;
+        width: 64px; height: 52px; border-radius: 10px;
         object-fit: cover; flex-shrink: 0;
         border: 2px solid rgba(255,255,255,0.3);
         box-shadow: 0 4px 14px rgba(0,0,0,0.4);
@@ -1455,40 +1460,64 @@
         background: rgba(255,255,255,0.1);
     }
     .promo-thumb-placeholder {
-        width: 80px; height: 56px; border-radius: 10px;
+        width: 52px; height: 52px; border-radius: 10px;
         flex-shrink: 0; border: 2px solid rgba(255,255,255,0.3);
         background: rgba(255,255,255,0.12);
         display: flex; align-items: center; justify-content: center;
-        font-size: 2em;
+        font-size: 1.6em;
         animation: promoFloat 3s ease-in-out infinite;
     }
-    .promo-content { flex: 1; min-width: 0; }
+    .promo-content {
+        flex: 1;
+        min-width: 0;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
     .promo-type-badge {
         display: inline-block;
         background: rgba(255,255,255,0.22);
-        color: #fff; font-size: 0.68em; font-weight: 800;
-        padding: 2px 10px; border-radius: 20px;
-        letter-spacing: 0.8px; margin-bottom: 4px;
+        color: #fff; font-size: 0.65em; font-weight: 800;
+        padding: 2px 8px; border-radius: 20px;
+        letter-spacing: 0.8px; margin-bottom: 2px;
         animation: promoBadgePop 0.4s ease both;
+        white-space: nowrap;
+        max-width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
     .promo-title {
-        color: #fff; font-weight: 800; font-size: 0.95em;
-        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        color: #fff; font-weight: 800; font-size: 0.88em;
+        overflow: hidden; text-overflow: ellipsis;
+        white-space: nowrap;
         text-shadow: 0 1px 4px rgba(0,0,0,0.3);
+        max-width: 100%;
     }
     .promo-class {
-        color: rgba(255,255,255,0.8); font-size: 0.75em; margin-top: 2px;
+        color: rgba(255,255,255,0.8); font-size: 0.72em;
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        max-width: 100%;
+    }
+    .promo-support {
+        color: rgba(255,255,255,0.65); font-size: 0.67em;
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
     .promo-cta {
-        display: flex; gap: 8px; flex-wrap: wrap; flex-shrink: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        flex-shrink: 0;
     }
     .promo-cta a {
         background: rgba(255,255,255,0.2);
         border: 1.5px solid rgba(255,255,255,0.5);
-        color: #fff; font-size: 0.78em; font-weight: 700;
-        padding: 6px 14px; border-radius: 20px;
+        color: #fff; font-size: 0.75em; font-weight: 700;
+        padding: 5px 12px; border-radius: 20px;
         text-decoration: none; white-space: nowrap;
+        text-align: center;
         transition: background 0.2s, transform 0.15s;
+        display: block;
     }
     .promo-cta a:hover { background: rgba(255,255,255,0.35); transform: scale(1.05); }
     .promo-dots {
@@ -39494,7 +39523,7 @@ Proceed?`)) return;
                     <div class="promo-type-badge">${c.type}</div>
                     <div class="promo-title">${c.title}</div>
                     <div class="promo-class">🎓 ${c.cls}</div>
-                    <div style="color:rgba(255,255,255,0.7);font-size:0.7em;margin-top:4px">👉 Like · Comment · Share to support them!</div>
+                    <div class="promo-support">👉 Like · Comment · Share!</div>
                 </div>
                 <div class="promo-cta">
                     <a href="${c.link}" target="_blank" rel="noopener">▶ Watch Now</a>
@@ -43171,7 +43200,7 @@ export default {
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;" id="devTriggerVersion">
-                <strong>Version:</strong> 7.88 — Fix: Case Analysis jury sheet first criterion had no input — extra Theme/Topic cell was being injected into rows (else branch not guarded with !isCaseAnalysis)<strong>Last Updated:</strong> Mar 09, 2026, 06:45 PM IST</p>
+                <strong>Version:</strong> 7.90 — Fix: Promo card mobile layout — full rewrite: row layout with thumb left, content middle, CTA column right; all text ellipsis; no wrapping<strong>Last Updated:</strong> Mar 09, 2026, 07:15 PM IST</p>
             <!-- ============================================ -->
             
             <p style="color: #c44569; font-size: 0.85em; font-weight: 600; margin-bottom: 8px;">
