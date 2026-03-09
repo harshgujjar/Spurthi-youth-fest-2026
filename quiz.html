@@ -1,0 +1,1722 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spurthi Youth Fest 2026 — Quiz Portal</title>
+
+    <link rel="icon" type="image/png" href="davan_degree1.png">
+    <link rel="apple-touch-icon" href="davan_degree1.png">
+
+    <meta property="og:title" content="Spurthi Youth Fest 2026 — Daily Quiz Portal">
+    <meta property="og:description" content="🎓 Register & play the Daily Quiz! Open to students, alumni, and all. Win prizes every day!">
+    <meta property="og:image" content="https://harshgujjar.github.io/Spurthi-youth-fest-2026/og_image.png">
+    <meta property="og:url" content="https://harshgujjar.github.io/Spurthi-youth-fest-2026/quiz.html">
+    <meta property="og:type" content="website">
+    <meta name="description" content="Spurthi Youth Fest 2026 Daily Quiz Portal — Register and play daily quizzes. Open to all!">
+
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+    <script type="text/javascript">
+        (function(){ emailjs.init("iISS6N2b69VmKwx8Y"); })();
+    </script>
+
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;
+            background:linear-gradient(135deg,#c44569 0%,#6a1b9a 100%);
+            min-height:100vh; padding:20px;
+        }
+        .container { max-width:900px; margin:0 auto; }
+
+        /* ── HEADER ── */
+        .header { text-align:center; color:white; margin-bottom:30px; }
+        .header h1 { font-size:1.8em; }
+
+        /* ── LIVE BANNER (same CSS as main page) ── */
+        #liveEventsBanner {
+            width:100%; border-radius:16px; overflow:hidden;
+            box-shadow:0 8px 32px rgba(106,27,154,0.35),0 2px 8px rgba(0,0,0,0.2);
+            animation:lebPulseGlow 3s ease-in-out infinite;
+            margin-bottom:24px; display:none;
+        }
+        @keyframes lebPulseGlow {
+            0%,100%{ box-shadow:0 0 0 0 rgba(196,69,105,0); }
+            50%    { box-shadow:0 0 24px 4px rgba(196,69,105,0.35); }
+        }
+        @keyframes lebHeaderShimmer {
+            0%  { background-position:-600px 0; }
+            100%{ background-position: 600px 0; }
+        }
+        @keyframes lebChipFloat {
+            0%,100%{ transform:translateY(0); }
+            50%    { transform:translateY(-2px); }
+        }
+        @keyframes lebBadgeBlink {
+            0%,100%{ opacity:1; }
+            50%    { opacity:0.5; }
+        }
+        @keyframes lebSpin {
+            from{ transform:rotate(0deg); }
+            to  { transform:rotate(360deg); }
+        }
+        @keyframes lebSlideIn {
+            from{ opacity:0; transform:translateY(-10px); }
+            to  { opacity:1; transform:translateY(0); }
+        }
+        .leb-header {
+            background:linear-gradient(120deg,#0d001a 0%,#3d0060 40%,#c44569 80%,#ff6b35 100%);
+            background-size:200% 100%; animation:lebHeaderShimmer 4s linear infinite;
+            padding:13px 20px; display:flex; align-items:center;
+            justify-content:space-between; flex-wrap:wrap; gap:8px; position:relative; overflow:hidden;
+        }
+        .leb-header::before {
+            content:''; position:absolute; inset:0;
+            background:linear-gradient(90deg,transparent 0%,rgba(255,255,255,0.06) 50%,transparent 100%);
+            background-size:600px 100%; animation:lebHeaderShimmer 2.5s linear infinite; pointer-events:none;
+        }
+        .leb-header-left{ display:flex; align-items:center; gap:10px; }
+        .leb-icon { font-size:1.4em; animation:lebSpin 6s linear infinite; display:inline-block; }
+        .leb-title { color:white; font-weight:900; font-size:1em; letter-spacing:1.5px; text-shadow:0 0 12px rgba(255,107,53,0.8); }
+        .leb-date-pill { background:rgba(255,255,255,0.15); color:#ffe0b2; font-size:0.76em; font-weight:700; padding:3px 10px; border-radius:20px; border:1px solid rgba(255,255,255,0.2); }
+        .leb-count-pill { background:linear-gradient(135deg,#ff6b35,#c44569); color:white; font-size:0.72em; font-weight:800; padding:4px 12px; border-radius:20px; animation:lebBadgeBlink 2s ease-in-out infinite; box-shadow:0 2px 10px rgba(196,69,105,0.5); }
+        .leb-body { background:linear-gradient(180deg,#1a0030 0%,#2d0050 100%); padding:14px 18px; display:flex; flex-direction:column; gap:10px; animation:lebSlideIn 0.4s ease; }
+        .leb-row { display:flex; align-items:center; gap:10px; flex-wrap:wrap; padding:8px 12px; border-radius:10px; border:1px solid rgba(255,255,255,0.08); position:relative; overflow:hidden; }
+        .leb-row::before { content:''; position:absolute; inset:0; opacity:0.04; pointer-events:none; background:radial-gradient(ellipse at 0% 50%,white 0%,transparent 70%); }
+        .leb-row-last  { background:rgba(198,40,40,0.15);  border-color:rgba(198,40,40,0.3); }
+        .leb-row-today { background:rgba(46,125,50,0.15);  border-color:rgba(46,125,50,0.3); }
+        .leb-row-on    { background:rgba(13,71,161,0.15);  border-color:rgba(13,71,161,0.3); }
+        .leb-row-label { font-size:0.7em; font-weight:900; padding:4px 10px; border-radius:20px; white-space:nowrap; flex-shrink:0; letter-spacing:0.5px; text-transform:uppercase; }
+        .leb-label-last  { background:linear-gradient(135deg,#c62828,#e53935); color:white; box-shadow:0 2px 8px rgba(198,40,40,0.5); animation:lebBadgeBlink 1.5s ease-in-out infinite; }
+        .leb-label-today { background:linear-gradient(135deg,#2e7d32,#43a047); color:white; box-shadow:0 2px 8px rgba(46,125,50,0.5); }
+        .leb-label-on    { background:linear-gradient(135deg,#1565c0,#1976d2); color:white; box-shadow:0 2px 8px rgba(21,101,192,0.4); }
+        .leb-chips { display:flex; flex-wrap:wrap; gap:7px; flex:1; }
+        .leb-chip { display:inline-flex; align-items:center; gap:6px; padding:6px 14px; border-radius:22px; font-size:0.8em; font-weight:700; white-space:nowrap; cursor:default; transition:transform .2s ease,box-shadow .2s ease; position:relative; overflow:hidden; animation:lebChipFloat 3s ease-in-out infinite; }
+        .leb-chip:hover { transform:translateY(-3px) scale(1.04); box-shadow:0 6px 18px rgba(0,0,0,0.35); }
+        .leb-chip::before { content:''; position:absolute; top:0; left:-100%; width:60%; height:100%; background:linear-gradient(90deg,transparent,rgba(255,255,255,0.2),transparent); transition:left 0.4s ease; }
+        .leb-chip:hover::before { left:150%; }
+        .leb-chip-last  { background:linear-gradient(135deg,#b71c1c,#e53935); color:white; box-shadow:0 3px 12px rgba(183,28,28,0.5); border:1px solid rgba(255,255,255,0.15); }
+        .leb-chip-today { background:linear-gradient(135deg,#1b5e20,#388e3c); color:white; box-shadow:0 3px 12px rgba(27,94,32,0.5); border:1px solid rgba(255,255,255,0.15); }
+        .leb-chip-on    { background:linear-gradient(135deg,#0d47a1,#1976d2); color:white; box-shadow:0 3px 12px rgba(13,71,161,0.45); border:1px solid rgba(255,255,255,0.15); }
+        .leb-chip-time  { font-size:0.82em; font-weight:600; opacity:0.82; background:rgba(255,255,255,0.15); padding:1px 6px; border-radius:8px; }
+        .leb-time-sep   { font-size:0.72em; font-weight:800; color:#ff9800; background:rgba(255,152,0,0.15); padding:3px 9px; border-radius:10px; border:1px solid rgba(255,152,0,0.3); white-space:nowrap; flex-shrink:0; }
+        @media(max-width:600px){
+            .leb-chips { flex-wrap:nowrap; overflow-x:auto; padding-bottom:3px; }
+            .leb-chips::-webkit-scrollbar { height:3px; }
+            .leb-chips::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.3); border-radius:3px; }
+        }
+
+        /* ── BANNER IMG ── */
+        .banner { width:100%; max-width:1200px; margin:0 auto 30px; border-radius:12px; box-shadow:0 10px 40px rgba(0,0,0,0.3); display:block; }
+
+        /* ── PROMO CARD BANNER ── */
+        #promoCardBanner {
+            width:100%; max-width:1200px; margin:0 auto 18px;
+            border-radius:18px; overflow:hidden;
+            box-shadow:0 8px 32px rgba(106,27,154,0.3);
+            display:none; position:relative;
+        }
+        @keyframes promoSlideIn {
+            from { opacity:0; transform:translateX(60px) scale(0.97); }
+            to   { opacity:1; transform:translateX(0) scale(1); }
+        }
+        @keyframes promoSlideOut {
+            from { opacity:1; transform:translateX(0) scale(1); }
+            to   { opacity:0; transform:translateX(-60px) scale(0.97); }
+        }
+        @keyframes promoPulse {
+            0%,100% { box-shadow:0 0 0 0 rgba(255,255,255,0); }
+            50%      { box-shadow:0 0 20px 6px rgba(255,255,255,0.15); }
+        }
+        @keyframes promoShimmer {
+            0%   { background-position:-800px 0; }
+            100% { background-position:800px 0; }
+        }
+        @keyframes promoFloat {
+            0%,100% { transform:translateY(0px); }
+            50%      { transform:translateY(-4px); }
+        }
+        .promo-card { display:none; animation:promoSlideIn 0.5s cubic-bezier(.34,1.56,.64,1) both; }
+        .promo-card.active { display:flex; }
+        .promo-card-inner {
+            width:100%;
+            background:linear-gradient(135deg,#1a0033 0%,#4a0080 40%,#c44569 80%,#ff6b35 100%);
+            background-size:200% 100%;
+            padding:16px 20px; display:flex; align-items:center;
+            gap:16px; flex-wrap:wrap; position:relative; overflow:hidden;
+            animation:promoPulse 3s ease-in-out infinite;
+        }
+        .promo-card-inner::before {
+            content:''; position:absolute; inset:0;
+            background:linear-gradient(90deg,transparent,rgba(255,255,255,0.08),transparent);
+            background-size:800px 100%; animation:promoShimmer 3s linear infinite; pointer-events:none;
+        }
+        .promo-thumb {
+            width:80px; height:56px; border-radius:10px;
+            object-fit:cover; flex-shrink:0;
+            box-shadow:0 4px 14px rgba(0,0,0,0.4);
+            border:2px solid rgba(255,255,255,0.2);
+            animation:promoFloat 3s ease-in-out infinite;
+        }
+        .promo-thumb-placeholder {
+            width:80px; height:56px; border-radius:10px; flex-shrink:0;
+            background:rgba(255,255,255,0.15); display:flex; align-items:center;
+            justify-content:center; font-size:1.6em;
+            border:2px solid rgba(255,255,255,0.2);
+        }
+        .promo-info { flex:1; min-width:0; }
+        .promo-type-badge {
+            display:inline-block; font-size:0.65em; font-weight:800; padding:3px 10px;
+            border-radius:20px; background:rgba(255,255,255,0.2); color:#ffe082;
+            letter-spacing:0.5px; text-transform:uppercase; margin-bottom:5px;
+            border:1px solid rgba(255,255,255,0.25);
+        }
+        .promo-title {
+            color:white; font-weight:800; font-size:clamp(0.88em,2.5vw,1.05em);
+            line-height:1.3; margin-bottom:4px;
+            text-shadow:0 1px 4px rgba(0,0,0,0.3);
+            white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+        }
+        .promo-class {
+            color:rgba(255,255,255,0.75); font-size:0.78em; font-weight:600;
+        }
+        .promo-actions {
+            display:flex; align-items:center; gap:10px; flex-shrink:0; flex-wrap:wrap;
+        }
+        .promo-view-btn {
+            background:rgba(255,255,255,0.2); color:white; border:1.5px solid rgba(255,255,255,0.5);
+            padding:8px 16px; border-radius:20px; font-size:0.82em; font-weight:700;
+            cursor:pointer; text-decoration:none; white-space:nowrap;
+            transition:all 0.2s; backdrop-filter:blur(4px);
+        }
+        .promo-view-btn:hover { background:rgba(255,255,255,0.35); transform:scale(1.04); }
+        .promo-dots {
+            position:absolute; bottom:8px; right:12px;
+            display:flex; gap:5px; align-items:center;
+        }
+        .promo-dot {
+            width:6px; height:6px; border-radius:50%;
+            background:rgba(255,255,255,0.35); transition:all 0.3s; cursor:pointer;
+        }
+        .promo-dot.active { background:white; width:18px; border-radius:3px; }
+        @media(max-width:520px){
+            .promo-thumb, .promo-thumb-placeholder { width:56px; height:42px; }
+            .promo-title { font-size:0.82em; }
+        }
+
+        /* ── CARD ── */
+        .card {
+            background:white; border-radius:16px; padding:28px 24px;
+            margin-bottom:20px; box-shadow:0 8px 32px rgba(0,0,0,0.15);
+            animation:slideInUp 0.5s ease-out;
+        }
+        @keyframes slideInUp {
+            from{ opacity:0; transform:translateY(24px); }
+            to  { opacity:1; transform:translateY(0); }
+        }
+        .card h2 { color:#6a1b9a; font-size:1.3em; margin-bottom:18px; display:flex; align-items:center; gap:10px; }
+
+        /* ── FORM ── */
+        .form-group { margin-bottom:16px; }
+        .form-group label { display:block; font-weight:700; color:#444; margin-bottom:6px; font-size:0.92em; }
+        .form-group input, .form-group select, .form-group textarea {
+            width:100%; padding:12px 14px; border:2px solid #e0e0e0; border-radius:10px;
+            font-size:0.95em; transition:border-color 0.2s; outline:none; font-family:inherit;
+        }
+        .form-group input:focus, .form-group select:focus { border-color:#6a1b9a; }
+        .form-group input.error { border-color:#e53935; }
+
+        /* ── RADIO TABS ── */
+        .who-tabs { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:20px; }
+        .who-tab {
+            flex:1; min-width:110px; padding:12px 8px; border:2.5px solid #e0e0e0;
+            border-radius:12px; background:#f9f9f9; text-align:center; cursor:pointer;
+            transition:all 0.2s; font-size:0.88em; font-weight:700; color:#666;
+            user-select:none;
+        }
+        .who-tab:hover { border-color:#6a1b9a; color:#6a1b9a; background:#f3e5f5; }
+        .who-tab.active { border-color:#6a1b9a; background:linear-gradient(135deg,#6a1b9a,#c44569); color:white; }
+        .who-tab .tab-icon { font-size:1.5em; display:block; margin-bottom:4px; }
+
+        /* ── BUTTONS ── */
+        .btn {
+            display:inline-block; padding:13px 28px; border:none; border-radius:12px;
+            font-size:1em; font-weight:700; cursor:pointer; transition:all 0.25s; width:100%;
+        }
+        .btn-primary {
+            background:linear-gradient(135deg,#6a1b9a,#c44569); color:white;
+            box-shadow:0 4px 15px rgba(106,27,154,0.35);
+        }
+        .btn-primary:hover { transform:translateY(-2px); box-shadow:0 8px 25px rgba(106,27,154,0.45); }
+        .btn-primary:disabled { opacity:0.6; cursor:not-allowed; transform:none; }
+        .btn-success { background:linear-gradient(135deg,#2e7d32,#43a047); color:white; box-shadow:0 4px 15px rgba(46,125,50,0.35); }
+        .btn-success:hover { transform:translateY(-2px); box-shadow:0 8px 25px rgba(46,125,50,0.45); }
+        .btn-secondary { background:#f0f0f0; color:#444; }
+        .btn-secondary:hover { background:#e0e0e0; }
+        .btn-small { width:auto; padding:8px 16px; font-size:0.88em; border-radius:8px; }
+
+        /* ── MESSAGES ── */
+        .msg { display:none; padding:14px 18px; border-radius:10px; font-size:0.95em; margin-bottom:16px; }
+        .msg.show { display:block; }
+        .msg.success { background:#e8f5e9; color:#2e7d32; border-left:4px solid #4caf50; }
+        .msg.error   { background:#ffebee; color:#c62828; border-left:4px solid #e53935; }
+        .msg.info    { background:#e3f2fd; color:#1565c0; border-left:4px solid #2196f3; }
+
+        /* ── QUIZ STYLES ── */
+        .quiz-timer-box {
+            position:sticky; top:0; z-index:100;
+            background:linear-gradient(135deg,#667eea,#764ba2);
+            color:white; text-align:center; padding:12px; font-size:1.3em; font-weight:700;
+            border-radius:10px; margin-bottom:20px; box-shadow:0 4px 15px rgba(102,126,234,0.4);
+        }
+        .quiz-option {
+            background:#f8f9fa; border:3px solid #e9ecef; border-radius:12px;
+            padding:16px 20px; margin:10px 0; cursor:pointer; transition:all 0.25s;
+            display:flex; align-items:center; gap:14px; font-size:1em;
+        }
+        .quiz-option:hover { background:#e3f2fd; border-color:#2196F3; transform:translateX(8px); box-shadow:0 4px 15px rgba(33,150,243,0.2); }
+        .quiz-option.selected {
+            background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);
+            border-color:#667eea; color:white; font-weight:600;
+            transform:scale(1.02); box-shadow:0 6px 20px rgba(102,126,234,0.4);
+        }
+        .quiz-option .opt-letter {
+            width:30px; height:30px; border-radius:50%; background:rgba(255,255,255,0.2);
+            display:flex; align-items:center; justify-content:center; font-weight:800; flex-shrink:0; font-size:0.9em;
+        }
+        .quiz-submit-btn {
+            width:100%; padding:18px; background:linear-gradient(135deg,#c44569,#6a1b9a);
+            color:white; border:none; border-radius:14px; font-size:1.15em; font-weight:700;
+            cursor:pointer; margin-top:20px; box-shadow:0 4px 20px rgba(196,69,105,0.4);
+            transition:all 0.25s;
+        }
+        .quiz-submit-btn:hover { transform:translateY(-2px); box-shadow:0 8px 28px rgba(196,69,105,0.5); }
+        .quiz-submit-btn:disabled { opacity:0.6; cursor:not-allowed; transform:none; }
+        .quiz-question-card {
+            background:white; border-radius:14px; padding:24px; margin-bottom:24px;
+            box-shadow:0 6px 24px rgba(0,0,0,0.12); border-left:6px solid #667eea;
+        }
+        .quiz-question-card h4 { color:#667eea; font-size:1.1em; margin-bottom:12px; }
+        .quiz-question-card .q-text { color:#333; font-size:1.1em; margin-bottom:16px; line-height:1.6; font-weight:500; }
+        .quiz-text-answer { width:100%; padding:12px; border:2px solid #667eea; border-radius:10px; font-size:1em; outline:none; }
+        .quiz-text-answer:focus { border-color:#764ba2; }
+
+        /* ── CONFETTI ── */
+        .confetti { position:fixed; width:10px; height:10px; z-index:9999; animation:confettiDrop 3s ease-out forwards; }
+        @keyframes confettiDrop {
+            0%  { transform:translateY(0) rotateZ(0deg); opacity:1; }
+            100%{ transform:translateY(1000px) rotateZ(720deg); opacity:0; }
+        }
+
+        /* ── SUCCESS MODAL ── */
+        .success-modal { position:fixed; inset:0; background:rgba(0,0,0,0.8); display:flex; align-items:center; justify-content:center; z-index:10000; animation:fadeIn 0.3s ease; }
+        @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+        .success-modal-inner { background:white; border-radius:24px; padding:40px 32px; text-align:center; max-width:460px; width:90%; animation:slideInUp 0.4s ease; box-shadow:0 20px 60px rgba(0,0,0,0.3); }
+        .success-modal-inner .s-icon { font-size:4em; margin-bottom:16px; }
+        .success-modal-inner h2 { color:#28a745; font-size:2em; margin-bottom:10px; }
+        .success-modal-inner p { font-size:1.05em; color:#666; margin:6px 0; }
+
+        /* ── LIVE CLOCK ── */
+        .live-clock { background:linear-gradient(135deg,#6a1b9a,#c44569); border-radius:12px; padding:14px 18px; margin-bottom:20px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; }
+        .clock-block { text-align:center; background:rgba(255,255,255,0.15); border-radius:8px; padding:8px 14px; min-width:75px; }
+        .clock-label { color:rgba(255,255,255,0.75); font-size:9px; text-transform:uppercase; letter-spacing:1px; margin-bottom:3px; }
+        .clock-val { color:white; font-size:1.15em; font-weight:700; }
+        .clock-val.gold { color:#ffd700; }
+        .clock-val.green { color:#a5ffb8; letter-spacing:1px; }
+
+        /* ── ANTI CHEAT BOX ── */
+        .anticheat { background:linear-gradient(135deg,#ff6b6b,#ee5a6f); color:white; padding:18px; border-radius:10px; margin-bottom:20px; }
+        .anticheat h3 { margin-bottom:10px; }
+        .anticheat ul { margin-left:20px; line-height:1.9; }
+
+        /* ── QN TOAST CONTAINER (peer nudge) ── */
+        #qnToastContainer { position:fixed; bottom:20px; right:20px; z-index:9998; display:flex; flex-direction:column; gap:10px; max-width:340px; }
+        .qnToast {
+            background:linear-gradient(135deg,#1a0030,#6a1b9a); color:white;
+            border-radius:14px; padding:14px 16px; display:flex; align-items:flex-start; gap:12px;
+            box-shadow:0 6px 24px rgba(0,0,0,0.35); font-size:0.88em;
+            animation:qnSlideIn 0.3s ease;
+        }
+        @keyframes qnSlideIn { from{opacity:0;transform:translateX(60px)} to{opacity:1;transform:translateX(0)} }
+        @keyframes qnSlideOut { from{opacity:1;transform:translateX(0)} to{opacity:0;transform:translateX(60px)} }
+        .qnToastIcon { font-size:1.5em; flex-shrink:0; }
+        .qnToastBody { flex:1; min-width:0; }
+        .qnToastTitle { font-weight:800; margin-bottom:4px; }
+        .qnToastMsg { opacity:0.9; line-height:1.4; word-break:break-word; }
+        .qnToastClose { background:rgba(255,255,255,0.15); border:none; color:white; border-radius:50%; width:22px; height:22px; cursor:pointer; flex-shrink:0; font-size:0.8em; }
+        .qnToastProgress { height:3px; background:rgba(255,255,255,0.2); border-radius:2px; margin-top:8px; overflow:hidden; }
+        .qnToastProgressBar { height:100%; width:100%; background:rgba(255,255,255,0.5); border-radius:2px; }
+        .qnToastBtns { margin-top:8px; }
+        .qnToastBtn { background:rgba(255,255,255,0.2); border:1px solid rgba(255,255,255,0.4); color:white; border-radius:8px; padding:5px 12px; cursor:pointer; font-size:0.82em; font-weight:700; }
+        .qnToastBtn:hover { background:rgba(255,255,255,0.35); }
+        .qnToastQuiz { background:linear-gradient(135deg,#0d47a1,#1976d2); }
+        .qnToastResult { background:linear-gradient(135deg,#e65100,#f57c00); }
+
+        /* ── REMEMBER ME ── */
+        .remember-row { display:flex; align-items:center; gap:8px; margin-top:-4px; margin-bottom:16px; }
+        .remember-row input { width:auto; }
+        .remember-row label { font-size:0.87em; color:#666; font-weight:600; margin:0; }
+
+        /* ── DIVIDER ── */
+        .or-divider { text-align:center; margin:16px 0; color:#aaa; font-size:0.85em; position:relative; }
+        .or-divider::before,.or-divider::after { content:''; position:absolute; top:50%; width:42%; height:1px; background:#e0e0e0; }
+        .or-divider::before { left:0; } .or-divider::after { right:0; }
+
+        /* ── COMPLETED NEXT QUIZ ── */
+        .next-quiz-grid { display:flex; flex-wrap:wrap; gap:12px; margin-top:14px; }
+        .next-quiz-block { flex:1; min-width:130px; background:white; border-radius:8px; padding:10px 16px; text-align:center; }
+        .nqb-label { color:#888; font-size:0.72em; text-transform:uppercase; letter-spacing:1px; margin-bottom:4px; }
+
+        /* ── STATUS BADGE ── */
+        .conn-dot { display:inline-block; width:9px; height:9px; border-radius:50%; background:#e0e0e0; margin-right:5px; }
+        .conn-dot.on { background:#4caf50; box-shadow:0 0 6px rgba(76,175,80,0.6); }
+        .conn-status { font-size:0.78em; color:#888; text-align:right; margin-bottom:12px; }
+
+        /* ── SHIMMER SKELETON ── */
+        @keyframes shimmer { 0%{background-position:-600px 0} 100%{background-position:600px 0} }
+        .skeleton { background:linear-gradient(90deg,#f0f0f0 25%,#e0e0e0 50%,#f0f0f0 75%); background-size:1000px 100%; animation:shimmer 1.5s infinite; border-radius:6px; height:14px; margin-bottom:8px; }
+    </style>
+</head>
+<body>
+
+<!-- ── PEER NUDGE TOAST CONTAINER ── -->
+<div id="qnToastContainer"></div>
+
+<div class="container">
+
+    <!-- ── BANNER GIF — same as main page ── -->
+    <img src="banner.gif?v=5" class="banner" alt="Spurthi Youth Fest 2026">
+
+    <!-- ── PROMO CARD BANNER ── -->
+    <div id="promoCardBanner">
+        <div id="promoCardTrack"></div>
+        <div class="promo-dots" id="promoDots"></div>
+    </div>
+
+    <!-- ── HEADER (below banner, same as main page) ── -->
+    <div class="header">
+        <h1>🎉 SPURTHI YOUTH FEST 2026 🎉</h1>
+        <p>Daily Quiz Portal — Open to All</p>
+        <p style="margin-top:6px"><a href="index.html" style="color:#ffe082;font-size:0.85em;opacity:0.9">← Back to Main Page</a></p>
+    </div>
+
+    <!-- ── CONNECTION STATUS ── -->
+    <div class="conn-status">
+        <span class="conn-dot" id="connDot"></span><span id="connText">Connecting…</span>
+    </div>
+
+    <!-- ── LIVE EVENTS BANNER ── -->
+    <div id="liveEventsBanner">
+        <div class="leb-header">
+            <div class="leb-header-left">
+                <span class="leb-icon">🎡</span>
+                <span class="leb-title">TODAY'S EVENTS</span>
+                <span class="leb-date-pill" id="lebTodayDate"></span>
+            </div>
+            <span class="leb-count-pill" id="lebEventCount"></span>
+        </div>
+        <div class="leb-body" id="lebBody"></div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════ -->
+    <!-- SECTION A: Registration + Login (shown before login)       -->
+    <!-- ══════════════════════════════════════════════════════════ -->
+    <div id="authSection">
+
+        <!-- ── REGISTRATION CARD ── -->
+        <div class="card" id="regCard">
+            <h2>📝 Register to Play</h2>
+            <p style="color:#666;font-size:0.9em;margin-bottom:20px">One-time registration. Get your password instantly & play daily!</p>
+
+            <div id="regMessage" class="msg"></div>
+
+            <!-- WHO ARE YOU? -->
+            <div class="form-group">
+                <label>Who are you? *</label>
+                <div class="who-tabs">
+                    <div class="who-tab" id="tab-alumni" onclick="selectWho('alumni')">
+                        <span class="tab-icon">🏅</span>Alumni
+                    </div>
+                    <div class="who-tab" id="tab-other" onclick="selectWho('other')">
+                        <span class="tab-icon">👤</span>Other
+                    </div>
+                </div>
+            </div>
+
+            <!-- NAME -->
+            <div class="form-group">
+                <label for="regName">Full Name *</label>
+                <input type="text" id="regName" placeholder="Enter your full name" autocomplete="name">
+            </div>
+
+            <!-- ALUMNI FIELDS -->
+            <div id="alumniFields" style="display:none">
+                <div class="form-group">
+                    <label for="regCourse">Course *</label>
+                    <select id="regCourse">
+                        <option value="">-- Select Course --</option>
+                        <option value="PUC">PUC</option>
+                        <option value="BBA">BBA</option>
+                        <option value="B.Com">B.Com</option>
+                        <option value="BCA">BCA</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="regPassYear">Year of Passing *</label>
+                    <select id="regPassYear">
+                        <option value="">-- Select Year --</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- OTHER FIELDS -->
+            <div id="otherFields" style="display:none">
+                <div class="form-group">
+                    <label for="regCategory">Describe Yourself * <span style="color:#888;font-weight:400">(e.g. Faculty, Industry Professional, Parent, Guest)</span></label>
+                    <input type="text" id="regCategory" placeholder="e.g. Faculty, Industry Professional…">
+                </div>
+            </div>
+
+            <!-- PHONE -->
+            <div class="form-group">
+                <label for="regPhone">Phone Number * <span style="color:#888;font-weight:400">(used as Login ID)</span></label>
+                <input type="tel" id="regPhone" placeholder="10-digit mobile number" maxlength="12" inputmode="numeric" pattern="[0-9]*" autocomplete="tel">
+            </div>
+
+            <!-- EMAIL — optional for all -->
+            <div class="form-group" id="emailRow">
+                <label for="regEmail">Email <span style="color:#888;font-weight:400">(optional — password will be emailed if provided)</span></label>
+                <input type="email" id="regEmail" placeholder="your@email.com" autocomplete="email">
+            </div>
+
+            <button class="btn btn-primary" onclick="registerUser()" id="regBtn">
+                🚀 Register &amp; Get Password
+            </button>
+        </div>
+
+        <!-- ── LOGIN CARD ── -->
+        <div class="card" id="loginCard">
+            <h2 id="devTriggerLogin" style="cursor:default">🔐 Login to Play</h2>
+            <p style="color:#666;font-size:0.88em;margin-bottom:16px">Already registered? Enter your phone number and password.</p>
+
+            <div id="loginMessage" class="msg"></div>
+
+            <div class="form-group">
+                <label for="loginPhone">Phone Number</label>
+                <input type="tel" id="loginPhone" placeholder="10-digit phone number" maxlength="12" inputmode="numeric" pattern="[0-9]*" autocomplete="tel" onkeydown="if(event.key==='Enter')loginUser()">
+            </div>
+            <div class="form-group">
+                <label for="loginPwd">Password</label>
+                <input type="password" id="loginPwd" placeholder="Your password" autocomplete="current-password" onkeydown="if(event.key==='Enter')loginUser()">
+            </div>
+            <div class="remember-row">
+                <input type="checkbox" id="rememberMe">
+                <label for="rememberMe">Remember me on this device</label>
+            </div>
+
+            <button class="btn btn-success" onclick="loginUser()" id="loginBtn">
+                ▶ Login &amp; Play
+            </button>
+        </div>
+
+    </div><!-- /authSection -->
+
+    <!-- ══════════════════════════════════════════════════════════ -->
+    <!-- SECTION B: Student Dashboard (shown after login)           -->
+    <!-- ══════════════════════════════════════════════════════════ -->
+    <div id="dashSection" style="display:none">
+
+        <!-- Logged in banner -->
+        <div style="background:linear-gradient(135deg,#28a745,#20c997);color:white;padding:14px 20px;border-radius:12px;margin-bottom:16px;text-align:center;font-size:1.1em;font-weight:700;box-shadow:0 4px 15px rgba(40,167,69,0.4)">
+            ✅ Logged In Successfully — Daily Quiz Competition
+        </div>
+
+        <!-- Header bar -->
+        <div style="background:linear-gradient(135deg,#6a1b9a,#c44569);padding:14px 18px;border-radius:12px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:20px;box-shadow:0 4px 15px rgba(0,0,0,0.2)">
+            <div style="color:white;font-weight:700;font-size:1em;display:flex;align-items:center;gap:10px">
+                🎓 Daily Quiz Competition
+                <span id="dashNameBadge" style="background:#28a745;color:white;padding:5px 12px;border-radius:20px;font-size:0.75em"></span>
+            </div>
+            <button class="btn btn-secondary btn-small" onclick="logoutUser()" style="flex-shrink:0">Logout</button>
+        </div>
+
+        <div class="card">
+            <h2 style="color:#6a1b9a">Welcome, <span id="dashName"></span>! 👋</h2>
+            <p style="margin-bottom:18px;color:#666">
+                <strong>Phone:</strong> <span id="dashPhone"></span> &nbsp;|&nbsp;
+                <strong>Category:</strong> <span id="dashClass"></span>
+            </p>
+
+            <!-- Live clock -->
+            <div class="live-clock">
+                <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+                    <div class="clock-block"><div class="clock-label">Day</div><div class="clock-val" id="clockDay"></div></div>
+                    <div class="clock-block"><div class="clock-label">Date</div><div class="clock-val gold" id="clockDate"></div></div>
+                    <div class="clock-block"><div class="clock-label">Time</div><div class="clock-val green" id="clockTime"></div></div>
+                </div>
+                <div id="clockAmPm" style="color:rgba(255,255,255,0.85);font-size:0.85em;font-weight:600;text-align:right;line-height:1.8"></div>
+            </div>
+
+            <!-- Quiz status -->
+            <div style="background:#fff3cd;padding:18px;border-radius:12px;border-left:5px solid #ffc107;margin-bottom:20px">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+                    <h3 style="color:#856404;margin:0">📅 Today's Quiz Status</h3>
+                    <button class="btn btn-small" onclick="checkQuizStatus()" style="background:#ffc107;color:#333">🔄 Refresh</button>
+                </div>
+                <div id="quizStatusDiv"></div>
+            </div>
+
+            <!-- Start section -->
+            <div id="quizStartSection" style="display:none">
+                <div class="anticheat">
+                    <h3>⚠️ Anti-Cheating Rules</h3>
+                    <ul>
+                        <li>Do NOT refresh the page</li>
+                        <li>Do NOT press back button</li>
+                        <li>Do NOT switch tabs or minimize browser</li>
+                        <li>Quiz will AUTO-SUBMIT if rules violated</li>
+                        <li>You get ONE attempt per day only</li>
+                    </ul>
+                </div>
+                <button class="btn btn-success" onclick="startQuiz()" style="font-size:1.15em;padding:16px">🚀 Start Today's Quiz</button>
+            </div>
+
+            <!-- Completed section -->
+            <div id="quizCompletedSection" style="display:none">
+                <div class="msg success show">
+                    <strong>✅ Quiz Completed!</strong> You submitted today's quiz. Results will be announced soon.
+                </div>
+                <div style="background:#f3e5f5;border:2px solid #9c27b0;border-radius:12px;padding:16px 20px;margin-top:16px">
+                    <h4 style="color:#6a1b9a;margin:0 0 12px">📅 Next Quiz Schedule</h4>
+                    <div class="next-quiz-grid">
+                        <div class="next-quiz-block" style="border-left:4px solid #4caf50">
+                            <div class="nqb-label">Next Quiz Starts</div>
+                            <div id="nextStart" style="color:#2e7d32;font-weight:800;font-size:1em">--</div>
+                        </div>
+                        <div class="next-quiz-block" style="border-left:4px solid #f44336">
+                            <div class="nqb-label">Next Quiz Ends</div>
+                            <div id="nextEnd" style="color:#c62828;font-weight:800;font-size:1em">--</div>
+                        </div>
+                        <div class="next-quiz-block" style="border-left:4px solid #9c27b0">
+                            <div class="nqb-label">Starts In</div>
+                            <div id="nextCountdown" style="color:#6a1b9a;font-weight:800;font-size:1em">--:--:--</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Results section -->
+            <div id="quizResultsSection" style="display:none">
+                <h3 style="color:#667eea;margin-top:16px">📊 Your Results</h3>
+                <div id="quizResultsDiv"></div>
+            </div>
+        </div>
+    </div><!-- /dashSection -->
+
+    <!-- ══════════════════════════════════════════════════════════ -->
+    <!-- SECTION C: Quiz Play Page                                  -->
+    <!-- ══════════════════════════════════════════════════════════ -->
+    <div id="quizPlaySection" style="display:none">
+        <div class="quiz-timer-box" id="quizTimerBox">
+            ⏱️ <span id="quizTimerVal">00:00</span>
+        </div>
+
+        <div class="card">
+            <h2 style="text-align:center;color:#c44569">📝 Daily Quiz Competition</h2>
+            <p id="quizDateDisplay" style="text-align:center;color:#667eea;font-weight:600;margin-bottom:24px;font-size:1.1em"></p>
+            <div id="quizPlayMsg" class="msg"></div>
+            <div id="quizQContainer"></div>
+            <button class="quiz-submit-btn" id="quizSubmitBtn" onclick="submitQuiz()">✅ Submit Quiz</button>
+        </div>
+    </div>
+
+    <!-- ── DEV QUICK LOGIN PANEL ── -->
+    <div id="devPanel" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:99999;background:linear-gradient(135deg,#1a1a2e,#16213e);border:2px solid #6a1b9a;border-radius:16px;padding:18px 20px;box-shadow:0 8px 40px rgba(0,0,0,.85);min-width:280px;max-width:92vw;font-family:'Segoe UI',sans-serif">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+            <span style="color:#ffd700;font-weight:800;font-size:1em">🔧 Dev Quick Login</span>
+            <button onclick="document.getElementById('devPanel').style.display='none'" style="background:rgba(255,255,255,.15);border:none;color:white;border-radius:8px;padding:4px 10px;cursor:pointer;font-size:.9em">✕</button>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+            <div style="border-bottom:1px solid rgba(255,255,255,.1);padding-bottom:8px;margin-bottom:4px">
+                <p style="color:rgba(255,255,255,.4);font-size:.72em;margin:0 0 7px;text-transform:uppercase;letter-spacing:.5px">🎓 Quiz Login — 9844542132</p>
+                <button onclick="devLoginQuiz()" style="background:linear-gradient(135deg,#e65100,#ff6d00);color:white;border:none;padding:11px 14px;border-radius:10px;cursor:pointer;font-weight:700;font-size:.9em;text-align:left;width:100%">📝 Auto Login (Quiz)</button>
+            </div>
+        </div>
+        <p style="color:rgba(255,255,255,.25);font-size:.68em;margin:12px 0 0;text-align:center">/*- in password field = auto login · tap "Login to Play" 5× = this panel</p>
+    </div>
+
+    <!-- ── FOOTER — same style as main page ── -->
+    <footer style="background:white;border-radius:12px;padding:25px;margin-top:30px;box-shadow:0 4px 20px rgba(0,0,0,0.1);">
+        <div style="text-align:center;">
+
+            <!-- Circular animated logo (top) -->
+            <div style="margin-bottom:0px;">
+                <img src="davan_logo_2026.gif" alt="Spurthi Davan Circular Logo" style="height:200px;width:auto;display:inline-block;" id="devTriggerLogo">
+            </div>
+
+            <p style="color:#6a1b9a;font-size:0.9em;margin-bottom:8px;">
+                © 2026 Davan Institute of Advanced Management Studies
+            </p>
+
+            <p style="color:#666;font-size:0.85em;margin-bottom:8px;" id="devTriggerVersion">
+                <strong>Version:</strong> 1.01 — Quiz Portal: banner.gif, promo cards, Alumni+Other registration, dev panel, email optional &nbsp;|&nbsp; <strong>Last Updated:</strong> Mar 09, 2026, 04:45 PM IST
+            </p>
+
+            <p style="color:#c44569;font-size:0.85em;font-weight:600;margin-bottom:8px;">
+                Built by Harsha Gujjar, Director - Davan College
+            </p>
+
+            <!-- Text logo (below "Built by") -->
+            <div style="margin-top:12px;">
+                <img src="davan_logo.png" alt="Spurthi Davan Text Logo" style="height:80px;width:auto;display:inline-block;">
+            </div>
+
+        </div>
+    </footer>
+
+</div><!-- /container -->
+
+<!--
+    ═══════════════════════════════════════════════════════════════
+    QUIZ PORTAL — VERSION HISTORY
+    ═══════════════════════════════════════════════════════════════
+    v1.02 | Mar 09, 2026, 04:45 PM IST | Fix: Header order now matches main page (banner.gif first, then title below — no logo above banner); footer replaced with full main-page style white card: davan_logo_2026.gif circular (200px), © line, version line with devTriggerVersion id, "Built by Harsha Gujjar" line, davan_logo.png text logo (80px); removed old simple dark footer
+    v1.01 | Mar 09, 2026, 04:45 PM IST | Update: Added banner.gif (same as main page); added rotating promo card banner reading Firebase promoCards node; removed Student tab — registration now Alumni + Other only; Alumni fields now have Course (PUC/BBA/B.Com/BCA) + Year of Passing 2007→current year, class saved as "Alumni - BCA - 2019"; email made optional for all (password shown on screen always, emailed if provided); dev panel added — type /*- in password field = auto quiz login, tap "Login to Play" heading 5× = show panel
+    v1.00 | Mar 09, 2026, 04:45 PM IST | New: Standalone quiz portal with registration for Students (PUC/BBA/B.Com/BCA), Alumni (year of passing), Others (free text + phone mandatory); mirrors all quiz logic from main page: same Firebase nodes, same anti-cheat, peer nudge, live events banner (no scavenger hunt), password on screen + email, SA panel visibility automatic
+    ═══════════════════════════════════════════════════════════════ -->
+
+<!-- ══════════════════════════════════════════════════════════════ -->
+<!--                        SCRIPTS                                 -->
+<!-- ══════════════════════════════════════════════════════════════ -->
+<script>
+// ── FIREBASE INIT (same project as main page) ──────────────────
+const firebaseConfig = {
+    apiKey:            "AIzaSyCkjglXJOsXEqGrlavYL4vQ635BV_dbMzY",
+    authDomain:        "spurthi-youthfest-2026.firebaseapp.com",
+    databaseURL:       "https://spurthi-youthfest-2026-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId:         "spurthi-youthfest-2026",
+    storageBucket:     "spurthi-youthfest-2026.firebasestorage.app",
+    messagingSenderId: "832948123456",
+    appId:             "1:832948123456:web:abc123"
+};
+if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+window.db = db;
+
+// ── CONNECTION STATUS ──────────────────────────────────────────
+db.ref('.info/connected').on('value', snap => {
+    const dot  = document.getElementById('connDot');
+    const text = document.getElementById('connText');
+    if (snap.val()) { dot.className = 'conn-dot on'; text.textContent = 'Connected'; }
+    else            { dot.className = 'conn-dot';    text.textContent = 'Disconnected'; }
+});
+
+// ── SERVER TIME ────────────────────────────────────────────────
+let _serverOffsetMs  = 0;
+let _serverFetched   = false;
+async function fetchServerOffset() {
+    if (_serverFetched) return;
+    try {
+        const s = await db.ref('.info/serverTimeOffset').once('value');
+        _serverOffsetMs = s.val() || 0;
+        _serverFetched  = true;
+    } catch(e) { _serverFetched = true; }
+}
+function getServerNow()  { return new Date(Date.now() + _serverOffsetMs); }
+function getQuizToday()  {
+    const n = getServerNow();
+    return `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`;
+}
+window.getQuizToday = getQuizToday;
+async function getQuizTodayServer() { await fetchServerOffset(); return getQuizToday(); }
+
+// ── EMAIL ──────────────────────────────────────────────────────
+const BREVO_WORKER_URL = 'https://cld-proxy.harshgujjar.workers.dev';
+const BREVO_SENDER     = { name: 'Davan Institute Quiz', email: 'davancollege02@gmail.com' };
+async function sendEmail(to, subject, body) {
+    try {
+        const r = await fetch(BREVO_WORKER_URL, {
+            method:'POST', headers:{'Content-Type':'application/json'},
+            body: JSON.stringify({ sender: BREVO_SENDER, to:[{email:to}], subject, textContent: body })
+        });
+        if (r.ok) return true;
+    } catch(e) { console.warn('Brevo failed:', e.message); }
+    try {
+        if (typeof emailjs !== 'undefined') {
+            await emailjs.send('service_zhy3bnp','template_o2i00b5',
+                {to_email:to, subject, message:body, reply_to:'davancollege02@gmail.com'});
+            return true;
+        }
+    } catch(e) { console.warn('EmailJS failed:', e.message); }
+    return false;
+}
+
+// ── GENERATE PASSWORD ──────────────────────────────────────────
+function generatePassword() {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#$';
+    let p = '';
+    for (let i = 0; i < 10; i++) p += chars[Math.floor(Math.random() * chars.length)];
+    return p;
+}
+
+// ── SHOW MESSAGE ───────────────────────────────────────────────
+function showMsg(id, text, type) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.className = `msg ${type} show`;
+    el.innerHTML = text;
+    const t = type === 'error' ? 10000 : 6000;
+    setTimeout(() => { el.classList.remove('show'); }, t);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// REGISTRATION
+// ═══════════════════════════════════════════════════════════════
+let selectedWho = '';
+
+// Populate alumni year dropdown: 2007 → current year (ascending)
+(function populateYears(){
+    const sel = document.getElementById('regPassYear');
+    const curYear = new Date().getFullYear();
+    for (let y = 2007; y <= curYear; y++) {
+        const o = document.createElement('option');
+        o.value = y; o.textContent = y;
+        sel.appendChild(o);
+    }
+})();
+
+function selectWho(who) {
+    selectedWho = who;
+    ['alumni','other'].forEach(w => {
+        document.getElementById('tab-'+w).classList.toggle('active', w === who);
+        const f = document.getElementById(w+'Fields');
+        if (f) f.style.display = w === who ? 'block' : 'none';
+    });
+}
+
+async function registerUser() {
+    const btn = document.getElementById('regBtn');
+    if (btn.disabled) return;
+
+    const name     = document.getElementById('regName').value.trim();
+    const phoneRaw = document.getElementById('regPhone').value.trim();
+    const phone    = phoneRaw.replace(/\D/g,'').slice(-10);
+    const email    = document.getElementById('regEmail').value.trim();
+
+    // Basic validation
+    if (!selectedWho) { showMsg('regMessage','⚠️ Please select who you are (Alumni / Other)','error'); return; }
+    if (!name)         { showMsg('regMessage','⚠️ Please enter your full name','error'); return; }
+    if (phone.length !== 10) { showMsg('regMessage','⚠️ Enter a valid 10-digit phone number','error'); return; }
+
+    // Email format check if provided
+    if (email && !email.includes('@')) { showMsg('regMessage','⚠️ Invalid email address','error'); return; }
+
+    // Category-specific validation
+    let categoryLabel = '';
+    if (selectedWho === 'alumni') {
+        const course = document.getElementById('regCourse').value;
+        const yr     = document.getElementById('regPassYear').value;
+        if (!course) { showMsg('regMessage','⚠️ Please select your course','error'); return; }
+        if (!yr)     { showMsg('regMessage','⚠️ Please select your year of passing','error'); return; }
+        categoryLabel = `Alumni - ${course} - ${yr}`;
+    } else if (selectedWho === 'other') {
+        const cat = document.getElementById('regCategory').value.trim();
+        if (!cat) { showMsg('regMessage','⚠️ Please describe yourself (e.g. Faculty, Industry Professional)','error'); return; }
+        categoryLabel = `Other - ${cat}`;
+    }
+
+    btn.disabled = true; btn.textContent = '⏳ Registering…';
+
+    try {
+        const studRef = db.ref('quizStudents');
+
+        // Duplicate phone check
+        const [pSnap, pSnap0] = await Promise.all([
+            studRef.orderByChild('phone').equalTo(phone).once('value'),
+            studRef.orderByChild('phone').equalTo('0'+phone).once('value')
+        ]);
+        if (pSnap.exists() || pSnap0.exists()) {
+            showMsg('regMessage','❌ This phone number is already registered. Please login below.','error');
+            btn.disabled = false; btn.textContent = '🚀 Register & Get Password';
+            document.getElementById('loginPhone').value = phone;
+            document.getElementById('loginCard').scrollIntoView({behavior:'smooth',block:'start'});
+            return;
+        }
+
+        // Duplicate email check (only if email provided)
+        if (email) {
+            const eSnap = await studRef.orderByChild('email').equalTo(email).once('value');
+            if (eSnap.exists()) {
+                showMsg('regMessage','❌ This email is already registered. Please login below.','error');
+                btn.disabled = false; btn.textContent = '🚀 Register & Get Password';
+                return;
+            }
+        }
+
+        const password = generatePassword();
+        const newRef   = studRef.push();
+        const key      = newRef.key;
+
+        await newRef.set({
+            name, phone, email: email || '', class: categoryLabel, password,
+            registeredAt: new Date().toISOString(), status: 'active',
+            registeredFrom: 'quiz-portal', emailStatus: email ? 'pending' : 'no-email',
+            userType: selectedWho
+        });
+
+        // Send email only if provided
+        let emailSent = false;
+        if (email) {
+            const emailBody =
+`Hello ${name},
+
+Welcome to the Spurthi Youth Fest 2026 Daily Quiz Competition!
+
+Your Login Credentials:
+  📞 Phone (Login ID): ${phone}
+  🔑 Password: ${password}
+  🎓 Category: ${categoryLabel}
+
+Login at: https://harshgujjar.github.io/Spurthi-youth-fest-2026/quiz.html
+
+Please keep this password secure. Answer 2 questions daily and win prizes!
+
+Good luck!
+Davan Institute Team — Spurthi Youth Fest 2026`;
+            emailSent = await sendEmail(email, '🎓 Spurthi Quiz — Your Password', emailBody);
+            await studRef.child(key).update(
+                emailSent
+                    ? { emailStatus:'sent',   emailSentAt:new Date().toISOString() }
+                    : { emailStatus:'failed', emailFailedAt:new Date().toISOString() }
+            );
+        }
+
+        // Password display box
+        const emailNote = email
+            ? `<div style="background:#e3f2fd;border-radius:10px;padding:10px 14px;font-size:0.84em;color:#1565c0;text-align:center;margin-top:8px">
+                 📧 ${emailSent ? 'Password emailed to' : '⚠️ Email send failed for'} <strong>${email}</strong>${emailSent ? ' — check inbox & spam' : '. Use the password shown above.'}
+               </div>`
+            : '<div style="background:#fff8e1;border-radius:10px;padding:10px 14px;font-size:0.84em;color:#e65100;text-align:center;margin-top:8px">📌 No email provided — save the password shown above!</div>';
+
+        document.getElementById('regMessage').className = 'msg show';
+        document.getElementById('regMessage').innerHTML = `
+            <div style="background:linear-gradient(135deg,#e8f5e9,#f1f8e9);border:3px solid #2e7d32;border-radius:14px;padding:24px;box-shadow:0 4px 18px rgba(46,125,50,0.18)">
+                <h3 style="color:#1b5e20;margin:0 0 16px;text-align:center">✅ Registration Successful!</h3>
+                <div style="background:white;padding:14px 18px;border-radius:10px;margin-bottom:14px;border:1px solid #c8e6c9;font-size:0.93em">
+                    <p style="margin:4px 0"><strong>👤 Name:</strong> ${name}</p>
+                    <p style="margin:4px 0"><strong>📞 Phone:</strong> ${phone}</p>
+                    <p style="margin:4px 0"><strong>🎓 Category:</strong> ${categoryLabel}</p>
+                </div>
+                <div style="background:linear-gradient(135deg,#fff9c4,#fff176);border:3px solid #f9a825;border-radius:12px;padding:20px;text-align:center;margin-bottom:12px">
+                    <div style="font-size:0.9em;font-weight:700;color:#e65100;margin-bottom:8px">🔑 YOUR PASSWORD — SAVE THIS NOW!</div>
+                    <div id="pwdDisplay" style="background:white;border:2px dashed #fbc02d;border-radius:10px;padding:12px 24px;display:inline-block;cursor:pointer;margin-bottom:8px"
+                         onclick="navigator.clipboard.writeText('${password}').then(()=>{document.getElementById('cpyMsg').style.display='inline';setTimeout(()=>document.getElementById('cpyMsg').style.display='none',2000)}).catch(()=>{})">
+                        <span style="font-size:2em;font-weight:900;color:#1a1a1a;font-family:monospace;letter-spacing:3px">${password}</span>
+                    </div>
+                    <span id="cpyMsg" style="display:none;background:#2e7d32;color:white;padding:3px 12px;border-radius:20px;font-size:0.8em;font-weight:700;margin-left:8px">✅ Copied!</span>
+                    <div style="font-size:0.8em;color:#e65100;font-weight:600;margin-top:4px">👆 Tap to copy &nbsp;|&nbsp; 📸 Screenshot this!</div>
+                </div>
+                ${emailNote}
+            </div>`;
+
+        // Auto-fill login form
+        document.getElementById('loginPhone').value = phone;
+        document.getElementById('loginPwd').value   = password;
+
+        // Reset registration form
+        document.getElementById('regName').value  = '';
+        document.getElementById('regPhone').value = '';
+        document.getElementById('regEmail').value = '';
+        selectWho(''); selectedWho = '';
+        ['alumni','other'].forEach(w => {
+            document.getElementById('tab-'+w).classList.remove('active');
+            const f = document.getElementById(w+'Fields'); if(f) f.style.display='none';
+        });
+
+        btn.disabled = false; btn.textContent = '🚀 Register & Get Password';
+        setTimeout(() => document.getElementById('loginCard').scrollIntoView({behavior:'smooth',block:'start'}), 800);
+
+    } catch(err) {
+        console.error('Registration error:', err);
+        showMsg('regMessage','❌ Registration failed: ' + (err.message || 'Check your connection'),'error');
+        btn.disabled = false; btn.textContent = '🚀 Register & Get Password';
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// LOGIN
+// ═══════════════════════════════════════════════════════════════
+let quizCurrentUser = null;
+window.quizCurrentUser = null;
+
+async function loginUser() {
+    const btn = document.getElementById('loginBtn');
+    if (btn.disabled) return;
+
+    const phoneRaw = document.getElementById('loginPhone').value.trim();
+    const phone    = phoneRaw.replace(/\D/g,'').slice(-10);
+    const password = document.getElementById('loginPwd').value.trim();
+
+    if (phone.length !== 10) { showMsg('loginMessage','⚠️ Enter a valid 10-digit phone number','error'); return; }
+    if (!password)            { showMsg('loginMessage','⚠️ Enter your password','error'); return; }
+
+    btn.disabled = true; btn.innerHTML = '⏳ Logging in…';
+
+    try {
+        await fetchServerOffset();
+        const studRef = db.ref('quizStudents');
+        let snap = await studRef.orderByChild('phone').equalTo(phone).once('value');
+        if (!snap.exists()) snap = await studRef.orderByChild('phone').equalTo('0'+phone).once('value');
+
+        if (!snap.exists()) {
+            showMsg('loginMessage','❌ Phone number not registered. Please register first.','error');
+            btn.disabled = false; btn.innerHTML = '▶ Login & Play';
+            return;
+        }
+
+        let studentData = null, studentKey = null;
+        snap.forEach(ch => { studentData = ch.val(); studentKey = ch.key; });
+
+        if (studentData.password !== password) {
+            showMsg('loginMessage','❌ Incorrect password. Check and try again.','error');
+            btn.disabled = false; btn.innerHTML = '▶ Login & Play';
+            return;
+        }
+
+        // Remember me
+        if (document.getElementById('rememberMe').checked) {
+            localStorage.setItem('qp_remember','1');
+            localStorage.setItem('qp_ph', phone);
+            localStorage.setItem('qp_pw', password);
+        } else {
+            localStorage.removeItem('qp_remember');
+            localStorage.removeItem('qp_ph');
+            localStorage.removeItem('qp_pw');
+        }
+
+        quizCurrentUser = { key: studentKey, ...studentData };
+        window.quizCurrentUser = quizCurrentUser;
+        window._currentUserName  = studentData.name  || '';
+        window._currentUserClass = studentData.class || '';
+
+        // Hide auth, show dashboard
+        document.getElementById('authSection').style.display = 'none';
+        document.getElementById('dashSection').style.display = 'block';
+
+        // Fill dashboard
+        document.getElementById('dashName').textContent      = studentData.name;
+        document.getElementById('dashNameBadge').textContent = studentData.name;
+        document.getElementById('dashPhone').textContent     = studentData.phone || phone;
+        document.getElementById('dashClass').textContent     = studentData.class || '—';
+
+        startLiveClock();
+        await checkQuizStatus();
+
+        // Start peer nudge listener
+        startPeerNudgeListener();
+
+        window.scrollTo({ top:0, behavior:'smooth' });
+        btn.disabled = false; btn.innerHTML = '▶ Login & Play';
+
+    } catch(err) {
+        console.error('Login error:', err);
+        showMsg('loginMessage','❌ Login failed: ' + (err.message || 'Check your connection'),'error');
+        btn.disabled = false; btn.innerHTML = '▶ Login & Play';
+    }
+}
+
+function logoutUser() {
+    quizCurrentUser = null;
+    window.quizCurrentUser = null;
+    stopLiveClock();
+    stopQuizTimer();
+    document.getElementById('dashSection').style.display  = 'none';
+    document.getElementById('quizPlaySection').style.display = 'none';
+    document.getElementById('authSection').style.display  = 'block';
+    document.getElementById('loginPhone').value = '';
+    document.getElementById('loginPwd').value   = '';
+    window.scrollTo({ top:0, behavior:'smooth' });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// LIVE CLOCK
+// ═══════════════════════════════════════════════════════════════
+let _clockInterval = null;
+function startLiveClock() {
+    stopLiveClock();
+    const days   = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    function tick() {
+        const n    = new Date();
+        const ampm = n.getHours() >= 12 ? 'PM' : 'AM';
+        let h      = n.getHours() % 12 || 12;
+        const el   = id => document.getElementById(id);
+        if (el('clockDay'))  el('clockDay').textContent  = days[n.getDay()];
+        if (el('clockDate')) el('clockDate').textContent = `${n.getDate()} ${months[n.getMonth()]} ${n.getFullYear()}`;
+        if (el('clockTime')) el('clockTime').textContent = `${String(h).padStart(2,'0')}:${String(n.getMinutes()).padStart(2,'0')}:${String(n.getSeconds()).padStart(2,'0')}`;
+        if (el('clockAmPm')) el('clockAmPm').innerHTML   = `${ampm}<br><span style="font-size:10px;opacity:0.7">IST</span>`;
+    }
+    tick();
+    _clockInterval = setInterval(tick, 1000);
+}
+function stopLiveClock() { if (_clockInterval) { clearInterval(_clockInterval); _clockInterval = null; } }
+
+// ═══════════════════════════════════════════════════════════════
+// QUIZ STATUS CHECK
+// ═══════════════════════════════════════════════════════════════
+async function checkQuizStatus() {
+    const today = await getQuizTodayServer();
+    const sDiv  = document.getElementById('quizStatusDiv');
+    sDiv.innerHTML = '<div class="skeleton" style="width:80%;height:16px"></div><div class="skeleton" style="width:60%;height:14px;margin-top:6px"></div>';
+    document.getElementById('quizStartSection').style.display     = 'none';
+    document.getElementById('quizCompletedSection').style.display = 'none';
+    document.getElementById('quizResultsSection').style.display   = 'none';
+
+    try {
+        const qSnap = await db.ref(`quizQuestions/${today}`).once('value');
+        if (!qSnap.exists()) {
+            sDiv.innerHTML = '<div style="background:#fff3cd;padding:14px;border-radius:8px"><p style="margin:0;color:#856404">⏳ Today\'s quiz not yet available. Check back later!</p></div>';
+            return;
+        }
+
+        if (!quizCurrentUser) return;
+
+        // Check if already submitted
+        const subSnap = await db.ref(`quizSubmissions/${today}`)
+            .orderByChild('studentEmail').equalTo(quizCurrentUser.email || '').once('value');
+        let alreadySubmitted = false, submission = null;
+        if (subSnap.exists()) {
+            subSnap.forEach(ch => {
+                if (ch.val().studentKey === quizCurrentUser.key) {
+                    alreadySubmitted = true; submission = ch.val();
+                }
+            });
+        }
+        // Also check by studentKey if email empty
+        if (!alreadySubmitted) {
+            const subSnap2 = await db.ref(`quizSubmissions/${today}`).once('value');
+            if (subSnap2.exists()) {
+                subSnap2.forEach(ch => {
+                    if (ch.val().studentKey === quizCurrentUser.key) {
+                        alreadySubmitted = true; submission = ch.val();
+                    }
+                });
+            }
+        }
+
+        if (alreadySubmitted) {
+            sDiv.innerHTML = '<div style="background:#d1ecf1;padding:14px;border-radius:8px"><p style="margin:0;color:#0c5460">✅ You have completed today\'s quiz!</p></div>';
+            document.getElementById('quizCompletedSection').style.display = 'block';
+            startNextQuizCountdown();
+
+            // Check results
+            const resSnap = await db.ref(`quizResults/${today}`).once('value');
+            if (resSnap.exists()) {
+                const results = resSnap.val();
+                let html = '<div style="background:#f8f9fa;padding:18px;border-radius:10px">';
+                if (submission) html += `<p><strong>Submitted:</strong> ${new Date(submission.submittedAt).toLocaleString('en-IN')}</p>`;
+                if (results.winner && results.winner.email === quizCurrentUser.email) {
+                    html += '<div style="background:#d4edda;color:#155724;padding:14px;border-radius:8px;margin-top:12px"><strong>🏆 CONGRATULATIONS! You are the WINNER!</strong></div>';
+                } else if (results.runnerUp && results.runnerUp.email === quizCurrentUser.email) {
+                    html += '<div style="background:#d1ecf1;color:#0c5460;padding:14px;border-radius:8px;margin-top:12px"><strong>🥈 CONGRATULATIONS! You are the RUNNER-UP!</strong></div>';
+                } else {
+                    html += '<div style="background:#fff3cd;color:#856404;padding:14px;border-radius:8px;margin-top:12px"><strong>🔒 Score hidden until admin declares winners.</strong></div>';
+                }
+                html += '</div>';
+                document.getElementById('quizResultsDiv').innerHTML = html;
+                document.getElementById('quizResultsSection').style.display = 'block';
+            }
+        } else {
+            sDiv.innerHTML = '<div style="background:#d4edda;padding:14px;border-radius:8px"><p style="margin:0;color:#155724"><strong>✅ Ready!</strong> Today\'s quiz is available. Click below to start.</p></div>';
+            document.getElementById('quizStartSection').style.display = 'block';
+        }
+    } catch(err) {
+        console.error('Status check error:', err);
+        sDiv.innerHTML = '<div style="background:#f8d7da;padding:14px;border-radius:8px"><p style="margin:0;color:#721c24">❌ Error checking quiz status. Please refresh.</p></div>';
+    }
+}
+
+// Next quiz countdown
+function startNextQuizCountdown() {
+    if (window._nextCdInterval) clearInterval(window._nextCdInterval);
+    function tick() {
+        const now  = new Date();
+        const tom  = new Date(now); tom.setDate(tom.getDate()+1);
+        const ds   = tom.toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short'});
+        const s    = document.getElementById('nextStart');
+        const e    = document.getElementById('nextEnd');
+        const c    = document.getElementById('nextCountdown');
+        if (s) s.textContent = ds + ' · 12:00 AM';
+        if (e) e.textContent = ds + ' · 11:59 PM';
+        const midnight = new Date(now); midnight.setHours(24,0,0,0);
+        const diff = midnight - now;
+        if (diff > 0 && c) {
+            const h = Math.floor(diff/3600000), m = Math.floor((diff%3600000)/60000), sec = Math.floor((diff%60000)/1000);
+            c.textContent = String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')+':'+String(sec).padStart(2,'0');
+        } else if (c) c.textContent = 'Now!';
+    }
+    tick();
+    window._nextCdInterval = setInterval(tick, 1000);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// QUIZ PLAY
+// ═══════════════════════════════════════════════════════════════
+let quizStartTime   = null;
+let _timerInterval  = null;
+let antiCheatActive = false;
+let _submitting     = false;
+
+async function startQuiz() {
+    const today = await getQuizTodayServer();
+    try {
+        const snap = await db.ref(`quizQuestions/${today}`).once('value');
+        const questions = snap.val();
+        if (!questions || !questions.q1 || !questions.q2) {
+            alert('Quiz not available right now!'); return;
+        }
+
+        const dateStr = new Date(today+'T00:00:00').toLocaleDateString('en-IN',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+
+        document.getElementById('dashSection').style.display    = 'none';
+        document.getElementById('quizPlaySection').style.display = 'block';
+        document.getElementById('quizDateDisplay').textContent  = `📅 ${dateStr}`;
+        document.getElementById('quizTimerVal').textContent     = '00:00';
+        document.getElementById('quizTimerBox').style.background = 'linear-gradient(135deg,#667eea,#764ba2)';
+
+        renderQuestions(questions);
+        quizStartTime = Date.now();
+        startQuizTimer();
+        enableAntiCheat();
+        window.scrollTo({top:0, behavior:'smooth'});
+    } catch(err) {
+        alert('Error starting quiz: ' + err.message);
+    }
+}
+
+function renderQuestions(questions) {
+    let html = '';
+    [1,2].forEach(qNum => {
+        const q   = questions[`q${qNum}`];
+        const num = qNum === 1 ? 'One' : 'Two';
+        html += `<div class="quiz-question-card">
+            <h4>🎯 Question ${num}</h4>`;
+        if (q.image) html += `<div style="text-align:center;margin:12px 0"><img src="${q.image}" style="max-width:100%;max-height:280px;border-radius:10px;box-shadow:0 4px 15px rgba(0,0,0,0.2)"></div>`;
+        if (q.audio) html += `<div style="margin:12px 0;background:#f0f4ff;padding:12px;border-radius:8px;text-align:center"><p style="margin:0 0 6px;font-weight:600;color:#667eea;font-size:0.92em">🎵 Audio Clue</p><audio controls style="width:100%;max-width:400px"><source src="${q.audio}"></audio></div>`;
+        html += `<p class="q-text">${q.text}</p>`;
+        if (q.type === 'text') {
+            html += `<input class="quiz-text-answer" id="ans${qNum}" placeholder="Type your answer here…">`;
+        } else {
+            const letters = ['A','B','C','D'];
+            html += q.options.map((opt,i) =>
+                `<div class="quiz-option" id="opt_q${qNum}_${i}" onclick="selectOpt(${qNum},${i})">
+                    <span class="opt-letter">${letters[i]}</span>${opt}
+                </div>`
+            ).join('');
+        }
+        html += '</div>';
+    });
+    document.getElementById('quizQContainer').innerHTML = html;
+}
+
+function selectOpt(qNum, idx) {
+    document.querySelectorAll(`[id^="opt_q${qNum}_"]`).forEach(el => el.classList.remove('selected'));
+    const el = document.getElementById(`opt_q${qNum}_${idx}`);
+    if (el) el.classList.add('selected');
+}
+
+function startQuizTimer() {
+    stopQuizTimer();
+    _timerInterval = setInterval(() => {
+        const elapsed = Math.floor((Date.now() - quizStartTime) / 1000);
+        const m = Math.floor(elapsed / 60), s = elapsed % 60;
+        document.getElementById('quizTimerVal').textContent = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+        if (elapsed >= 1800) { // 30 min warning
+            document.getElementById('quizTimerBox').style.background = 'linear-gradient(135deg,#ff6b6b,#ee5a6f)';
+        }
+    }, 1000);
+}
+function stopQuizTimer() { if (_timerInterval) { clearInterval(_timerInterval); _timerInterval = null; } }
+
+// Anti-cheat
+function enableAntiCheat() {
+    antiCheatActive = true;
+    window.onbeforeunload = () => antiCheatActive ? 'Quiz in progress!' : null;
+    document.addEventListener('visibilitychange', handleVisibility);
+}
+function disableAntiCheat() {
+    antiCheatActive = false;
+    window.onbeforeunload = null;
+    document.removeEventListener('visibilitychange', handleVisibility);
+}
+async function handleVisibility() {
+    if (antiCheatActive && document.hidden) {
+        alert('⚠️ TAB SWITCH detected! Auto-submitting quiz.');
+        await autoSubmitQuiz();
+    }
+}
+async function autoSubmitQuiz() {
+    if (!antiCheatActive) return;
+    const today = getQuizToday();
+    try {
+        await db.ref(`quizSubmissions/${today}`).push({
+            studentKey:   quizCurrentUser.key,
+            studentName:  quizCurrentUser.name,
+            studentEmail: quizCurrentUser.email || '',
+            studentClass: quizCurrentUser.class || '',
+            answers: {q1:'X', q2:'X'}, score:0,
+            submittedAt: new Date().toISOString(), timeTaken:0, status:'auto-submitted'
+        });
+    } catch(e) { console.error('Auto-submit error:', e); }
+    disableAntiCheat(); stopQuizTimer();
+    document.getElementById('quizPlaySection').style.display = 'none';
+    document.getElementById('dashSection').style.display     = 'block';
+    checkQuizStatus();
+}
+
+async function submitQuiz() {
+    if (_submitting) return;
+    const btn = document.getElementById('quizSubmitBtn');
+    btn.disabled = true; btn.textContent = '⏳ Submitting…';
+
+    try {
+        const today = await getQuizTodayServer();
+        const qSnap = await db.ref(`quizQuestions/${today}`).once('value');
+        const questions = qSnap.val();
+        if (!questions) { showMsg('quizPlayMsg','Quiz data missing!','error'); btn.disabled=false; btn.textContent='✅ Submit Quiz'; return; }
+
+        // Check already submitted (guard)
+        const existing = await db.ref(`quizSubmissions/${today}`).once('value');
+        let duplicate = false;
+        if (existing.exists()) existing.forEach(ch => { if (ch.val().studentKey === quizCurrentUser.key) duplicate = true; });
+        if (duplicate) {
+            disableAntiCheat(); stopQuizTimer();
+            document.getElementById('quizPlaySection').style.display = 'none';
+            document.getElementById('dashSection').style.display     = 'block';
+            checkQuizStatus(); return;
+        }
+
+        // Collect answers
+        function getAns(qNum, q) {
+            if (q.type === 'text') {
+                const el = document.getElementById(`ans${qNum}`);
+                return el ? el.value.trim() : '';
+            } else {
+                const sel = document.querySelector(`#opt_q${qNum}_0.selected, #opt_q${qNum}_1.selected, #opt_q${qNum}_2.selected, #opt_q${qNum}_3.selected`);
+                if (!sel) return null;
+                return sel.id.split('_')[2]; // returns "0","1","2","3"
+            }
+        }
+        const q1Ans = getAns(1, questions.q1);
+        const q2Ans = getAns(2, questions.q2);
+
+        if (q1Ans === null || q1Ans === '') { showMsg('quizPlayMsg','⚠️ Please answer Question One before submitting.','error'); btn.disabled=false; btn.textContent='✅ Submit Quiz'; _submitting=false; return; }
+        if (q2Ans === null || q2Ans === '') { showMsg('quizPlayMsg','⚠️ Please answer Question Two before submitting.','error'); btn.disabled=false; btn.textContent='✅ Submit Quiz'; _submitting=false; return; }
+
+        // Score
+        let score = 0;
+        if (questions.q1.type === 'text') { if ((q1Ans||'').toLowerCase() === (questions.q1.textAnswer||'').toLowerCase()) score++; }
+        else { if (String(q1Ans) === String(questions.q1.correct)) score++; }
+        if (questions.q2.type === 'text') { if ((q2Ans||'').toLowerCase() === (questions.q2.textAnswer||'').toLowerCase()) score++; }
+        else { if (String(q2Ans) === String(questions.q2.correct)) score++; }
+
+        _submitting = true;
+        await db.ref(`quizSubmissions/${today}`).push({
+            studentKey:   quizCurrentUser.key,
+            studentName:  quizCurrentUser.name,
+            studentEmail: quizCurrentUser.email || '',
+            studentClass: quizCurrentUser.class || '',
+            answers: { q1: q1Ans, q2: q2Ans },
+            score, submittedAt: new Date().toISOString(),
+            timeTaken: Math.floor((Date.now() - quizStartTime) / 1000)
+        });
+
+        // Peer nudge if both correct
+        if (score === 2) {
+            try {
+                await qnFirePeerNudge(quizCurrentUser.name, quizCurrentUser.class || '', new Date().toISOString(), today, quizCurrentUser.key);
+            } catch(e) { console.warn('[PeerNudge]', e.message); }
+        }
+
+        disableAntiCheat(); stopQuizTimer();
+        showSuccessModal(score);
+
+        setTimeout(() => {
+            _submitting = false;
+            document.getElementById('quizPlaySection').style.display = 'none';
+            document.getElementById('dashSection').style.display     = 'block';
+            window.scrollTo({top:0, behavior:'smooth'});
+            checkQuizStatus();
+        }, 4000);
+
+    } catch(err) {
+        console.error('Submit error:', err);
+        _submitting = false;
+        showMsg('quizPlayMsg','❌ Submit failed: ' + (err.message || 'Check connection'),'error');
+        btn.disabled = false; btn.textContent = '✅ Submit Quiz';
+    }
+}
+
+function showSuccessModal(score) {
+    const m = document.createElement('div');
+    m.className = 'success-modal';
+    m.innerHTML = `<div class="success-modal-inner">
+        <div class="s-icon">🎉</div>
+        <h2>Quiz Submitted!</h2>
+        <p style="color:#28a745;font-weight:700;margin-top:8px">Your response has been recorded successfully!</p>
+        <p style="margin-top:12px;color:#555">Results will be announced soon. Good luck! 🍀</p>
+    </div>`;
+    document.body.appendChild(m);
+    createConfetti();
+    setTimeout(() => { m.style.opacity='0'; setTimeout(()=>m.remove(),300); }, 3500);
+}
+function createConfetti() {
+    const colors = ['#ff6b6b','#4ecdc4','#45b7d1','#f7b731','#5f27cd','#00d2d3','#ff9ff3','#54a0ff'];
+    for (let i=0; i<50; i++) {
+        const c = document.createElement('div');
+        c.className = 'confetti';
+        c.style.left = Math.random()*100+'%';
+        c.style.background = colors[Math.floor(Math.random()*colors.length)];
+        c.style.animationDelay = Math.random()*0.5+'s';
+        c.style.animationDuration = (Math.random()*2+2)+'s';
+        document.body.appendChild(c);
+        setTimeout(()=>c.remove(), 3000);
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// PEER NUDGE — same logic as main page
+// ═══════════════════════════════════════════════════════════════
+var QN_PATH = 'quizNotifications';
+var QN_PEER_TEMPLATES = [
+    (n,c,t,d) => `🔥 ${n} from ${c} answered the ${d} quiz at ${t}! Can you beat them?`,
+    (n,c,t,d) => `⚡ ${n} (${c}) just cracked today's quiz at ${t}! Think you can top them?`,
+    (n,c,t,d) => `⏳ ${n} from ${c} just played the ${d} quiz at ${t}! Don't miss your chance!`,
+    (n,c,t,d) => `😮 ${n} (${c}) already submitted at ${t}! Have you played today's quiz yet?`,
+    (n,c,t,d) => `🏆 ${n} from ${c} is on the ${d} leaderboard! Submitted at ${t}. Your move!`,
+    (n,c,t,d) => `📝 ${n} from ${c} has submitted the ${d} quiz at ${t}. Have you played yet?`,
+    (n,c,t,d) => `✅ ${n} (${c}) completed today's quiz at ${t}. Your turn!`,
+    (n,c,t,d) => `⏰ ${n} from ${c} answered at ${t}! Clock is ticking — play before midnight!`,
+    (n,c,t,d) => `🎉 ${n} from ${c} just smashed the ${d} quiz at ${t}! 🎊 Go get yours!`,
+    (n,c,t,d) => `🔔 Ding ding! ${n} from ${c} submitted at ${t}! 🏅 Who's ringing next?`,
+];
+
+function qnEsc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function qnShowToast(opts) {
+    var id = opts.id || ('qt_'+Date.now());
+    var seen = parseInt(localStorage.getItem('qn_seen_'+id)||'0');
+    if (seen >= 3) return;
+    localStorage.setItem('qn_seen_'+id, seen+1);
+    var container = document.getElementById('qnToastContainer');
+    if (!container) return;
+    var toast = document.createElement('div');
+    toast.className = 'qnToast '+(opts.type||'');
+    toast.innerHTML =
+        '<span class="qnToastIcon">'+(opts.icon||'🔔')+'</span>'+
+        '<div class="qnToastBody">'+
+            '<div class="qnToastTitle">'+qnEsc(opts.title||'')+'</div>'+
+            '<div class="qnToastMsg">'+qnEsc(opts.msg||'')+'</div>'+
+            '<div class="qnToastBtns">'+
+                (opts.btnLabel ? '<button class="qnToastBtn" id="qtb_'+id+'">'+qnEsc(opts.btnLabel)+'</button>' : '')+
+            '</div>'+
+            '<div class="qnToastProgress"><div class="qnToastProgressBar"></div></div>'+
+        '</div>'+
+        '<button class="qnToastClose" onclick="qnDismissToast(this.parentElement)">✕</button>';
+    container.appendChild(toast);
+    if (opts.btnAction) { var b = document.getElementById('qtb_'+id); if(b) b.onclick = opts.btnAction; }
+    var t = setTimeout(()=>qnDismissToast(toast), opts.duration||11000);
+    toast._timer = t;
+}
+function qnDismissToast(el) {
+    if (!el||!el.parentElement) return;
+    el.style.animation = 'qnSlideOut .3s ease forwards';
+    if (el._timer) clearTimeout(el._timer);
+    setTimeout(()=>{ if(el.parentElement) el.parentElement.removeChild(el); }, 300);
+}
+
+async function qnFirePeerNudge(studentName, studentClass, submittedAt, today, senderKey) {
+    var _db = window.db; if (!_db) return;
+    try {
+        var countRef = _db.ref('quizCorrectCount/'+today);
+        var res = await countRef.transaction(c => (c||0)+1);
+        var count = res.snapshot.val();
+        var idx = (count-1) % QN_PEER_TEMPLATES.length;
+        var timeStr = new Date(submittedAt).toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
+        var dateStr = new Date(today+'T00:00:00').toLocaleDateString('en-IN',{day:'2-digit',month:'short'});
+        var msg = QN_PEER_TEMPLATES[idx](studentName, studentClass, timeStr, dateStr);
+        var toastId = 'quiz_peer_'+today+'_'+count;
+        await _db.ref('live_notifications/peer').push({
+            title:'📝 Quiz Update!', body:msg, sentAt:Date.now(), id:toastId, qnType:'quiz_peer',
+            senderKey: senderKey||'', today
+        });
+    } catch(e) { console.warn('[PeerNudge]', e.message); }
+}
+
+function startPeerNudgeListener() {
+    var _db = window.db; if (!_db) return;
+    var _peerSeenAt = Date.now();
+    _db.ref('live_notifications/peer').orderByChild('sentAt').startAt(_peerSeenAt).on('child_added', function(snap) {
+        if (!snap.exists()) return;
+        var n = snap.val(); if (!n||!n.sentAt) return;
+        var cu = window.quizCurrentUser; if (!cu) return;
+        if (n.senderKey && cu.key && n.senderKey === cu.key) return;
+        var todayKey = getQuizToday();
+        if (n.today && n.today !== todayKey) return;
+        _db.ref('quizSubmissions/'+todayKey).once('value').then(function(subSnap) {
+            var done = false;
+            if (subSnap.exists()) subSnap.forEach(ch=>{ if(ch.val().studentKey===cu.key) done=true; });
+            if (done) return;
+            qnShowToast({ id: n.id||('p_'+n.sentAt), icon:'📝', type:'qnToastQuiz',
+                title:'📝 Quiz Update!', msg: n.body||'',
+                btnLabel:'Play Now →', btnAction:()=>{ /* already on quiz page */ document.getElementById('dashSection').scrollIntoView({behavior:'smooth',block:'start'}); }
+            });
+        }).catch(()=>{});
+    });
+
+    // live_notifications/latest listener
+    _db.ref('live_notifications/latest').on('value', function(snap) {
+        if (!snap.exists()) return;
+        var n = snap.val(); if (!n||!n.sentAt) return;
+        if (Date.now()-n.sentAt > 30*60*1000) return; // ignore if older than 30min
+        if (n.qnType === 'quiz_peer') return; // handled above
+        var iconMap = {quiz:'📝',result:'🏆',sh:'🗺️',approval:'🎉'};
+        var typeMap = {quiz:'qnToastQuiz',result:'qnToastResult'};
+        var tid = n.id||('ln_'+n.sentAt);
+        localStorage.removeItem('qn_seen_'+tid);
+        qnShowToast({ id:tid, icon:iconMap[n.qnType]||'🔔', type:typeMap[n.qnType]||'',
+            title: n.title||'Spurthi Notification', msg: n.body||'' });
+    });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// LIVE EVENTS BANNER (same logic as main page, no scavenger hunt)
+// ═══════════════════════════════════════════════════════════════
+function _lebParseDate(str) {
+    if (!str||str==='—') return null;
+    const p = str.match(/^(\d{2})-(\d{2})-(\d{4})$/);
+    if (!p) return null;
+    return new Date(parseInt(p[3]), parseInt(p[2])-1, parseInt(p[1]));
+}
+function _lebTodayStr() {
+    const d = new Date();
+    return `${String(d.getDate()).padStart(2,'0')}-${String(d.getMonth()+1).padStart(2,'0')}-${d.getFullYear()}`;
+}
+function _lebFriendlyDate(str) {
+    const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    const p = str.match(/^(\d{2})-(\d{2})-(\d{4})$/); if (!p) return str;
+    const day=parseInt(p[1]); const suf=day===1||day===21||day===31?'st':day===2||day===22?'nd':day===3||day===23?'rd':'th';
+    return `${day}${suf} ${months[parseInt(p[2])-1]}`;
+}
+function renderLiveEventsBanner(snap) {
+    const banner = document.getElementById('liveEventsBanner');
+    const body   = document.getElementById('lebBody');
+    const dateEl = document.getElementById('lebTodayDate');
+    const cntEl  = document.getElementById('lebEventCount');
+    if (!banner||!body) return;
+    if (!snap||!snap.exists()) { banner.style.display='none'; return; }
+    const todayDate = new Date(); todayDate.setHours(0,0,0,0);
+    const todayStr  = _lebTodayStr();
+    const items     = Object.values(snap.val()).sort((a,b)=>(a.sl||999)-(b.sl||999));
+    const lastDay=[], starting=[], ongoing=[];
+    items.forEach(ev => {
+        if (!ev.name) return;
+        const start = _lebParseDate(ev.startDate), end = _lebParseDate(ev.endDate);
+        if (!start) return;
+        const sMs = start.getTime(), eMs = end?end.getTime():null, tMs = todayDate.getTime();
+        if (eMs&&eMs===tMs)                            lastDay.push(ev);
+        else if (sMs===tMs)                            starting.push(ev);
+        else if (sMs<tMs&&(!eMs||eMs>tMs))            ongoing.push(ev);
+    });
+    const total = lastDay.length+starting.length+ongoing.length;
+    if (total===0) { banner.style.display='none'; return; }
+    function buildChip(ev,cls) {
+        const t = ev.startTime?`<span class="leb-chip-time">${ev.startTime}</span>`:'';
+        const dot = ev.stageType==='On stage'?'🎭':'📋';
+        return `<span class="leb-chip ${cls}">${dot} ${ev.name}${t}</span>`;
+    }
+    function buildRow(label,lCls,cCls,rCls,evs) {
+        if (!evs.length) return '';
+        const map={};
+        evs.forEach(e=>{ const k=e.startTime||'__'; if(!map[k])map[k]=[]; map[k].push(e); });
+        const keys=Object.keys(map).sort((a,b)=>a==='__'?1:b==='__'?-1:a.localeCompare(b));
+        if (keys.length>1||(keys.length===1&&keys[0]!=='__')) {
+            return keys.map(tk=>{
+                const el=map[tk], tl=tk!=='__'?`<span class="leb-time-sep">⏰ ${tk}</span>`:'';
+                return `<div class="leb-row ${rCls}"><span class="leb-row-label ${lCls}">${label}</span>${tl}<div class="leb-chips">${el.map(e=>buildChip(e,cCls)).join('')}</div></div>`;
+            }).join('');
+        }
+        return `<div class="leb-row ${rCls}"><span class="leb-row-label ${lCls}">${label}</span><div class="leb-chips">${evs.map(e=>buildChip(e,cCls)).join('')}</div></div>`;
+    }
+    body.innerHTML =
+        buildRow('⚠️ Last Day','leb-label-last','leb-chip-last','leb-row-last',lastDay)+
+        buildRow('🟢 Starts Today','leb-label-today','leb-chip-today','leb-row-today',starting)+
+        buildRow('🔵 Ongoing','leb-label-on','leb-chip-on','leb-row-on',ongoing);
+    if (dateEl) dateEl.textContent = _lebFriendlyDate(todayStr);
+    if (cntEl)  cntEl.textContent  = `🔥 ${total} event${total>1?'s':''} active today`;
+    banner.style.display = 'block';
+}
+
+// ═══════════════════════════════════════════════════════════════
+// PROMO CARD BANNER — reads Firebase promoCards node, same as main page
+// ═══════════════════════════════════════════════════════════════
+var _promoCards   = [];
+var _promoIdx     = 0;
+var _promoRotate  = null;
+
+function initPromoCards() {
+    var _db = window.db; if (!_db) return;
+    _db.ref('promoCards').once('value').then(function(snap) {
+        if (!snap.exists()) return;
+        var cards = [];
+        snap.forEach(function(ch) {
+            var c = ch.val();
+            if (c && c.title) cards.push(Object.assign({ key: ch.key }, c));
+        });
+        if (!cards.length) return;
+        _promoCards = cards;
+        renderPromoCards();
+        startPromoRotation();
+    }).catch(function(){});
+}
+
+function renderPromoCards() {
+    var banner = document.getElementById('promoCardBanner');
+    var track  = document.getElementById('promoCardTrack');
+    var dots   = document.getElementById('promoDots');
+    if (!banner || !track) return;
+    track.innerHTML = '';
+    if (dots) dots.innerHTML = '';
+
+    _promoCards.forEach(function(c, i) {
+        var card = document.createElement('div');
+        card.className = 'promo-card' + (i === 0 ? ' active' : '');
+        card.id = 'promoCard_' + i;
+
+        var thumb = c.thumb
+            ? '<img class="promo-thumb" src="' + c.thumb + '" alt="" onerror="this.outerHTML=\'<div class=\\\"promo-thumb-placeholder\\\">🎬</div>\'">'
+            : '<div class="promo-thumb-placeholder">🎬</div>';
+
+        var likesHtml = (c.likes !== undefined)
+            ? '<span style="color:rgba(255,255,255,0.7);font-size:0.75em;margin-top:4px;display:block">👍 ' + c.likes + (c.comments ? '  💬 ' + c.comments : '') + '</span>'
+            : '';
+
+        card.innerHTML = '<div class="promo-card-inner">' +
+            thumb +
+            '<div class="promo-info">' +
+                '<span class="promo-type-badge">' + (c.type || 'Entry') + '</span>' +
+                '<div class="promo-title">' + (c.title || '') + '</div>' +
+                '<div class="promo-class">' + (c.cls || c.class || '') + '</div>' +
+                likesHtml +
+            '</div>' +
+            '<div class="promo-actions">' +
+                (c.link ? '<a href="' + c.link + '" target="_blank" class="promo-view-btn">View →</a>' : '') +
+            '</div>' +
+        '</div>';
+        track.appendChild(card);
+
+        if (dots) {
+            var dot = document.createElement('div');
+            dot.className = 'promo-dot' + (i === 0 ? ' active' : '');
+            dot.onclick = (function(idx){ return function(){ goPromo(idx); }; })(i);
+            dots.appendChild(dot);
+        }
+    });
+
+    banner.style.display = 'block';
+}
+
+function goPromo(idx) {
+    if (!_promoCards.length) return;
+    var prev = document.getElementById('promoCard_' + _promoIdx);
+    if (prev) prev.classList.remove('active');
+    var prevDot = document.querySelectorAll('.promo-dot')[_promoIdx];
+    if (prevDot) prevDot.classList.remove('active');
+
+    _promoIdx = (idx + _promoCards.length) % _promoCards.length;
+
+    var cur = document.getElementById('promoCard_' + _promoIdx);
+    if (cur) { cur.style.animation = 'none'; void cur.offsetWidth; cur.style.animation = 'promoSlideIn 0.5s cubic-bezier(.34,1.56,.64,1) both'; cur.classList.add('active'); }
+    var curDot = document.querySelectorAll('.promo-dot')[_promoIdx];
+    if (curDot) curDot.classList.add('active');
+}
+
+function startPromoRotation() {
+    if (_promoRotate) clearInterval(_promoRotate);
+    if (_promoCards.length < 2) return;
+    _promoRotate = setInterval(function() { goPromo(_promoIdx + 1); }, 8000);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// DEV PANEL — /*- in password field = auto login, 5× tap heading = panel
+// ═══════════════════════════════════════════════════════════════
+(function initDevPanel() {
+    const DEV_PHONE = '9844542132';
+    const DEV_PASS  = '@ANeWC0y2O';
+
+    function showDevPanel() { document.getElementById('devPanel').style.display = 'block'; }
+
+    // devLoginQuiz exposed globally for onclick in HTML
+    window.devLoginQuiz = async function() {
+        document.getElementById('devPanel').style.display = 'none';
+        document.getElementById('loginPhone').value = DEV_PHONE;
+        document.getElementById('loginPwd').value   = DEV_PASS;
+        await loginUser();
+    };
+
+    // Trigger 1: type /*- in password field → auto login
+    document.addEventListener('input', function(e) {
+        var el = e.target;
+        if (!el || el.tagName !== 'INPUT') return;
+        if (el.type === 'tel' || el.inputMode === 'numeric' || el.type === 'number') return;
+        if (el.type === 'password') {
+            if (el.value.includes('/*-')) {
+                el.value = el.value.replace('/*-', '');
+                window.devLoginQuiz();
+            }
+            return;
+        }
+        if (!el.value.includes('/*-')) return;
+        el.value = el.value.replace('/*-', '');
+        window.devLoginQuiz();
+    });
+
+    // Trigger 2: tap/click "Login to Play" heading OR version text 5×
+    var tapCount = 0, tapTimer = null;
+    function handleDevTap(e) {
+        if (!e.target || !e.target.closest) return;
+        if (e.target.closest('#devTriggerLogin') || e.target.closest('#devTriggerVersion')) {
+            tapCount++;
+            clearTimeout(tapTimer);
+            tapTimer = setTimeout(function() { tapCount = 0; }, 2000);
+            if (tapCount >= 5) { tapCount = 0; showDevPanel(); }
+        }
+    }
+    document.addEventListener('click', handleDevTap);
+    document.addEventListener('touchend', handleDevTap);
+})();
+
+window.onload = function() {
+    // Load live events banner
+    db.ref('eventSchedule').on('value', snap => renderLiveEventsBanner(snap));
+    setInterval(() => db.ref('eventSchedule').once('value').then(s=>renderLiveEventsBanner(s)), 60000);
+
+    // Load promo card banner
+    initPromoCards();
+
+    // Auto-fill remember-me credentials
+    if (localStorage.getItem('qp_remember') === '1') {
+        const ph = localStorage.getItem('qp_ph'), pw = localStorage.getItem('qp_pw');
+        if (ph) document.getElementById('loginPhone').value = ph;
+        if (pw) document.getElementById('loginPwd').value   = pw;
+        document.getElementById('rememberMe').checked = true;
+    }
+
+    // Fetch server offset early
+    fetchServerOffset();
+};
+</script>
+</body>
+</html>
