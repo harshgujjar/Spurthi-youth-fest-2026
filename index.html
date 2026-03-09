@@ -7589,6 +7589,17 @@
                         </div>
                     </div>
 
+                    <!-- ── Case Analysis — Team Panel (Dr. Shilpa R Y / Roopa M.C) ── -->
+                    <div id="caseNumberPanel" style="display:none;margin-top:24px">
+                        <div style="background:linear-gradient(135deg,#e8eaf6,#ede7f6);border-radius:14px;padding:18px;border:2px solid #9fa8da;margin-bottom:16px">
+                            <h3 style="color:#1a237e;margin:0 0 6px;font-size:1.05em">🧠 Case Analysis — Teams &amp; Case Numbers</h3>
+                            <p style="color:#555;font-size:0.82em;margin:0 0 6px">Each team has 2 members (Captain + Member). Enter the Case Number and mark attendance per team. Case numbers are shown to the Jury.</p>
+                        </div>
+                        <div id="caseTeamList" style="display:flex;flex-direction:column;gap:10px">
+                            <div style="text-align:center;color:#aaa;padding:30px">⏳ Loading teams…</div>
+                        </div>
+                    </div>
+
                     <!-- Default coming-soon: only shown if faculty truly has NO assigned events/panels at all -->
                     <div id="facultyComingSoon" style="background:#fffde7;border-left:4px solid #ffc107;border-radius:10px;padding:14px 16px;font-size:0.87em;color:#856404">
                         <strong>ℹ️ Coming Soon:</strong> Your specific role and permissions will be assigned by the Super Admin shortly. Once assigned, you will see your class's relevant data and controls here.
@@ -14804,6 +14815,7 @@
                 const isLalitha   = faculty.name === 'Lalitha S K';
                 const isKotrappa  = faculty.name === 'Kotrappa K';
                 const isRoopa     = faculty.name === 'Roopa M.C';
+                const isShilpa    = faculty.name === 'Dr. Shilpa R Y';
                 const isSmitha    = faculty.name === 'Smitha';
                 const isAnitha    = faculty.name === 'Anitha N';
                 const isPooja     = faculty.name === 'Pooja C';
@@ -14817,6 +14829,7 @@
                 const hasTalentHunt    = isAnitha || isPooja;
                 const hasDanceAccess   = isAnitha || isPooja;
                 const hasQuizMaster    = isSmitha;
+                const hasCaseAccess    = isShilpa || isRoopa;
                 document.getElementById('chandanSocialPanel').style.display   = hasVlogAccess    ? 'block' : 'none';
                 document.getElementById('chandanVlogReviewPanel').style.display = isChandan ? 'block' : 'none';
                 document.getElementById('chandanPodcastPanel').style.display  = hasPodcastAccess ? 'block' : 'none';
@@ -14828,7 +14841,8 @@
                 document.getElementById('thAttendancePanel').style.display    = hasTalentHunt    ? 'block' : 'none';
                 document.getElementById('danceInchargePanel').style.display   = hasDanceAccess   ? 'block' : 'none';
                 document.getElementById('smithaQuizPanel').style.display      = hasQuizMaster    ? 'block' : 'none';
-                const hasAnySpecial = hasVlogAccess || hasPodcastAccess || hasBowAccess || hasYtAdAccess || hasNukkadPre || hasNukkadPost || hasHandwriting || hasTalentHunt || hasDanceAccess || hasQuizMaster;
+                document.getElementById('caseNumberPanel').style.display      = hasCaseAccess    ? 'block' : 'none';
+                const hasAnySpecial = hasVlogAccess || hasPodcastAccess || hasBowAccess || hasYtAdAccess || hasNukkadPre || hasNukkadPost || hasHandwriting || hasTalentHunt || hasDanceAccess || hasQuizMaster || hasCaseAccess;
                 const hasInchargeEvents = (FACULTY_EVENT_MAP[faculty.name] || []).length > 0;
                 document.getElementById('genericInchargePanel').style.display = hasInchargeEvents ? 'block' : 'none';
                 document.getElementById('facultyComingSoon').style.display    = (!hasAnySpecial && !hasInchargeEvents) ? 'block' : 'none';
@@ -14844,6 +14858,7 @@
                 if (hasNukkadPost)    loadNukkadPostPanel();
                 if (hasHandwriting)   loadHwAttendancePanel();
                 if (hasTalentHunt)    loadThAttendancePanel();
+                if (hasCaseAccess)    loadCaseNumberPanel();
                 if (hasInchargeEvents) loadGenericInchargePanel(faculty.name);
                 if (hasQuizMaster)    loadQuizFinalRoundPanel();
                 return;
@@ -14898,6 +14913,7 @@
                 const isLalitha   = faculty.name === 'Lalitha S K';
                 const isKotrappa  = faculty.name === 'Kotrappa K';
                 const isRoopa     = faculty.name === 'Roopa M.C';
+                const isShilpa    = faculty.name === 'Dr. Shilpa R Y';
                 const isSmitha    = faculty.name === 'Smitha';
                 const isAnitha    = faculty.name === 'Anitha N';
                 const isPooja     = faculty.name === 'Pooja C';
@@ -14911,6 +14927,7 @@
                 const hasTalentHunt    = isAnitha || isPooja;
                 const hasDanceAccess   = isAnitha || isPooja;
                 const hasQuizMaster    = isSmitha;
+                const hasCaseAccess    = isShilpa || isRoopa;
                 document.getElementById('chandanSocialPanel').style.display   = hasVlogAccess    ? 'block' : 'none';
                 document.getElementById('chandanPodcastPanel').style.display  = hasPodcastAccess ? 'block' : 'none';
                 document.getElementById('chandanVlogReviewPanel').style.display = isChandan ? 'block' : 'none';
@@ -14922,7 +14939,8 @@
                 document.getElementById('thAttendancePanel').style.display    = hasTalentHunt    ? 'block' : 'none';
                 document.getElementById('danceInchargePanel').style.display   = hasDanceAccess   ? 'block' : 'none';
                 document.getElementById('smithaQuizPanel').style.display      = hasQuizMaster    ? 'block' : 'none';
-                const hasAnySpecial = hasVlogAccess || hasPodcastAccess || hasBowAccess || hasYtAdAccess || hasNukkadPre || hasNukkadPost || hasHandwriting || hasTalentHunt || hasDanceAccess || hasQuizMaster;
+                document.getElementById('caseNumberPanel').style.display      = hasCaseAccess    ? 'block' : 'none';
+                const hasAnySpecial = hasVlogAccess || hasPodcastAccess || hasBowAccess || hasYtAdAccess || hasNukkadPre || hasNukkadPost || hasHandwriting || hasTalentHunt || hasDanceAccess || hasQuizMaster || hasCaseAccess;
                 const hasInchargeEvents = (FACULTY_EVENT_MAP[faculty.name] || []).length > 0;
                 document.getElementById('genericInchargePanel').style.display = hasInchargeEvents ? 'block' : 'none';
                 document.getElementById('facultyComingSoon').style.display    = (!hasAnySpecial && !hasInchargeEvents) ? 'block' : 'none';
@@ -14939,6 +14957,7 @@
                 if (hasHandwriting)   loadHwAttendancePanel();
                 if (hasTalentHunt)    loadThAttendancePanel();
                 if (hasDanceAccess)   loadDanceInchargePanel();
+                if (hasCaseAccess)    loadCaseNumberPanel();
                 if (hasInchargeEvents) loadGenericInchargePanel(faculty.name);
                 if (hasQuizMaster)    loadQuizFinalRoundPanel();
 
@@ -14959,7 +14978,7 @@
             const msg = document.getElementById('facultyLoginMsg');
             if (msg) msg.style.display = 'none';
             // Reset all functional panels
-            const resetIds = ['chandanSocialPanel','chandanVlogReviewPanel','chandanPodcastPanel','shankarBowPanel','roopaSmitraYtAdPanel','nukkadPrePanel','nukkadPostPanel','hwAttendancePanel','thAttendancePanel','danceInchargePanel','smithaQuizPanel','genericInchargePanel','facultyComingSoon'];
+            const resetIds = ['chandanSocialPanel','chandanVlogReviewPanel','chandanPodcastPanel','shankarBowPanel','roopaSmitraYtAdPanel','nukkadPrePanel','nukkadPostPanel','hwAttendancePanel','thAttendancePanel','danceInchargePanel','smithaQuizPanel','genericInchargePanel','caseNumberPanel','facultyComingSoon'];
             resetIds.forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
         }
 
@@ -15138,6 +15157,135 @@
             });
 
             list.innerHTML = html;
+        }
+
+        // ── Case Analysis Team Panel (Dr. Shilpa R Y / Roopa M.C) ──────────────
+        async function loadCaseNumberPanel() {
+            const listEl = document.getElementById('caseTeamList');
+            if (!listEl) return;
+            listEl.innerHTML = '<div style="text-align:center;color:#aaa;padding:30px">⏳ Loading teams…</div>';
+            try {
+                const [enrollSnap, caseSnap, attSnap, setupSnap] = await Promise.all([
+                    db.ref('youthfest-enrollments').once('value'),
+                    db.ref('caseAnalysis/caseNumbers').once('value'),
+                    db.ref('caseAnalysis/attendance').once('value'),
+                    db.ref('jurySetup/Case Analysis').once('value')
+                ]);
+                const savedNums = caseSnap.exists() ? caseSnap.val() : {};
+                const savedAtt  = attSnap.exists()  ? attSnap.val()  : {};
+                const aliasMap  = (setupSnap.exists() && setupSnap.val().classAliases) ? setupSnap.val().classAliases : {};
+
+                // -- Collect enrollments for Case Analysis, grouped by class (1 team per class) --
+                const classMap = {}; // safeKey -> [members]
+                if (enrollSnap.exists()) {
+                    enrollSnap.forEach(ch => {
+                        const e = ch.val();
+                        if ((e.event||'').trim().toLowerCase() !== 'case analysis') return;
+                        const cls = e.classYear || e.class || '';
+                        if (!cls) return;
+                        const sk = cls.replace(/[.\[\]#$\/\s]/g, '_');
+                        if (!classMap[sk]) classMap[sk] = { cls, members: [] };
+                        classMap[sk].members.push(e);
+                    });
+                }
+
+                const safeKeys = Object.keys(classMap).sort((a,b) => a.localeCompare(b));
+                if (safeKeys.length === 0) {
+                    listEl.innerHTML = '<div style="text-align:center;color:#aaa;padding:30px;font-size:0.88em">⏳ No teams enrolled in Case Analysis yet.</div>';
+                    return;
+                }
+
+                let html = '';
+                safeKeys.forEach(safeKey => {
+                    const { cls, members } = classMap[safeKey];
+                    const captain  = members.find(m => (m.role||'').toLowerCase().includes('captain')) || members[0] || {};
+                    const member   = members.find(m => m !== captain) || {};
+                    const names    = [captain.name, member.name].filter(Boolean).join(' & ') || '—';
+                    // Code Name = alias from jury setup (same as shown to jury). Fallback to safeKey.
+                    const teamCode = aliasMap[safeKey] || cls;
+                    const caseVal  = savedNums[safeKey] || '';
+                    const attVal   = savedAtt[safeKey]  || '';
+                    const isPres   = attVal === 'present';
+                    const isAbs    = attVal === 'absent';
+
+                    html += '<div style="background:white;border-radius:12px;border:1.5px solid #c5cae9;padding:0;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,0.06)">'
+
+                        // Team badge + names row
+                        + '<div style="display:flex;align-items:center;gap:12px;padding:12px 14px">'
+                        +   '<span style="background:#1a237e;color:white;font-weight:900;padding:5px 12px;border-radius:8px;font-size:0.9em;letter-spacing:2px;white-space:nowrap">' + teamCode + '</span>'
+                        +   '<div style="flex:1;min-width:0">'
+                        +     '<div style="font-weight:700;color:#222;font-size:0.9em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + names + '</div>'
+                        +     '<div style="font-size:0.75em;color:#888;margin-top:2px">' + cls + '</div>'
+                        +   '</div>'
+                        + '</div>'
+
+                        // Case No + Attendance row
+                        + '<div style="display:flex;align-items:center;gap:8px;padding:8px 14px 12px;border-top:1px solid #f0f0f0;flex-wrap:wrap">'
+                        +   '<span style="font-size:0.78em;font-weight:700;color:#555">Case No:</span>'
+                        +   '<input type="text" id="caseNo_' + safeKey + '" data-safekey="' + safeKey + '" value="' + caseVal + '" placeholder="Enter case no." onclick="this.select()" '
+                        +     'style="width:110px;padding:5px 9px;border:1.5px solid #9fa8da;border-radius:7px;font-size:0.82em;cursor:text;font-weight:700;color:#1a237e;text-align:center">'
+                        +   '<div style="display:flex;gap:6px;margin-left:auto">'
+                        +     '<button onclick="caseMark(\''+safeKey+'\',\'present\')" '
+                        +       'style="background:' + (isPres ? '#2e7d32' : '#e8f5e9') + ';color:' + (isPres ? 'white' : '#2e7d32') + ';border:1.5px solid #a5d6a7;border-radius:7px;padding:5px 12px;font-size:0.8em;font-weight:700;cursor:pointer">'
+                        +       '✅ Present</button>'
+                        +     '<button onclick="caseMark(\''+safeKey+'\',\'absent\')" '
+                        +       'style="background:' + (isAbs ? '#c62828' : '#ffebee') + ';color:' + (isAbs ? 'white' : '#c62828') + ';border:1.5px solid #ef9a9a;border-radius:7px;padding:5px 12px;font-size:0.8em;font-weight:700;cursor:pointer">'
+                        +       '❌ Absent</button>'
+                        +   '</div>'
+                        + '</div>'
+
+                        + '</div>';
+                });
+
+                // Save all button at bottom
+                html += '<button onclick="saveCaseNumberPanel()" style="margin-top:4px;background:#1a237e;color:white;border:none;border-radius:10px;padding:9px 20px;font-size:0.88em;font-weight:700;cursor:pointer;width:100%">💾 Save All Case Numbers</button>'
+                      + '<div id="caseNumberPanelMsg" style="display:none;margin-top:8px;font-size:0.82em;text-align:center;font-weight:700;padding:8px;border-radius:8px"></div>';
+
+                listEl.innerHTML = html;
+            } catch(e) {
+                listEl.innerHTML = '<div style="color:#c62828;font-size:0.85em;padding:12px">❌ Error: ' + e.message + '</div>';
+            }
+        }
+
+        async function caseMark(tKey, status) {
+            // Toggle: clicking same status clears it
+            try {
+                const snap = await db.ref('caseAnalysis/attendance/' + tKey).once('value');
+                const current = snap.val();
+                const newStatus = current === status ? '' : status;
+                await db.ref('caseAnalysis/attendance/' + tKey).set(newStatus);
+                // Refresh panel to update button colours
+                loadCaseNumberPanel();
+            } catch(e) {
+                alert('Error saving attendance: ' + e.message);
+            }
+        }
+
+        async function saveCaseNumberPanel() {
+            const listEl = document.getElementById('caseTeamList');
+            const msgDiv = document.getElementById('caseNumberPanelMsg');
+            if (!listEl) return;
+            const updates = {};
+            listEl.querySelectorAll('input[data-safekey]').forEach(inp => {
+                if (inp.value.trim()) updates[inp.dataset.safekey] = inp.value.trim();
+            });
+            try {
+                await db.ref('caseAnalysis/caseNumbers').set(updates);
+                if (msgDiv) {
+                    msgDiv.style.display = 'block';
+                    msgDiv.style.color   = '#2e7d32';
+                    msgDiv.style.background = '#e8f5e9';
+                    msgDiv.textContent   = '✅ Case numbers saved!';
+                    setTimeout(() => { msgDiv.style.display = 'none'; }, 3000);
+                }
+            } catch(e) {
+                if (msgDiv) {
+                    msgDiv.style.display = 'block';
+                    msgDiv.style.color   = '#c62828';
+                    msgDiv.style.background = '#ffebee';
+                    msgDiv.textContent   = '❌ Error: ' + e.message;
+                }
+            }
         }
 
         // ══════════════════════════════════════════════════════════════
@@ -22470,12 +22618,14 @@
                 // For YT Ad: show social score, ad title, product
                 // For Dance: show story title + summary
 
+                const isCaseAnalysis = (juryEvent === 'Case Analysis');
                 html += '<div class="table-wrapper"><div class="marks-table"><table><thead><tr>';
                 html += '<th>#</th><th>Class Code</th>';
+                if (isCaseAnalysis) html += '<th>Case No.</th>';
                 if (isNukkad) html += '<th>Cause/Theme</th><th>📺 YouTube</th><th>Bonus pts</th>';
                 else if (isYTAd) html += '<th>Ad Title</th><th>Product</th><th>Social Score</th>';
                 else if (isDance) html += '<th>📖 Dance Story Title</th><th>📝 Story Summary</th><th>👥 Performers</th>';
-                else html += '<th>Theme/Topic</th>';
+                else if (!isCaseAnalysis) html += '<th>Theme/Topic</th>';
                 criteria.forEach(crit => { html += '<th>' + crit + '<br><small>(10 marks)</small></th>'; });
                 html += '<th>Total</th></tr></thead><tbody>';
 
@@ -22488,6 +22638,10 @@
                     html += '<tr>';
                     html += '<td>' + (idx+1) + '</td>';
                     html += '<td><strong>' + alias + '</strong></td>';
+
+                    if (isCaseAnalysis) {
+                        html += '<td id="case-caseno-' + safeKey + '" style="font-weight:700;color:#1a237e;text-align:center">—</td>';
+                    }
 
                     if (isNukkad) {
                         const cause = firstEnr.cause || firstEnr.topic || '—';
@@ -22525,7 +22679,22 @@
                 });
                 html += '</tbody></table></div></div>';
 
-                // -- Async: load Nukkad YT links + bonus from nukkadNatak/post --
+                // -- Async: load Case Numbers from caseAnalysis/caseNumbers ----------
+                if (isCaseAnalysis) {
+                    db.ref('caseAnalysis/caseNumbers').once('value').then(caseSnap => {
+                        const caseData = caseSnap.exists() ? caseSnap.val() : {};
+                        enrolledClasses.forEach(cls => {
+                            const safeKey = cls.replace(/[.\[\]#$\/\s]/g,'_');
+                            const caseNo  = caseData[safeKey] || '—';
+                            const cell    = document.getElementById('case-caseno-' + safeKey);
+                            if (cell) {
+                                cell.textContent = caseNo !== '—' ? caseNo : '—';
+                                cell.style.color = caseNo !== '—' ? '#1a237e' : '#aaa';
+                            }
+                        });
+                    }).catch(() => {});
+                }
+
                 if (isNukkad) {
                     db.ref('nukkadNatak/post').once('value').then(postSnap => {
                         const postData = postSnap.exists() ? postSnap.val() : {};
@@ -23525,7 +23694,7 @@
                             infoHTML += '<td style="padding:7px 10px;font-size:12px;color:#555">' + memberNames + '</td>';
                             if (tIdx === 0) {
                                 // Only show alias input on first team row for this class; spans all teams
-                                infoHTML += '<td style="padding:7px 10px"><input type="text" data-safekey="' + safeKey + '" value="' + savedAlias + '" style="padding:5px 10px;border:1.5px solid #9c27b0;border-radius:6px;width:140px;font-size:13px" placeholder="Class A"></td>';
+                                infoHTML += '<td style="padding:7px 10px"><input type="text" data-safekey="' + safeKey + '" value="' + savedAlias + '" style="padding:5px 10px;border:1.5px solid #9c27b0;border-radius:6px;width:140px;font-size:13px;cursor:text" placeholder="Class A" onclick="this.select()"></td>';
                             } else {
                                 infoHTML += '<td style="padding:7px 10px;font-size:12px;color:#aaa;font-style:italic">↑ same class</td>';
                             }
@@ -23575,7 +23744,7 @@
                         + '<td style="padding:8px 6px;cursor:grab;text-align:center;color:#9c27b0;font-size:16px" title="Drag to reorder">&#9776;</td>'
                         + '<td style="padding:8px 10px;color:#6c757d;font-weight:700;font-size:13px">' + (i+1) + '</td>'
                         + '<td style="padding:8px 10px;font-size:13px;font-weight:600;color:#333">' + cls + '</td>'
-                        + '<td style="padding:8px 10px"><input type="text" data-safekey="' + safeKey + '" value="' + alias + '" style="padding:5px 10px;border:1.5px solid #9c27b0;border-radius:6px;width:160px;font-size:13px" placeholder="e.g. Class A"></td>'
+                        + '<td style="padding:8px 10px"><input type="text" data-safekey="' + safeKey + '" value="' + alias + '" style="padding:5px 10px;border:1.5px solid #9c27b0;border-radius:6px;width:160px;font-size:13px;cursor:text" placeholder="e.g. Class A" onclick="this.select()"></td>'
                         + '<td style="padding:8px 6px;text-align:center">'
                         +   (i > 0 ? '<button onclick="moveClassRow(this,-1)" style="background:#e3d5f7;border:none;border-radius:4px;padding:2px 7px;cursor:pointer;margin-right:2px">&#9650;</button>' : '')
                         +   (i < total-1 ? '<button onclick="moveClassRow(this,1)" style="background:#e3d5f7;border:none;border-radius:4px;padding:2px 7px;cursor:pointer">&#9660;</button>' : '')
@@ -23762,13 +23931,20 @@
                 if (liveCfg.individual) eventType = 'individual';
 
                 // -- Build ordered enrolled-classes list (preserving jury sheet order) --
-                const orderedClasses = [];
+                const rawClasses = [];
                 if (enrollSnap.exists()) {
                     enrollSnap.forEach(ch => {
                         const e = ch.val();
-                        if (e.event === event && e.classYear && !orderedClasses.includes(e.classYear))
-                            orderedClasses.push(e.classYear);
+                        if (e.event === event && e.classYear && !rawClasses.includes(e.classYear))
+                            rawClasses.push(e.classYear);
                     });
+                }
+                // Apply saved classOrder from jurySetup (same order as jury sheet)
+                let orderedClasses = rawClasses.slice();
+                if (setup.classOrder && setup.classOrder.length > 0) {
+                    const saved = setup.classOrder.filter(c => rawClasses.includes(c));
+                    const remaining = rawClasses.filter(c => !saved.includes(c));
+                    orderedClasses = saved.concat(remaining);
                 }
 
                 // -- Build full enrollment objects per class -----------------------
@@ -24085,16 +24261,19 @@
                     // CLASS-BASED EVENT (Nukkad Natak, YouTube Ad, Mime, Group Dance…)
                     // ════════════════════════════════════════════════════════════════
                     } else {
-                        const isNukkad = event === 'Nukkad Natak';
-                        const isYTAd   = event === 'YouTube Advertisement';
-                        const isDance  = event === 'Group Dance';
+                        const isNukkad      = event === 'Nukkad Natak';
+                        const isYTAd        = event === 'YouTube Advertisement';
+                        const isDance       = event === 'Group Dance';
+                        const isCaseAnalysis = event === 'Case Analysis';
 
                         html += '<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12.5px">'
                             + '<thead><tr style="background:linear-gradient(135deg,#6a1b9a,#c44569);color:white">'
                             + '<th style="padding:9px 6px;text-align:center">#</th>'
                             + saHeader
                             + '<th style="padding:9px 8px;text-align:left">Class Code</th>';
-                        if (isNukkad) {
+                        if (isCaseAnalysis) {
+                            html += '<th style="padding:9px 8px;text-align:center">Case No.</th>';
+                        } else if (isNukkad) {
                             html += '<th style="padding:9px 8px;text-align:left">Cause/Theme</th>'
                                   + '<th style="padding:9px 8px;text-align:center">📺 YouTube</th>'
                                   + '<th style="padding:9px 8px;text-align:center">Bonus pts</th>';
@@ -24117,9 +24296,10 @@
                              + '<th style="padding:9px 6px;text-align:center;background:rgba(255,215,0,.25)">⭐ Combined</th>'
                              + '</tr></thead><tbody>';
 
-                        const nukkadData = extraData ? (extraData.nukkad || {}) : {};
-                        const ytAdData   = extraData ? (extraData.ytAd   || {}) : {};
-                        const danceData  = extraData ? (extraData.dance  || {}) : {};
+                        const nukkadData = extraData ? (extraData.nukkad       || {}) : {};
+                        const ytAdData   = extraData ? (extraData.ytAd         || {}) : {};
+                        const danceData  = extraData ? (extraData.dance        || {}) : {};
+                        const caseNums   = extraData ? (extraData.caseNumbers  || {}) : {};
 
                         orderedClasses.forEach((cls, idx) => {
                             const clsKey   = sk(cls);
@@ -24152,7 +24332,10 @@
                             // -- Class code cell ------------------------------------
                             html += '<td style="padding:7px 8px"><strong style="color:#4a148c">' + alias + '</strong></td>';
 
-                            if (isNukkad) {
+                            if (isCaseAnalysis) {
+                                const caseNo = caseNums[clsKey] || '—';
+                                html += '<td style="padding:7px 8px;text-align:center;font-weight:700;color:' + (caseNo !== '—' ? '#1a237e' : '#bbb') + '">' + caseNo + '</td>';
+                            } else if (isNukkad) {
                                 const nd     = nukkadData[clsKey] || {};
                                 const cause  = firstEnr.cause || firstEnr.topic || '—';
                                 const ytLink = nd.ytLink || '';
@@ -24180,7 +24363,7 @@
                                 html += '<td style="padding:7px 8px"><strong style="color:#880e4f;font-size:12px">' + (dd.title || '<span style="color:#aaa;font-weight:400;font-style:italic">Not submitted</span>') + '</strong></td>';
                                 html += '<td style="padding:7px 8px"><small style="color:#555;line-height:1.5">' + (dd.summary || '<span style="color:#aaa;font-style:italic">Not submitted</span>') + '</small></td>';
                                 html += '<td style="padding:7px 8px"><small style="color:#555">' + (performers || '—') + '</small></td>';
-                            } else {
+                            } else if (!isCaseAnalysis) {
                                 const theme = firstEnr.topic || firstEnr.cause || firstEnr.product || '—';
                                 html += '<td style="padding:7px 8px"><small style="color:#555">' + theme + '</small></td>';
                             }
@@ -24244,6 +24427,11 @@
                             const snap = await db.ref('groupDance').once('value');
                             extraData = { dance: snap.exists() ? snap.val() : {} };
                         } catch(e) { extraData = { dance: {} }; }
+                    } else if (event === 'Case Analysis') {
+                        try {
+                            const snap = await db.ref('caseAnalysis/caseNumbers').once('value');
+                            extraData = { caseNumbers: snap.exists() ? snap.val() : {} };
+                        } catch(e) { extraData = { caseNumbers: {} }; }
                     }
 
                     // -- Subscribe to real-time jury marks ------------------------
@@ -42972,7 +43160,7 @@ export default {
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;" id="devTriggerVersion">
-                <strong>Version:</strong> 7.79 — Fix: Quiz preview date; Auto Promo box now SA-only (was outside panel)<strong>Last Updated:</strong> Mar 08, 2026, 02:00 PM IST</p>
+                <strong>Version:</strong> 7.85 — Fix: Team badge now shows Code Name (classAliases from jurySetup) matching jury sheet; removed duplicate old Case Numbers block from incharge card; grouped by class not teamNum<strong>Last Updated:</strong> Mar 09, 2026, 06:00 PM IST</p>
             <!-- ============================================ -->
             
             <p style="color: #c44569; font-size: 0.85em; font-weight: 600; margin-bottom: 8px;">
@@ -45839,6 +46027,12 @@ function scAdminPing() {
      v7.77 | Mar 08, 2026, 03:45 PM IST | Auto Promo: added 💬 Chat interval + Chat Now button; full scrollable Firebase log history (🔄 Log button); log shows timestamp+type+card per entry
      v7.78 | Mar 08, 2026, 04:00 PM IST | Fix: CR Podcast submissions showing only 1 entry — replaced Firebase orderByChild (requires index, silently drops records) with full fetch + client-side class filter in all 3 CR podcast functions
      v7.79 | Mar 08, 2026, 04:15 PM IST | Fix 1: Quiz preview now shows Quiz Date + Saved timestamp correctly. Fix 2: Auto Promo box was outside quizNotifSchedulePanel (visible to all) — moved inside so it is SA-only
+     v7.80 | Mar 09, 2026, 04:00 PM IST | Case Analysis: Case Number input in Dr.Shilpa/Roopa incharge panel; Case No column in jury sheet + SA live monitor; SA monitor order now respects classOrder; Code Name inputs click-to-select-all
+     v7.81 | Mar 09, 2026, 04:30 PM IST | Fix: Case Number section now renders in incharge panel — nested template literal bug fixed (inner backtick was closing outer template)
+     v7.82 | Mar 09, 2026, 05:00 PM IST | Fix: Case Number panel now visible — dedicated standalone panel shown to Dr. Shilpa R Y + Roopa M.C on login; both login paths + resetIds updated
+     v7.83 | Mar 09, 2026, 05:30 PM IST | Rebuild: Case Analysis panel shows team cards [T-01] Name1 & Name2 · Class · Case No input + Present/Absent per team; saves by class safeKey matching jury sheet
+     v7.84 | Mar 09, 2026, 05:45 PM IST | Fix: SyntaxError in caseMark onclick — corrupted quotes
+     v7.85 | Mar 09, 2026, 06:00 PM IST | Fix: Team badge = classAliases Code Name from jurySetup; removed old duplicate Case Numbers block; group by class not teamNum
      ═══════════════════════════════════════════════════════════════════ -->
 
 
