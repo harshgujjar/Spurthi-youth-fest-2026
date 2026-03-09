@@ -6189,7 +6189,6 @@
                         <button onclick="hideAllEvtBanners()" style="background:#616161;color:white;border:none;padding:8px 18px;border-radius:8px;font-size:.82em;font-weight:700;cursor:pointer">✕ Hide All Banners</button>
                     </div>
                 </div>
-            </div>
 
                 <!-- ── AUTO PROMO NOTIFIER ── -->
                 <div id="autoPromoBox" style="background:linear-gradient(135deg,#1a0030,#2a0050);border:2px solid rgba(179,136,255,0.4);border-radius:16px;padding:20px 22px;margin:18px 0 0;position:relative;overflow:hidden">
@@ -27043,7 +27042,7 @@ Davan Institute Team`;
                 showQuizMsg('quizAdminMessage', `✅ Questions saved successfully for ${selectedDate} with media! Preview shown below.`, 'success');
                 
                 // Automatically show the questions preview
-                displaySavedQuestionsPreview(data);
+                displaySavedQuestionsPreview(data, selectedDate);
                 
                 // Clear form
                 ['quiz_q1Text','quiz_q1OptA','quiz_q1OptB','quiz_q1OptC','quiz_q1OptD','quiz_q1Correct','quiz_q2Text','quiz_q2OptA','quiz_q2OptB','quiz_q2OptC','quiz_q2OptD','quiz_q2Correct','quiz_q1TextAnswer','quiz_q1TextExplanation','quiz_q2TextAnswer','quiz_q2TextExplanation'].forEach(id => {
@@ -27070,10 +27069,19 @@ Davan Institute Team`;
             }
         }
         
-        function displaySavedQuestionsPreview(data) {
+        function displaySavedQuestionsPreview(data, selectedDate) {
             const view = document.getElementById('todayQuestionsViewAdmin');
             
-            const createdDate = new Date(data.createdAt);
+            const createdDate = data.createdAt ? new Date(data.createdAt) : new Date();
+            // Show the quiz date (selectedDate like "2026-03-08") formatted nicely
+            let quizDateStr = '—';
+            if (selectedDate) {
+                const parts = selectedDate.split('-');
+                if (parts.length === 3) {
+                    const d = new Date(parseInt(parts[0]), parseInt(parts[1])-1, parseInt(parts[2]));
+                    quizDateStr = d.toLocaleDateString('en-IN', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+                }
+            }
             const dateStr = createdDate.toLocaleDateString('en-IN', { 
                 weekday: 'long', 
                 year: 'numeric', 
@@ -27088,7 +27096,8 @@ Davan Institute Team`;
             
             let html = '<div style="background:#f8f9fa;padding:25px;border-radius:10px;margin-top:20px;border:3px solid #28a745">';
             html += '<h3 style="color:#28a745;margin-bottom:10px;text-align:center">✅ Questions Saved Successfully - Preview</h3>';
-            html += `<p style="text-align:center;color:#666;font-size:0.95em;margin-bottom:20px">📅 ${dateStr} | ⏰ ${timeStr}</p>`;
+            html += `<p style="text-align:center;color:#667eea;font-weight:700;font-size:1.05em;margin-bottom:4px">📅 Quiz Date: ${quizDateStr}</p>`;
+            html += `<p style="text-align:center;color:#666;font-size:0.88em;margin-bottom:20px">💾 Saved on: ${dateStr} | ⏰ ${timeStr}</p>`;
             
             // Question 1
             html += '<div style="background:white;padding:20px;border-radius:8px;margin-bottom:20px;border-left:5px solid #667eea">';
@@ -42963,7 +42972,7 @@ export default {
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;" id="devTriggerVersion">
-                <strong>Version:</strong> 7.78 — Fix: CR Podcast shows all class submissions (orderByChild index bug fixed)<strong>Last Updated:</strong> Mar 08, 2026, 02:00 PM IST</p>
+                <strong>Version:</strong> 7.79 — Fix: Quiz preview date; Auto Promo box now SA-only (was outside panel)<strong>Last Updated:</strong> Mar 08, 2026, 02:00 PM IST</p>
             <!-- ============================================ -->
             
             <p style="color: #c44569; font-size: 0.85em; font-weight: 600; margin-bottom: 8px;">
@@ -45829,6 +45838,7 @@ function scAdminPing() {
      v7.76 | Mar 08, 2026, 03:30 PM IST | Fix: Auto Promo toggle ON/OFF now works correctly — removed label+checkbox double-fire bug; clean div-only toggle
      v7.77 | Mar 08, 2026, 03:45 PM IST | Auto Promo: added 💬 Chat interval + Chat Now button; full scrollable Firebase log history (🔄 Log button); log shows timestamp+type+card per entry
      v7.78 | Mar 08, 2026, 04:00 PM IST | Fix: CR Podcast submissions showing only 1 entry — replaced Firebase orderByChild (requires index, silently drops records) with full fetch + client-side class filter in all 3 CR podcast functions
+     v7.79 | Mar 08, 2026, 04:15 PM IST | Fix 1: Quiz preview now shows Quiz Date + Saved timestamp correctly. Fix 2: Auto Promo box was outside quizNotifSchedulePanel (visible to all) — moved inside so it is SA-only
      ═══════════════════════════════════════════════════════════════════ -->
 
 
