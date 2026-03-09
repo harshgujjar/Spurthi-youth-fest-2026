@@ -162,47 +162,66 @@
         }
         .promo-thumb-placeholder {
             width:80px; height:56px; border-radius:10px; flex-shrink:0;
-            background:rgba(255,255,255,0.15); display:flex; align-items:center;
-            justify-content:center; font-size:1.6em;
-            border:2px solid rgba(255,255,255,0.2);
+            background:rgba(255,255,255,0.12); display:flex; align-items:center;
+            justify-content:center; font-size:2em;
+            border:2px solid rgba(255,255,255,0.3);
+            animation:promoFloat 3s ease-in-out infinite;
         }
-        .promo-info { flex:1; min-width:0; }
+        .promo-content { flex:1; min-width:0; }
         .promo-type-badge {
-            display:inline-block; font-size:0.65em; font-weight:800; padding:3px 10px;
-            border-radius:20px; background:rgba(255,255,255,0.2); color:#ffe082;
-            letter-spacing:0.5px; text-transform:uppercase; margin-bottom:5px;
-            border:1px solid rgba(255,255,255,0.25);
+            display:inline-block; background:rgba(255,255,255,0.22);
+            color:#fff; font-size:0.68em; font-weight:800;
+            padding:2px 10px; border-radius:20px;
+            letter-spacing:0.8px; margin-bottom:4px;
+            animation:promoBadgePop 0.4s ease both;
         }
         .promo-title {
-            color:white; font-weight:800; font-size:clamp(0.88em,2.5vw,1.05em);
-            line-height:1.3; margin-bottom:4px;
-            text-shadow:0 1px 4px rgba(0,0,0,0.3);
+            color:#fff; font-weight:800; font-size:0.95em;
             white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+            text-shadow:0 1px 4px rgba(0,0,0,0.3);
         }
-        .promo-class {
-            color:rgba(255,255,255,0.75); font-size:0.78em; font-weight:600;
+        .promo-class { color:rgba(255,255,255,0.8); font-size:0.75em; margin-top:2px; }
+        .promo-cta { display:flex; gap:8px; flex-wrap:wrap; flex-shrink:0; }
+        .promo-cta a {
+            background:rgba(255,255,255,0.2);
+            border:1.5px solid rgba(255,255,255,0.5);
+            color:#fff; font-size:0.78em; font-weight:700;
+            padding:6px 14px; border-radius:20px;
+            text-decoration:none; white-space:nowrap;
+            transition:background 0.2s,transform 0.15s;
         }
-        .promo-actions {
-            display:flex; align-items:center; gap:10px; flex-shrink:0; flex-wrap:wrap;
-        }
-        .promo-view-btn {
-            background:rgba(255,255,255,0.2); color:white; border:1.5px solid rgba(255,255,255,0.5);
-            padding:8px 16px; border-radius:20px; font-size:0.82em; font-weight:700;
-            cursor:pointer; text-decoration:none; white-space:nowrap;
-            transition:all 0.2s; backdrop-filter:blur(4px);
-        }
-        .promo-view-btn:hover { background:rgba(255,255,255,0.35); transform:scale(1.04); }
+        .promo-cta a:hover { background:rgba(255,255,255,0.35); transform:scale(1.05); }
         .promo-dots {
-            position:absolute; bottom:8px; right:12px;
-            display:flex; gap:5px; align-items:center;
+            position:absolute; bottom:8px; left:50%; transform:translateX(-50%);
+            display:flex; gap:5px;
         }
         .promo-dot {
             width:6px; height:6px; border-radius:50%;
             background:rgba(255,255,255,0.35); transition:all 0.3s; cursor:pointer;
         }
-        .promo-dot.active { background:white; width:18px; border-radius:3px; }
+        .promo-dot.active { background:#fff; width:18px; border-radius:4px; }
+        /* ── PROMO TOAST (top-center floating) ── */
+        @keyframes promoToastIn {
+            from { opacity:0; transform:translateY(-30px) scale(0.9); }
+            to   { opacity:1; transform:translateY(0) scale(1); }
+        }
+        @keyframes promoToastOut {
+            from { opacity:1; transform:translateY(0) scale(1); }
+            to   { opacity:0; transform:translateY(-20px) scale(0.95); }
+        }
+        #promoToast {
+            position:fixed; top:18px; left:50%; transform:translateX(-50%);
+            z-index:99998; display:none;
+            background:linear-gradient(135deg,#4a0080,#c44569);
+            border-radius:18px; padding:12px 18px;
+            box-shadow:0 8px 30px rgba(106,27,154,0.5);
+            max-width:380px; width:calc(100% - 32px);
+            border:1.5px solid rgba(255,255,255,0.2);
+        }
+        #promoToast.show { display:flex; gap:12px; align-items:center; animation:promoToastIn 0.4s cubic-bezier(.34,1.56,.64,1) both; }
+        #promoToast.hide { animation:promoToastOut 0.3s ease both; }
         @media(max-width:520px){
-            .promo-thumb, .promo-thumb-placeholder { width:56px; height:42px; }
+            .promo-thumb,.promo-thumb-placeholder { width:56px; height:42px; }
             .promo-title { font-size:0.82em; }
         }
 
@@ -222,22 +241,33 @@
         .form-group { margin-bottom:16px; }
         .form-group label { display:block; font-weight:700; color:#444; margin-bottom:6px; font-size:0.92em; }
         .form-group input, .form-group select, .form-group textarea {
-            width:100%; padding:12px 14px; border:2px solid #e0e0e0; border-radius:10px;
-            font-size:0.95em; transition:border-color 0.2s; outline:none; font-family:inherit;
+            width:100%; padding:12px 14px; border:2px solid #e0e0e0; border-radius:12px;
+            font-size:0.95em; transition:all 0.2s; outline:none; font-family:inherit;
+            background:#fafafa;
         }
-        .form-group input:focus, .form-group select:focus { border-color:#6a1b9a; }
+        .form-group input:focus, .form-group select:focus {
+            border-color:#6a1b9a;
+            box-shadow:0 0 0 3px rgba(106,27,154,0.12);
+            background:white;
+        }
         .form-group input.error { border-color:#e53935; }
 
         /* ── RADIO TABS ── */
         .who-tabs { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:20px; }
         .who-tab {
-            flex:1; min-width:110px; padding:12px 8px; border:2.5px solid #e0e0e0;
-            border-radius:12px; background:#f9f9f9; text-align:center; cursor:pointer;
-            transition:all 0.2s; font-size:0.88em; font-weight:700; color:#666;
+            flex:1; min-width:110px; padding:14px 8px; border:2.5px solid #e0e0e0;
+            border-radius:14px; background:#f9f9f9; text-align:center; cursor:pointer;
+            transition:all 0.25s; font-size:0.88em; font-weight:700; color:#666;
             user-select:none;
         }
-        .who-tab:hover { border-color:#6a1b9a; color:#6a1b9a; background:#f3e5f5; }
-        .who-tab.active { border-color:#6a1b9a; background:linear-gradient(135deg,#6a1b9a,#c44569); color:white; }
+        .who-tab:hover { border-color:#6a1b9a; color:#6a1b9a; background:#f3e5f5; transform:translateY(-2px); box-shadow:0 4px 14px rgba(106,27,154,0.18); }
+        .who-tab.active {
+            border-color:#6a1b9a;
+            background:linear-gradient(135deg,#6a1b9a,#c44569);
+            color:white;
+            box-shadow:0 4px 18px rgba(106,27,154,0.4);
+            transform:translateY(-2px);
+        }
         .who-tab .tab-icon { font-size:1.5em; display:block; margin-bottom:4px; }
 
         /* ── BUTTONS ── */
@@ -377,12 +407,123 @@
         /* ── SHIMMER SKELETON ── */
         @keyframes shimmer { 0%{background-position:-600px 0} 100%{background-position:600px 0} }
         .skeleton { background:linear-gradient(90deg,#f0f0f0 25%,#e0e0e0 50%,#f0f0f0 75%); background-size:1000px 100%; animation:shimmer 1.5s infinite; border-radius:6px; height:14px; margin-bottom:8px; }
+
+        /* ── VIBRANT BODY ── */
+        body {
+            background: linear-gradient(135deg, #c44569 0%, #6a1b9a 50%, #0d47a1 100%) !important;
+            background-size: 300% 300% !important;
+            animation: bgShift 12s ease infinite !important;
+        }
+        @keyframes bgShift {
+            0%   { background-position: 0% 50%; }
+            50%  { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* ── IN-APP NOTIFICATION TOAST ── */
+        @keyframes toastSlideDown {
+            0%   { transform:translateY(-100%); opacity:0; }
+            65%  { transform:translateY(6px);   opacity:1; }
+            82%  { transform:translateY(-3px); }
+            100% { transform:translateY(0);     opacity:1; }
+        }
+        @keyframes toastSlideUp {
+            0%   { transform:translateY(0);     opacity:1; }
+            100% { transform:translateY(-100%); opacity:0; }
+        }
+        @keyframes toastGlowPulse {
+            0%,100% { box-shadow:0 4px 20px rgba(196,69,105,0.4); }
+            50%      { box-shadow:0 4px 40px rgba(196,69,105,0.9),0 0 60px rgba(106,27,154,0.5); }
+        }
+        @keyframes toastBellRing {
+            0%,100% { transform:rotate(0deg); }
+            10%     { transform:rotate(20deg); }
+            20%     { transform:rotate(-18deg); }
+            30%     { transform:rotate(14deg); }
+            40%     { transform:rotate(-10deg); }
+            50%     { transform:rotate(6deg); }
+            60%     { transform:rotate(0deg); }
+        }
+        @keyframes toastBarShimmer {
+            0%   { background-position:-400px 0; }
+            100% { background-position: 400px 0; }
+        }
+        @keyframes toastBodyFade { to { opacity:0.88; } }
+        #inAppNotifToast.toast-show {
+            animation: toastSlideDown 0.5s cubic-bezier(0.22,1,0.36,1) forwards,
+                       toastGlowPulse 2s ease-in-out 0.5s infinite;
+        }
+        #inAppNotifToast.toast-hide { animation:toastSlideUp 0.3s ease-in forwards; }
+        #inAppNotifToast .toast-bell { font-size:1.8em; flex-shrink:0; display:inline-block; transform-origin:top center; }
+        #inAppNotifToast .toast-bell.ringing { animation:toastBellRing 1s ease 0.3s 2; }
+        #inAppNotifBody.fadein { opacity:0; animation:toastBodyFade 0.5s ease 0.3s forwards; }
+        #inAppNotifBar.shimmer {
+            background:linear-gradient(90deg,rgba(255,255,255,0.2),rgba(255,255,255,0.85),rgba(255,255,255,0.2));
+            background-size:400px 100%; animation:toastBarShimmer 1.5s linear infinite;
+        }
+
+        /* ── VIBRANT CARD ── */
+        .card { background:rgba(255,255,255,0.97); backdrop-filter:blur(10px); }
+        .card h2 { background:linear-gradient(135deg,#6a1b9a,#c44569); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+
+        /* ── VIBRANT REGISTER CARD HEADER ── */
+        #regCard h2, #loginCard h2 { -webkit-text-fill-color:unset; color:#6a1b9a; background:none; }
+
+        /* ── FLOATING PARTICLES ── */
+        .particle { position:fixed; border-radius:50%; pointer-events:none; z-index:0; opacity:0.15; animation:particleFloat linear infinite; }
+        @keyframes particleFloat {
+            0%   { transform:translateY(100vh) rotate(0deg); opacity:0; }
+            10%  { opacity:0.15; }
+            90%  { opacity:0.15; }
+            100% { transform:translateY(-10vh) rotate(360deg); opacity:0; }
+        }
     </style>
 </head>
 <body>
 
+<!-- ── IN-APP NOTIFICATION TOAST ── -->
+<div id="inAppNotifToast" style="display:none;position:fixed;top:0;left:0;right:0;z-index:999999;background:linear-gradient(135deg,#c44569,#6a1b9a);color:#fff;padding:16px 20px;">
+    <div style="display:flex;align-items:flex-start;gap:12px">
+        <span class="toast-bell" id="inAppNotifBell">🔔</span>
+        <div style="flex:1;min-width:0">
+            <div id="inAppNotifTitle" style="font-weight:800;font-size:0.95em;margin-bottom:4px;"></div>
+            <div id="inAppNotifBody" style="font-size:0.83em;word-break:break-word"></div>
+        </div>
+        <button onclick="dismissInAppToast()" style="background:rgba(255,255,255,0.15);border:none;color:#fff;border-radius:50%;width:26px;height:26px;cursor:pointer;font-size:0.9em;flex-shrink:0;line-height:26px;text-align:center">✕</button>
+    </div>
+    <div id="inAppNotifProgress" style="height:4px;background:rgba(255,255,255,0.2);border-radius:2px;margin-top:12px;overflow:hidden">
+        <div id="inAppNotifBar" style="height:100%;border-radius:2px;width:100%;transition:width linear"></div>
+    </div>
+</div>
+
+<!-- ── IN-APP NOTIFICATION TOAST (same as main page) ── -->
+<div id="inAppNotifToast" style="display:none;position:fixed;top:0;left:0;right:0;z-index:999999;background:linear-gradient(135deg,#c44569,#6a1b9a);color:#fff;padding:16px 20px;">
+    <div style="display:flex;align-items:flex-start;gap:12px">
+        <span class="toast-bell" id="inAppNotifBell">🔔</span>
+        <div style="flex:1;min-width:0">
+            <div id="inAppNotifTitle" style="font-weight:800;font-size:0.95em;margin-bottom:4px;"></div>
+            <div id="inAppNotifBody" style="font-size:0.83em;word-break:break-word"></div>
+        </div>
+        <button onclick="dismissInAppToast()" style="background:rgba(255,255,255,0.15);border:none;color:#fff;border-radius:50%;width:26px;height:26px;cursor:pointer;font-size:0.9em;flex-shrink:0;line-height:26px;text-align:center">✕</button>
+    </div>
+    <div id="inAppNotifProgress" style="height:4px;background:rgba(255,255,255,0.2);border-radius:2px;margin-top:12px;overflow:hidden">
+        <div id="inAppNotifBar" style="height:100%;border-radius:2px;width:100%;transition:width linear"></div>
+    </div>
+</div>
+
 <!-- ── PEER NUDGE TOAST CONTAINER ── -->
 <div id="qnToastContainer"></div>
+
+<!-- ── PROMO TOAST (top-center floating) ── -->
+<div id="promoToast">
+    <div id="promoToastThumb" style="width:48px;height:36px;border-radius:8px;flex-shrink:0;overflow:hidden;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;font-size:1.4em"></div>
+    <div style="flex:1;min-width:0">
+        <div id="promoToastBadge" style="font-size:0.65em;font-weight:800;color:rgba(255,255,255,0.8);letter-spacing:0.8px;margin-bottom:2px"></div>
+        <div id="promoToastTitle" style="color:#fff;font-weight:700;font-size:0.88em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></div>
+        <div id="promoToastClass" style="color:rgba(255,255,255,0.75);font-size:0.74em"></div>
+    </div>
+    <a id="promoToastLink" href="#" target="_blank" style="background:rgba(255,255,255,0.2);border:1.5px solid rgba(255,255,255,0.45);color:#fff;font-size:0.75em;font-weight:700;padding:5px 12px;border-radius:14px;text-decoration:none;white-space:nowrap;flex-shrink:0">▶ Watch</a>
+</div>
 
 <div class="container">
 
@@ -399,7 +540,6 @@
     <div class="header">
         <h1>🎉 SPURTHI YOUTH FEST 2026 🎉</h1>
         <p>Daily Quiz Portal — Open to All</p>
-        <p style="margin-top:6px"><a href="index.html" style="color:#ffe082;font-size:0.85em;opacity:0.9">← Back to Main Page</a></p>
     </div>
 
     <!-- ── CONNECTION STATUS ── -->
@@ -485,10 +625,10 @@
                 <input type="tel" id="regPhone" placeholder="10-digit mobile number" maxlength="12" inputmode="numeric" pattern="[0-9]*" autocomplete="tel">
             </div>
 
-            <!-- EMAIL — optional for all -->
+            <!-- EMAIL — required -->
             <div class="form-group" id="emailRow">
-                <label for="regEmail">Email <span style="color:#888;font-weight:400">(optional — password will be emailed if provided)</span></label>
-                <input type="email" id="regEmail" placeholder="your@email.com" autocomplete="email">
+                <label for="regEmail">Email * <span style="color:#888;font-weight:400">(password will be sent here)</span></label>
+                <input type="email" id="regEmail" placeholder="your@email.com" autocomplete="off">
             </div>
 
             <button class="btn btn-primary" onclick="registerUser()" id="regBtn">
@@ -647,6 +787,13 @@
         <p style="color:rgba(255,255,255,.25);font-size:.68em;margin:12px 0 0;text-align:center">/*- in password field = auto login · tap "Login to Play" 5× = this panel</p>
     </div>
 
+    <!-- ── BACK TO MAIN PAGE ── -->
+    <div style="text-align:center;margin:24px 0 8px;">
+        <a href="index.html" style="display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,0.18);color:white;text-decoration:none;padding:12px 28px;border-radius:30px;font-weight:700;font-size:0.95em;border:2px solid rgba(255,255,255,0.35);backdrop-filter:blur(8px);transition:all 0.2s;box-shadow:0 4px 15px rgba(0,0,0,0.2)" onmouseover="this.style.background='rgba(255,255,255,0.3)'" onmouseout="this.style.background='rgba(255,255,255,0.18)'">
+            ← Back to Main Page
+        </a>
+    </div>
+
     <!-- ── FOOTER — same style as main page ── -->
     <footer style="background:white;border-radius:12px;padding:25px;margin-top:30px;box-shadow:0 4px 20px rgba(0,0,0,0.1);">
         <div style="text-align:center;">
@@ -661,7 +808,7 @@
             </p>
 
             <p style="color:#666;font-size:0.85em;margin-bottom:8px;" id="devTriggerVersion">
-                <strong>Version:</strong> 1.01 — Quiz Portal: banner.gif, promo cards, Alumni+Other registration, dev panel, email optional &nbsp;|&nbsp; <strong>Last Updated:</strong> Mar 09, 2026, 04:45 PM IST
+                <strong>Version:</strong> 1.06 — Email now mandatory for all; autocomplete=off on email (stops browser autofilling wrong values) &nbsp;|&nbsp; <strong>Last Updated:</strong> Mar 09, 2026, 04:45 PM IST
             </p>
 
             <p style="color:#c44569;font-size:0.85em;font-weight:600;margin-bottom:8px;">
@@ -682,6 +829,9 @@
     ═══════════════════════════════════════════════════════════════
     QUIZ PORTAL — VERSION HISTORY
     ═══════════════════════════════════════════════════════════════
+    v1.06 | Mar 09, 2026, 04:45 PM IST | Fix: Email now mandatory for all registrations (was optional); autocomplete="off" on email input to prevent browser autofilling saved credentials (was showing "Super Admin" from browser saved data)
+    v1.05 | Mar 09, 2026, 04:45 PM IST | Fix: Promo cards now read correct Firebase nodes (vlogChallenge/podcastChallenge/youtubeAd — was reading non-existent promoCards node, hence nothing showed); duplicate ← Back to Main Page removed (was showing twice); duplicate initInAppNotif IIFE removed (was conflicting with global toast functions); AudioContext now lazy — created on first user gesture, not on page load (fixes "AudioContext prevented from starting automatically" warning); re-init promo every 5min for live updates
+    v1.04 | Mar 09, 2026, 04:45 PM IST | Fix: Promo card now matches main page exactly — uses promo-content + promo-cta CSS classes; card uses c.color gradient + c.icon for placeholder; ▶ Watch Now + 📤 Share buttons with native navigator.share; 👉 Like · Comment · Share line; #promoToast floating popup added (top-center, 5s display, 15s cycle, thumbnail + badge + title + Watch link); goPromo uses querySelectorAll; rotation every 6s; startPromoToast() called after render
     v1.02 | Mar 09, 2026, 04:45 PM IST | Fix: Header order now matches main page (banner.gif first, then title below — no logo above banner); footer replaced with full main-page style white card: davan_logo_2026.gif circular (200px), © line, version line with devTriggerVersion id, "Built by Harsha Gujjar" line, davan_logo.png text logo (80px); removed old simple dark footer
     v1.01 | Mar 09, 2026, 04:45 PM IST | Update: Added banner.gif (same as main page); added rotating promo card banner reading Firebase promoCards node; removed Student tab — registration now Alumni + Other only; Alumni fields now have Course (PUC/BBA/B.Com/BCA) + Year of Passing 2007→current year, class saved as "Alumni - BCA - 2019"; email made optional for all (password shown on screen always, emailed if provided); dev panel added — type /*- in password field = auto quiz login, tap "Login to Play" heading 5× = show panel
     v1.00 | Mar 09, 2026, 04:45 PM IST | New: Standalone quiz portal with registration for Students (PUC/BBA/B.Com/BCA), Alumni (year of passing), Others (free text + phone mandatory); mirrors all quiz logic from main page: same Firebase nodes, same anti-cheat, peer nudge, live events banner (no scavenger hunt), password on screen + email, SA panel visibility automatic
@@ -810,8 +960,8 @@ async function registerUser() {
     if (!name)         { showMsg('regMessage','⚠️ Please enter your full name','error'); return; }
     if (phone.length !== 10) { showMsg('regMessage','⚠️ Enter a valid 10-digit phone number','error'); return; }
 
-    // Email format check if provided
-    if (email && !email.includes('@')) { showMsg('regMessage','⚠️ Invalid email address','error'); return; }
+    // Email required for all
+    if (!email || !email.includes('@')) { showMsg('regMessage','⚠️ Please enter a valid email address — your password will be sent there','error'); return; }
 
     // Category-specific validation
     let categoryLabel = '';
@@ -1567,19 +1717,84 @@ var _promoIdx     = 0;
 var _promoRotate  = null;
 
 function initPromoCards() {
-    var _db = window.db; if (!_db) return;
-    _db.ref('promoCards').once('value').then(function(snap) {
-        if (!snap.exists()) return;
+    if (!window.db) { setTimeout(initPromoCards, 800); return; }
+    var _db = window.db;
+    // Reads same Firebase nodes as main page: vlogChallenge, podcastChallenge, youtubeAd
+    Promise.all([
+        _db.ref('vlogChallenge').once('value'),
+        _db.ref('podcastChallenge').once('value'),
+        _db.ref('youtubeAd').once('value')
+    ]).then(function(results) {
+        var vlogSnap = results[0], podSnap = results[1], ytSnap = results[2];
         var cards = [];
-        snap.forEach(function(ch) {
-            var c = ch.val();
-            if (c && c.title) cards.push(Object.assign({ key: ch.key }, c));
-        });
+
+        // Vlog entries
+        if (vlogSnap.exists()) {
+            vlogSnap.forEach(function(ch) {
+                var d = ch.val();
+                if (!d || !d.link) return;
+                if (d.status !== 'Approved') return;
+                cards.push({
+                    type:  '📹 VLOG CHALLENGE',
+                    title: d.title || ('Vlog by ' + (d.member1||'')),
+                    cls:   (d.classYear||'')+( d.member1 ? ' · '+d.member1+(d.member2 ? ' & '+d.member2 : '') : ''),
+                    link:  d.link,
+                    thumb: d.screenshotUrl || null,
+                    icon:  '📹',
+                    color: 'linear-gradient(135deg,#1a0033,#833ab4,#c44569)'
+                });
+            });
+        }
+
+        // Podcast entries
+        if (podSnap.exists()) {
+            podSnap.forEach(function(ch) {
+                var d = ch.val();
+                if (!d || !d.link) return;
+                cards.push({
+                    type:  '🎙️ POD CASTING',
+                    title: d.episodeTitle || d.topic || ('Podcast by ' + (d.memberName||'')),
+                    cls:   (d.classYear||'')+( d.memberName ? ' · '+d.memberName : ''),
+                    link:  d.link,
+                    thumb: null,
+                    icon:  '🎙️',
+                    color: 'linear-gradient(135deg,#0d1b2a,#1db954,#004d40)'
+                });
+            });
+        }
+
+        // YouTube Ad entries
+        if (ytSnap.exists()) {
+            ytSnap.forEach(function(ch) {
+                var d = ch.val();
+                if (!d || !d.ytLink) return;
+                if (d.status === 'Rejected') return;
+                var thumb = null;
+                var ytMatch = d.ytLink.match(/(?:v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+                if (ytMatch) thumb = 'https://img.youtube.com/vi/' + ytMatch[1] + '/mqdefault.jpg';
+                cards.push({
+                    type:  '📺 YOUTUBE AD',
+                    title: d.adTitle || ('Ad by ' + (d.classYear||'')),
+                    cls:   (d.classYear||'')+( d.channel ? ' · '+d.channel : ''),
+                    link:  d.ytLink,
+                    thumb: thumb,
+                    icon:  '📺',
+                    color: 'linear-gradient(135deg,#1a0000,#cc0000,#ff6600)'
+                });
+            });
+        }
+
         if (!cards.length) return;
+        // Shuffle for variety
+        cards.sort(function() { return Math.random() - 0.5; });
         _promoCards = cards;
         renderPromoCards();
         startPromoRotation();
-    }).catch(function(){});
+        startPromoToast();
+    }).catch(function(e) { console.warn('Promo cards error:', e.message); });
+
+    // Live updates — re-init every 5 min in case new entries approved
+    setTimeout(initPromoCards, 5 * 60 * 1000);
 }
 
 function renderPromoCards() {
@@ -1591,28 +1806,29 @@ function renderPromoCards() {
     if (dots) dots.innerHTML = '';
 
     _promoCards.forEach(function(c, i) {
+        var thumbHtml = c.thumb
+            ? '<img class="promo-thumb" src="' + c.thumb + '" onerror="this.parentNode.innerHTML=\'<div class=promo-thumb-placeholder>' + (c.icon||'🎬') + '</div>\'" alt="thumbnail">'
+            : '<div class="promo-thumb-placeholder">' + (c.icon||'🎬') + '</div>';
+
         var card = document.createElement('div');
         card.className = 'promo-card' + (i === 0 ? ' active' : '');
-        card.id = 'promoCard_' + i;
+        card.dataset.idx = i;
 
-        var thumb = c.thumb
-            ? '<img class="promo-thumb" src="' + c.thumb + '" alt="" onerror="this.outerHTML=\'<div class=\\\"promo-thumb-placeholder\\\">🎬</div>\'">'
-            : '<div class="promo-thumb-placeholder">🎬</div>';
-
-        var likesHtml = (c.likes !== undefined)
-            ? '<span style="color:rgba(255,255,255,0.7);font-size:0.75em;margin-top:4px;display:block">👍 ' + c.likes + (c.comments ? '  💬 ' + c.comments : '') + '</span>'
+        var shareOnclick = c.link
+            ? 'onclick="navigator.share&&navigator.share({title:\'' + (c.title||'').replace(/'/g,'') + '\',url:\'' + (c.link||'') + '\'}).catch(()=>{})"'
             : '';
 
-        card.innerHTML = '<div class="promo-card-inner">' +
-            thumb +
-            '<div class="promo-info">' +
-                '<span class="promo-type-badge">' + (c.type || 'Entry') + '</span>' +
-                '<div class="promo-title">' + (c.title || '') + '</div>' +
-                '<div class="promo-class">' + (c.cls || c.class || '') + '</div>' +
-                likesHtml +
+        card.innerHTML = '<div class="promo-card-inner" style="background:' + (c.color||'linear-gradient(135deg,#1a0033 0%,#4a0080 40%,#c44569 80%,#ff6b35 100%)') + ';background-size:200% 100%">' +
+            thumbHtml +
+            '<div class="promo-content">' +
+                '<div class="promo-type-badge">' + (c.type||'Entry') + '</div>' +
+                '<div class="promo-title">' + (c.title||'') + '</div>' +
+                '<div class="promo-class">🎓 ' + (c.cls||c.class||'') + '</div>' +
+                '<div style="color:rgba(255,255,255,0.7);font-size:0.7em;margin-top:4px">👉 Like · Comment · Share to support them!</div>' +
             '</div>' +
-            '<div class="promo-actions">' +
-                (c.link ? '<a href="' + c.link + '" target="_blank" class="promo-view-btn">View →</a>' : '') +
+            '<div class="promo-cta">' +
+                (c.link ? '<a href="' + c.link + '" target="_blank" rel="noopener">▶ Watch Now</a>' : '') +
+                (c.link ? '<a href="' + c.link + '" target="_blank" rel="noopener" ' + shareOnclick + '>📤 Share</a>' : '') +
             '</div>' +
         '</div>';
         track.appendChild(card);
@@ -1626,29 +1842,68 @@ function renderPromoCards() {
     });
 
     banner.style.display = 'block';
+    banner.style.paddingBottom = dots ? '22px' : '0';
 }
 
 function goPromo(idx) {
     if (!_promoCards.length) return;
-    var prev = document.getElementById('promoCard_' + _promoIdx);
-    if (prev) prev.classList.remove('active');
-    var prevDot = document.querySelectorAll('.promo-dot')[_promoIdx];
-    if (prevDot) prevDot.classList.remove('active');
-
+    var cards  = document.querySelectorAll('.promo-card');
+    var dotEls = document.querySelectorAll('.promo-dot');
     _promoIdx = (idx + _promoCards.length) % _promoCards.length;
-
-    var cur = document.getElementById('promoCard_' + _promoIdx);
-    if (cur) { cur.style.animation = 'none'; void cur.offsetWidth; cur.style.animation = 'promoSlideIn 0.5s cubic-bezier(.34,1.56,.64,1) both'; cur.classList.add('active'); }
-    var curDot = document.querySelectorAll('.promo-dot')[_promoIdx];
-    if (curDot) curDot.classList.add('active');
+    cards.forEach(function(c,i) {
+        c.classList.toggle('active', i === _promoIdx);
+        if (i === _promoIdx) { c.style.animation='none'; void c.offsetWidth; c.style.animation='promoSlideIn 0.5s cubic-bezier(.34,1.56,.64,1) both'; }
+    });
+    dotEls.forEach(function(d,i) { d.classList.toggle('active', i === _promoIdx); });
 }
 
 function startPromoRotation() {
     if (_promoRotate) clearInterval(_promoRotate);
     if (_promoCards.length < 2) return;
-    _promoRotate = setInterval(function() { goPromo(_promoIdx + 1); }, 8000);
+    _promoRotate = setInterval(function() { goPromo(_promoIdx + 1); }, 6000);
 }
 
+var _promoToastTimer = null;
+var _promoToastIdx   = 0;
+function startPromoToast() {
+    if (_promoToastTimer) clearInterval(_promoToastTimer);
+    setTimeout(function() {
+        showPromoToast(_promoToastIdx);
+        _promoToastTimer = setInterval(function() {
+            _promoToastIdx = (_promoToastIdx + 1) % _promoCards.length;
+            showPromoToast(_promoToastIdx);
+        }, 15000);
+    }, 5000);
+}
+function showPromoToast(idx) {
+    if (!_promoCards.length) return;
+    var c = _promoCards[idx % _promoCards.length];
+    var t = document.getElementById('promoToast');
+    if (!t) return;
+    document.getElementById('promoToastBadge').textContent = c.type || '';
+    document.getElementById('promoToastTitle').textContent = c.title || '';
+    document.getElementById('promoToastClass').textContent = '🎓 ' + (c.cls||c.class||'') + ' · 👍 Like & Comment!';
+    var link = document.getElementById('promoToastLink');
+    link.href = c.link || '#';
+    link.textContent = (c.icon === '🎙️') ? '▶ Listen' : '▶ Watch';
+    var thumbEl = document.getElementById('promoToastThumb');
+    if (c.thumb) {
+        thumbEl.innerHTML = '<img src="'+c.thumb+'" style="width:100%;height:100%;object-fit:cover" onerror="this.parentNode.textContent=\''+(c.icon||'🎬')+'\'">'; 
+    } else {
+        thumbEl.textContent = c.icon || '🎬';
+    }
+    t.className = 'show'; t.style.display = 'flex';
+    clearTimeout(t._hideTimer);
+    t._hideTimer = setTimeout(function() {
+        t.classList.replace('show','hide');
+        setTimeout(function() { t.style.display='none'; t.className=''; }, 300);
+    }, 5000);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// LIVE NOTIFICATIONS TOAST — listens to Firebase live_notifications/latest
+// Same system as main page — shows admin-sent toasts to all open tabs
+// ═══════════════════════════════════════════════════════════════
 // ═══════════════════════════════════════════════════════════════
 // DEV PANEL — /*- in password field = auto login, 5× tap heading = panel
 // ═══════════════════════════════════════════════════════════════
@@ -1716,7 +1971,151 @@ window.onload = function() {
 
     // Fetch server offset early
     fetchServerOffset();
+
+    // Spawn floating background particles
+    for (let i = 0; i < 12; i++) {
+        const p = document.createElement('div');
+        p.className = 'particle';
+        const size = Math.random() * 40 + 10;
+        const colors = ['#c44569','#6a1b9a','#ff6b35','#ffd700','#00bcd4','#e91e63'];
+        p.style.cssText = `
+            width:${size}px; height:${size}px;
+            left:${Math.random()*100}%;
+            background:${colors[Math.floor(Math.random()*colors.length)]};
+            animation-duration:${Math.random()*20+15}s;
+            animation-delay:${Math.random()*10}s;
+        `;
+        document.body.appendChild(p);
+    }
 };
+
+// ═══════════════════════════════════════════════════════════════
+// IN-APP NOTIFICATION TOAST SYSTEM (mirrors main page exactly)
+// ═══════════════════════════════════════════════════════════════
+let _inAppLastId      = null;
+let _inAppDismissTimer = null;
+
+// AudioContext created lazily on first user gesture to avoid browser warning
+var _sharedAudioCtx = null;
+function _getAudioCtx() {
+    if (_sharedAudioCtx && _sharedAudioCtx.state !== 'closed') return _sharedAudioCtx;
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return null;
+    _sharedAudioCtx = new AC();
+    return _sharedAudioCtx;
+}
+// Unlock AudioContext on first user interaction
+document.addEventListener('click',   function() { var c = _getAudioCtx(); if (c && c.state === 'suspended') c.resume(); }, { once: false, passive: true });
+document.addEventListener('touchend', function() { var c = _getAudioCtx(); if (c && c.state === 'suspended') c.resume(); }, { once: false, passive: true });
+
+function playToastChime(durMode, durSec) {
+    try {
+        const ctx = _getAudioCtx();
+        if (!ctx) return;
+        if (ctx.state === 'suspended') { ctx.resume(); return; } // can't play yet — skip
+        let notes;
+        if (durMode === 'manual')      notes = [{ f:523.25, t:0 }];
+        else if (durSec <= 5)          notes = [{ f:659.25, t:0 }];
+        else if (durSec <= 9)          notes = [{ f:523.25, t:0 }, { f:659.25, t:0.13 }];
+        else                           notes = [{ f:523.25, t:0 }, { f:659.25, t:0.13 }, { f:783.99, t:0.26 }];
+        notes.forEach(({ f, t }) => {
+            const osc = ctx.createOscillator(), gain = ctx.createGain();
+            osc.connect(gain); gain.connect(ctx.destination);
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(f, ctx.currentTime + t);
+            gain.gain.setValueAtTime(0, ctx.currentTime + t);
+            gain.gain.linearRampToValueAtTime(0.22, ctx.currentTime + t + 0.02);
+            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + t + 0.45);
+            osc.start(ctx.currentTime + t);
+            osc.stop(ctx.currentTime + t + 0.5);
+        });
+    } catch(e) {}
+}
+
+function showInAppToast(title, body) {
+    const toast = document.getElementById('inAppNotifToast');
+    if (!toast) return;
+    const bg      = localStorage.getItem('toast_bg')      || 'linear-gradient(135deg,#c44569,#6a1b9a)';
+    const textCol = localStorage.getItem('toast_text')    || '#ffffff';
+    const durMode = localStorage.getItem('toast_durmode') || 'manual';
+    const durSec  = parseInt(localStorage.getItem('toast_dursec') || '8', 10);
+    toast.className = '';
+    toast.style.display = 'none';
+    void toast.offsetWidth;
+    toast.style.background = bg;
+    toast.style.color = textCol;
+    const titleEl = document.getElementById('inAppNotifTitle');
+    const bodyEl  = document.getElementById('inAppNotifBody');
+    const bell    = document.getElementById('inAppNotifBell');
+    const bar     = document.getElementById('inAppNotifBar');
+    titleEl.textContent = title;
+    bodyEl.textContent  = body;
+    titleEl.style.color = textCol;
+    bodyEl.style.color  = textCol;
+    titleEl.className = '';
+    bodyEl.className  = '';
+    if (bell) bell.className = 'toast-bell';
+    void bodyEl.offsetWidth;
+    bodyEl.className = 'fadein';
+    if (bell) bell.className = 'toast-bell ringing';
+    toast.style.display = 'block';
+    toast.className = 'toast-show';
+    clearTimeout(_inAppDismissTimer);
+    bar.className = '';
+    bar.style.transition = 'none';
+    bar.style.width = '100%';
+    void bar.offsetWidth;
+    if (durMode === 'timed' && durSec > 0) {
+        bar.className = 'shimmer';
+        setTimeout(() => { bar.style.transition = 'width ' + durSec + 's linear'; bar.style.width = '0%'; }, 100);
+        _inAppDismissTimer = setTimeout(dismissInAppToast, durSec * 1000);
+    } else {
+        bar.style.background = 'rgba(255,255,255,0.35)';
+        bar.style.width = '100%';
+    }
+    playToastChime(durMode, durSec);
+}
+
+function dismissInAppToast() {
+    clearTimeout(_inAppDismissTimer);
+    const toast = document.getElementById('inAppNotifToast');
+    if (!toast || toast.style.display === 'none') return;
+    toast.className = 'toast-hide';
+    setTimeout(() => { toast.style.display = 'none'; toast.className = ''; }, 300);
+}
+
+// Live notifications listener — shows toast when admin fires from main page
+(function startInAppNotifListener() {
+    const waitForDb = setInterval(() => {
+        if (!window.db) return;
+        clearInterval(waitForDb);
+        window._currentUserName  = window._currentUserName  || '';
+        window._currentUserClass = window._currentUserClass || '';
+        window._evalInAppNotif = function(data) {
+            if (!data || !data.id) return;
+            if (_inAppLastId === data.id) return;
+            const _toastExpiryMins = parseInt(localStorage.getItem('toast_expiry') || '30', 10);
+            if (Date.now() - data.sentAt > _toastExpiryMins * 60 * 1000) { _inAppLastId = data.id; return; }
+            if (data.targetClass) {
+                const myClass = (window._currentUserClass || '').trim().toLowerCase();
+                const tClass  = data.targetClass.trim().toLowerCase();
+                if (myClass && myClass !== tClass) return;
+            }
+            if (data.targetName) {
+                const myName = (window._currentUserName || '').trim().toLowerCase();
+                const tName  = data.targetName.trim().toLowerCase();
+                const genericNames = ['','student','cr','guest'];
+                if (!genericNames.includes(myName) && myName !== tName) { _inAppLastId = data.id; return; }
+            }
+            _inAppLastId = data.id;
+            showInAppToast(data.title, data.body);
+        };
+        window.db.ref('live_notifications/latest').on('value', snap => {
+            if (!snap.exists()) return;
+            window._evalInAppNotif(snap.val());
+        });
+    }, 500);
+})();
 </script>
 </body>
 </html>
