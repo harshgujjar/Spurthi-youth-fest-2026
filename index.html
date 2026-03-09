@@ -22412,6 +22412,17 @@
                         orderedClasses = ordered.concat(remaining);
                     }
 
+                    // Sort by alias (Code Name) alphabetically for all non-multiteam events
+                    const _liveCfgSort = (events && juryEvent) ? (events[juryEvent] || {}) : {};
+                    if (!_liveCfgSort.multiTeam && setup.classAliases) {
+                        const aMap = setup.classAliases;
+                        orderedClasses = orderedClasses.slice().sort((a, b) => {
+                            const aliasA = aMap[a.replace(/[.\[\]#$\/\s]/g, '_')] || a;
+                            const aliasB = aMap[b.replace(/[.\[\]#$\/\s]/g, '_')] || b;
+                            return aliasA.localeCompare(aliasB);
+                        });
+                    }
+
                     // For Vlog: also load vlogChallenge to get social scores
                     if (juryEvent === 'Vlog') {
                         db.ref('vlogChallenge').once('value').then(vlogSnap => {
@@ -22664,7 +22675,7 @@
                         // Performers list
                         const performers = classEnrollments.map(e => e.name || '—').join(', ');
                         html += '<td><small style="color:#555">' + (performers || '—') + '</small></td>';
-                    } else {
+                    } else if (!isCaseAnalysis) {
                         const theme = getDet(firstEnr) || '—';
                         html += '<td><small>' + theme + '</small></td>';
                     }
@@ -43160,7 +43171,7 @@ export default {
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;" id="devTriggerVersion">
-                <strong>Version:</strong> 7.85 — Fix: Team badge now shows Code Name (classAliases from jurySetup) matching jury sheet; removed duplicate old Case Numbers block from incharge card; grouped by class not teamNum<strong>Last Updated:</strong> Mar 09, 2026, 06:00 PM IST</p>
+                <strong>Version:</strong> 7.88 — Fix: Case Analysis jury sheet first criterion had no input — extra Theme/Topic cell was being injected into rows (else branch not guarded with !isCaseAnalysis)<strong>Last Updated:</strong> Mar 09, 2026, 06:45 PM IST</p>
             <!-- ============================================ -->
             
             <p style="color: #c44569; font-size: 0.85em; font-weight: 600; margin-bottom: 8px;">
