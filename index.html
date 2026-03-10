@@ -3434,6 +3434,7 @@
                 <button class="tab super-admin-only" onclick="showTab('jurySetup')">Jury Setup</button>
                 <button class="tab super-admin-only" onclick="showTab('jurySummaryReport');loadJurySummaryReport()" id="jurySummaryReportTab">📊 Jury Summary</button>
                 <button class="tab super-admin-only" onclick="showTab('juryLiveMonitor');startLiveJuryMonitor()">📡 Jury Live Monitor</button>
+                <button class="tab super-admin-only" onclick="showTab('caseAnalysisAdmin');loadCaseAnalysisAdmin()" id="caseAnalysisAdminTab">🧠 Case Analysis</button>
                 <button class="tab" onclick="showTab('results')" id="resultsTab">Results</button>
                 <button class="tab super-admin-only" onclick="showTab('quizManagement')" id="quizManagementTab">📝 Quiz Management</button>
                 <button class="tab super-admin-only" onclick="showTab('leaderboardAdmin')" id="leaderboardAdminTab">🏆 Leaderboard</button>
@@ -3608,6 +3609,7 @@
                         <button class="btn btn-small" onclick="printJurySummary()" style="background:#1b5e20;color:white;border:none">🖨️ Print / Save PDF</button>
                         <button class="btn btn-small" onclick="showJuryEventSummaryWA()" style="background:#25D366;color:white;border:none;font-weight:700">📋 Event Overview (WhatsApp)</button>
                         <button class="btn btn-small" onclick="showJuryInvitationWA()" style="background:#128C7E;color:white;border:none;font-weight:700">💌 Jury Invitation (WhatsApp)</button>
+                        <button class="btn btn-small" onclick="showJuryPasswordChangeWA()" style="background:#e65100;color:white;border:none;font-weight:700">🔑 Password Changed (WhatsApp)</button>
                     </div>
                     <div id="jurySummaryContainer">
                         <div id="jurySkelRows" style="border-radius:12px;border:2px solid #ce93d8;overflow:hidden;background:white">
@@ -7637,6 +7639,22 @@
 
             </div>
             <!-- END FACULTY ADMIN PANEL -->
+
+            <!-- ══════════════════════════════════════════════════════════
+                 🧠 CASE ANALYSIS — SUPER ADMIN EDIT PANEL
+                 ══════════════════════════════════════════════════════════ -->
+            <div id="caseAnalysisAdmin" class="form-section super-admin-only" style="margin-top:20px">
+                <h2 style="color:#1a237e;margin-bottom:6px">🧠 Case Analysis — Full Edit Panel</h2>
+                <p style="color:#888;margin-bottom:16px;font-size:.9em">All teams shown. Every field is editable. Changes save directly to Firebase.</p>
+                <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap">
+                    <button onclick="loadCaseAnalysisAdmin()" style="background:#1a237e;color:white;border:none;border-radius:8px;padding:8px 18px;font-size:0.85em;font-weight:700;cursor:pointer">🔄 Reload</button>
+                    <button onclick="saveAllCaseAnalysisAdmin()" style="background:#2e7d32;color:white;border:none;border-radius:8px;padding:8px 18px;font-size:0.85em;font-weight:700;cursor:pointer">💾 Save All Changes</button>
+                    <span id="caseAdminMsg" style="display:none;align-self:center;font-size:0.83em;font-weight:700;padding:5px 14px;border-radius:8px"></span>
+                </div>
+                <div id="caseAnalysisAdminTable" style="overflow-x:auto">
+                    <p style="color:#aaa;text-align:center;padding:30px">Click Reload to load teams.</p>
+                </div>
+            </div>
 
             <div id="firebaseDownloadMonitor" class="form-section super-admin-only" style="margin-top:20px">
                 <h2 style="color:#c44569;margin-bottom:6px">🔥 Firebase Download Monitor</h2>
@@ -15318,6 +15336,206 @@
         }
 
         // ══════════════════════════════════════════════════════════════
+        // CASE ANALYSIS — SUPER ADMIN FULL EDIT PANEL
+        // ══════════════════════════════════════════════════════════════
+        let _caAdminData = {}; // cache: { safeKey: { cls, members, caseNo, att, j1marks[], j2marks[] } }
+
+        async function loadCaseAnalysisAdmin() {
+            const tableDiv = document.getElementById('caseAnalysisAdminTable');
+            if (!tableDiv) return;
+            tableDiv.innerHTML = '<p style="text-align:center;color:#aaa;padding:30px">⏳ Loading…</p>';
+            try {
+                const [enrollSnap, caseSnap, attSnap, setupSnap, j1Snap, j2Snap] = await Promise.all([
+                    db.ref('youthfest-enrollments').once('value'),
+                    db.ref('caseAnalysis/caseNumbers').once('value'),
+                    db.ref('caseAnalysis/attendance').once('value'),
+                    db.ref('jurySetup/Case Analysis').once('value'),
+                    db.ref('juryMarks/Case Analysis/jury1').once('value'),
+                    db.ref('juryMarks/Case Analysis/jury2').once('value')
+                ]);
+
+                const caseNums = caseSnap.exists() ? caseSnap.val() : {};
+                const attData  = attSnap.exists()  ? attSnap.val()  : {};
+                const setup    = setupSnap.exists() ? setupSnap.val() : {};
+                const j1Marks  = j1Snap.exists()   ? j1Snap.val()   : {};
+                const j2Marks  = j2Snap.exists()   ? j2Snap.val()   : {};
+                const aliasMap = setup.classAliases || {};
+                const criteria = setup.criteria || [];
+                const j1Name   = setup.jury1Name || 'Jury 1';
+                const j2Name   = setup.jury2Name || 'Jury 2';
+
+                // Group enrollments by class
+                const classMap = {};
+                if (enrollSnap.exists()) {
+                    enrollSnap.forEach(ch => {
+                        const e = ch.val();
+                        if ((e.event||'').trim().toLowerCase() !== 'case analysis') return;
+                        const cls = e.classYear || e.class || '';
+                        if (!cls) return;
+                        const sk = cls.replace(/[.\[\]#$\/\s]/g,'_');
+                        if (!classMap[sk]) classMap[sk] = { cls, members: [], fbKeys: [] };
+                        classMap[sk].members.push(e);
+                        classMap[sk].fbKeys.push(ch.key);
+                    });
+                }
+
+                _caAdminData = classMap;
+
+                const safeKeys = Object.keys(classMap).sort((a,b) => {
+                    const aa = aliasMap[a] || a, bb = aliasMap[b] || b;
+                    return aa.localeCompare(bb);
+                });
+
+                if (safeKeys.length === 0) {
+                    tableDiv.innerHTML = '<p style="text-align:center;color:#aaa;padding:30px">No teams enrolled in Case Analysis yet.</p>';
+                    return;
+                }
+
+                // Build table
+                let th = '<tr style="background:linear-gradient(135deg,#1a237e,#4a148c);color:white">';
+                th += '<th style="padding:10px 8px;white-space:nowrap">#</th>';
+                th += '<th style="padding:10px 8px;white-space:nowrap">Code Name</th>';
+                th += '<th style="padding:10px 8px;white-space:nowrap">Captain</th>';
+                th += '<th style="padding:10px 8px;white-space:nowrap">Member</th>';
+                th += '<th style="padding:10px 8px;white-space:nowrap">Class</th>';
+                th += '<th style="padding:10px 8px;white-space:nowrap">Case No.</th>';
+                th += '<th style="padding:10px 8px;white-space:nowrap">Attendance</th>';
+                criteria.forEach((crit, i) => {
+                    th += '<th style="padding:10px 8px;white-space:nowrap;font-size:0.75em">' + j1Name + '<br>Cr.' + (i+1) + '</th>';
+                    th += '<th style="padding:10px 8px;white-space:nowrap;font-size:0.75em">' + j2Name + '<br>Cr.' + (i+1) + '</th>';
+                });
+                th += '</tr>';
+
+                let rows = '';
+                safeKeys.forEach((sk, idx) => {
+                    const { cls, members } = classMap[sk];
+                    const captain  = members.find(m => (m.role||'').toLowerCase().includes('captain')) || members[0] || {};
+                    const member2  = members.find(m => m !== captain) || {};
+                    const alias    = aliasMap[sk] || cls;
+                    const caseVal  = caseNums[sk] || '';
+                    const attVal   = attData[sk]  || '';
+                    const j1d      = j1Marks[sk]  || {};
+                    const j2d      = j2Marks[sk]  || {};
+                    const j1m      = j1d.marks     || [];
+                    const j2m      = j2d.marks     || [];
+                    const rowBg    = idx % 2 === 0 ? '#f8f6ff' : 'white';
+
+                    let row = '<tr style="background:' + rowBg + ';border-bottom:1px solid #e8eaf6">';
+                    row += '<td style="padding:8px;text-align:center;font-weight:700;color:#1a237e">' + (idx+1) + '</td>';
+                    // Code Name (alias) — editable
+                    row += '<td style="padding:6px"><input type="text" data-field="alias" data-sk="' + sk + '" value="' + alias.replace(/"/g,'&quot;') + '" '
+                        + 'style="width:90px;padding:4px 7px;border:1.5px solid #9fa8da;border-radius:6px;font-size:0.82em;font-weight:700;color:#1a237e;text-align:center" onclick="this.select()"></td>';
+                    // Captain name — editable
+                    row += '<td style="padding:6px"><input type="text" data-field="captain" data-sk="' + sk + '" data-fbkey="' + (classMap[sk].fbKeys[members.indexOf(captain)] || '') + '" value="' + (captain.name||'').replace(/"/g,'&quot;') + '" '
+                        + 'style="width:130px;padding:4px 7px;border:1.5px solid #c5cae9;border-radius:6px;font-size:0.82em" onclick="this.select()"></td>';
+                    // Member name — editable
+                    row += '<td style="padding:6px"><input type="text" data-field="member" data-sk="' + sk + '" data-fbkey="' + (classMap[sk].fbKeys[members.indexOf(member2)] || '') + '" value="' + (member2.name||'').replace(/"/g,'&quot;') + '" '
+                        + 'style="width:130px;padding:4px 7px;border:1.5px solid #c5cae9;border-radius:6px;font-size:0.82em" onclick="this.select()"></td>';
+                    // Class — editable
+                    row += '<td style="padding:6px"><input type="text" data-field="class" data-sk="' + sk + '" value="' + cls.replace(/"/g,'&quot;') + '" '
+                        + 'style="width:110px;padding:4px 7px;border:1.5px solid #c5cae9;border-radius:6px;font-size:0.82em" onclick="this.select()"></td>';
+                    // Case No — editable
+                    row += '<td style="padding:6px"><input type="text" data-field="caseno" data-sk="' + sk + '" value="' + caseVal.replace(/"/g,'&quot;') + '" placeholder="e.g. C-101" '
+                        + 'style="width:80px;padding:4px 7px;border:1.5px solid #9fa8da;border-radius:6px;font-size:0.82em;font-weight:700;color:#1a237e;text-align:center" onclick="this.select()"></td>';
+                    // Attendance — dropdown
+                    const attOpts = ['', 'present', 'absent'].map(v =>
+                        '<option value="' + v + '"' + (attVal === v ? ' selected' : '') + '>' + (v === '' ? '— Not marked' : v === 'present' ? '✅ Present' : '❌ Absent') + '</option>'
+                    ).join('');
+                    row += '<td style="padding:6px"><select data-field="att" data-sk="' + sk + '" '
+                        + 'style="padding:4px 7px;border:1.5px solid #9fa8da;border-radius:6px;font-size:0.82em;background:' + (attVal==='present'?'#e8f5e9':attVal==='absent'?'#ffebee':'white') + '">'
+                        + attOpts + '</select></td>';
+                    // Jury marks per criterion
+                    criteria.forEach((crit, i) => {
+                        row += '<td style="padding:6px"><input type="number" data-field="j1" data-sk="' + sk + '" data-crit="' + i + '" value="' + (j1m[i] != null ? j1m[i] : '') + '" min="0" max="10" step="0.5" placeholder="0-10" '
+                            + 'style="width:58px;padding:4px 6px;border:1.5px solid #c5cae9;border-radius:6px;font-size:0.82em;text-align:center"></td>';
+                        row += '<td style="padding:6px"><input type="number" data-field="j2" data-sk="' + sk + '" data-crit="' + i + '" value="' + (j2m[i] != null ? j2m[i] : '') + '" min="0" max="10" step="0.5" placeholder="0-10" '
+                            + 'style="width:58px;padding:4px 6px;border:1.5px solid #c5cae9;border-radius:6px;font-size:0.82em;text-align:center"></td>';
+                    });
+                    row += '</tr>';
+                    rows += row;
+                });
+
+                tableDiv.innerHTML = '<table style="width:100%;border-collapse:collapse;font-size:0.88em"><thead>' + th + '</thead><tbody>' + rows + '</tbody></table>';
+
+            } catch(e) {
+                tableDiv.innerHTML = '<p style="color:#c62828;padding:20px">❌ Error: ' + e.message + '</p>';
+            }
+        }
+
+        async function saveAllCaseAnalysisAdmin() {
+            const tableDiv = document.getElementById('caseAnalysisAdminTable');
+            const msgEl    = document.getElementById('caseAdminMsg');
+            if (!tableDiv) return;
+
+            const caseNums = {}, attUpdates = {}, j1Updates = {}, j2Updates = {}, aliasUpdates = {}, nameUpdates = {};
+
+            // Case numbers
+            tableDiv.querySelectorAll('input[data-field="caseno"]').forEach(inp => {
+                const sk = inp.dataset.sk;
+                if (inp.value.trim()) caseNums[sk] = inp.value.trim();
+            });
+            // Attendance
+            tableDiv.querySelectorAll('select[data-field="att"]').forEach(sel => {
+                const sk = sel.dataset.sk;
+                if (sel.value) attUpdates[sk] = sel.value;
+            });
+            // Jury 1 marks
+            tableDiv.querySelectorAll('input[data-field="j1"]').forEach(inp => {
+                const sk = inp.dataset.sk, i = parseInt(inp.dataset.crit);
+                if (!j1Updates[sk]) j1Updates[sk] = { marks: [] };
+                if (inp.value !== '') j1Updates[sk].marks[i] = parseFloat(inp.value) || 0;
+            });
+            // Jury 2 marks
+            tableDiv.querySelectorAll('input[data-field="j2"]').forEach(inp => {
+                const sk = inp.dataset.sk, i = parseInt(inp.dataset.crit);
+                if (!j2Updates[sk]) j2Updates[sk] = { marks: [] };
+                if (inp.value !== '') j2Updates[sk].marks[i] = parseFloat(inp.value) || 0;
+            });
+            // Class aliases
+            tableDiv.querySelectorAll('input[data-field="alias"]').forEach(inp => {
+                const sk = inp.dataset.sk;
+                if (inp.value.trim()) aliasUpdates[sk] = inp.value.trim();
+            });
+            // Student names (stored in youthfest-enrollments)
+            const nameWrites = [];
+            tableDiv.querySelectorAll('input[data-field="captain"], input[data-field="member"]').forEach(inp => {
+                const fbKey = inp.dataset.fbkey;
+                if (fbKey && inp.value.trim()) {
+                    nameWrites.push(db.ref('youthfest-enrollments/' + fbKey + '/name').set(inp.value.trim()));
+                }
+            });
+
+            try {
+                const writes = [
+                    db.ref('caseAnalysis/caseNumbers').set(caseNums),
+                    db.ref('caseAnalysis/attendance').set(attUpdates),
+                    ...Object.entries(j1Updates).map(([sk, d]) => db.ref('juryMarks/Case Analysis/jury1/' + sk).update(d)),
+                    ...Object.entries(j2Updates).map(([sk, d]) => db.ref('juryMarks/Case Analysis/jury2/' + sk).update(d)),
+                    ...nameWrites
+                ];
+                // Save aliases back to jurySetup
+                if (Object.keys(aliasUpdates).length) {
+                    writes.push(db.ref('jurySetup/Case Analysis/classAliases').set(aliasUpdates));
+                }
+                await Promise.all(writes);
+                if (msgEl) {
+                    msgEl.style.display = 'inline-block';
+                    msgEl.style.background = '#e8f5e9';
+                    msgEl.style.color = '#2e7d32';
+                    msgEl.textContent = '✅ All changes saved!';
+                    setTimeout(() => { msgEl.style.display = 'none'; }, 3000);
+                }
+            } catch(err) {
+                if (msgEl) {
+                    msgEl.style.display = 'inline-block';
+                    msgEl.style.background = '#ffebee';
+                    msgEl.style.color = '#c62828';
+                    msgEl.textContent = '❌ Error: ' + err.message;
+                }
+            }
+        }
+
+        // ══════════════════════════════════════════════════════════════
         // SOCIAL SCORE FORMULA — Save/Load (Super Admin sets in Vlog Admin)
         // ══════════════════════════════════════════════════════════════
         async function saveSocialFormula() {
@@ -21518,8 +21736,88 @@
         }
 
         window.loadJurySummaryReport      = loadJurySummaryReport;
+        // ── Jury Password Change WhatsApp Notification ───────────────
+        function showJuryPasswordChangeWA() {
+            const data = window._jurySummaryData;
+            if (!data || !data.length) { alert('Please refresh the report first.'); return; }
+
+            const juryMap = _buildJuryMap();
+            const names = Object.keys(juryMap).sort();
+            if (!names.length) { alert('No jury names configured yet.'); return; }
+
+            const btns = names.map((name, idx) => {
+                const safe = name.replace(/'/g, "\'");
+                const info = juryMap[name];
+                const eventList = info.events.map(e => e.name).join(' · ');
+                return `<button onclick="showSingleJuryPasswordChangeWA('${safe}')"
+                    style="background:linear-gradient(135deg,#bf360c,#e64a19);color:white;border:none;border-radius:10px;
+                           padding:10px 16px;font-weight:700;cursor:pointer;font-size:0.87em;text-align:left;width:100%">
+                    ${idx + 1}. 🔑 ${name}
+                    <span style="display:block;font-size:0.74em;font-weight:400;opacity:0.85;margin-top:2px">
+                        ${eventList}
+                    </span>
+                </button>`;
+            }).join('');
+
+            const html = `<div style="padding:6px 0">
+                <p style="color:#555;margin-bottom:14px;font-size:0.85em">
+                    Tap a jury member to copy their <strong>password change notification</strong> — ready to send on WhatsApp.
+                </p>
+                <div style="display:flex;flex-direction:column;gap:9px">${btns}</div>
+            </div>`;
+
+            _showWaSummaryModal('🔑 Password Changed — Notify Jury', html, true);
+        }
+
+        function showSingleJuryPasswordChangeWA(juryName) {
+            const juryMap = _buildJuryMap();
+            if (!juryMap || !juryMap[juryName]) { alert('Data not available. Please refresh.'); return; }
+            const info = juryMap[juryName];
+            const pwd  = info.pwd || '—';
+
+            const lines = [];
+            lines.push('🔑 *PASSWORD UPDATE — Spurthi Youth Fest 2026*');
+            lines.push('🏫 *Davan Nutana College, Davangere*');
+            lines.push('');
+            lines.push('Respected *' + juryName + '*,');
+            lines.push('');
+            lines.push('Your jury login password has been updated by the Super Admin for security and privacy.');
+            lines.push('');
+            lines.push('Your *new* login credentials are:');
+            lines.push('');
+            lines.push('   🌐 *Portal:* https://harshgujjar.github.io/Spurthi-youth-fest-2026/');
+            lines.push('   👤 *Name:* ' + juryName);
+            lines.push('   🔑 *New Password:* *' + pwd + '*');
+            lines.push('');
+            lines.push('📲 *How to Login:*');
+            lines.push('   1️⃣ Open the portal link above');
+            lines.push('   2️⃣ Select *"Jury"* from the *Select Your Role* dropdown');
+            // List all events this jury is assigned to
+            if (info.events.length === 1) {
+                lines.push('   3️⃣ Choose *' + info.events[0].name + '* from the event dropdown');
+            } else {
+                lines.push('   3️⃣ Choose your event from the dropdown:');
+                info.events.forEach(e => lines.push('       • ' + e.name));
+            }
+            lines.push('   4️⃣ Enter your *New Password*: *' + pwd + '*');
+            lines.push('   5️⃣ Tap *Login as Jury*');
+            lines.push('');
+            lines.push('⚠️ *Please use only this new password going forward.*');
+            lines.push('The old password will no longer work.');
+            lines.push('');
+            lines.push('If you face any issues logging in, please contact the event coordinator.');
+            lines.push('');
+            lines.push('Thank you for your cooperation. 🙏');
+            lines.push('');
+            lines.push('— *Spurthi Youth Fest 2026 Committee*');
+            lines.push('   Davan Nutana College, Davangere');
+
+            _showWaSummaryModal('🔑 Password Update — ' + juryName, lines.join('\n'));
+        }
+
         window.showJuryEventSummaryWA     = showJuryEventSummaryWA;
         window.showJuryInvitationWA       = showJuryInvitationWA;
+        window.showJuryPasswordChangeWA   = showJuryPasswordChangeWA;
         window.showSingleJuryInvitationWA = showSingleJuryInvitationWA;
         window.showEventJuryInvitationWA  = showEventJuryInvitationWA;
         window.juryTabSwitch              = juryTabSwitch;
@@ -43200,7 +43498,7 @@ export default {
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;" id="devTriggerVersion">
-                <strong>Version:</strong> 7.90 — Fix: Promo card mobile layout — full rewrite: row layout with thumb left, content middle, CTA column right; all text ellipsis; no wrapping<strong>Last Updated:</strong> Mar 09, 2026, 07:15 PM IST</p>
+                <strong>Version:</strong> 7.92 — New: Jury Password Change WhatsApp button in Jury Summary — per-person message with new password, login steps, old password warning<strong>Last Updated:</strong> Mar 09, 2026, 07:45 PM IST</p>
             <!-- ============================================ -->
             
             <p style="color: #c44569; font-size: 0.85em; font-weight: 600; margin-bottom: 8px;">
