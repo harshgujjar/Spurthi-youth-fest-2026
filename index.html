@@ -7566,6 +7566,7 @@
                                 <option value="Other">⭐ Other</option>
                             </select>
                             <button onclick="loadThAttendancePanel()" style="background:#e65100;color:white;border:none;border-radius:8px;padding:8px 16px;font-weight:700;cursor:pointer;font-size:0.85em">🔄 Refresh</button>
+                            <button onclick="showThWhatsAppSummary()" style="background:#25D366;color:white;border:none;border-radius:8px;padding:8px 16px;font-weight:700;cursor:pointer;font-size:0.85em">📋 WhatsApp Summary</button>
                             <span id="thSummaryBadge" style="background:#fff3cd;color:#e65100;padding:4px 14px;border-radius:20px;font-size:0.82em;font-weight:700;margin-left:auto"></span>
                         </div>
                         <!-- Stats -->
@@ -19134,6 +19135,136 @@
                 }).join('');
             } catch(e) { listEl.innerHTML = `<div style="color:#c62828;padding:20px">❌ Error: ${e.message}</div>`; }
         }
+
+        async function showThWhatsAppSummary() {
+            try {
+                // Fetch all needed data in parallel
+                const [fullSnap, attSnap, esSnap, waSnap] = await Promise.all([
+                    db.ref('youthfest-enrollments').once('value'),
+                    db.ref('thAttendance').once('value'),
+                    db.ref('eventSchedule').once('value'),
+                    db.ref('siteSettings/whatsappText').once('value')
+                ]);
+                const siteShareText = waSnap.exists() ? waSnap.val() : '';
+
+                // Get event date/time from schedule
+                let eventDate = '', eventTime = '';
+                if (esSnap.exists()) {
+                    const esItems = Object.values(esSnap.val());
+                    const thEntry = esItems.find(e => (e.name||'').toLowerCase().includes('talent'));
+                    if (thEntry) {
+                        eventDate = thEntry.startDate || thEntry.endDate || '';
+                        eventTime = thEntry.startTime || thEntry.endTime || '';
+                    }
+                }
+
+                // Format date nicely
+                function fmtDate(d) {
+                    if (!d) return '';
+                    const parts = d.split('-');
+                    if (parts.length === 3) {
+                        const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+                        return parts[2] + ' ' + (months[parseInt(parts[1],10)-1]||'') + ' ' + parts[0];
+                    }
+                    return d;
+                }
+
+                // Collect entries
+                const att = attSnap.val() || {};
+                const entries = [];
+                if (fullSnap.exists()) {
+                    fullSnap.forEach(ch => {
+                        const d = ch.val();
+                        if (d.event === 'Talent Hunt') entries.push(Object.assign({ key: ch.key }, d));
+                    });
+                }
+
+                if (!entries.length) { alert('No Talent Hunt participants found.'); return; }
+
+                // Build code map (same logic as loadThAttendancePanel)
+                const thCodeMap = {};
+                entries.forEach((e, idx) => { thCodeMap[e.key] = String(idx+1).padStart(2,'0'); });
+
+                const talentIcons = {
+                    'Singing':'🎤', 'Dancing':'💃', 'Acting':'🎭',
+                    'Instrument Playing':'🎸', 'Mimicry':'😄', 'Magic':'🎩',
+                    'Stand-up Comedy':'😂'
+                };
+
+                const lines = [];
+                lines.push('🔗 https://harshgujjar.github.io/Spurthi-youth-fest-2026/');
+                lines.push('');
+                if (siteShareText) {
+                    lines.push(siteShareText);
+                    lines.push('');
+                    lines.push('━━━━━━━━━━━━━━━━━━━━━━━━');
+                    lines.push('');
+                }
+                lines.push('🎭 *TALENT HUNT — Spurthi Youth Fest 2026*');
+                lines.push('🏫 *Davan Nutana College, Davangere*');
+                lines.push('');
+                if (eventDate) {
+                    lines.push('📅 *Date:* ' + fmtDate(eventDate) + (eventTime ? '   ⏰ *Time:* ' + eventTime : ''));
+                    lines.push('');
+                }
+                lines.push('⏱️ *Time per performance:* 2 minutes');
+                lines.push('🏆 *Max participants:* 6 students from college');
+                lines.push('');
+                lines.push('━━━━━━━━━━━━━━━━━━━━━━━━');
+                lines.push('👇 *Participants & Sitting Numbers*');
+                lines.push('━━━━━━━━━━━━━━━━━━━━━━━━');
+                lines.push('');
+
+                // Sort by sitting code
+                const sorted = [...entries].sort((a, b) => {
+                    const cA = parseInt(a.sittingCode || thCodeMap[a.key] || '0');
+                    const cB = parseInt(b.sittingCode || thCodeMap[b.key] || '0');
+                    return cA - cB;
+                });
+
+                sorted.forEach((e, idx) => {
+                    const rawCode = e.sittingCode && /^\d+$/.test(e.sittingCode) ? e.sittingCode : thCodeMap[e.key];
+                    const code = rawCode ? 'TH-' + rawCode : '—';
+                    const name = e.name || e.memberName || '—';
+                    const cls  = e.classYear || e.class || '—';
+                    const talent = e.talentType || '—';
+                    const icon = talentIcons[talent] || '⭐';
+                    const attStatus = att[e.key] ? att[e.key].status : '';
+                    const attMark = attStatus === 'present' ? ' ✅' : attStatus === 'absent' ? ' ❌' : '';
+
+                    lines.push((idx+1) + '. 🎫 *' + code + '*' + attMark);
+                    lines.push('   👤 *' + name + '*');
+                    lines.push('   🎓 ' + cls);
+                    lines.push('   ' + icon + ' ' + talent);
+                    lines.push('');
+                });
+
+                lines.push('━━━━━━━━━━━━━━━━━━━━━━━━');
+                lines.push('');
+                lines.push('📌 *Note to participants:*');
+                lines.push('Please note your *Sitting Number* (TH-XX).');
+                lines.push('Report to the venue *10 minutes before* your performance.');
+                lines.push('');
+                lines.push('👏 Wishing all participants the very best!');
+                lines.push('');
+                lines.push('— *Spurthi Youth Fest 2026 Committee*');
+                lines.push('   Davan Nutana College, Davangere');
+
+                const msg = lines.join('\n');
+
+                // Show in WA modal if available, else clipboard
+                if (typeof _showWaSummaryModal === 'function') {
+                    _showWaSummaryModal('🎭 Talent Hunt WhatsApp Summary', msg);
+                } else {
+                    navigator.clipboard.writeText(msg)
+                        .then(() => alert('✅ WhatsApp message copied! Paste it in your group.'))
+                        .catch(() => prompt('Copy this message:', msg));
+                }
+            } catch(err) {
+                alert('Error generating summary: ' + err.message);
+            }
+        }
+        window.showThWhatsAppSummary = showThWhatsAppSummary;
 
         async function thMarkAttV1(key, status) {
             const faculty = document.getElementById('facultyDashName').textContent || 'Faculty';
@@ -43534,7 +43665,7 @@ export default {
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;" id="devTriggerVersion">
-                <strong>Version:</strong> 7.93 — Fix: Jury login — Jury Number dropdown now shows real names (Jury 1 — Dr. Smith, Jury 2 — Prof. Mary) fetched live from Firebase when event is selected<strong>Last Updated:</strong> Mar 09, 2026, 08:00 PM IST</p>
+                <strong>Version:</strong> 7.95 — Fix: Talent Hunt WA Summary — now prepends site link + dynamic WhatsApp Share Text from siteSettings at top of message<strong>Last Updated:</strong> Mar 09, 2026, 08:30 PM IST</p>
             <!-- ============================================ -->
             
             <p style="color: #c44569; font-size: 0.85em; font-weight: 600; margin-bottom: 8px;">
