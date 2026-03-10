@@ -2090,7 +2090,7 @@
                 </div>
                 <div class="form-group">
                     <label style="font-weight:700;color:#555;font-size:0.85em">🎭 Select Event:</label>
-                    <select id="juryEvent" style="background:white;border:2px solid #80cbc4;border-radius:8px;padding:8px 12px;font-size:0.9em;outline:none;width:100%"></select>
+                    <select id="juryEvent" onchange="updateJuryNumberOptions()" style="background:white;border:2px solid #80cbc4;border-radius:8px;padding:8px 12px;font-size:0.9em;outline:none;width:100%"></select>
                 </div>
                 <div class="form-group">
                     <label style="font-weight:700;color:#555;font-size:0.85em">🔑 Jury Password:</label>
@@ -9866,6 +9866,42 @@
                 .then(() => alert('✅ Scavenger Hunt WhatsApp message copied!\nPaste it directly into WhatsApp.'))
                 .catch(() => prompt('Copy this message manually:', msg));
         }
+
+        async function updateJuryNumberOptions() {
+            const eventVal = document.getElementById('juryEvent').value;
+            const sel = document.getElementById('juryNumber');
+            if (!sel) return;
+
+            // Reset to defaults while loading
+            sel.innerHTML = '<option value="">⏳ Loading…</option>';
+
+            if (!eventVal) {
+                sel.innerHTML = '<option value="">— Select —</option><option value="1">⚖️ Jury 1</option><option value="2">⚖️ Jury 2</option>';
+                return;
+            }
+
+            try {
+                const snap = await db.ref('jurySetup/' + eventVal).once('value');
+                const setup = snap.exists() ? snap.val() : {};
+                const j1Name = (setup.jury1Name && setup.jury1Name !== 'abc' && setup.jury1Name !== 'xyz') ? setup.jury1Name : null;
+                const j2Name = (setup.jury2Name && setup.jury2Name !== 'abc' && setup.jury2Name !== 'xyz') ? setup.jury2Name : null;
+
+                sel.innerHTML = '<option value="">— Select —</option>';
+
+                const opt1 = document.createElement('option');
+                opt1.value = '1';
+                opt1.textContent = j1Name ? '⚖️ Jury 1 — ' + j1Name : '⚖️ Jury 1';
+                sel.appendChild(opt1);
+
+                const opt2 = document.createElement('option');
+                opt2.value = '2';
+                opt2.textContent = j2Name ? '⚖️ Jury 2 — ' + j2Name : '⚖️ Jury 2';
+                sel.appendChild(opt2);
+            } catch(e) {
+                sel.innerHTML = '<option value="">— Select —</option><option value="1">⚖️ Jury 1</option><option value="2">⚖️ Jury 2</option>';
+            }
+        }
+        window.updateJuryNumberOptions = updateJuryNumberOptions;
 
         function juryLogin() {
             const event = document.getElementById('juryEvent').value;
@@ -43498,7 +43534,7 @@ export default {
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;" id="devTriggerVersion">
-                <strong>Version:</strong> 7.92 — New: Jury Password Change WhatsApp button in Jury Summary — per-person message with new password, login steps, old password warning<strong>Last Updated:</strong> Mar 09, 2026, 07:45 PM IST</p>
+                <strong>Version:</strong> 7.93 — Fix: Jury login — Jury Number dropdown now shows real names (Jury 1 — Dr. Smith, Jury 2 — Prof. Mary) fetched live from Firebase when event is selected<strong>Last Updated:</strong> Mar 09, 2026, 08:00 PM IST</p>
             <!-- ============================================ -->
             
             <p style="color: #c44569; font-size: 0.85em; font-weight: 600; margin-bottom: 8px;">
