@@ -17614,11 +17614,15 @@
                     });
                 }
 
-                // Load attendance records + bow registrations
-                const [attSnap, regSnap] = await Promise.all([
+                // Load attendance records + bow registrations + jury class order
+                const [attSnap, regSnap, jurySetupSnap] = await Promise.all([
                     db.ref('bowAttendance').once('value'),
-                    db.ref('bowRegistrations').once('value')
+                    db.ref('bowRegistrations').once('value'),
+                    db.ref('jurySetup/Best out of Waste').once('value')
                 ]);
+                const _bowJurySetup = jurySetupSnap.val() || {};
+                const _bowClassOrder = (_bowJurySetup.classOrder && _bowJurySetup.classOrder.length > 0)
+                    ? _bowJurySetup.classOrder : null;
                 const attData = attSnap.val() || {};
                 // Build bowRegs map keyed by enrollmentKey
                 const bowRegs = {};
@@ -17765,8 +17769,18 @@
                 }
 
                 // ── Assign globally unique team numbers across all classes ──
+                // Use SAME class order as jury sheet (jurySetup classOrder) so team numbers match
                 let globalTeamCounter = 0;
-                const sortedClassEntries = Object.entries(byClass).sort(([a],[b]) => a.localeCompare(b));
+                const allClassKeys = Object.keys(byClass);
+                let orderedClassKeys;
+                if (_bowClassOrder) {
+                    const inOrder = _bowClassOrder.filter(c => allClassKeys.includes(c));
+                    const remaining = allClassKeys.filter(c => !inOrder.includes(c)).sort((a,b) => a.localeCompare(b));
+                    orderedClassKeys = inOrder.concat(remaining);
+                } else {
+                    orderedClassKeys = allClassKeys.slice().sort((a,b) => a.localeCompare(b));
+                }
+                const sortedClassEntries = orderedClassKeys.map(k => [k, byClass[k]]);
                 const classTeamsMap = {};
                 sortedClassEntries.forEach(([cls, members]) => {
                     const teams = groupIntoTeams(members);
@@ -22814,11 +22828,14 @@
                 if (isHW)  fetchList.push(db.ref('hwAttendance').once('value'));
                 if (isTH)  fetchList.push(db.ref('thAttendance').once('value'));
                 if (isBOW) fetchList.push(db.ref('bowAttendance').once('value'));
+                if (isBOW) fetchList.push(db.ref('bowRegistrations').once('value'));
                 return Promise.all(fetchList);
             }).then(snaps => {
                 const snap = snaps[0];
                 const attSnap = snaps[1] || null;
                 const attData = attSnap && attSnap.exists() ? attSnap.val() : {};
+                // For BOW: also load bowRegistrations (snaps[2] when isBOW)
+                const bowRegSnap = isBOW ? (snaps[2] || null) : null;
 
                 console.log('Firebase snapshot received');
                 console.log('Snapshot exists:', snap.exists());
@@ -22841,35 +22858,53 @@
                 }
                 
                 console.log('Loaded enrollments, all array length:', all.length);
-                
+
+                // For BOW: supplement youthfest-enrollments with bowRegistrations entries
+                // so ALL 30 registered students appear regardless of attendance status
+                if (isBOW && bowRegSnap && bowRegSnap.exists()) {
+                    const existingKeys = new Set(all.map(e => e.id));
+                    bowRegSnap.forEach(ch => {
+                        const d = ch.val();
+                        const ek = d.enrollmentKey || ch.key;
+                        if (!existingKeys.has(ek)) {
+                            all.push(Object.assign({ id: ek, event: 'Best out of Waste',
+                                classYear: d.classYear || d.class || '',
+                                name: d.memberName || d.name || '',
+                                role: d.role || 'Captain',
+                                teamNum: d.teamNum != null ? d.teamNum : null
+                            }, d));
+                            existingKeys.add(ek);
+                        }
+                    });
+                    console.log('After BOW merge, all array length:', all.length);
+                }
+
                 // Filter for current event
                 let eventEnrollments = all.filter(e => e.event === juryEvent);
                 console.log('Enrollments for event "' + juryEvent + '":', eventEnrollments.length);
 
-                // For HW / TH / BOW: only send PRESENT participants to jury
-                // But ONLY gate if attendance marking has actually started (attData has entries)
+                // For HW / TH: only send PRESENT participants to jury
+                // BOW: show ALL registered students — attendance is informational, not a gate
                 const attHasData = attSnap && attSnap.exists() && Object.keys(attData).length > 0;
-                if ((isHW || isTH || isBOW) && attHasData) {
+                if ((isHW || isTH) && attHasData) {
                     const beforeCount = eventEnrollments.length;
                     const presentOnly = eventEnrollments.filter(e => {
                         const att = attData[e.id] || {};
                         return att.status === 'present';
                     });
                     if (presentOnly.length > 0) {
-                        // Attendance started and some are present — show only present
                         eventEnrollments = presentOnly;
-                        console.log('Attendance filter (' + juryEvent + '): ' + beforeCount + ' → ' + eventEnrollments.length + ' present');
+                        console.log('Attendance filter (' + juryEvent + '): ' + beforeCount + ' to ' + eventEnrollments.length + ' present');
                     } else {
-                        // Attendance started but nobody marked present yet
                         document.getElementById('jurySheetContainer').innerHTML =
                             '<div style="text-align:center;padding:40px;background:#fff3cd;border-radius:10px;border:2px solid #ffc107">' +
-                            '<p style="color:#856404;font-size:1.1em;font-weight:700">⏳ No participants marked Present yet</p>' +
+                            '<p style="color:#856404;font-size:1.1em;font-weight:700">No participants marked Present yet</p>' +
                             '<p style="color:#666;margin-top:8px">The faculty coordinator must mark participants as <strong>Present</strong> in the attendance panel before they appear on the jury sheet.</p>' +
                             '</div>';
                         return;
                     }
                 }
-                // If attHasData is false (attendance not started yet), show all enrolled students
+                // BOW: all enrolled shown — attendance gating removed so all 30 appear
                 
                 // Now get jury setup
                 return db.ref('jurySetup/'+juryEvent).once('value').then(setupSnap => {
@@ -23094,9 +23129,24 @@
                         const socialScore = vlogEntry ? (vlogEntry.socialScore || 0) : 0;
                         const detail = getDet(teamMembers[0]) || '—';
 
+                        // Build participant names list for BOW (shown beside team code)
+                        const bowMemberNames = isBOW
+                            ? teamMembers.map(m => {
+                                const n = m.name || m.memberName || '';
+                                const r = (m.role || '').toLowerCase();
+                                const badge = r === 'captain'
+                                    ? '<span style="background:#e65100;color:white;font-size:0.68em;padding:1px 5px;border-radius:4px;font-weight:700;vertical-align:middle">C</span>'
+                                    : '<span style="background:#1565c0;color:white;font-size:0.68em;padding:1px 5px;border-radius:4px;font-weight:700;vertical-align:middle">M</span>';
+                                return n ? (badge + ' <span style="font-size:0.82em;color:#333;font-weight:600">' + n + '</span>') : '';
+                              }).filter(Boolean).join('<br>')
+                            : '';
+
                         html += '<tr>';
                         html += '<td>' + seq + '</td>';
-                        html += '<td><span style="background:#4a148c;color:white;font-weight:800;padding:3px 12px;border-radius:8px;font-size:0.88em">' + teamCode + '</span></td>';
+                        html += '<td>'
+                            + '<span style="background:#4a148c;color:white;font-weight:800;padding:3px 12px;border-radius:8px;font-size:0.88em">' + teamCode + '</span>'
+                            + (isBOW && bowMemberNames ? '<div style="margin-top:5px;line-height:1.7">' + bowMemberNames + '</div>' : '')
+                            + '</td>';
                         if (isVlog) {
                             html += '<td><small>' + (teamTopic || '—') + '</small></td>';
                             html += '<td style="text-align:center;font-weight:700;color:' + (socialScore>0?'#e91e63':'#aaa') + '">' + (socialScore>0?socialScore:'—') + '</td>';
@@ -43665,7 +43715,7 @@ export default {
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;" id="devTriggerVersion">
-                <strong>Version:</strong> 7.95 — Fix: Talent Hunt WA Summary — now prepends site link + dynamic WhatsApp Share Text from siteSettings at top of message<strong>Last Updated:</strong> Mar 09, 2026, 08:30 PM IST</p>
+                <strong>Version:</strong> 7.97 — BOW jury sheet: participant names (Captain/Member badges) shown beside each team number<strong>Last Updated:</strong> Mar 13, 2026, 01:35 PM IST</p>
             <!-- ============================================ -->
             
             <p style="color: #c44569; font-size: 0.85em; font-weight: 600; margin-bottom: 8px;">
@@ -46538,6 +46588,9 @@ function scAdminPing() {
      v7.83 | Mar 09, 2026, 05:30 PM IST | Rebuild: Case Analysis panel shows team cards [T-01] Name1 & Name2 · Class · Case No input + Present/Absent per team; saves by class safeKey matching jury sheet
      v7.84 | Mar 09, 2026, 05:45 PM IST | Fix: SyntaxError in caseMark onclick — corrupted quotes
      v7.85 | Mar 09, 2026, 06:00 PM IST | Fix: Team badge = classAliases Code Name from jurySetup; removed old duplicate Case Numbers block; group by class not teamNum
+     v7.86–v7.95 | changes made outside this conversation — details not logged
+     v7.96 | Mar 13, 2026, 01:35 PM IST | BOW jury sheet now shows all 30 registered students (removed present-only gate); faculty & jury team numbers now match via jurySetup classOrder
+     v7.97 | Mar 13, 2026, 01:35 PM IST | BOW jury sheet: participant names (Captain/Member badges) shown beside each team number
      ═══════════════════════════════════════════════════════════════════ -->
 
 
