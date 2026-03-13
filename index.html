@@ -23107,16 +23107,50 @@
                     mtSeqIdx++;
                     const classEnrollments = eventEnrollments.filter(e => (e.classYear||e.class) === cls);
                     const teamsMap = {};
-                    classEnrollments.forEach((enr, idx) => {
-                        let tKey;
-                        if (enr.teamNum != null) tKey = String(enr.teamNum);
-                        else if (enr.topic) tKey = 'topic__' + enr.topic;
-                        else tKey = String(Math.floor(idx / membersPerTeam) + 1);
-                        if (!teamsMap[tKey]) teamsMap[tKey] = [];
-                        teamsMap[tKey].push(enr);
-                    });
+                    if (isBOW) {
+                        // BOW: group by teamNum if present; otherwise pair captain+member sequentially
+                        // Never use idx-based math — it creates duplicate keys and loses students
+                        const hasTeamNums = classEnrollments.some(e => e.teamNum != null);
+                        if (hasTeamNums) {
+                            classEnrollments.forEach((enr, idx) => {
+                                const tKey = enr.teamNum != null ? String(enr.teamNum) : 'solo_' + (enr.id || idx);
+                                if (!teamsMap[tKey]) teamsMap[tKey] = [];
+                                teamsMap[tKey].push(enr);
+                            });
+                        } else {
+                            // No teamNum — pair by captain+member role sequentially
+                            let tIdx = 0;
+                            const caps = classEnrollments.filter(e => (e.role||'').toLowerCase() === 'captain');
+                            const mems = classEnrollments.filter(e => (e.role||'').toLowerCase() !== 'captain');
+                            const maxTeams = Math.max(caps.length, mems.length, 1);
+                            for (let i = 0; i < maxTeams; i++) {
+                                const tKey = 'bow_pair_' + (++tIdx);
+                                teamsMap[tKey] = [];
+                                if (caps[i]) teamsMap[tKey].push(caps[i]);
+                                if (mems[i]) teamsMap[tKey].push(mems[i]);
+                            }
+                            // Any leftover unpaired members
+                            if (mems.length > caps.length) {
+                                for (let i = caps.length; i < mems.length; i++) {
+                                    teamsMap['bow_solo_' + i] = [mems[i]];
+                                }
+                            }
+                        }
+                    } else {
+                        classEnrollments.forEach((enr, idx) => {
+                            let tKey;
+                            if (enr.teamNum != null) tKey = String(enr.teamNum);
+                            else if (enr.topic) tKey = 'topic__' + enr.topic;
+                            else tKey = String(Math.floor(idx / membersPerTeam) + 1);
+                            if (!teamsMap[tKey]) teamsMap[tKey] = [];
+                            teamsMap[tKey].push(enr);
+                        });
+                    }
 
-                    const teamNums = Object.keys(teamsMap).sort((a,b) => Number(a)-Number(b));
+                    const teamNums = Object.keys(teamsMap).sort((a,b) => {
+                        const na = Number(a), nb = Number(b);
+                        return (isNaN(na) || isNaN(nb)) ? String(a).localeCompare(String(b)) : na - nb;
+                    });
                     teamNums.forEach((tNum, tIdx) => {
                         globalMTTeamNum++;
                         const teamMembers = teamsMap[tNum];
@@ -43715,7 +43749,7 @@ export default {
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;" id="devTriggerVersion">
-                <strong>Version:</strong> 7.97 — BOW jury sheet: participant names (Captain/Member badges) shown beside each team number<strong>Last Updated:</strong> Mar 13, 2026, 01:35 PM IST</p>
+                <strong>Version:</strong> 7.98 — Fix: BOW jury sheet now shows all 30 teams including non-pre-registered (Madhu/Chaitra); fixed idx-math team grouping that was losing students without teamNum<strong>Last Updated:</strong> Mar 13, 2026, 01:35 PM IST</p>
             <!-- ============================================ -->
             
             <p style="color: #c44569; font-size: 0.85em; font-weight: 600; margin-bottom: 8px;">
@@ -46591,6 +46625,7 @@ function scAdminPing() {
      v7.86–v7.95 | changes made outside this conversation — details not logged
      v7.96 | Mar 13, 2026, 01:35 PM IST | BOW jury sheet now shows all 30 registered students (removed present-only gate); faculty & jury team numbers now match via jurySetup classOrder
      v7.97 | Mar 13, 2026, 01:35 PM IST | BOW jury sheet: participant names (Captain/Member badges) shown beside each team number
+     v7.98 | Mar 13, 2026, 01:35 PM IST | Fix: BOW jury shows all 30 teams incl. non-pre-registered; fixed idx-math grouping that lost students without teamNum
      ═══════════════════════════════════════════════════════════════════ -->
 
 
