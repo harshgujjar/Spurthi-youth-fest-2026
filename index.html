@@ -18393,9 +18393,15 @@
             showM('⏳ Uploading…', true);
             try {
                 const key      = cls.replace(/[.#$/\[\]]/g,'_');
-                const storRef  = firebase.storage().ref('nukkadNatak/newspaper/' + key + '_' + Date.now() + '_' + file.name);
-                await storRef.put(file);
-                const url = await storRef.getDownloadURL();
+                // Upload via Cloudinary (same as all other photo uploads in this app)
+                const formData = new FormData();
+                formData.append('file', file);
+                formData.append('upload_preset', 'scavenger_hunt');
+                formData.append('folder', 'nukkad_newspaper');
+                const res  = await fetch('https://api.cloudinary.com/v1_1/dat0khbet/image/upload', { method: 'POST', body: formData });
+                const data = await res.json();
+                if (!data.secure_url) throw new Error(data.error?.message || 'Upload failed');
+                const url = data.secure_url;
                 await db.ref('nukkadNatak/post/' + key).update({ newspaperUrl: url, newspaperSubmittedAt: new Date().toISOString() });
                 showM('✅ Newspaper photo uploaded! Shankar sir will verify it.', true);
                 loadCRNukkadPanel();
@@ -23155,8 +23161,9 @@
                         globalMTTeamNum++;
                         const teamMembers = teamsMap[tNum];
                         const rowKey = safeKey + '__t' + (tIdx + 1);
-                        // Show ONLY alias + team number — NEVER real class name
+                        // BOW: show real class name to jury; other events hide it behind alias
                         const teamCode = isBOW ? 'Team ' + globalMTTeamNum : alias + ' — Team ' + (tIdx + 1);
+                        const bowClassName = isBOW ? cls : '';
                         const teamTopic = teamMembers[0].topic || '';
                         const vlogKey   = cls + '__' + teamTopic;
                         const vlogEntry = vlogData[vlogKey] || null;
@@ -23180,6 +23187,7 @@
                         html += '<td>'
                             + '<span style="background:#4a148c;color:white;font-weight:800;padding:3px 12px;border-radius:8px;font-size:0.88em">' + teamCode + '</span>'
                             + (isBOW && bowMemberNames ? '<div style="margin-top:5px;line-height:1.7">' + bowMemberNames + '</div>' : '')
+                            + (isBOW && bowClassName ? '<div style="margin-top:4px"><span style="background:#e8f5e9;color:#2e7d32;font-size:0.75em;font-weight:700;padding:2px 8px;border-radius:5px">' + bowClassName + '</span></div>' : '')
                             + '</td>';
                         if (isVlog) {
                             html += '<td><small>' + (teamTopic || '—') + '</small></td>';
@@ -24497,9 +24505,11 @@
 
             try {
                 // -- Load setup + all enrollments in parallel ---------------------
-                const [setupSnap, enrollSnap] = await Promise.all([
+                const isBOWEvent = (event === 'Best out of Waste');
+                const [setupSnap, enrollSnap, bowRegSASNap] = await Promise.all([
                     db.ref('jurySetup/' + event).once('value'),
-                    db.ref('youthfest-enrollments').once('value')
+                    db.ref('youthfest-enrollments').once('value'),
+                    isBOWEvent ? db.ref('bowRegistrations').once('value') : Promise.resolve(null)
                 ]);
 
                 const setup = setupSnap.val();
@@ -24542,6 +24552,24 @@
                     enrollSnap.forEach(ch => {
                         const e = ch.val(); e._key = ch.key;
                         if (e.event === event) allEventEnrollments.push(e);
+                    });
+                }
+                // For BOW: merge bowRegistrations entries missing from youthfest-enrollments
+                if (isBOWEvent && bowRegSASNap && bowRegSASNap.exists()) {
+                    const existSAKeys = new Set(allEventEnrollments.map(e => e._key || e.id));
+                    bowRegSASNap.forEach(ch => {
+                        const d = ch.val();
+                        const ek = d.enrollmentKey || ch.key;
+                        if (!existSAKeys.has(ek)) {
+                            allEventEnrollments.push(Object.assign({ _key: ek, id: ek,
+                                event: 'Best out of Waste',
+                                classYear: d.classYear || d.class || '',
+                                name: d.memberName || d.name || '',
+                                role: d.role || 'Captain',
+                                teamNum: d.teamNum != null ? d.teamNum : null
+                            }, d));
+                            existSAKeys.add(ek);
+                        }
                     });
                 }
 
@@ -24769,18 +24797,47 @@
                             const alias    = getMonAlias(cls);
                             const classEnr = allEventEnrollments.filter(e => (e.classYear || e.class) === cls);
 
-                            // Group into teams (same logic as renderJurySheet)
+                            // Group into teams — BOW uses safe role-pairing, others use idx-math
                             const teamsMap = {};
-                            classEnr.forEach((enr, idx) => {
-                                let tKey;
-                                if (enr.teamNum != null) tKey = String(enr.teamNum);
-                                else if (enr.topic)      tKey = 'topic__' + enr.topic;
-                                else                     tKey = String(Math.floor(idx / membersPerTeam) + 1);
-                                if (!teamsMap[tKey]) teamsMap[tKey] = [];
-                                teamsMap[tKey].push(enr);
-                            });
+                            if (isBOW) {
+                                const hasTeamNums = classEnr.some(e => e.teamNum != null);
+                                if (hasTeamNums) {
+                                    classEnr.forEach((enr, idx) => {
+                                        const tKey = enr.teamNum != null ? String(enr.teamNum) : 'solo_' + (enr._key || enr.id || idx);
+                                        if (!teamsMap[tKey]) teamsMap[tKey] = [];
+                                        teamsMap[tKey].push(enr);
+                                    });
+                                } else {
+                                    const caps = classEnr.filter(e => (e.role||'').toLowerCase() === 'captain');
+                                    const mems = classEnr.filter(e => (e.role||'').toLowerCase() !== 'captain');
+                                    const maxT = Math.max(caps.length, mems.length, 1);
+                                    for (let i = 0; i < maxT; i++) {
+                                        const tKey = 'bow_pair_' + (i + 1);
+                                        teamsMap[tKey] = [];
+                                        if (caps[i]) teamsMap[tKey].push(caps[i]);
+                                        if (mems[i]) teamsMap[tKey].push(mems[i]);
+                                    }
+                                    if (mems.length > caps.length) {
+                                        for (let i = caps.length; i < mems.length; i++) {
+                                            teamsMap['bow_solo_' + i] = [mems[i]];
+                                        }
+                                    }
+                                }
+                            } else {
+                                classEnr.forEach((enr, idx) => {
+                                    let tKey;
+                                    if (enr.teamNum != null) tKey = String(enr.teamNum);
+                                    else if (enr.topic)      tKey = 'topic__' + enr.topic;
+                                    else                     tKey = String(Math.floor(idx / membersPerTeam) + 1);
+                                    if (!teamsMap[tKey]) teamsMap[tKey] = [];
+                                    teamsMap[tKey].push(enr);
+                                });
+                            }
 
-                            const teamNums = Object.keys(teamsMap).sort((a,b) => Number(a)-Number(b));
+                            const teamNums = Object.keys(teamsMap).sort((a,b) => {
+                                const na = Number(a), nb = Number(b);
+                                return (isNaN(na)||isNaN(nb)) ? String(a).localeCompare(String(b)) : na - nb;
+                            });
                             teamNums.forEach((tNum, tIdx) => {
                                 globalSATeamNum++;
                                 const teamMembers = teamsMap[tNum];
@@ -43749,7 +43806,7 @@ export default {
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;" id="devTriggerVersion">
-                <strong>Version:</strong> 7.98 — Fix: BOW jury sheet now shows all 30 teams including non-pre-registered (Madhu/Chaitra); fixed idx-math team grouping that was losing students without teamNum<strong>Last Updated:</strong> Mar 13, 2026, 01:35 PM IST</p>
+                <strong>Version:</strong> 8.01 — Fix: CR Nukkad newspaper photo upload now uses Cloudinary (was broken Firebase Storage call)<strong>Last Updated:</strong> Mar 14, 2026, 01:35 PM IST</p>
             <!-- ============================================ -->
             
             <p style="color: #c44569; font-size: 0.85em; font-weight: 600; margin-bottom: 8px;">
@@ -46626,6 +46683,9 @@ function scAdminPing() {
      v7.96 | Mar 13, 2026, 01:35 PM IST | BOW jury sheet now shows all 30 registered students (removed present-only gate); faculty & jury team numbers now match via jurySetup classOrder
      v7.97 | Mar 13, 2026, 01:35 PM IST | BOW jury sheet: participant names (Captain/Member badges) shown beside each team number
      v7.98 | Mar 13, 2026, 01:35 PM IST | Fix: BOW jury shows all 30 teams incl. non-pre-registered; fixed idx-math grouping that lost students without teamNum
+     v7.99 | Mar 13, 2026, 01:35 PM IST | BOW jury sheet: real class name shown below participant names for each team
+     v8.00 | Mar 13, 2026, 01:35 PM IST | Fix: SA live monitor BOW now shows all 30 teams — merges bowRegistrations + fixed idx-math grouping
+     v8.01 | Mar 14, 2026, 01:35 PM IST | Fix: CR Nukkad newspaper photo upload switched from broken Firebase Storage to Cloudinary
      ═══════════════════════════════════════════════════════════════════ -->
 
 
