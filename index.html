@@ -3737,6 +3737,7 @@
                         <button class="tab" onclick="showQuizManagementTab('submissions', event)">📊 Submissions</button>
                         <button class="tab" onclick="showQuizManagementTab('winners', event)">🏆 Winners</button>
                         <button class="tab super-admin-only" onclick="showQuizManagementTab('editdates', event)" id="editDatesTab">📅 Edit Quiz Dates</button>
+                        <button class="tab super-admin-only" onclick="showQuizManagementTab('bestperformers', event)" id="bestPerformersTab">🏅 Best Performers</button>
                     </div>
                     
                     <!-- Questions Sub-Tab -->
@@ -4197,6 +4198,42 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- Best Performers Sub-Tab (Super Admin Only) -->
+                    <div id="quizBestPerformersContent" class="form-section super-admin-only">
+                        <h3 style="color:#6a1b9a;margin-bottom:6px">🏅 Best Performers</h3>
+                        <p style="color:#666;margin-bottom:20px;font-size:0.92em">Cumulative list of students who got <strong>both answers correct</strong> — ranked by most days correct, then fastest total response time.</p>
+
+                        <div style="display:flex;gap:10px;align-items:center;margin-bottom:18px;flex-wrap:wrap">
+                            <button onclick="loadBestPerformers()" style="background:linear-gradient(135deg,#6a1b9a,#c44569);color:white;border:none;padding:9px 20px;border-radius:8px;font-weight:700;cursor:pointer;font-size:0.95em">🔄 Refresh List</button>
+                            <span id="bpLoadStatus" style="font-size:0.85em;color:#888"></span>
+                        </div>
+
+                        <!-- Current declared winners banner -->
+                        <div id="bpDeclaredBanner" style="display:none;background:linear-gradient(135deg,#1a0030,#3d0060);border-radius:12px;padding:16px 20px;margin-bottom:18px;color:white">
+                            <div style="font-size:0.8em;opacity:0.7;margin-bottom:6px;text-transform:uppercase;letter-spacing:1px">Currently Declared</div>
+                            <div id="bpDeclaredInner" style="display:flex;gap:18px;flex-wrap:wrap"></div>
+                        </div>
+
+                        <!-- Performers table -->
+                        <div id="bpTableWrap" style="overflow-x:auto">
+                            <table style="width:100%;border-collapse:collapse;font-size:0.92em">
+                                <thead>
+                                    <tr style="background:linear-gradient(135deg,#6a1b9a,#c44569);color:white">
+                                        <th style="padding:10px 12px;text-align:left;border-radius:8px 0 0 0">#</th>
+                                        <th style="padding:10px 12px;text-align:left">Student Name</th>
+                                        <th style="padding:10px 12px;text-align:left">Class</th>
+                                        <th style="padding:10px 12px;text-align:center">Days ✅</th>
+                                        <th style="padding:10px 12px;text-align:center;border-radius:0 8px 0 0">Declare</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="bpTableBody">
+                                    <tr><td colspan="5" style="text-align:center;padding:30px;color:#bbb">Click Refresh to load</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
                 </div>
             <!-- ============================================ -->
             <!-- SCAVENGER HUNT ADMIN PANEL                  -->
@@ -15458,16 +15495,32 @@
                 const jury2Name = setup.jury2Name || 'Jury 2';
                 const isHWEvent = eventName === 'Hand Writing';
                 const isTHEvent = eventName === 'Talent Hunt';
+                const isBOWMgr  = (eventName === 'Best out of Waste' || eventName === 'Best Out of Waste');
+                const isCaseMgr = (eventName === 'Case Analysis');
                 const fetchList = [
                     db.ref('juryMarks/'+eventName+'/jury1').once('value'),
                     db.ref('juryMarks/'+eventName+'/jury2').once('value'),
-                    db.ref('youthfest-enrollments').orderByChild('event').equalTo(eventName).once('value')
+                    db.ref('youthfest-enrollments').orderByChild('event').equalTo(eventName).once('value'),
+                    isBOWMgr  ? db.ref('bowRegistrations').once('value')         : Promise.resolve(null),
+                    isCaseMgr ? db.ref('caseAnalysis/caseNumbers').once('value') : Promise.resolve(null)
                 ];
                 if (eventName === 'Vlog') fetchList.push(db.ref('vlogChallenge').once('value'));
                 const snaps = await Promise.all(fetchList);
-                const jury1Marks = snaps[0].val() || {};
-                const jury2Marks = snaps[1].val() || {};
-                const enrSnap = snaps[2];
+                const jury1Marks  = snaps[0].val() || {};
+                const jury2Marks  = snaps[1].val() || {};
+                const enrSnap     = snaps[2];
+                const bowMgrSnap  = snaps[3];
+                const caseMgrSnap = snaps[4];
+                // BOW theme map keyed by clsKey
+                const bowMgrTheme = {};
+                if (isBOWMgr && bowMgrSnap && bowMgrSnap.exists()) {
+                    bowMgrSnap.forEach(ch => {
+                        const d = ch.val(); const cls = d.classYear || d.class || '';
+                        if (cls && d.theme) { const ck = cls.replace(/[.\[\]#$\/\s]/g,'_'); if(!bowMgrTheme[ck]) bowMgrTheme[ck]=d.theme; }
+                    });
+                }
+                // Case numbers keyed by clsKey
+                const caseMgrNums = (isCaseMgr && caseMgrSnap && caseMgrSnap.exists()) ? caseMgrSnap.val() : {};
                 const scMap = {}, namesMap = {};
                 const byClass = {};
                 if (enrSnap && enrSnap.exists()) {
@@ -15477,6 +15530,7 @@
                         byClass[cls].push(Object.assign({ _key: ch.key }, d));
                     });
                 }
+                const detailsMap = {};
                 Object.entries(byClass).sort(([a],[b])=>a.localeCompare(b)).forEach(([cls, members]) => {
                     const clsKey = cls.replace(/[.\[\]#$\/\s]/g,'_');
                     if (isHWEvent || isTHEvent) {
@@ -15484,13 +15538,34 @@
                             const rk = clsKey + '__p' + (idx+1);
                             scMap[rk] = m.sittingCode ? String(m.sittingCode).padStart(2,'0') : String(idx+1).padStart(2,'0');
                             namesMap[rk] = [m.name || m.memberName || ''];
+                            const dArr = []; if(m.talentType)dArr.push('🎤 '+m.talentType); if(m.languages)dArr.push('✍️ '+m.languages); if(m.topic)dArr.push('🎯 '+m.topic);
+                            detailsMap[rk] = dArr.join(' · ');
                         });
                     }
                     if (!namesMap[clsKey]) namesMap[clsKey] = [];
                     members.forEach(m => { const n = m.name||m.memberName||''; if (n && !namesMap[clsKey].includes(n)) namesMap[clsKey].push(n); });
+                    // Details for class key
+                    if (!detailsMap[clsKey]) {
+                        const f = members[0]||{}; const dd = [];
+                        if(f.topic)dd.push('🎯 '+f.topic); if(f.product)dd.push('📦 '+f.product);
+                        if(f.cause)dd.push('💡 '+f.cause); if(f.talentType)dd.push('🎤 '+f.talentType);
+                        if(f.languages)dd.push('✍️ '+f.languages); if(f.theme)dd.push('🎨 '+f.theme);
+                        if(bowMgrTheme[clsKey]) dd.push('🎨 ' + bowMgrTheme[clsKey]);
+                        if(caseMgrNums[clsKey]) dd.push('📋 Case No: ' + caseMgrNums[clsKey]);
+                        detailsMap[clsKey] = dd.join(' · ');
+                    }
+                });
+                // Copy class-level details to team rowKeys for multiteam events (BOW)
+                Object.keys(detailsMap).forEach(k => {
+                    if (!k.includes('__t')) {
+                        for (let t = 1; t <= 5; t++) {
+                            const rk = k + '__t' + t;
+                            if (!detailsMap[rk]) detailsMap[rk] = detailsMap[k];
+                        }
+                    }
                 });
                 const vlogSocialMap = {};
-                displayResults(eventName, jury1Marks, jury2Marks, jury1Name, jury2Name, vlogSocialMap, scMap, namesMap, container);
+                displayResults(eventName, jury1Marks, jury2Marks, jury1Name, jury2Name, vlogSocialMap, scMap, namesMap, container, detailsMap);
             } catch(e) {
                 if (container) container.innerHTML = '<p style="color:#c62828;padding:20px">❌ ' + e.message + '</p>';
             }
@@ -24222,25 +24297,46 @@
                 
                 // Load marks from both juries using raw event name
                 console.log('Loading marks from both juries...');
-                const isHWEvent = (event === 'Hand Writing');
-                const isTHEvent = (event === 'Talent Hunt');
+                const isHWEvent   = (event === 'Hand Writing');
+                const isTHEvent   = (event === 'Talent Hunt');
+                const isBOWEvent  = (event === 'Best out of Waste' || event === 'Best Out of Waste');
+                const isCaseEvent = (event === 'Case Analysis');
                 const fetchList = [
                     db.ref('juryMarks/'+event+'/jury1').once('value'),
                     db.ref('juryMarks/'+event+'/jury2').once('value'),
-                    db.ref('youthfest-enrollments').orderByChild('event').equalTo(event).once('value')  // always fetch for names
+                    db.ref('youthfest-enrollments').orderByChild('event').equalTo(event).once('value'),
+                    isBOWEvent  ? db.ref('bowRegistrations').once('value')        : Promise.resolve(null),
+                    isCaseEvent ? db.ref('caseAnalysis/caseNumbers').once('value') : Promise.resolve(null)
                 ];
                 // For Vlog: also fetch social scores
                 if (event === 'Vlog') {
                     fetchList.push(db.ref('vlogChallenge').once('value'));
                 }
                 Promise.all(fetchList).then((snaps) => {
-                    const jury1Marks = snaps[0].val() || {};
-                    const jury2Marks = snaps[1].val() || {};
+                    const jury1Marks  = snaps[0].val() || {};
+                    const jury2Marks  = snaps[1].val() || {};
+                    const bowRegSnap  = snaps[3];
+                    const caseNumSnap = snaps[4];
+                    // BOW: build theme map keyed by clsKey (one theme per class)
+                    const bowThemeMap = {};
+                    if (isBOWEvent && bowRegSnap && bowRegSnap.exists()) {
+                        bowRegSnap.forEach(ch => {
+                            const d = ch.val();
+                            const cls = d.classYear || d.class || '';
+                            if (cls && d.theme) {
+                                const ck = cls.replace(/[.\[\]#$\/\s]/g,'_');
+                                if (!bowThemeMap[ck]) bowThemeMap[ck] = d.theme;
+                            }
+                        });
+                    }
+                    // Case Analysis: caseNumbers keyed by clsKey
+                    const caseNums = (isCaseEvent && caseNumSnap && caseNumSnap.exists()) ? caseNumSnap.val() : {};
                     // Build sittingCode map: rowKey → sittingCode
                     // snaps[2] = enrollments (always), snaps[3] = vlogChallenge (Vlog only)
                     const enrSnap  = snaps[2] || null;
-                    const scMap    = {};   // rowKey → sitting code (HW/TH)
-                    const namesMap = {};   // sanitizedCls → [name, name, ...] for ALL events
+                    const scMap      = {};   // rowKey → sitting code (HW/TH)
+                    const namesMap   = {};   // sanitizedCls → [name, name, ...] for ALL events
+                    const detailsMap = {};   // sanitizedCls → detail string (topic/cause/talent etc)
 
                     const prefix = isHWEvent ? 'HW' : isTHEvent ? 'TH' : '';
                     const byClass = {};
@@ -24269,14 +24365,43 @@
                             members.forEach((m, idx) => {
                                 const rowKey = clsKey + '__p' + (idx + 1);
                                 namesMap[rowKey] = [m.name || m.memberName || ''];
+                                const det = [];
+                                if (m.talentType) det.push('🎤 ' + m.talentType);
+                                if (m.languages)  det.push('✍️ ' + m.languages);
+                                if (m.topic)      det.push('🎯 ' + m.topic);
+                                detailsMap[rowKey] = det.join(' · ');
                             });
                         }
-                        // All events: also build class-level name list (captain + members)
+                        // All events: also build class-level name list + details
                         if (!namesMap[clsKey]) namesMap[clsKey] = [];
                         members.forEach(m => {
                             const n = m.name || m.memberName || '';
                             if (n && !namesMap[clsKey].includes(n)) namesMap[clsKey].push(n);
                         });
+                        // Build details string from first member (topic/cause/talent/product etc)
+                        if (!detailsMap[clsKey]) {
+                            const first = members[0] || {};
+                            const det = [];
+                            if (first.topic)      det.push('🎯 ' + first.topic);
+                            if (first.product)    det.push('📦 ' + first.product);
+                            if (first.cause)      det.push('💡 ' + first.cause);
+                            if (first.talentType) det.push('🎤 ' + first.talentType);
+                            if (first.languages)  det.push('✍️ ' + first.languages);
+                            if (first.showstopper)det.push('⭐ ' + first.showstopper);
+                            if (first.theme)      det.push('🎨 ' + first.theme);
+                            // BOW: get theme from bowRegistrations (keyed by clsKey)
+                            if (isBOWEvent && bowThemeMap[clsKey]) det.push('🎨 ' + bowThemeMap[clsKey]);
+                            // Case Analysis: case number (try multiple key formats)
+                            if (isCaseEvent) {
+                                const cn = caseNums[clsKey]
+                                    || caseNums[cls]
+                                    || caseNums[cls.replace(/\s/g,'_')]
+                                    || Object.entries(caseNums).find(([k])=>k.replace(/[^a-zA-Z0-9]/g,'_')===clsKey.replace(/[^a-zA-Z0-9]/g,'_'))?.[1]
+                                    || '';
+                                if (cn) det.push('📋 Case No: ' + cn);
+                            }
+                            detailsMap[clsKey] = det.join(' · ');
+                        }
                     });
 
                     // For multiteam events (BOW, Vlog): also build per-team namesMap entries
@@ -24311,6 +24436,10 @@
                             }).forEach((tk, tIdx) => {
                                 const rowKey = clsKey + '__t' + (tIdx + 1);
                                 namesMap[rowKey] = teamsMap[tk].map(m => m.name || m.memberName || '').filter(Boolean);
+                                // Copy class-level details to team rowKey so lookup works
+                                if (!detailsMap[rowKey] && detailsMap[clsKey]) {
+                                    detailsMap[rowKey] = detailsMap[clsKey];
+                                }
                             });
                         });
                     }
@@ -24365,12 +24494,12 @@
                         return;
                     }
 
-                    displayResults(event, jury1Marks, jury2Marks, jury1Name, jury2Name, vlogSocialMap, scMap, namesMap);
+                    displayResults(event, jury1Marks, jury2Marks, jury1Name, jury2Name, vlogSocialMap, scMap, namesMap, null, detailsMap);
                 });
             });
         }
 
-        function displayResults(event, jury1Marks, jury2Marks, jury1Name, jury2Name, vlogSocialMap, scMap, namesMap) {
+        function displayResults(event, jury1Marks, jury2Marks, jury1Name, jury2Name, vlogSocialMap, scMap, namesMap, _containerArg, detailsMap) {
             // Default names if not provided
             jury1Name = jury1Name || 'Jury 1';
             jury2Name = jury2Name || 'Jury 2';
@@ -24433,6 +24562,7 @@
                 
                 results.push({
                     class: displayCls,
+                    sanitizedCls: sanitizedCls,
                     jury1Total: j1Total,
                     jury2Total: j2Total,
                     average: avgTotal,
@@ -24531,7 +24661,7 @@
                     const showSC   = isHWRes || isTHRes;
                     html += '<div class="table-wrapper"><table><thead><tr><th>Rank</th>'
                         + (showSC ? '<th>Sitting Code</th>' : '')
-                        + '<th>Class</th><th>Participants</th><th>'+jury1Name+' Total</th><th>'+jury2Name+' Total</th><th>Average</th><th>Status</th></tr></thead><tbody>';
+                        + '<th>Class</th><th>Participants</th><th>Details</th><th>'+jury1Name+' Total</th><th>'+jury2Name+' Total</th><th>Average</th><th>Status</th></tr></thead><tbody>';
                     results.forEach((r, i) => {
                         const rank = i + 1;
                         const badge = rank === 1 ? '<span class="winner-badge">🏆 Winner</span>' : rank === 2 ? '<span class="runner-badge">🥈 Runner Up</span>' : '';
@@ -24547,6 +24677,9 @@
                         html += scCell;
                         html += '<td><strong>'+r.class+'</strong> '+badge+'</td>';
                         html += '<td style="font-size:0.82em;color:#555">'+(r.names&&r.names.length?r.names.join('<br>'):'—')+'</td>';
+                        // Details: topic / cause / talent / product etc from detailsMap
+                        const _det = detailsMap && (detailsMap[r.sanitizedCls] || (r.sanitizedCls ? detailsMap[r.sanitizedCls.replace(/__[pt]\d+$/,'')] : '')) || '';
+                        html += '<td style="font-size:0.78em;color:#555;line-height:1.6">' + (_det || '<span style="color:#bbb">—</span>') + '</td>';
                         html += '<td>'+r.jury1Total.toFixed(1)+(r.jury1Completed ? ' ✓' : '')+'</td>';
                         html += '<td>'+r.jury2Total.toFixed(1)+(r.jury2Completed ? ' ✓' : '')+'</td>';
                         html += '<td><strong>'+r.average.toFixed(1)+'</strong></td>';
@@ -24566,6 +24699,8 @@
                     html += '</h3>';
                     const scoreLabel = isVlog && r.finalPct !== null ? r.finalPct+'%' : r.finalScore.toFixed(1);
                     if (r.names && r.names.length) html += '<p style="color:#555;font-size:0.88em;margin-top:6px">👥 '+r.names.join(', ')+'</p>';
+                    const _dcard = detailsMap && (detailsMap[r.sanitizedCls] || (r.sanitizedCls ? detailsMap[r.sanitizedCls.replace(/__[pt]\d+$/,'')] : '')) || '';
+                    if (_dcard) html += '<p style="color:#888;font-size:0.82em;margin-top:4px">' + _dcard + '</p>';
                     html += '<p style="color:#666;margin-top:6px">Final Score: <strong>'+scoreLabel+'</strong></p>';
                     html += '</div>';
                 });
@@ -27825,7 +27960,8 @@ Davan Institute Team`;
                     'students': 2,
                     'submissions': 3,
                     'winners': 4,
-                    'editdates': 5
+                    'editdates': 5,
+                    'bestperformers': 6
                 };
                 const tabIndex = tabButtons[tab];
                 if (tabIndex !== undefined) {
@@ -27858,9 +27994,136 @@ Davan Institute Team`;
             } else if (tab === 'editdates') {
                 document.getElementById('quizEditDatesContent').classList.add('active');
                 loadQuizzesForDateEdit();
+            } else if (tab === 'bestperformers') {
+                document.getElementById('quizBestPerformersContent').classList.add('active');
+                loadBestPerformers();
             }
         }
         
+        // ── BEST PERFORMERS TAB ─────────────────────────────────────────
+        async function loadBestPerformers() {
+            const tbody = document.getElementById('bpTableBody');
+            const status = document.getElementById('bpLoadStatus');
+            if (!tbody) return;
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:30px;color:#888"><div class="lb-loading-spinner" style="margin:0 auto 8px"></div>Loading…</td></tr>';
+            if (status) status.textContent = 'Loading…';
+            try {
+                const db = getDb();
+                // Read all dates under quizSubmissions
+                const snap = await db.ref('quizSubmissions').once('value');
+                if (!snap.exists()) {
+                    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:30px;color:#bbb">No submissions found.</td></tr>';
+                    if (status) status.textContent = '';
+                    return;
+                }
+
+                // Aggregate per student: key = "name||class"
+                const map = {}; // key → {name, cls, days, totalTime}
+                snap.forEach(dateNode => {
+                    dateNode.forEach(subNode => {
+                        const s = subNode.val();
+                        if (!s || s.score !== 2) return; // only both-correct
+                        const key = (s.studentName || '').trim().toLowerCase() + '||' + (s.studentClass || '').trim().toLowerCase();
+                        if (!map[key]) {
+                            map[key] = {
+                                name: (s.studentName || '').trim(),
+                                cls: (s.studentClass || '').trim(),
+                                days: 0,
+                                totalTime: 0
+                            };
+                        }
+                        map[key].days += 1;
+                        map[key].totalTime += (s.timeTaken || 0);
+                    });
+                });
+
+                const list = Object.values(map);
+                if (list.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:30px;color:#bbb">No students with both answers correct yet.</td></tr>';
+                    if (status) status.textContent = '';
+                    return;
+                }
+
+                // Sort: most days desc → fastest total time asc
+                list.sort((a, b) => b.days - a.days || a.totalTime - b.totalTime);
+
+                // Load declared winners to highlight
+                const wSnap = await db.ref('quizBestPerformerWinners').once('value');
+                const declared = wSnap.val() || {};
+                const winnerKey = declared.winner ? (declared.winner.name||'').trim().toLowerCase()+'||'+(declared.winner.cls||'').trim().toLowerCase() : '';
+                const ruKey = declared.runnerUp ? (declared.runnerUp.name||'').trim().toLowerCase()+'||'+(declared.runnerUp.cls||'').trim().toLowerCase() : '';
+
+                // Render declared banner
+                const banner = document.getElementById('bpDeclaredBanner');
+                const inner = document.getElementById('bpDeclaredInner');
+                if (declared.winner || declared.runnerUp) {
+                    banner.style.display = 'block';
+                    let bHtml = '';
+                    if (declared.winner) bHtml += `<div><span style="font-size:1.3em">🥇</span> <strong>${declared.winner.name}</strong> <span style="opacity:0.7;font-size:0.85em">${declared.winner.cls}</span></div>`;
+                    if (declared.runnerUp) bHtml += `<div><span style="font-size:1.3em">🥈</span> <strong>${declared.runnerUp.name}</strong> <span style="opacity:0.7;font-size:0.85em">${declared.runnerUp.cls}</span></div>`;
+                    inner.innerHTML = bHtml;
+                } else {
+                    banner.style.display = 'none';
+                }
+
+                // Render table rows
+                let html = '';
+                list.forEach((s, i) => {
+                    const key = s.name.toLowerCase() + '||' + s.cls.toLowerCase();
+                    const isWinner = key === winnerKey;
+                    const isRU = key === ruKey;
+                    const rowBg = isWinner ? 'background:#fffbea' : isRU ? 'background:#f8f8f8' : (i % 2 === 0 ? 'background:#fafafa' : '');
+                    const badge = isWinner ? '<span style="background:#ffd700;color:#1a0030;padding:2px 8px;border-radius:10px;font-size:0.78em;font-weight:700;margin-left:6px">🥇 Winner</span>'
+                                : isRU    ? '<span style="background:#ccc;color:#333;padding:2px 8px;border-radius:10px;font-size:0.78em;font-weight:700;margin-left:6px">🥈 Runner-Up</span>'
+                                : '';
+                    const encodedName = encodeURIComponent(s.name);
+                    const encodedCls  = encodeURIComponent(s.cls);
+                    const winBtn  = isWinner
+                        ? `<button onclick="declareBestPerformer('winner','${encodedName}','${encodedCls}')" style="background:#e6b800;color:#1a0030;border:none;padding:4px 12px;border-radius:6px;font-size:0.78em;font-weight:700;cursor:pointer">↩ Un-declare</button>`
+                        : `<button onclick="declareBestPerformer('winner','${encodedName}','${encodedCls}')" style="background:#ffd700;color:#1a0030;border:none;padding:4px 12px;border-radius:6px;font-size:0.78em;font-weight:700;cursor:pointer">🥇 Winner</button>`;
+                    const ruBtn   = isRU
+                        ? `<button onclick="declareBestPerformer('runnerUp','${encodedName}','${encodedCls}')" style="background:#aaa;color:#333;border:none;padding:4px 12px;border-radius:6px;font-size:0.78em;font-weight:700;cursor:pointer;margin-left:4px">↩ Un-declare</button>`
+                        : `<button onclick="declareBestPerformer('runnerUp','${encodedName}','${encodedCls}')" style="background:#e0e0e0;color:#333;border:none;padding:4px 12px;border-radius:6px;font-size:0.78em;font-weight:700;cursor:pointer;margin-left:4px">🥈 Runner-Up</button>`;
+                    html += `<tr style="${rowBg}">
+                        <td style="padding:10px 12px;color:#888;font-size:0.85em">${i+1}</td>
+                        <td style="padding:10px 12px;font-weight:600">${s.name}${badge}</td>
+                        <td style="padding:10px 12px;color:#555;font-size:0.9em">${s.cls}</td>
+                        <td style="padding:10px 12px;text-align:center"><span style="background:#e8f5e9;color:#2e7d32;padding:3px 10px;border-radius:10px;font-weight:700;font-size:0.9em">${s.days}</span></td>
+                        <td style="padding:10px 12px;text-align:center;white-space:nowrap">${winBtn}${ruBtn}</td>
+                    </tr>`;
+                });
+                tbody.innerHTML = html;
+                if (status) status.textContent = `${list.length} student${list.length !== 1 ? 's' : ''} found`;
+            } catch(e) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:30px;color:#c00">⚠️ Error loading: ' + e.message + '</td></tr>';
+                if (status) status.textContent = '';
+                console.error('loadBestPerformers error:', e);
+            }
+        }
+
+        async function declareBestPerformer(role, encodedName, encodedCls) {
+            // role = 'winner' | 'runnerUp'
+            const name = decodeURIComponent(encodedName);
+            const cls  = decodeURIComponent(encodedCls);
+            const db = getDb();
+            try {
+                const wSnap = await db.ref('quizBestPerformerWinners').once('value');
+                const declared = wSnap.val() || {};
+                // Toggle: if same person already declared in this role, remove; else set
+                const existing = declared[role];
+                const isSame = existing && existing.name === name && existing.cls === cls;
+                if (isSame) {
+                    await db.ref('quizBestPerformerWinners/' + role).remove();
+                } else {
+                    await db.ref('quizBestPerformerWinners/' + role).set({ name, cls, declaredAt: new Date().toISOString() });
+                }
+                loadBestPerformers(); // refresh
+            } catch(e) {
+                alert('Error saving: ' + e.message);
+            }
+        }
+        // ────────────────────────────────────────────────────────────────
+
         // Function to load quiz questions for the selected date
         async function loadQuizForSelectedDate() {
             const selectedDate = document.getElementById('quizDateSelector').value;
@@ -31157,6 +31420,8 @@ Davan Institute Team`;
         .lb-score-tag {
             padding: 2px 8px;
             border-radius: 10px;
+            white-space: nowrap;
+            display: inline-block;
             font-size: 0.75em;
             font-weight: 600;
         }
@@ -31414,6 +31679,7 @@ Davan Institute Team`;
                                 <th>🎤 YF Reg</th>
                                 <th>🧠 Quiz</th>
                                 <th>🏆 Results</th>
+                                <th>✨ Custom</th>
                                 <th>🗺️ Hunt</th>
                                 <th>🧩 Slide</th>
                                 <th>Total</th>
@@ -31422,7 +31688,7 @@ Davan Institute Team`;
                         </thead>
                         <tbody id="lbTableBody">
                             <tr>
-                                <td colspan="7" style="text-align:center;padding:40px;color:#bbb">
+                                <td colspan="8" style="text-align:center;padding:40px;color:#bbb">
                                     <div class="lb-loading-spinner" style="margin:0 auto 10px"></div>
                                     Loading…
                                 </td>
@@ -31644,6 +31910,10 @@ Davan Institute Team`;
                 }
             }
 
+            const resultBreakdown = {}; // cls → [{event, pts, medal}]
+            const customBreakdown = {}; // cls → [{name, pts}]
+            LB_CLASSES.forEach(c => { resultBreakdown[c] = []; customBreakdown[c] = []; });
+
             // -- 3. Published Youthfest Event Results --------------
             // Class-based events: winner class = highest total → gets winnerPts
             // Individual events:  jury marks rows are CLASS__pN keys; we group by origclass,
@@ -31734,8 +32004,8 @@ Davan Institute Team`;
                         });
                         const evRes = Object.entries(bestPerClass).map(([cls, best]) => ({cls, avg: best}));
                         evRes.sort((a,b) => b.avg - a.avg);
-                        if (evRes[0] && resultPts[evRes[0].cls] !== undefined) resultPts[evRes[0].cls] += cfg.winnerPts;
-                        if (evRes[1] && resultPts[evRes[1].cls] !== undefined) resultPts[evRes[1].cls] += cfg.runnerUpPts;
+                        if (evRes[0] && resultPts[evRes[0].cls] !== undefined) { resultPts[evRes[0].cls] += cfg.winnerPts; resultBreakdown[evRes[0].cls].push({event:evName,pts:cfg.winnerPts,medal:'🥇'}); }
+                        if (evRes[1] && resultPts[evRes[1].cls] !== undefined) { resultPts[evRes[1].cls] += cfg.runnerUpPts; resultBreakdown[evRes[1].cls].push({event:evName,pts:cfg.runnerUpPts,medal:'🥈'}); }
                         if (evRes[0] && evRes[1] && evRes[0].cls === evRes[1].cls && resultPts[evRes[0].cls] !== undefined) {
                             resultPts[evRes[0].cls] += cfg.runnerUpPts;
                         }
@@ -31754,8 +32024,8 @@ Davan Institute Team`;
                             evRes.push({cls,avg:(t1+t2)/2});
                         });
                         evRes.sort((a,b)=>b.avg-a.avg);
-                        if(evRes[0]&&resultPts[evRes[0].cls]!==undefined) resultPts[evRes[0].cls]+=cfg.winnerPts;
-                        if(evRes[1]&&resultPts[evRes[1].cls]!==undefined) resultPts[evRes[1].cls]+=cfg.runnerUpPts;
+                        if(evRes[0]&&resultPts[evRes[0].cls]!==undefined){resultPts[evRes[0].cls]+=cfg.winnerPts;resultBreakdown[evRes[0].cls].push({event:evName,pts:cfg.winnerPts,medal:'🥇'});}
+                        if(evRes[1]&&resultPts[evRes[1].cls]!==undefined){resultPts[evRes[1].cls]+=cfg.runnerUpPts;resultBreakdown[evRes[1].cls].push({event:evName,pts:cfg.runnerUpPts,medal:'🥈'});}
                     }
                 }
             }
@@ -31766,10 +32036,14 @@ Davan Institute Team`;
                 customSnap.forEach(critNode => {
                     const crit = critNode.val();
                     if (!crit || !crit.points) return;
+                    const critName = crit.name || critNode.key;
                     Object.keys(crit.points).forEach(k => {
                         LB_CLASSES.forEach(cls => {
-                            if (cls.replace(/[.\[\]#$\/]/g,'_') === k && customPts[cls] !== undefined)
-                                customPts[cls] += (crit.points[k] || 0);
+                            if (cls.replace(/[.\[\]#$\/]/g,'_') === k && customPts[cls] !== undefined) {
+                                const pts = crit.points[k] || 0;
+                                customPts[cls] += pts;
+                                if (pts > 0) customBreakdown[cls].push({name: critName, pts});
+                            }
                         });
                     });
                 });
@@ -31827,7 +32101,7 @@ Davan Institute Team`;
             // -- 7. Merge, sort, render -----------------------------
             const ranked = LB_CLASSES.map(cls => {
                 const total=(yfPts[cls]||0)+(quizPts[cls]||0)+(resultPts[cls]||0)+(customPts[cls]||0)+(shPts[cls]||0)+(sscPts[cls]||0);
-                return {cls,yfPts:yfPts[cls]||0,quizPts:quizPts[cls]||0,resultPts:resultPts[cls]||0,customPts:customPts[cls]||0,shPts:shPts[cls]||0,sscPts:sscPts[cls]||0,total};
+                return {cls,yfPts:yfPts[cls]||0,quizPts:quizPts[cls]||0,resultPts:resultPts[cls]||0,customPts:customPts[cls]||0,shPts:shPts[cls]||0,sscPts:sscPts[cls]||0,total,resultBreakdown:resultBreakdown[cls]||[],customBreakdown:customBreakdown[cls]||[]};
             }).sort((a,b)=>b.total-a.total||b.yfPts-a.yfPts||b.quizPts-a.quizPts);
 
             const maxTotal = ranked[0]?.total || 1;
@@ -31842,7 +32116,7 @@ Davan Institute Team`;
         } catch (err) {
             console.error('Leaderboard error:', err);
             document.getElementById('lbPodium').innerHTML='<div class="lb-empty">⚠️ Could not load data. Please refresh.</div>';
-            document.getElementById('lbTableBody').innerHTML='<tr><td colspan="9" class="lb-empty">⚠️ Could not load data.</td></tr>';
+            document.getElementById('lbTableBody').innerHTML='<tr><td colspan="10" class="lb-empty">⚠️ Could not load data.</td></tr>';
         }
     }
 
@@ -31872,7 +32146,7 @@ Davan Institute Team`;
 
     function renderTable(ranked, maxTotal) {
         const tbody=document.getElementById('lbTableBody');
-        if(!ranked||ranked.length===0){tbody.innerHTML='<tr><td colspan="9" class="lb-empty">No data yet!</td></tr>';return;}
+        if(!ranked||ranked.length===0){tbody.innerHTML='<tr><td colspan="10" class="lb-empty">No data yet!</td></tr>';return;}
         let html='';
         ranked.forEach((entry,i)=>{
             const rank=i+1;
@@ -31881,16 +32155,33 @@ Davan Institute Team`;
             const barPct=maxTotal>0?Math.round((entry.total/maxTotal)*100):0;
             const delay=(i*0.05).toFixed(2);
             const rowBg=rank===1?'background:linear-gradient(90deg,#fffbea,#fff);':rank===2?'background:linear-gradient(90deg,#f8f8f8,#fff);':rank===3?'background:linear-gradient(90deg,#fff5f0,#fff);':'';
-            const resBadge=entry.resultPts>0?`<span class="lb-score-tag" style="background:#d4edda;color:#155724;border:1px solid #28a745">🏆 ${entry.resultPts}</span> `:'';
-            const custBadge=entry.customPts>0?`<span class="lb-score-tag" style="background:#e8f4fd;color:#0c5460;border:1px solid #17a2b8">✨ ${entry.customPts}</span>`:'';
-            const shBadge=entry.shPts>0?`<span class="lb-score-tag" style="background:#f3e5f5;color:#6a1b9a;border:1px solid #ce93d8">🗺️ ${entry.shPts}</span>`:'<span style="color:#ddd">—</span>';
-            const sscBadge=entry.sscPts>0?`<span class="lb-score-tag" style="background:#e3f2fd;color:#0d47a1;border:1px solid #90caf9">🧩 ${entry.sscPts}</span>`:'<span style="color:#ddd">—</span>';
+            // Quiz: round to 2dp, strip trailing zeros
+            const quizDisplay = entry.quizPts % 1 === 0 ? entry.quizPts : parseFloat(entry.quizPts.toFixed(2));
+            // Results: one mini badge per event with event name
+            const resBadge = entry.resultPts > 0
+                ? ((entry.resultBreakdown && entry.resultBreakdown.length)
+                    ? entry.resultBreakdown.map(r => '<span class="lb-score-tag" style="background:#d4edda;color:#155724;border:1px solid #28a745;white-space:nowrap">' + r.medal + ' ' + (r.event.length > 11 ? r.event.substring(0,11)+'\u2026' : r.event) + ' +' + r.pts + '</span>').join('')
+                    : '<span class="lb-score-tag" style="background:#d4edda;color:#155724;border:1px solid #28a745">🏆 ' + entry.resultPts + '</span>')
+                : '';
+            // Custom: one mini badge per criteria name
+            const custBadge = entry.customPts > 0
+                ? ((entry.customBreakdown && entry.customBreakdown.length)
+                    ? entry.customBreakdown.map(c => '<span class="lb-score-tag" style="background:#e8f4fd;color:#0c5460;border:1px solid #17a2b8;white-space:nowrap">' + (c.name.length > 14 ? c.name.substring(0,14)+'\u2026' : c.name) + ' +' + c.pts + '</span>').join('')
+                    : '<span class="lb-score-tag" style="background:#e8f4fd;color:#0c5460;border:1px solid #17a2b8">✨ ' + entry.customPts + '</span>')
+                : '';
+            const shBadge = entry.shPts > 0
+                ? '<span class="lb-score-tag" style="background:#f3e5f5;color:#6a1b9a;border:1px solid #ce93d8">🗺️ ' + entry.shPts + '</span>'
+                : '<span style="color:#ddd">—</span>';
+            const sscBadge = entry.sscPts > 0
+                ? '<span class="lb-score-tag" style="background:#e3f2fd;color:#0d47a1;border:1px solid #90caf9">🧩 ' + entry.sscPts + '</span>'
+                : '<span style="color:#ddd">—</span>';
             html+=`<tr style="${rowBg}animation-delay:${delay}s">
                 <td><span class="lb-rank-badge ${rankClass}">${rankMedal}</span></td>
                 <td><span class="lb-class-chip">${entry.cls}</span></td>
                 <td><span class="lb-score-tag lb-score-yf">🎤 ${entry.yfPts}</span></td>
-                <td><span class="lb-score-tag lb-score-quiz">🧠 ${entry.quizPts}</span></td>
-                <td>${resBadge}${custBadge}${(entry.resultPts===0&&entry.customPts===0)?'<span style="color:#ddd">—</span>':''}</td>
+                <td><span class="lb-score-tag lb-score-quiz">🧠 ${quizDisplay}</span></td>
+                <td><div style="display:flex;flex-wrap:wrap;gap:3px;align-items:flex-start">${resBadge || '<span style="color:#ddd">—</span>'}</div></td>
+                <td><div style="display:flex;flex-wrap:wrap;gap:3px;align-items:flex-start">${custBadge || '<span style="color:#ddd">—</span>'}</div></td>
                 <td>${shBadge}</td>
                 <td>${sscBadge}</td>
                 <td><span class="lb-pts-total">${entry.total}</span> <span class="lb-pts-event">pts</span></td>
@@ -32414,6 +32705,8 @@ Davan Institute Team`;
             const cfg = await getLbConfig();
             const init = () => { const o={}; LB_CLASSES.forEach(c => o[c]=0); return o; };
             const yfP=init(), quizP=init(), resP=init(), custP=init();
+            const resBreak={}; const custBreak={};
+            LB_CLASSES.forEach(c => { resBreak[c]=[]; custBreak[c]=[]; });
 
             // -- 1. Youthfest Registration ----------------------------------
             const yfSnap = await getDb().ref('youthfest-enrollments').once('value');
@@ -32507,8 +32800,8 @@ Davan Institute Team`;
                             if(bestPerClass[cls]===undefined||score>bestPerClass[cls]) bestPerClass[cls]=score;
                         });
                         const evR=Object.entries(bestPerClass).map(([c,a])=>({cls:c,avg:a})).sort((a,b)=>b.avg-a.avg);
-                        if(evR[0]&&resP[evR[0].cls]!==undefined) resP[evR[0].cls]+=cfg.winnerPts;
-                        if(evR[1]&&resP[evR[1].cls]!==undefined) resP[evR[1].cls]+=cfg.runnerUpPts;
+                        if(evR[0]&&resP[evR[0].cls]!==undefined){resP[evR[0].cls]+=cfg.winnerPts;resBreak[evR[0].cls].push({event:ev,pts:cfg.winnerPts,medal:'🥇'});}
+                        if(evR[1]&&resP[evR[1].cls]!==undefined){resP[evR[1].cls]+=cfg.runnerUpPts;resBreak[evR[1].cls].push({event:ev,pts:cfg.runnerUpPts,medal:'🥈'});}
                         if(evR[0]&&evR[1]&&evR[0].cls===evR[1].cls&&resP[evR[0].cls]!==undefined) resP[evR[0].cls]+=cfg.runnerUpPts;
                     } else {
                         const evR=[];
@@ -32522,8 +32815,8 @@ Davan Institute Team`;
                             evR.push({cls, avg:(t1+t2)/2});
                         });
                         evR.sort((a,b) => b.avg-a.avg);
-                        if (evR[0] && resP[evR[0].cls] !== undefined) resP[evR[0].cls] += cfg.winnerPts;
-                        if (evR[1] && resP[evR[1].cls] !== undefined) resP[evR[1].cls] += cfg.runnerUpPts;
+                        if (evR[0] && resP[evR[0].cls] !== undefined) {resP[evR[0].cls] += cfg.winnerPts; resBreak[evR[0].cls].push({event:ev,pts:cfg.winnerPts,medal:'🥇'});}
+                        if (evR[1] && resP[evR[1].cls] !== undefined) {resP[evR[1].cls] += cfg.runnerUpPts; resBreak[evR[1].cls].push({event:ev,pts:cfg.runnerUpPts,medal:'🥈'});}
                     }
                 }
             }
@@ -32532,9 +32825,14 @@ Davan Institute Team`;
             const cSnap = await getDb().ref('leaderboardConfig/customCriteria').once('value');
             if (cSnap.exists()) cSnap.forEach(cn => {
                 const c=cn.val(); if(!c||!c.points) return;
+                const cName = c.name || cn.key;
                 Object.keys(c.points).forEach(k => {
                     LB_CLASSES.forEach(cl => {
-                        if (cl.replace(/[.\[\]#$\/]/g,'_')===k && custP[cl]!==undefined) custP[cl]+=(c.points[k]||0);
+                        if (cl.replace(/[.\[\]#$\/]/g,'_')===k && custP[cl]!==undefined) {
+                            const pts = c.points[k]||0;
+                            custP[cl]+=pts;
+                            if(pts>0) custBreak[cl].push({name:cName,pts});
+                        }
                     });
                 });
             });
@@ -32586,7 +32884,8 @@ Davan Institute Team`;
             // -- Rank & render ---------------------------------------------
             const ranked = LB_CLASSES.map(cl => ({
                 cl, yfP:yfP[cl]||0, quizP:quizP[cl]||0, resP:resP[cl]||0, custP:custP[cl]||0, shP:shP[cl]||0, sscP:sscP[cl]||0,
-                total:(yfP[cl]||0)+(quizP[cl]||0)+(resP[cl]||0)+(custP[cl]||0)+(shP[cl]||0)+(sscP[cl]||0)
+                total:(yfP[cl]||0)+(quizP[cl]||0)+(resP[cl]||0)+(custP[cl]||0)+(shP[cl]||0)+(sscP[cl]||0),
+                resBreak:resBreak[cl]||[], custBreak:custBreak[cl]||[]
             })).sort((a,b) => b.total-a.total);
 
             const medals = ['🥇','🥈','🥉'];
@@ -32607,13 +32906,20 @@ Davan Institute Team`;
                 const rowBg = i===0 ? 'background:#fffde7' : i===1 ? 'background:#f8f8f8' : i===2 ? 'background:#fff3e0' : 'background:white';
                 const rankCell = i<3 ? medals[i] : `<strong>${i+1}</strong>`;
                 const totalStyle = i===0 ? 'font-weight:900;color:#c44569;font-size:1.2em' : 'font-weight:700;color:#c44569';
+                const quizDisp = e.quizP % 1 === 0 ? e.quizP : parseFloat(e.quizP.toFixed(2));
+                const resCells = e.resBreak && e.resBreak.length
+                    ? e.resBreak.map(r => '<span style="background:#d4edda;color:#155724;border:1px solid #28a745;padding:2px 6px;border-radius:8px;font-size:0.78em;white-space:nowrap;display:inline-block;margin:1px">' + r.medal + ' ' + (r.event.length>11?r.event.substring(0,11)+'…':r.event) + ' +' + r.pts + '</span>').join('')
+                    : (e.resP ? '<span style="color:#6a1b9a">' + e.resP + '</span>' : '<span style="color:#ccc">—</span>');
+                const custCells = e.custBreak && e.custBreak.length
+                    ? e.custBreak.map(c => '<span style="background:#e8f4fd;color:#0c5460;border:1px solid #17a2b8;padding:2px 6px;border-radius:8px;font-size:0.78em;white-space:nowrap;display:inline-block;margin:1px">' + (c.name.length>14?c.name.substring(0,14)+'…':c.name) + ' +' + c.pts + '</span>').join('')
+                    : (e.custP ? '<span style="color:#0c5460">' + e.custP + '</span>' : '<span style="color:#ccc">—</span>');
                 html += `<tr style="${rowBg}">
                     <td style="text-align:center;font-size:1.1em">${rankCell}</td>
                     <td style="font-weight:600">${e.cl}</td>
                     <td style="color:#856404;text-align:center">${e.yfP}</td>
-                    <td style="color:#155724;text-align:center">${e.quizP}</td>
-                    <td style="color:#6a1b9a;text-align:center">${e.resP}</td>
-                    <td style="color:#0c5460;text-align:center">${e.custP}</td>
+                    <td style="color:#155724;text-align:center">${quizDisp}</td>
+                    <td style="max-width:200px"><div style="display:flex;flex-wrap:wrap;gap:2px">${resCells}</div></td>
+                    <td style="max-width:200px"><div style="display:flex;flex-wrap:wrap;gap:2px">${custCells}</div></td>
                     <td style="color:#6a1b9a;font-weight:600;text-align:center">${e.shP || '<span style=\'color:#ccc\'>—</span>'}</td>
                     <td style="color:#0d47a1;font-weight:600;text-align:center">${e.sscP || '<span style=\'color:#ccc\'>—</span>'}</td>
                     <td style="${totalStyle};text-align:center">${e.total}</td>
@@ -44434,7 +44740,7 @@ export default {
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;" id="devTriggerVersion">
-                <strong>Version:</strong> 8.33 — Fix: Publish Results now works for all events — Nukkad/HW/TH/YT Ad write to their special paths too; dropdown shows correct publish status<strong>Last Updated:</strong> Mar 16, 2026, 11:09 PM IST</p>
+                <strong>Version:</strong> 8.39 — Added 🏅 Best Performers tab in Daily Quiz: cumulative list of students with both answers correct, ranked by most days then fastest time; SA can declare winner & runner-up<strong>Last Updated:</strong> Mar 17, 2026, 11:30 AM IST</p>
             <!-- ============================================ -->
             
             <p style="color: #c44569; font-size: 0.85em; font-weight: 600; margin-bottom: 8px;">
@@ -47346,8 +47652,15 @@ function scAdminPing() {
      v8.31 | Mar 16, 2026, 11:09 PM IST | Fix: Manager Results tab — Quiz block was writing to hardcoded #resultsContainer; now uses passed container argument
      v8.32 | Mar 16, 2026, 11:09 PM IST | Event Results tab moved from manager-only to all admin logins
      v8.33 | Mar 16, 2026, 11:09 PM IST | Fix: publishResults handles special paths for Nukkad/HW/TH/YT Ad; dropdown checks all publish paths for accurate status
+     v8.34 | Mar 16, 2026, 11:09 PM IST | Results table: Details column added showing Topic/Cause/Talent/Product/Language per entry
+     v8.35 | Mar 16, 2026, 11:09 PM IST | Fix: BOW theme lookup uses clsKey (reliable); Case No lookup tries 4 key variants; detailsMap propagated to multiteam __t rowKeys
+     v8.35 | Mar 16, 2026, 11:09 PM IST | Fix: BOW theme now from bowRegistrations keyed by clsKey; Case Analysis case number shown; detailsMap propagated to __t rowKeys
+     v8.36 | Mar 17, 2026, 12:00 AM IST | Leaderboard: Results col shows per-event badges; Custom col shows criteria name+pts; Quiz score rounded to 2dp
+     v8.37 | Mar 17, 2026, 12:00 AM IST | Fix: leaderboard badges overflow — flex-wrap container on Results/Custom td; white-space:nowrap on lb-score-tag
+     v8.38 | Mar 17, 2026, 12:00 AM IST | Fix: loadLbAdminPreview now tracks resBreak/custBreak and renders per-event/criteria badges matching public leaderboard
      v8.22 | Mar 16, 2026, 01:35 PM IST | Fix: SA Quiz Final Admin panel reads juryMarks/Quiz as fallback — shows scores regardless of which path Smitha used to save
      v8.21 | Mar 16, 2026, 01:35 PM IST | Event Results: Participants column added — member names shown for all events in results table
+     v8.39 | Mar 17, 2026, 11:30 AM IST | Added 🏅 Best Performers tab in Daily Quiz: cumulative list of students with both answers correct, ranked by most days then fastest time; SA can declare winner & runner-up
      ═══════════════════════════════════════════════════════════════════ -->
 
 
