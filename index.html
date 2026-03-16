@@ -22570,7 +22570,7 @@
             const ROUNDS = 5;
 
             function getTotal(cls) {
-                const sc = scores[cls] || [];
+                const sc = scores[cls.replace(/[.#$/\[\]]/g,'_')] || [];
                 return sc.reduce((s,v) => s + (parseFloat(v) || 0), 0);
             }
 
@@ -22604,7 +22604,7 @@
                 <tbody>`;
 
             finalists.forEach((f, fi) => {
-                const sc    = scores[f.classYear] || [];
+                const sc    = scores[f.classYear.replace(/[.#$/\[\]]/g,'_')] || [];
                 const total = getTotal(f.classYear);
                 const isLead = (f.classYear === leaderCls);
                 html += `<tr style="background:${isLead?'#fff9c4':fi%2===0?'#fafafa':'white'};border-bottom:1px solid #eee">
@@ -22626,6 +22626,7 @@
             <div style="background:#f3e5f5;border-radius:10px;padding:12px 16px;margin-bottom:10px;font-size:0.83em;color:#4a148c;text-align:center;line-height:1.6">
                 💾 Use <strong>Save Scores</strong> to save at any time — Super Admin will publish winner &amp; runner-up to the leaderboard.
             </div>
+            <div id="quizFinalSaveMsg" style="display:none;margin-bottom:10px;padding:9px 14px;border-radius:8px;font-size:0.88em;font-weight:700;text-align:center"></div>
             <div style="text-align:center;display:flex;flex-wrap:wrap;gap:10px;justify-content:center">
                 <button onclick="quizFinalSaveScores()" style="background:linear-gradient(135deg,#1b5e20,#388e3c);color:white;border:none;border-radius:10px;padding:11px 28px;font-size:0.93em;font-weight:700;cursor:pointer;box-shadow:0 3px 10px rgba(27,94,32,0.35)">
                     💾 Save Scores
@@ -22652,6 +22653,22 @@
         async function quizFinalSaveScores() {
             const finalists = window._qfFinalists || [];
             if (!finalists.length) { alert('No finalist data. Please reload.'); return; }
+            // Show inline status — works in both jury panel and Smitha faculty panel
+            function _qfMsg(txt, ok) {
+                const el = document.getElementById('quizFinalSaveMsg');
+                if (el) {
+                    el.style.display = 'block';
+                    el.style.background = ok ? '#d4edda' : '#f8d7da';
+                    el.style.color = ok ? '#155724' : '#721c24';
+                    el.style.border = ok ? '1px solid #c3e6cb' : '1px solid #f5c6cb';
+                    el.textContent = txt;
+                    setTimeout(() => { if (el) el.style.display = 'none'; }, 5000);
+                }
+                // Also try jury message if available
+                try { showJuryMessage(txt, ok ? 'success' : 'error'); } catch(e) {}
+            }
+            // Sanitize class names for Firebase keys (no ., #, $, /, [, ])
+            function _safeKey(k) { return k.replace(/[.#$/\[\]]/g, '_'); }
             const scores = {};
             finalists.forEach((f, fi) => {
                 const sc = [];
@@ -22659,13 +22676,13 @@
                     const el = document.getElementById('qfInp_' + fi + '_' + ri);
                     sc.push(el ? (parseFloat(el.value) || 0) : 0);
                 }
-                scores[f.classYear] = sc;
+                scores[_safeKey(f.classYear)] = sc;
             });
             try {
                 await db.ref('quizFinalRound/scores').set(scores);
-                showJuryMessage('✅ Scores saved successfully!', 'success');
+                _qfMsg('✅ Scores saved successfully!', true);
             } catch(err) {
-                showJuryMessage('❌ Save failed: ' + err.message, 'error');
+                _qfMsg('❌ Save failed: ' + err.message, false);
             }
         }
 
@@ -43806,7 +43823,7 @@ export default {
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;" id="devTriggerVersion">
-                <strong>Version:</strong> 8.01 — Fix: CR Nukkad newspaper photo upload now uses Cloudinary (was broken Firebase Storage call)<strong>Last Updated:</strong> Mar 14, 2026, 01:35 PM IST</p>
+                <strong>Version:</strong> 8.03 — Fix: Quiz final scores save — class names sanitized as Firebase keys (dots/brackets replaced with _)<strong>Last Updated:</strong> Mar 16, 2026, 01:35 PM IST</p>
             <!-- ============================================ -->
             
             <p style="color: #c44569; font-size: 0.85em; font-weight: 600; margin-bottom: 8px;">
@@ -46686,6 +46703,8 @@ function scAdminPing() {
      v7.99 | Mar 13, 2026, 01:35 PM IST | BOW jury sheet: real class name shown below participant names for each team
      v8.00 | Mar 13, 2026, 01:35 PM IST | Fix: SA live monitor BOW now shows all 30 teams — merges bowRegistrations + fixed idx-math grouping
      v8.01 | Mar 14, 2026, 01:35 PM IST | Fix: CR Nukkad newspaper photo upload switched from broken Firebase Storage to Cloudinary
+     v8.02 | Mar 16, 2026, 01:35 PM IST | Fix: Quiz final round Save Scores now works in Smitha faculty panel — inline status msg replaces broken showJuryMessage call
+     v8.03 | Mar 16, 2026, 01:35 PM IST | Fix: Quiz final scores — sanitize class names for Firebase keys (1st B.Com → 1st_B_Com etc.)
      ═══════════════════════════════════════════════════════════════════ -->
 
 
