@@ -11710,14 +11710,25 @@
                 const snap = await db.ref('vlogChallenge').once('value');
                 let updated = 0;
                 const updates = {};
+                const normCls = cls.trim().toLowerCase();
                 snap.forEach(ch => {
-                    const v = ch.val(); if (!v || (v.classYear||'').trim() !== cls) return;
+                    const v = ch.val();
+                    if (!v) return;
+                    // Match by class — try exact trim, then case-insensitive, then approved status
+                    const vCls = (v.classYear||'').trim();
+                    if (vCls.toLowerCase() !== normCls) return;
                     const isoKey = iso.replace(/-/g, '_');
                     updates['vlogChallenge/' + ch.key + '/dailyScreenshots/' + isoKey] = r.url;
                     updates['vlogChallenge/' + ch.key + '/screenshotUrl'] = r.url;
                     updated++;
                 });
-                if (!updated) { showMsg('❌ No submitted reel found for your class. Please submit the Reel Link first.', false); return; }
+                if (!updated) {
+                    // Debug: show what classes are in vlogChallenge vs what we're looking for
+                    const found = [];
+                    snap.forEach(ch => { const v = ch.val(); if (v && v.classYear) found.push(v.classYear); });
+                    showMsg('❌ No reel found for class "' + cls + '". Found: [' + found.join(', ') + ']. Submit your Reel Link first or contact admin.', false);
+                    return;
+                }
                 await db.ref().update(updates);
 
                 showMsg('✅ Screenshot submitted! Chandan will enter your metrics for this date.', true);
@@ -11763,8 +11774,8 @@
             if (!container) return;
             container.innerHTML = '';
             const slots = [
-                { iso: VLOG_SCREENSHOT_START, label: '📅 Screenshot 1 — Start of Event (04 Mar 2026)' },
-                { iso: VLOG_SCREENSHOT_END,   label: '📅 Screenshot 2 — End of Event (07 Mar 2026)' }
+                { iso: VLOG_SCREENSHOT_START, label: '\uD83D\uDCC5 Screenshot 1 \u2014 Start of Event (04 Mar 2026)' },
+                { iso: VLOG_SCREENSHOT_END,   label: '\uD83D\uDCC5 Screenshot 2 \u2014 End of Event (07 Mar 2026)' }
             ];
             slots.forEach(function(slot) {
                 const fileId   = 'vlogShotFile_'   + entryId + '_' + slot.iso;
@@ -11774,23 +11785,94 @@
                 const statusId = 'vlogShotSts_'    + entryId + '_' + slot.iso;
                 const alrId    = 'vlogAlready_'    + entryId + '_' + slot.iso;
                 const btnId    = 'vlogShotBtn_'    + entryId + '_' + slot.iso;
-                container.insertAdjacentHTML('beforeend',
-                    '<div style="background:white;border-radius:8px;padding:10px 12px;border:1px solid #c8e6c9">'
-                    + '<div style="font-size:0.8em;font-weight:700;color:#1b5e20;margin-bottom:6px">' + slot.label + '</div>'
-                    + '<div id="' + alrId + '" style="display:none;background:#e8f5e9;color:#1b5e20;border-radius:6px;padding:4px 10px;font-size:0.76em;font-weight:700;margin-bottom:6px">✅ Already uploaded for this date</div>'
-                    + '<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">'
-                    + '<label style="background:#6a1b9a;color:white;padding:5px 12px;border-radius:6px;font-size:0.78em;font-weight:700;cursor:pointer">📷 Choose File'
-                    + '<input type="file" id="' + fileId + '" accept="image/*" style="display:none" onchange="(function(el,ni,ii,pi){var f=el.files[0];if(!f)return;var n=document.getElementById(ni);if(n)n.textContent=f.name;var r=new FileReader();r.onload=function(e){var i=document.getElementById(ii);var p=document.getElementById(pi);if(i)i.src=e.target.result;if(p)p.style.display=\'block\';};r.readAsDataURL(f);})(this,' + JSON.stringify(nameId) + ',' + JSON.stringify(imgId) + ',' + JSON.stringify(prevId) + ')">'
-                    + '</label>'
-                    + '<span id="' + nameId + '" style="font-size:0.76em;color:#888;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">No file chosen</span>'
-                    + '<button id="' + btnId + '" onclick="submitInlineShot(' + JSON.stringify(entryId) + ',' + JSON.stringify(slot.iso) + ',' + JSON.stringify(fileId) + ',' + JSON.stringify(statusId) + ',' + JSON.stringify(btnId) + ',' + JSON.stringify(cls) + ')" style="background:#4caf50;color:white;border:none;border-radius:6px;padding:5px 12px;font-size:0.78em;font-weight:700;cursor:pointer">📤 Submit</button>'
-                    + '</div>'
-                    + '<div id="' + prevId + '" style="display:none;margin-top:6px"><img id="' + imgId + '" style="max-width:120px;border-radius:6px;border:2px solid #ce93d8" alt="preview"></div>'
-                    + '<div id="' + statusId + '" style="font-size:0.76em;margin-top:4px;font-weight:600"></div>'
-                    + '</div>'
-                );
+
+                // Build using DOM elements — avoids all string/quote-escaping bugs
+                const wrap = document.createElement('div');
+                wrap.style.cssText = 'background:white;border-radius:8px;padding:10px 12px;border:1px solid #c8e6c9;margin-bottom:8px';
+
+                const lbl = document.createElement('div');
+                lbl.style.cssText = 'font-size:0.8em;font-weight:700;color:#1b5e20;margin-bottom:6px';
+                lbl.textContent = slot.label;
+                wrap.appendChild(lbl);
+
+                const alrDiv = document.createElement('div');
+                alrDiv.id = alrId;
+                alrDiv.style.cssText = 'display:none;background:#e8f5e9;color:#1b5e20;border-radius:6px;padding:4px 10px;font-size:0.76em;font-weight:700;margin-bottom:6px';
+                alrDiv.textContent = '\u2705 Already uploaded for this date';
+                wrap.appendChild(alrDiv);
+
+                const row = document.createElement('div');
+                row.style.cssText = 'display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:6px';
+
+                // Hidden file input — attached directly to DOM so .click() works reliably
+                const fileInput = document.createElement('input');
+                fileInput.type    = 'file';
+                fileInput.id      = fileId;
+                fileInput.accept  = 'image/*';
+                fileInput.style.display = 'none';
+                fileInput.addEventListener('change', function() {
+                    const f = this.files[0];
+                    if (!f) return;
+                    var nameEl = document.getElementById(nameId);
+                    if (nameEl) nameEl.textContent = f.name;
+                    var reader = new FileReader();
+                    reader.onload = function(ev) {
+                        var imgEl  = document.getElementById(imgId);
+                        var prevEl = document.getElementById(prevId);
+                        if (imgEl)  imgEl.src = ev.target.result;
+                        if (prevEl) prevEl.style.display = 'block';
+                    };
+                    reader.readAsDataURL(f);
+                });
+                wrap.appendChild(fileInput); // append to wrap, not row, so it doesn't affect layout
+
+                const chooseBtn = document.createElement('button');
+                chooseBtn.type = 'button';
+                chooseBtn.style.cssText = 'background:#6a1b9a;color:white;border:none;border-radius:6px;padding:5px 12px;font-size:0.78em;font-weight:700;cursor:pointer;flex-shrink:0';
+                chooseBtn.textContent = '\uD83D\uDCF7 Choose File';
+                chooseBtn.addEventListener('click', function() {
+                    document.getElementById(fileId).click();
+                });
+                row.appendChild(chooseBtn);
+
+                const nameSpan = document.createElement('span');
+                nameSpan.id = nameId;
+                nameSpan.style.cssText = 'font-size:0.76em;color:#888;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap';
+                nameSpan.textContent = 'No file chosen';
+                row.appendChild(nameSpan);
+
+                const submitBtn = document.createElement('button');
+                submitBtn.type = 'button';
+                submitBtn.id   = btnId;
+                submitBtn.style.cssText = 'background:#4caf50;color:white;border:none;border-radius:6px;padding:5px 12px;font-size:0.78em;font-weight:700;cursor:pointer;flex-shrink:0';
+                submitBtn.textContent = '\uD83D\uDCE4 Submit';
+                // Use closure to safely capture loop variables
+                (function(eid, sIso, fid, sid, bid, cl) {
+                    submitBtn.addEventListener('click', function() {
+                        submitInlineShot(eid, sIso, fid, sid, bid, cl);
+                    });
+                })(entryId, slot.iso, fileId, statusId, btnId, cls);
+                row.appendChild(submitBtn);
+
+                wrap.appendChild(row);
+
+                const prevDiv = document.createElement('div');
+                prevDiv.id = prevId;
+                prevDiv.style.cssText = 'display:none;margin-top:6px';
+                const img = document.createElement('img');
+                img.id = imgId;
+                img.alt = 'preview';
+                img.style.cssText = 'max-width:160px;max-height:140px;border-radius:8px;border:2px solid #ce93d8;object-fit:contain';
+                prevDiv.appendChild(img);
+                wrap.appendChild(prevDiv);
+
+                const stDiv = document.createElement('div');
+                stDiv.id = statusId;
+                stDiv.style.cssText = 'font-size:0.76em;margin-top:4px;font-weight:600';
+                wrap.appendChild(stDiv);
+
+                container.appendChild(wrap);
             });
-            // Load existing badges
             loadVlogExistingScreenshots(cls);
         }
 
@@ -11808,7 +11890,7 @@
                 formData.append('folder', 'vlog_insights/' + iso);
                 const res  = await fetch('https://api.cloudinary.com/v1_1/dat0khbet/image/upload', { method:'POST', body:formData });
                 const data = await res.json();
-                if (!data.secure_url) throw new Error('Upload failed');
+                if (!data.secure_url) throw new Error(data.error ? data.error.message : 'Upload failed — check file size/type');
                 const isoKey = iso.replace(/-/g,'_');
                 const updates = {};
                 updates['vlogChallenge/' + entryId + '/dailyScreenshots/' + isoKey] = data.secure_url;
@@ -13483,9 +13565,15 @@
 
         // -- Settings -------------------------------------------------
         function setYtAdSetting(key, value) {
-            db.ref('youtubeAd/' + key).set(value).then(() => {
+            db.ref('youtubeAd/' + key).set(value).then(async () => {
                 const el = document.getElementById('ytAdStatus' + key.charAt(0).toUpperCase() + key.slice(1));
                 if (el) el.textContent = '✅ ' + (value ? 'ON' : 'OFF') + ' — saved';
+                // Mirror leaderboardPublished to jurySetup so Source 3 picks up YT Ad results
+                if (key === 'leaderboardPublished') {
+                    try {
+                        await db.ref('jurySetup/YouTube Advertisement/resultsPublished').set(value);
+                    } catch(e) { console.warn('YT Ad jurySetup mirror failed:', e.message); }
+                }
                 loadYtAdSettings();
             }).catch(e => alert('Error: ' + e.message));
         }
@@ -19480,7 +19568,9 @@
             const showM=(t,ok)=>{msgEl.style.display='block';msgEl.style.background=ok?'#d4edda':'#f8d7da';msgEl.style.color=ok?'#155724':'#721c24';msgEl.textContent=t;};
             try {
                 await db.ref('handwriting/settings/leaderboardPublished').set(value);
-                showM(value?'✅ Hand Writing results published!':'📦 Hand Writing results unpublished.',true);
+                // Mirror to jurySetup so Source 3 of leaderboard engine picks up HW results
+                await db.ref('jurySetup/Hand Writing/resultsPublished').set(value);
+                showM(value?'✅ Hand Writing results published! Points now counted in leaderboard.':'📦 Hand Writing results unpublished.',true);
                 hwLoadLeaderboardStatus();
             } catch(e){showM('❌ Error: '+e.message,false);}
         }
@@ -19500,7 +19590,9 @@
             const showM=(t,ok)=>{msgEl.style.display='block';msgEl.style.background=ok?'#d4edda':'#f8d7da';msgEl.style.color=ok?'#155724':'#721c24';msgEl.textContent=t;};
             try {
                 await db.ref('talenthunt/settings/leaderboardPublished').set(value);
-                showM(value?'✅ Talent Hunt results published!':'📦 Talent Hunt results unpublished.',true);
+                // Mirror to jurySetup so Source 3 of leaderboard engine picks up TH results
+                await db.ref('jurySetup/Talent Hunt/resultsPublished').set(value);
+                showM(value?'✅ Talent Hunt results published! Points now counted in leaderboard.':'📦 Talent Hunt results unpublished.',true);
                 thLoadLeaderboardStatus();
             } catch(e){showM('❌ Error: '+e.message,false);}
         }
@@ -22680,7 +22772,36 @@
             });
             try {
                 await db.ref('quizFinalRound/scores').set(scores);
-                _qfMsg('✅ Scores saved successfully!', true);
+
+                // Compute winner & runner-up from saved scores and push to leaderboard
+                // Winner: +75 pts, Runner-up: +40 pts via customCriteria
+                const totals = finalists.map(f => {
+                    const sc = scores[_safeKey(f.classYear)] || [];
+                    const tot = sc.reduce((s, v) => s + (parseFloat(v) || 0), 0);
+                    return { cls: f.classYear, total: tot };
+                }).filter(t => t.total > 0).sort((a, b) => b.total - a.total);
+
+                if (totals.length >= 1) {
+                    const winCls    = totals[0].cls;
+                    const winKey    = winCls.replace(/[.#$/\[\]]/g, '_');
+                    await db.ref('leaderboardConfig/customCriteria/quiz_final_winner').set({
+                        label: 'Quiz Competition — Final Round Winner',
+                        points: { [winKey]: 75 }
+                    });
+                }
+                if (totals.length >= 2) {
+                    const ruCls  = totals[1].cls;
+                    const ruKey  = ruCls.replace(/[.#$/\[\]]/g, '_');
+                    await db.ref('leaderboardConfig/customCriteria/quiz_final_runnerup').set({
+                        label: 'Quiz Competition — Final Round Runner-up',
+                        points: { [ruKey]: 40 }
+                    });
+                }
+
+                const winnerNote = totals.length >= 1
+                    ? ' | Winner: ' + totals[0].cls + ' (' + totals[0].total.toFixed(1) + ' pts)'
+                    : '';
+                _qfMsg('✅ Scores saved!' + winnerNote, true);
             } catch(err) {
                 _qfMsg('❌ Save failed: ' + err.message, false);
             }
@@ -31038,8 +31159,9 @@ Davan Institute Team`;
                                 // Fair formula: (top scorers / class size) × max pts
                                 bonus = Math.round((topCount / strength) * cfg.quizMaxPts * 10) / 10;
                             } else {
-                                // Fallback if strength not set: just use topCount × 1
+                                // Fallback if strength not set: raw count (unfair — SA must enter class strengths)
                                 bonus = topCount;
+                                console.warn('⚠️ Class strength not set for', cl, '— participation rate bonus is using raw count fallback. Go to Leaderboard Config and enter class strengths.');
                             }
                             if (quizPts[cl] !== undefined) quizPts[cl] += bonus;
                         });
@@ -31840,6 +31962,7 @@ Davan Institute Team`;
                     LB_CLASSES.forEach(cl => {
                         if (!cmx[cl]) return;
                         const str = lbClassStrengths[cl.replace(/[.\[\]#$\/]/g,'_')] || lbClassStrengths[cl] || 0;
+                        if (!str) console.warn('⚠️ Class strength not set for', cl, '— quiz participation rate using raw fallback. Enter class strengths in Leaderboard Config.');
                         const b = str>0 ? Math.round((cmx[cl]/str)*cfg.quizMaxPts*10)/10 : cmx[cl];
                         if (quizP[cl] !== undefined) quizP[cl] += b;
                     });
@@ -43823,7 +43946,7 @@ export default {
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;" id="devTriggerVersion">
-                <strong>Version:</strong> 8.03 — Fix: Quiz final scores save — class names sanitized as Firebase keys (dots/brackets replaced with _)<strong>Last Updated:</strong> Mar 16, 2026, 01:35 PM IST</p>
+                <strong>Version:</strong> 8.06 — Fix: Vlog inline screenshot Choose File + preview now works — rebuilt using DOM createElement (old inline IIFE string was silently breaking file picker)<strong>Last Updated:</strong> Mar 16, 2026, 01:35 PM IST</p>
             <!-- ============================================ -->
             
             <p style="color: #c44569; font-size: 0.85em; font-weight: 600; margin-bottom: 8px;">
@@ -46705,6 +46828,9 @@ function scAdminPing() {
      v8.01 | Mar 14, 2026, 01:35 PM IST | Fix: CR Nukkad newspaper photo upload switched from broken Firebase Storage to Cloudinary
      v8.02 | Mar 16, 2026, 01:35 PM IST | Fix: Quiz final round Save Scores now works in Smitha faculty panel — inline status msg replaces broken showJuryMessage call
      v8.03 | Mar 16, 2026, 01:35 PM IST | Fix: Quiz final scores — sanitize class names for Firebase keys (1st B.Com → 1st_B_Com etc.)
+     v8.04 | Mar 16, 2026, 01:35 PM IST | Leaderboard audit: HW/TH/YT Ad publish now mirrors to jurySetup.resultsPublished; Quiz Final Round winner +75/RU +40 auto-written to customCriteria on save; class strength console warning
+     v8.05 | Mar 16, 2026, 01:35 PM IST | Fix: Vlog Screenshot 2 upload — case-insensitive class name match; detailed error message shows classes found in Firebase vs expected
+     v8.06 | Mar 16, 2026, 01:35 PM IST | Fix: Vlog inline screenshot Choose File + preview rebuilt with DOM createElement — fragile inline IIFE string was silently breaking file picker on mobile
      ═══════════════════════════════════════════════════════════════════ -->
 
 
