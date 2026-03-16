@@ -3436,6 +3436,7 @@
                 <button class="tab super-admin-only" onclick="showTab('juryLiveMonitor');startLiveJuryMonitor()">📡 Jury Live Monitor</button>
                 <button class="tab super-admin-only" onclick="showTab('caseAnalysisAdmin');loadCaseAnalysisAdmin()" id="caseAnalysisAdminTab">🧠 Case Analysis</button>
                 <button class="tab" onclick="showTab('results')" id="resultsTab">Results</button>
+                <button class="tab" id="managerResultsTab" onclick="showTab('managerResults');loadManagerResults()">📊 Event Results</button>
                 <button class="tab super-admin-only" onclick="showTab('quizManagement')" id="quizManagementTab">📝 Quiz Management</button>
                 <button class="tab super-admin-only" onclick="showTab('leaderboardAdmin')" id="leaderboardAdminTab">🏆 Leaderboard</button>
                 <button class="tab super-admin-only" onclick="showTab('scavengerAdmin')" id="scavengerAdminTab">🗺️ Scavenger Hunt</button>
@@ -3689,6 +3690,25 @@
                     <div id="resultsContainer"></div>
                 </div>
                 
+                <!-- Manager Results Tab — On Stage / Off Stage split -->
+                <div id="managerResults" class="form-section" style="display:none">
+                    <h2 style="color:#c44569;margin-bottom:6px">📊 Event Results</h2>
+                    <p style="color:#888;font-size:0.85em;margin-bottom:20px">Select an event to view published results. Events are divided by stage type.</p>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px" class="vlog-admin-grid">
+                        <!-- On Stage -->
+                        <div style="background:linear-gradient(135deg,#fff3e0,#ffe0b2);border-radius:12px;padding:16px;border:2px solid #ffcc80">
+                            <h3 style="color:#e65100;margin:0 0 12px;font-size:0.95em">🎭 On Stage Events</h3>
+                            <div style="display:flex;flex-direction:column;gap:8px" id="mrOnStageList"></div>
+                        </div>
+                        <!-- Off Stage -->
+                        <div style="background:linear-gradient(135deg,#e8f5e9,#c8e6c9);border-radius:12px;padding:16px;border:2px solid #a5d6a7">
+                            <h3 style="color:#1b5e20;margin:0 0 12px;font-size:0.95em">📋 Off Stage Events</h3>
+                            <div style="display:flex;flex-direction:column;gap:8px" id="mrOffStageList"></div>
+                        </div>
+                    </div>
+                    <div id="mrResultsContainer"></div>
+                </div>
+
                 <!-- Quiz Management Tab -->
                 <div id="quizManagement" class="form-section">
                     <h2 style="color:#c44569;margin-bottom:25px">📝 Daily Quiz Competition Management</h2>
@@ -9702,6 +9722,7 @@
             // Apply permissions based on managerPermissions object
             applyManagerPermissions();
 
+
             // Load registration data
             ref.once('value', snap => {
                 all = [];
@@ -10718,6 +10739,7 @@
             isSuperAdmin = false;
             isManager = false;
             isManager2 = false;
+
             isCR = false;
             isJury = false;
             juryEvent = null;
@@ -15178,13 +15200,28 @@
 
             let allEnrollments = [];
             let danceStories   = {};
+            let onStageAtt     = {};  // { evtSafeKey: { clsKey: { status, markedAt } } }
+            let juryAliasMap   = {};  // { evtSafeKey: { clsKey: aliasCode } }
             try {
-                const [enrollSnap, storySnap] = await Promise.all([
+                const [enrollSnap, storySnap, attSnap, jurySnap] = await Promise.all([
                     db.ref('youthfest-enrollments').once('value'),
-                    db.ref('groupDance').once('value')
+                    db.ref('groupDance').once('value'),
+                    db.ref('onStageAttendance').once('value'),
+                    db.ref('jurySetup').once('value')
                 ]);
                 if (enrollSnap.exists()) enrollSnap.forEach(ch => { allEnrollments.push(Object.assign({ id: ch.key }, ch.val())); });
                 danceStories = storySnap.val() || {};
+                onStageAtt   = attSnap.val()   || {};
+                // Build juryAliasMap from jurySetup classAliases
+                if (jurySnap.exists()) {
+                    jurySnap.forEach(evtNode => {
+                        const setup = evtNode.val();
+                        if (setup && setup.classAliases) {
+                            const evtKey = evtNode.key.replace(/[.#$\/\[\]\s]/g,'_');
+                            juryAliasMap[evtKey] = setup.classAliases;
+                        }
+                    });
+                }
             } catch(e) {
                 list.innerHTML = '<div style="color:#c62828;padding:16px">❌ Error loading enrollments: ' + e.message + '</div>';
                 return;
@@ -15267,18 +15304,38 @@
                                     ⏳ <strong>Dance Performance Title &amp; Story Summary not submitted yet</strong>
                                    </div>`;
                         }
-                        return `<div class="gip_clsrow_${evtIdx}" data-cls="${cls}" style="border-bottom:1px solid #f0f0f0">
-                            ${isDanceEvt ? danceStoryHtml : ''}
-                            <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:#f8f9fa;cursor:pointer;user-select:none"
-                                 onclick="var b=this.nextElementSibling;b.style.display=b.style.display==='none'?'block':'none';this.querySelector('.gip_arr').textContent=b.style.display==='none'?'▶':'▼'">
-                                <span style="font-weight:700;color:#333;font-size:0.84em">📚 ${cls}</span>
-                                <div style="display:flex;align-items:center;gap:8px">
-                                    <span style="background:${col.badge};color:${col.badgeText};border-radius:20px;padding:2px 10px;font-size:0.76em;font-weight:700;border:1px solid ${col.border}">${members.length} enrolled</span>
-                                    <span class="gip_arr" style="color:#888;font-size:0.8em;font-weight:700">▶</span>
-                                </div>
-                            </div>
-                            <div style="display:none">${memberList}</div>
-                        </div>`;
+                        // For on-stage events: show jury code + attendance buttons
+                        const isOnStage = evt.type === 'On stage';
+                        const evtSafeKey = evt.name.replace(/[.#$\/\[\]\s]/g,'_');
+                        const clsKeyAtt  = cls.replace(/[.\[\]#$\/\s]/g,'_');
+                        const aliasCode  = (juryAliasMap[evtSafeKey] && juryAliasMap[evtSafeKey][clsKeyAtt]) || '';
+                        const attKey     = 'onStageAttendance/' + evtSafeKey + '/' + clsKeyAtt;
+                        const attStatus  = (onStageAtt[evtSafeKey] && onStageAtt[evtSafeKey][clsKeyAtt] && onStageAtt[evtSafeKey][clsKeyAtt].status) || 'pending';
+                        const attColor   = attStatus === 'present' ? '#2e7d32' : attStatus === 'absent' ? '#c62828' : '#856404';
+                        const attBg      = attStatus === 'present' ? '#e8f5e9' : attStatus === 'absent' ? '#fce4ec' : '#fff8e1';
+                        const attLabel   = attStatus === 'present' ? '✅ Present' : attStatus === 'absent' ? '❌ Absent' : '⏳ Not Marked';
+                        const attBtns = isOnStage
+                            ? '<div style="display:flex;gap:6px;align-items:center;padding:8px 12px;background:#fafafa;border-top:1px solid #eee">'
+                              + '<span style="font-size:0.75em;font-weight:700;color:#555;flex:1">' + (aliasCode ? '🎭 Code: <strong>' + aliasCode + '</strong>' : '') + '</span>'
+                              + '<span id="gip_att_' + evtSafeKey + '_' + clsKeyAtt + '" style="background:' + attBg + ';color:' + attColor + ';padding:2px 10px;border-radius:12px;font-size:0.75em;font-weight:700">' + attLabel + '</span>'
+                              + '<button onclick="gipMarkAttendance(\'' + evtSafeKey + '\',\'' + clsKeyAtt + '\',\'present\',this)" style="background:#4caf50;color:white;border:none;border-radius:6px;padding:4px 10px;font-size:0.76em;font-weight:700;cursor:pointer;' + (attStatus==='present'?'opacity:0.4':'') + '"' + (attStatus==='present'?' disabled':'') + '>✅ Present</button>'
+                              + '<button onclick="gipMarkAttendance(\'' + evtSafeKey + '\',\'' + clsKeyAtt + '\',\'absent\',this)" style="background:#f44336;color:white;border:none;border-radius:6px;padding:4px 10px;font-size:0.76em;font-weight:700;cursor:pointer;' + (attStatus==='absent'?'opacity:0.4':'') + '"' + (attStatus==='absent'?' disabled':'') + '>❌ Absent</button>'
+                              + '<button onclick="gipMarkAttendance(\'' + evtSafeKey + '\',\'' + clsKeyAtt + '\',\'pending\',this)" style="background:#9e9e9e;color:white;border:none;border-radius:6px;padding:3px 8px;font-size:0.72em;cursor:pointer;' + (attStatus==='pending'?'opacity:0.4':'') + '"' + (attStatus==='pending'?' disabled':'') + '>↩</button>'
+                              + '</div>'
+                            : '';
+
+                        return '<div class="gip_clsrow_' + evtIdx + '" data-cls="' + cls + '" style="border-bottom:1px solid #f0f0f0">'
+                            + (isDanceEvt ? danceStoryHtml : '')
+                            + attBtns
+                            + '<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:#f8f9fa;cursor:pointer;user-select:none"'
+                            + ' onclick="var b=this.nextElementSibling;b.style.display=b.style.display===\'none\'?\'block\':\'none\';this.querySelector(\'.gip_arr\').textContent=b.style.display===\'none\'?\'▶\':\'▼\'">'
+                            + '<span style="font-weight:700;color:#333;font-size:0.84em">📚 ' + cls + '</span>'
+                            + '<div style="display:flex;align-items:center;gap:8px">'
+                            + '<span style="background:' + col.badge + ';color:' + col.badgeText + ';border-radius:20px;padding:2px 10px;font-size:0.76em;font-weight:700;border:1px solid ' + col.border + '">' + members.length + ' enrolled</span>'
+                            + '<span class="gip_arr" style="color:#888;font-size:0.8em;font-weight:700">▶</span>'
+                            + '</div></div>'
+                            + '<div style="display:none">' + memberList + '</div>'
+                            + '</div>';
                     }).join('')
                     : `<div style="padding:16px;text-align:center;color:#aaa;font-size:0.85em">⏳ No enrollments yet for this event.</div>`;
 
@@ -15335,6 +15392,136 @@
             });
 
             list.innerHTML = html;
+        }
+
+        // ── Manager Results Tab ──────────────────────────────────────────────────
+        const MR_ON_STAGE  = ['Mime','Social Awareness Skit','Group Dance','Mad Ads','Ramp Walk'];
+        const MR_OFF_STAGE = ['Best out of Waste','Case Analysis','Hand Writing','Talent Hunt',
+                              'Vlog','YouTube Advertisement','Pod Casting','Nukkad Natak',
+                              'Interdisciplinary','Quiz','Best Out of Waste'];
+
+        async function loadManagerResults() {
+            const onEl  = document.getElementById('mrOnStageList');
+            const offEl = document.getElementById('mrOffStageList');
+            const resEl = document.getElementById('mrResultsContainer');
+            if (!onEl || !offEl) return;
+            onEl.innerHTML  = '<span style="color:#aaa;font-size:0.82em">Loading…</span>';
+            offEl.innerHTML = '<span style="color:#aaa;font-size:0.82em">Loading…</span>';
+
+            try {
+                const setupSnap = await db.ref('jurySetup').once('value');
+                const published = {};
+                if (setupSnap.exists()) {
+                    setupSnap.forEach(ch => {
+                        if (ch.val() && ch.val().resultsPublished) published[ch.key] = true;
+                    });
+                }
+
+                function makeBtn(evName, stageColor) {
+                    const isPub = published[evName] === true;
+                    const btn = document.createElement('button');
+                    btn.style.cssText = 'text-align:left;padding:8px 12px;border-radius:8px;border:2px solid ' + (isPub ? stageColor : '#ddd') + ';background:' + (isPub ? 'white' : '#f9f9f9') + ';cursor:pointer;font-size:0.84em;font-weight:700;color:' + (isPub ? '#333' : '#aaa') + ';width:100%';
+                    btn.innerHTML = (isPub ? '✅ ' : '⏳ ') + evName + (isPub ? '' : ' <span style="font-size:0.78em;font-weight:400">(not published)</span>');
+                    if (isPub) {
+                        btn.onclick = () => {
+                            document.querySelectorAll('#mrOnStageList button, #mrOffStageList button').forEach(b => b.style.fontWeight = '700');
+                            btn.style.background = '#e8f5e9';
+                            btn.style.border = '2px solid #4caf50';
+                            if (resEl) {
+                                resEl.innerHTML = '<p style="text-align:center;padding:20px;color:#aaa">⏳ Loading results…</p>';
+                                // Reuse loadEventResults logic
+                                const fakeSelect = { value: evName };
+                                loadEventResultsFor(evName, resEl);
+                            }
+                        };
+                    }
+                    return btn;
+                }
+
+                onEl.innerHTML  = '';
+                offEl.innerHTML = '';
+                MR_ON_STAGE.forEach(ev  => onEl.appendChild(makeBtn(ev, '#ff8f00')));
+                // deduplicate off stage
+                const seen = new Set();
+                MR_OFF_STAGE.forEach(ev => { if (!seen.has(ev.toLowerCase())) { seen.add(ev.toLowerCase()); offEl.appendChild(makeBtn(ev, '#2e7d32')); } });
+
+            } catch(e) {
+                if (onEl) onEl.innerHTML = '<span style="color:#c62828">❌ ' + e.message + '</span>';
+            }
+        }
+
+        async function loadEventResultsFor(eventName, container) {
+            try {
+                const [setupSnap] = await Promise.all([db.ref('jurySetup/'+eventName).once('value')]);
+                const setup = setupSnap.val() || {};
+                const jury1Name = setup.jury1Name || 'Jury 1';
+                const jury2Name = setup.jury2Name || 'Jury 2';
+                const isHWEvent = eventName === 'Hand Writing';
+                const isTHEvent = eventName === 'Talent Hunt';
+                const fetchList = [
+                    db.ref('juryMarks/'+eventName+'/jury1').once('value'),
+                    db.ref('juryMarks/'+eventName+'/jury2').once('value'),
+                    db.ref('youthfest-enrollments').orderByChild('event').equalTo(eventName).once('value')
+                ];
+                if (eventName === 'Vlog') fetchList.push(db.ref('vlogChallenge').once('value'));
+                const snaps = await Promise.all(fetchList);
+                const jury1Marks = snaps[0].val() || {};
+                const jury2Marks = snaps[1].val() || {};
+                const enrSnap = snaps[2];
+                const scMap = {}, namesMap = {};
+                const byClass = {};
+                if (enrSnap && enrSnap.exists()) {
+                    enrSnap.forEach(ch => {
+                        const d = ch.val(); const cls = d.classYear || d.class || '';
+                        if (!byClass[cls]) byClass[cls] = [];
+                        byClass[cls].push(Object.assign({ _key: ch.key }, d));
+                    });
+                }
+                Object.entries(byClass).sort(([a],[b])=>a.localeCompare(b)).forEach(([cls, members]) => {
+                    const clsKey = cls.replace(/[.\[\]#$\/\s]/g,'_');
+                    if (isHWEvent || isTHEvent) {
+                        members.forEach((m, idx) => {
+                            const rk = clsKey + '__p' + (idx+1);
+                            scMap[rk] = m.sittingCode ? String(m.sittingCode).padStart(2,'0') : String(idx+1).padStart(2,'0');
+                            namesMap[rk] = [m.name || m.memberName || ''];
+                        });
+                    }
+                    if (!namesMap[clsKey]) namesMap[clsKey] = [];
+                    members.forEach(m => { const n = m.name||m.memberName||''; if (n && !namesMap[clsKey].includes(n)) namesMap[clsKey].push(n); });
+                });
+                const vlogSocialMap = {};
+                displayResults(eventName, jury1Marks, jury2Marks, jury1Name, jury2Name, vlogSocialMap, scMap, namesMap, container);
+            } catch(e) {
+                if (container) container.innerHTML = '<p style="color:#c62828;padding:20px">❌ ' + e.message + '</p>';
+            }
+        }
+
+        // Mark on-stage attendance from incharge panel
+        async function gipMarkAttendance(evtSafeKey, clsKey, status, btn) {
+            const markedBy = document.getElementById('facultyDashName') ? document.getElementById('facultyDashName').textContent : 'Faculty';
+            try {
+                await db.ref('onStageAttendance/' + evtSafeKey + '/' + clsKey).set({
+                    status:   status,
+                    markedBy: markedBy,
+                    markedAt: new Date().toISOString()
+                });
+                // Update UI without full reload
+                const statusEl = document.getElementById('gip_att_' + evtSafeKey + '_' + clsKey);
+                if (statusEl) {
+                    const color = status === 'present' ? '#2e7d32' : status === 'absent' ? '#c62828' : '#856404';
+                    const bg    = status === 'present' ? '#e8f5e9' : status === 'absent' ? '#fce4ec' : '#fff8e1';
+                    const label = status === 'present' ? '✅ Present' : status === 'absent' ? '❌ Absent' : '⏳ Not Marked';
+                    statusEl.textContent   = label;
+                    statusEl.style.color   = color;
+                    statusEl.style.background = bg;
+                }
+                // Disable the clicked button, re-enable others
+                const row = btn.closest('div');
+                if (row) {
+                    row.querySelectorAll('button').forEach(b => { b.disabled = false; b.style.opacity = '1'; });
+                    btn.disabled = true; btn.style.opacity = '0.4';
+                }
+            } catch(e) { alert('Error: ' + e.message); }
         }
 
         // ── Case Analysis Team Panel (Dr. Shilpa R Y / Roopa M.C) ──────────────
@@ -22342,38 +22529,48 @@
         window.quizAdminPublish        = quizAdminPublish;
         window.quizAdminUnpublish      = quizAdminUnpublish;
         window.adminSaveAllMarks       = adminSaveAllMarks;
+        window.adminUpdateRowTotals    = adminUpdateRowTotals;
         // ── End Jury Summary Report ──────────────────────────────────────
 
-        function publishResults() {
+        // Special publish paths for events that have their own leaderboard settings
+        const SPECIAL_PUBLISH_PATHS = {
+            'Nukkad Natak':   ['nukkadNatak/settings/leaderboardPublished'],
+            'Hand Writing':   ['handwriting/settings/leaderboardPublished'],
+            'Talent Hunt':    ['talenthunt/settings/leaderboardPublished'],
+            'YouTube Advertisement': ['youtubeAd/leaderboardPublished']
+        };
+
+        async function publishResults() {
             const event = document.getElementById('resultsEventSelect').value;
-            if (!event) {
-                alert('Please select an event first');
-                return;
-            }
-            
-            if (confirm('Publish results to all admins for '+event+'?')) {
-                db.ref('jurySetup/'+event+'/resultsPublished').set(true).then(() => {
-                    alert('✅ Results published to admins for ' + event + '!');
-                    // Show Results tab for all admins
-                    updateResultsTabVisibility();
-                });
-            }
+            if (!event) { alert('Please select an event first'); return; }
+            if (!confirm('Publish results for ' + event + '?\n\nThis will make results visible to all admins and award leaderboard points.')) return;
+            try {
+                const writes = [ db.ref('jurySetup/'+event+'/resultsPublished').set(true) ];
+                // Also write to special paths if this event has them
+                (SPECIAL_PUBLISH_PATHS[event] || []).forEach(path => writes.push(db.ref(path).set(true)));
+                // For Nukkad: also push jury scores to leaderboard customCriteria
+                if (event === 'Nukkad Natak' && typeof pushNukkadJuryScoresToLeaderboard === 'function') {
+                    writes.push(pushNukkadJuryScoresToLeaderboard());
+                }
+                await Promise.all(writes);
+                alert('✅ Results published for ' + event + '!');
+                updateResultsTabVisibility();
+                loadResultsTab(); // refresh dropdown labels
+            } catch(e) { alert('❌ Error: ' + e.message); }
         }
 
-        function unpublishResults() {
+        async function unpublishResults() {
             const event = document.getElementById('resultsEventSelect').value;
-            if (!event) {
-                alert('Please select an event first');
-                return;
-            }
-            
-            if (confirm('Unpublish results for '+event+'?')) {
-                db.ref('jurySetup/'+event+'/resultsPublished').set(false).then(() => {
-                    alert('Results unpublished for ' + event);
-                    // Check if any other results are published, hide tab if none
-                    updateResultsTabVisibility();
-                });
-            }
+            if (!event) { alert('Please select an event first'); return; }
+            if (!confirm('Unpublish results for ' + event + '?')) return;
+            try {
+                const writes = [ db.ref('jurySetup/'+event+'/resultsPublished').set(false) ];
+                (SPECIAL_PUBLISH_PATHS[event] || []).forEach(path => writes.push(db.ref(path).set(false)));
+                await Promise.all(writes);
+                alert('📦 Results unpublished for ' + event);
+                updateResultsTabVisibility();
+                loadResultsTab();
+            } catch(e) { alert('❌ Error: ' + e.message); }
         }
 
         function checkResultsPublished() {
@@ -23882,12 +24079,32 @@
                         totals.push({ sk, alias, real, total });
                     });
                     totals.sort((a, b) => b.total - a.total);
-                    let msg = 'Evaluation marked as completed!\n\nRESULTS REVEALED:\n';
+                    // Show ranked results table in jury sheet container
+                    let rHtml = '<div style="background:linear-gradient(135deg,#1b5e20,#388e3c);border-radius:12px;padding:16px 18px;margin-bottom:16px">'
+                        + '<h3 style="color:white;margin:0 0 4px;font-size:1.05em">✅ Evaluation Complete — Results</h3>'
+                        + '<p style="color:rgba(255,255,255,0.8);margin:0;font-size:0.82em">Real class names are now revealed.</p>'
+                        + '</div>';
+                    rHtml += '<div class="table-wrapper"><table><thead><tr>'
+                        + '<th>Rank</th><th>Code</th><th>Class</th><th>Score</th><th>Medal</th>'
+                        + '</tr></thead><tbody>';
                     totals.forEach((t, i) => {
-                        const medal = i === 0 ? 'WINNER' : i === 1 ? 'RUNNER-UP' : (i+1)+'.';
-                        msg += '\n' + medal + ': ' + t.alias + ' = ' + t.real + ' (' + t.total.toFixed(1) + ' marks)';
+                        const rank   = i + 1;
+                        const medal  = rank === 1 ? '🥇 Winner' : rank === 2 ? '🥈 Runner-Up' : rank === 3 ? '🥉 3rd' : '';
+                        const rowBg  = rank === 1 ? '#fffde7' : rank === 2 ? '#f3f3f3' : 'white';
+                        rHtml += '<tr style="background:' + rowBg + '">'
+                            + '<td style="text-align:center;font-weight:800;color:#6a1b9a">' + rank + '</td>'
+                            + '<td><span style="background:#4a148c;color:white;padding:3px 10px;border-radius:6px;font-size:0.85em;font-weight:700">' + t.alias + '</span></td>'
+                            + '<td style="font-weight:700;color:#333">' + t.real + '</td>'
+                            + '<td style="text-align:center;font-weight:800;color:#1b5e20;font-size:1.05em">' + t.total.toFixed(1) + '</td>'
+                            + '<td style="text-align:center">' + medal + '</td>'
+                            + '</tr>';
                     });
-                    alert(msg);
+                    rHtml += '</tbody></table></div>';
+                    // Render results in jurySheetContainer
+                    const jsc = document.getElementById('jurySheetContainer');
+                    if (jsc) jsc.innerHTML = rHtml;
+                    // Hide save/complete buttons — already done
+                    showJuryMessage('✅ Evaluation complete! Results revealed above.', 'success');
                 } catch(e) {
                     alert('Evaluation marked as completed! Your marks are now final.');
                 }
@@ -23912,16 +24129,28 @@
             sel.innerHTML = '<option value="">-- Select Event --</option>';
             
             if (isSuperAdmin) {
-                // Super admin: show ALL events from events object, merged with jurySetup status
-                db.ref('jurySetup').once('value').then(snap => {
+                // Super admin: show ALL events, check both jurySetup and special paths
+                Promise.all([
+                    db.ref('jurySetup').once('value'),
+                    db.ref('nukkadNatak/settings/leaderboardPublished').once('value').catch(()=>null),
+                    db.ref('handwriting/settings/leaderboardPublished').once('value').catch(()=>null),
+                    db.ref('talenthunt/settings/leaderboardPublished').once('value').catch(()=>null),
+                    db.ref('youtubeAd/leaderboardPublished').once('value').catch(()=>null)
+                ]).then(([snap, nukkadPub, hwPub, thPub, ytPub]) => {
                     const jurySetupData = snap.exists() ? snap.val() : {};
-                    // Show all events from the events const
+                    const specialPub = {
+                        'Nukkad Natak': nukkadPub && nukkadPub.val() === true,
+                        'Hand Writing': hwPub && hwPub.val() === true,
+                        'Talent Hunt':  thPub && thPub.val() === true,
+                        'YouTube Advertisement': ytPub && ytPub.val() === true
+                    };
                     Object.keys(events).forEach(eventName => {
                         const setup = jurySetupData[eventName] || {};
+                        const isPublished = setup.resultsPublished === true || specialPub[eventName] === true;
                         const opt = document.createElement('option');
                         opt.value = eventName;
                         let label = eventName;
-                        if (setup.resultsPublished) label += ' ✓ Published';
+                        if (isPublished) label += ' ✓ Published';
                         else if (jurySetupData[eventName]) label += ' (Setup done)';
                         else label += ' (Not set up)';
                         opt.textContent = label;
@@ -24049,6 +24278,42 @@
                             if (n && !namesMap[clsKey].includes(n)) namesMap[clsKey].push(n);
                         });
                     });
+
+                    // For multiteam events (BOW, Vlog): also build per-team namesMap entries
+                    // So namesMap['3RD_BCA_B_SEC__t1'] = ['Chethan N A', 'Mahesh K S']
+                    const eventCfgNm = (window._youthfestEvents && window._youthfestEvents[event]) ? window._youthfestEvents[event] : {};
+                    const isMultiTeamNm = eventCfgNm.multiTeam === true;
+                    if (isMultiTeamNm) {
+                        Object.entries(byClass).sort(([a],[b])=>a.localeCompare(b)).forEach(([cls, members]) => {
+                            const clsKey = cls.replace(/[.\[\]#$\/\s]/g,'_');
+                            const hasTeamNums = members.some(m => m.teamNum != null);
+                            const teamsMap = {};
+                            if (hasTeamNums) {
+                                members.forEach((m, idx) => {
+                                    const tk = m.teamNum != null ? String(m.teamNum) : 'solo_' + idx;
+                                    if (!teamsMap[tk]) teamsMap[tk] = [];
+                                    teamsMap[tk].push(m);
+                                });
+                            } else {
+                                const caps = members.filter(m => (m.role||'').toLowerCase() === 'captain');
+                                const mems = members.filter(m => (m.role||'').toLowerCase() !== 'captain');
+                                const maxT = Math.max(caps.length, mems.length, 1);
+                                for (let i = 0; i < maxT; i++) {
+                                    const tk = 'pair_' + (i+1);
+                                    teamsMap[tk] = [];
+                                    if (caps[i]) teamsMap[tk].push(caps[i]);
+                                    if (mems[i]) teamsMap[tk].push(mems[i]);
+                                }
+                            }
+                            Object.keys(teamsMap).sort((a,b)=>{
+                                const na=Number(a),nb=Number(b);
+                                return (isNaN(na)||isNaN(nb))?a.localeCompare(b):na-nb;
+                            }).forEach((tk, tIdx) => {
+                                const rowKey = clsKey + '__t' + (tIdx + 1);
+                                namesMap[rowKey] = teamsMap[tk].map(m => m.name || m.memberName || '').filter(Boolean);
+                            });
+                        });
+                    }
 
                     // Build vlogSocialMap: rowKey → social score (Vlog only)
                     const vlogSocialMap = {};
@@ -24179,7 +24444,7 @@
                     jury1Completed: j1 && j1.completed,
                     jury2Completed: j2 && j2.completed,
                     sittingCode: (scMap && scMap[sanitizedCls]) || null,
-                    names: (namesMap && (namesMap[sanitizedCls] || namesMap[sanitizedCls.replace(/__p\d+$/, '')] || []))
+                    names: (namesMap && (namesMap[sanitizedCls] || namesMap[sanitizedCls.replace(/__[pt]\d+$/, '')] || []))
                 });
             });
             
@@ -24225,7 +24490,8 @@
                     html += '</tr>';
                 });
                 html += '</tbody></table></div>';
-                document.getElementById('resultsContainer').innerHTML = html;
+                const _quizTarget = arguments[8] || document.getElementById('resultsContainer');
+                if (_quizTarget) _quizTarget.innerHTML = html;
                 return;
             }
 
@@ -24305,7 +24571,9 @@
                 });
             }
             
-            document.getElementById('resultsContainer').innerHTML = html;
+            // Write to provided container or default resultsContainer
+            const targetEl = arguments[8] || document.getElementById('resultsContainer');
+            if (targetEl) targetEl.innerHTML = html;
         }
 
         function clearTestData() {
@@ -25002,19 +25270,19 @@
                                     const v2 = j2marks[i] !== undefined ? j2marks[i] : '';
                                     html += '<td style="padding:5px 4px;text-align:center;vertical-align:middle">'
                                         + '<div style="font-size:11px;color:#1565c0;margin-bottom:2px">J1: <input type="number" value="' + v1 + '" min="0" max="10" step="0.5"'
-                                        + ' oninput="adminEditMark(\'' + event + '\',1,\'' + rowKey + '\',' + i + ',this.value)" onchange="adminEditMark(\'' + event + '\',1,\'' + rowKey + '\',' + i + ',this.value)"'
+                                        + ' oninput="adminEditMark(\'' + event + '\',1,\'' + rowKey + '\',' + i + ',this.value);adminUpdateRowTotals(\'' + rowKey + '\')" onchange="adminEditMark(\'' + event + '\',1,\'' + rowKey + '\',' + i + ',this.value)"'
                                         + ' style="width:44px;padding:2px 3px;border:1.5px solid #90caf9;border-radius:4px;font-size:11px;text-align:center"></div>'
                                         + '<div style="font-size:11px;color:#880e4f">J2: <input type="number" value="' + v2 + '" min="0" max="10" step="0.5"'
-                                        + ' oninput="adminEditMark(\'' + event + '\',2,\'' + rowKey + '\',' + i + ',this.value)" onchange="adminEditMark(\'' + event + '\',2,\'' + rowKey + '\',' + i + ',this.value)"'
+                                        + ' oninput="adminEditMark(\'' + event + '\',2,\'' + rowKey + '\',' + i + ',this.value);adminUpdateRowTotals(\'' + rowKey + '\')" onchange="adminEditMark(\'' + event + '\',2,\'' + rowKey + '\',' + i + ',this.value)"'
                                         + ' style="width:44px;padding:2px 3px;border:1.5px solid #f48fb1;border-radius:4px;font-size:11px;text-align:center"></div>'
                                         + '</td>';
                                 });
 
                                 const hasJ1 = j1marks.length > 0;
                                 const hasJ2 = j2marks.length > 0;
-                                html += '<td style="padding:7px 6px;text-align:center;font-weight:700;color:' + (hasJ1 ? '#1565c0' : '#bbb') + '">' + (hasJ1 ? j1tot.toFixed(1) : '—') + '</td>';
-                                html += '<td style="padding:7px 6px;text-align:center;font-weight:700;color:' + (hasJ2 ? '#880e4f' : '#bbb') + '">' + (hasJ2 ? j2tot.toFixed(1) : '—') + '</td>';
-                                html += '<td style="padding:7px 6px;text-align:center;font-weight:800;font-size:1.05em;color:' + (hasJ1||hasJ2 ? '#4a148c' : '#ccc') + ';background:rgba(255,215,0,0.13)">'
+                                html += '<td id="saJ1_' + rowKey + '" style="padding:7px 6px;text-align:center;font-weight:700;color:' + (hasJ1 ? '#1565c0' : '#bbb') + '">' + (hasJ1 ? j1tot.toFixed(1) : '—') + '</td>';
+                                html += '<td id="saJ2_' + rowKey + '" style="padding:7px 6px;text-align:center;font-weight:700;color:' + (hasJ2 ? '#880e4f' : '#bbb') + '">' + (hasJ2 ? j2tot.toFixed(1) : '—') + '</td>';
+                                html += '<td id="saComb_' + rowKey + '" style="padding:7px 6px;text-align:center;font-weight:800;font-size:1.05em;color:' + (hasJ1||hasJ2 ? '#4a148c' : '#ccc') + ';background:rgba(255,215,0,0.13)">'
                                     + (hasJ1 || hasJ2 ? combined.toFixed(1) : '—') + '</td>';
                                 html += '</tr>';
                                 seq++;
@@ -25153,19 +25421,19 @@
                                     const v2 = j2marks[i] !== undefined ? j2marks[i] : '';
                                     html += '<td style="padding:5px 4px;text-align:center;vertical-align:middle">'
                                         + '<div style="font-size:11px;color:#1565c0;margin-bottom:2px">J1: <input type="number" value="' + v1 + '" min="0" max="10" step="0.5"'
-                                        + ' oninput="adminEditMark(\'' + event + '\',1,\'' + rowKey + '\',' + i + ',this.value)" onchange="adminEditMark(\'' + event + '\',1,\'' + rowKey + '\',' + i + ',this.value)"'
+                                        + ' oninput="adminEditMark(\'' + event + '\',1,\'' + rowKey + '\',' + i + ',this.value);adminUpdateRowTotals(\'' + rowKey + '\')" onchange="adminEditMark(\'' + event + '\',1,\'' + rowKey + '\',' + i + ',this.value)"'
                                         + ' style="width:44px;padding:2px 3px;border:1.5px solid #90caf9;border-radius:4px;font-size:11px;text-align:center"></div>'
                                         + '<div style="font-size:11px;color:#880e4f">J2: <input type="number" value="' + v2 + '" min="0" max="10" step="0.5"'
-                                        + ' oninput="adminEditMark(\'' + event + '\',2,\'' + rowKey + '\',' + i + ',this.value)" onchange="adminEditMark(\'' + event + '\',2,\'' + rowKey + '\',' + i + ',this.value)"'
+                                        + ' oninput="adminEditMark(\'' + event + '\',2,\'' + rowKey + '\',' + i + ',this.value);adminUpdateRowTotals(\'' + rowKey + '\')" onchange="adminEditMark(\'' + event + '\',2,\'' + rowKey + '\',' + i + ',this.value)"'
                                         + ' style="width:44px;padding:2px 3px;border:1.5px solid #f48fb1;border-radius:4px;font-size:11px;text-align:center"></div>'
                                         + '</td>';
                                 });
 
                                 const hasJ1 = j1marks.length > 0;
                                 const hasJ2 = j2marks.length > 0;
-                                html += '<td style="padding:7px 6px;text-align:center;font-weight:700;color:' + (hasJ1 ? '#1565c0' : '#bbb') + '">' + (hasJ1 ? j1tot.toFixed(1) : '—') + '</td>';
-                                html += '<td style="padding:7px 6px;text-align:center;font-weight:700;color:' + (hasJ2 ? '#880e4f' : '#bbb') + '">' + (hasJ2 ? j2tot.toFixed(1) : '—') + '</td>';
-                                html += '<td style="padding:7px 6px;text-align:center;font-weight:800;font-size:1.05em;color:' + (hasJ1||hasJ2 ? '#4a148c' : '#ccc') + ';background:rgba(255,215,0,0.13)">'
+                                html += '<td id="saJ1_' + rowKey + '" style="padding:7px 6px;text-align:center;font-weight:700;color:' + (hasJ1 ? '#1565c0' : '#bbb') + '">' + (hasJ1 ? j1tot.toFixed(1) : '—') + '</td>';
+                                html += '<td id="saJ2_' + rowKey + '" style="padding:7px 6px;text-align:center;font-weight:700;color:' + (hasJ2 ? '#880e4f' : '#bbb') + '">' + (hasJ2 ? j2tot.toFixed(1) : '—') + '</td>';
+                                html += '<td id="saComb_' + rowKey + '" style="padding:7px 6px;text-align:center;font-weight:800;font-size:1.05em;color:' + (hasJ1||hasJ2 ? '#4a148c' : '#ccc') + ';background:rgba(255,215,0,0.13)">'
                                     + (hasJ1 || hasJ2 ? combined.toFixed(1) : '—') + '</td>';
                                 html += '</tr>';
                                 seq++;
@@ -25294,19 +25562,19 @@
                                 const v2 = j2marks[i] !== undefined ? j2marks[i] : '';
                                 html += '<td style="padding:5px 4px;text-align:center;vertical-align:middle">'
                                     + '<div style="font-size:11px;color:#1565c0;margin-bottom:2px">J1: <input type="number" value="' + v1 + '" min="0" max="10" step="0.5"'
-                                    + ' oninput="adminEditMark(\'' + event + '\',1,\'' + clsKey + '\',' + i + ',this.value)" onchange="adminEditMark(\'' + event + '\',1,\'' + clsKey + '\',' + i + ',this.value)"'
+                                    + ' oninput="adminEditMark(\'' + event + '\',1,\'' + clsKey + '\',' + i + ',this.value);adminUpdateRowTotals(\'' + clsKey + '\')" onchange="adminEditMark(\'' + event + '\',1,\'' + clsKey + '\',' + i + ',this.value)"'
                                     + ' style="width:44px;padding:2px 3px;border:1.5px solid #90caf9;border-radius:4px;font-size:11px;text-align:center"></div>'
                                     + '<div style="font-size:11px;color:#880e4f">J2: <input type="number" value="' + v2 + '" min="0" max="10" step="0.5"'
-                                    + ' oninput="adminEditMark(\'' + event + '\',2,\'' + clsKey + '\',' + i + ',this.value)" onchange="adminEditMark(\'' + event + '\',2,\'' + clsKey + '\',' + i + ',this.value)"'
+                                    + ' oninput="adminEditMark(\'' + event + '\',2,\'' + clsKey + '\',' + i + ',this.value);adminUpdateRowTotals(\'' + clsKey + '\')" onchange="adminEditMark(\'' + event + '\',2,\'' + clsKey + '\',' + i + ',this.value)"'
                                     + ' style="width:44px;padding:2px 3px;border:1.5px solid #f48fb1;border-radius:4px;font-size:11px;text-align:center"></div>'
                                     + '</td>';
                             });
 
                             const hasJ1 = j1marks.length > 0;
                             const hasJ2 = j2marks.length > 0;
-                            html += '<td style="padding:7px 6px;text-align:center;font-weight:700;color:' + (hasJ1 ? '#1565c0' : '#bbb') + '">' + (hasJ1 ? j1tot.toFixed(1) : '—') + '</td>';
-                            html += '<td style="padding:7px 6px;text-align:center;font-weight:700;color:' + (hasJ2 ? '#880e4f' : '#bbb') + '">' + (hasJ2 ? j2tot.toFixed(1) : '—') + '</td>';
-                            html += '<td style="padding:7px 6px;text-align:center;font-weight:800;font-size:1.05em;color:' + (hasJ1||hasJ2 ? '#4a148c' : '#ccc') + ';background:rgba(255,215,0,0.13)">'
+                            html += '<td id="saJ1_' + clsKey + '" style="padding:7px 6px;text-align:center;font-weight:700;color:' + (hasJ1 ? '#1565c0' : '#bbb') + '">' + (hasJ1 ? j1tot.toFixed(1) : '—') + '</td>';
+                            html += '<td id="saJ2_' + clsKey + '" style="padding:7px 6px;text-align:center;font-weight:700;color:' + (hasJ2 ? '#880e4f' : '#bbb') + '">' + (hasJ2 ? j2tot.toFixed(1) : '—') + '</td>';
+                            html += '<td id="saComb_' + clsKey + '" style="padding:7px 6px;text-align:center;font-weight:800;font-size:1.05em;color:' + (hasJ1||hasJ2 ? '#4a148c' : '#ccc') + ';background:rgba(255,215,0,0.13)">'
                                 + (hasJ1 || hasJ2 ? combined.toFixed(1) : '—') + '</td>';
                             html += '</tr>';
                         });
@@ -25380,6 +25648,27 @@
             } catch(err) {
                 container.innerHTML = '<p style="color:red;text-align:center;padding:20px">Error: ' + err.message + '</p>';
             }
+        }
+
+        // Updates J1 Total, J2 Total, Combined cells in SA monitor without re-rendering
+        function adminUpdateRowTotals(rowKey) {
+            let j1Sum = 0, j2Sum = 0, j1Has = false, j2Has = false;
+            document.querySelectorAll('#liveJuryMonitorContainer input[type="number"]').forEach(inp => {
+                const oc = inp.getAttribute('onchange') || '';
+                const m = oc.match(/adminEditMark\('([^']+)',(\d+),'([^']+)',(\d+)/);
+                if (!m) return;
+                const [, , juryNum, sk] = m;
+                if (sk !== rowKey) return;
+                const val = parseFloat(inp.value) || 0;
+                if (juryNum === '1') { j1Sum += val; j1Has = true; }
+                if (juryNum === '2') { j2Sum += val; j2Has = true; }
+            });
+            const j1El   = document.getElementById('saJ1_'   + rowKey);
+            const j2El   = document.getElementById('saJ2_'   + rowKey);
+            const combEl = document.getElementById('saComb_' + rowKey);
+            if (j1El)   { j1El.textContent   = j1Has ? j1Sum.toFixed(1) : '—';           j1El.style.color   = j1Has ? '#1565c0' : '#bbb'; }
+            if (j2El)   { j2El.textContent   = j2Has ? j2Sum.toFixed(1) : '—';           j2El.style.color   = j2Has ? '#880e4f' : '#bbb'; }
+            if (combEl) { combEl.textContent = (j1Has||j2Has) ? (j1Sum+j2Sum).toFixed(1) : '—'; combEl.style.color = (j1Has||j2Has) ? '#4a148c' : '#ccc'; }
         }
 
         async function adminEditMark(event, juryNum, safeKey, critIndex, value) {
@@ -44145,7 +44434,7 @@ export default {
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;" id="devTriggerVersion">
-                <strong>Version:</strong> 8.26 — SA Live Monitor: Save All Marks button added to ALL event types (individual, multiteam, class-based); auto-save on input + manual save backup<strong>Last Updated:</strong> Mar 16, 2026, 01:35 PM IST</p>
+                <strong>Version:</strong> 8.33 — Fix: Publish Results now works for all events — Nukkad/HW/TH/YT Ad write to their special paths too; dropdown shows correct publish status<strong>Last Updated:</strong> Mar 16, 2026, 11:09 PM IST</p>
             <!-- ============================================ -->
             
             <p style="color: #c44569; font-size: 0.85em; font-weight: 600; margin-bottom: 8px;">
@@ -47050,6 +47339,13 @@ function scAdminPing() {
      v8.24 | Mar 16, 2026, 01:35 PM IST | Quiz Results tab: shows Final Round 5-round scores table with R1-R5 per class instead of J1/J2/Avg columns
      v8.25 | Mar 16, 2026, 01:35 PM IST | Fix: Quiz Final admin panel _safeKey mismatch — save used /[.#$/[]\s]/ but lookup used /[^a-zA-Z0-9]/ causing all lookups to fail; unified + triple fallback
      v8.26 | Mar 16, 2026, 01:35 PM IST | SA Live Monitor: 💾 Save All Marks button on all event types (was individual-only); auto-save on input remains default
+     v8.27 | Mar 16, 2026, 01:35 PM IST | Fix: BOW/Vlog Results tab now shows per-team participant names — multiteam namesMap built by team rowKey + __t suffix fallback
+     v8.28 | Mar 16, 2026, 01:35 PM IST | SA Live Monitor: J1/J2/Combined totals update instantly on oninput via adminUpdateRowTotals — IDs added to total cells for all event types
+     v8.29 | Mar 16, 2026, 11:09 PM IST | (1) On-stage attendance in incharge panel with jury code + Present/Absent per class; (2) Jury sees ranked results table after Mark as Completed; (3) Manager Event Results tab with On/Off Stage split
+     v8.30 | Mar 16, 2026, 11:09 PM IST | Fix: SyntaxError — nested backtick in loadGenericInchargePanel replaced with string concat
+     v8.31 | Mar 16, 2026, 11:09 PM IST | Fix: Manager Results tab — Quiz block was writing to hardcoded #resultsContainer; now uses passed container argument
+     v8.32 | Mar 16, 2026, 11:09 PM IST | Event Results tab moved from manager-only to all admin logins
+     v8.33 | Mar 16, 2026, 11:09 PM IST | Fix: publishResults handles special paths for Nukkad/HW/TH/YT Ad; dropdown checks all publish paths for accurate status
      v8.22 | Mar 16, 2026, 01:35 PM IST | Fix: SA Quiz Final Admin panel reads juryMarks/Quiz as fallback — shows scores regardless of which path Smitha used to save
      v8.21 | Mar 16, 2026, 01:35 PM IST | Event Results: Participants column added — member names shown for all events in results table
      ═══════════════════════════════════════════════════════════════════ -->
