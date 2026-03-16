@@ -3432,7 +3432,7 @@
                 <button class="tab active" onclick="showTab('master')">Master List</button>
                 <button class="tab" onclick="showTab('events')">By Events</button>
                 <button class="tab super-admin-only" onclick="showTab('jurySetup')">Jury Setup</button>
-                <button class="tab super-admin-only" onclick="showTab('jurySummaryReport');loadJurySummaryReport()" id="jurySummaryReportTab">📊 Jury Summary</button>
+                <button class="tab super-admin-only" onclick="showTab('jurySummaryReport');loadJurySummaryReport();loadQuizFinalAdminPanel()" id="jurySummaryReportTab">📊 Jury Summary</button>
                 <button class="tab super-admin-only" onclick="showTab('juryLiveMonitor');startLiveJuryMonitor()">📡 Jury Live Monitor</button>
                 <button class="tab super-admin-only" onclick="showTab('caseAnalysisAdmin');loadCaseAnalysisAdmin()" id="caseAnalysisAdminTab">🧠 Case Analysis</button>
                 <button class="tab" onclick="showTab('results')" id="resultsTab">Results</button>
@@ -6872,6 +6872,7 @@
                                         <th style="background:#1565c0">Jury J1</th>
                                         <th style="background:#1565c0">Jury J2</th>
                                         <th style="background:#1b5e20">Final %</th>
+                                        <th style="background:#e65100">LB Pts</th>
                                         <th>Status</th>
                                         <th>Actions</th>
                                     </tr>
@@ -7997,6 +7998,10 @@
                         </div>
                     </div>
                     <p style="color:rgba(255,255,255,0.6);font-size:12px;margin-bottom:15px">⚠️ This is exactly what the public leaderboard will show. Verify before publishing.</p>
+                    <div style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.25);border-radius:10px;padding:12px 16px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+                        <span style="color:white;font-size:0.85em;font-weight:600">🧠 Quiz Final Round — publish winner &amp; runner-up separately</span>
+                        <button onclick="showTab('jurySummaryReport');loadJurySummaryReport();loadQuizFinalAdminPanel();setTimeout(()=>{const el=document.getElementById('quizFinalAdminContainer');if(el)el.scrollIntoView({behavior:'smooth'});},800)" style="background:#6a1b9a;color:white;border:none;border-radius:8px;padding:6px 16px;font-size:0.82em;font-weight:700;cursor:pointer">📊 Go to Quiz Final Panel →</button>
+                    </div>
                     <div id="lbAdminPreview">
                         <p style="color:rgba(255,255,255,0.4);text-align:center;padding:20px">Loading preview…</p>
                     </div>
@@ -8968,6 +8973,7 @@
             'Nukkad Natak': {size:'8 to 30% of class',count:8,role:true,cause:true,causeLabel:'Social Awareness Theme',allow:false,maxPerClass:1,pctMax:30,dynamicCount:true,minCount:8,camera:true,adviser:true},
             'Case Analysis': {size:'2 Members',count:2,role:true,allow:false,maxPerClass:1}
         };
+        window._youthfestEvents = events; // expose to leaderboard engine in separate script block
 
         let all = [];
         let currentUser = null;
@@ -20129,6 +20135,18 @@
                         ? `<div style="font-weight:800;font-size:0.95em;color:${dispute?'#e65100':'#1b5e20'}">${avg.toFixed(1)}/50${dispute?'<br><span style="font-size:0.7em;background:#fff3e0;color:#e65100;padding:1px 5px;border-radius:6px">⚠️ Dispute</span>':''}</div>`
                         : `<span style="color:#aaa">—</span>`;
 
+                    // Leaderboard points breakdown for this class
+                    const lbYt    = ytVerif   ? 10 : 0;
+                    const lbNews  = newsVerif ? 10 : 0;
+                    const lbJury  = avg !== null ? Math.round(avg) : 0;
+                    const lbTotal = lbYt + lbNews + lbJury;
+                    const lbCell  = `<div style="font-size:0.78em;line-height:1.7">
+                        ${lbYt   ? '<span style="color:#c62828;font-weight:700">▶️ +10 YT</span><br>' : '<span style="color:#bbb">▶️ 0 YT</span><br>'}
+                        ${lbNews ? '<span style="color:#2e7d32;font-weight:700">📰 +10 News</span><br>' : '<span style="color:#bbb">📰 0 News</span><br>'}
+                        ${lbJury ? '<span style="color:#1565c0;font-weight:700">⚖️ +${lbJury} Jury</span><br>' : '<span style="color:#bbb">⚖️ 0 Jury</span><br>'}
+                        <span style="font-weight:800;color:#e65100;font-size:1.05em">= ${lbTotal} pts</span>
+                    </div>`;
+
                     rows += `<tr>
                         <td style="text-align:center;font-weight:700;color:#1a237e">${i+1}</td>
                         <td style="font-weight:700;color:#1565c0;font-size:0.85em">${cls}</td>
@@ -20145,13 +20163,14 @@
                         <td style="text-align:center;background:#e3f2fd">${j1Cell}</td>
                         <td style="text-align:center;background:#e3f2fd">${j2Cell}</td>
                         <td style="text-align:center;background:#e8f5e9">${finalCell}</td>
+                        <td style="text-align:center;background:#fff3e0">${lbCell}</td>
                         <td style="text-align:center"><span style="background:${statusBg};color:${statusColor};padding:3px 10px;border-radius:12px;font-size:0.75em;font-weight:700">${statusLabel}</span></td>
                         <td style="text-align:center">
                             ${!hasPerm ? `<button onclick="grantNukkadPermissionAdmin('${cls}','${key}')" style="background:#1a237e;color:white;border:none;border-radius:6px;padding:4px 8px;cursor:pointer;font-size:0.72em;font-weight:700;margin:2px">🔓 Perm</button>` : `<button onclick="revokeNukkadPermission('${cls}','${key}')" style="background:#c62828;color:white;border:none;border-radius:6px;padding:4px 8px;cursor:pointer;font-size:0.72em;font-weight:700;margin:2px">❌ Revoke</button>`}
                         </td>
                     </tr>
                     <tr id="nukkadAdminMsgRow_${key}" style="display:none">
-                        <td colspan="17"><div id="nukkadPostMsg_${key}" style="font-size:0.78em;font-weight:600;padding:4px 10px;border-radius:6px"></div></td>
+                        <td colspan="18"><div id="nukkadPostMsg_${key}" style="font-size:0.78em;font-weight:600;padding:4px 10px;border-radius:6px"></div></td>
                     </tr>`;
                 });
 
@@ -21476,6 +21495,8 @@
             const container = document.getElementById('jurySummaryContainer');
             if (!container) return;
             container.innerHTML = '<p style="color:#aaa;text-align:center;padding:24px">Loading jury data and event schedule…</p>';
+            // Also auto-load quiz final panel
+            if (typeof loadQuizFinalAdminPanel === 'function') loadQuizFinalAdminPanel();
             try {
                 const [jurySnap, schedSnap] = await Promise.all([
                     db.ref('jurySetup').once('value'),
@@ -22111,31 +22132,67 @@
             if (!container) return;
             container.innerHTML = '<p style="color:#aaa;text-align:center;padding:20px;font-size:0.88em">Loading…</p>';
             try {
-                const [stateSnap, jurySetupSnap] = await Promise.all([
+                const [stateSnap, jurySetupSnap, j1Snap, j2Snap] = await Promise.all([
                     db.ref('quizFinalRound').once('value'),
-                    db.ref('jurySetup/Quiz').once('value')
+                    db.ref('jurySetup/Quiz').once('value'),
+                    db.ref('juryMarks/Quiz/jury1').once('value'),
+                    db.ref('juryMarks/Quiz/jury2').once('value')
                 ]);
 
                 const state     = stateSnap.exists()     ? stateSnap.val()     : {};
                 const jurySetup = jurySetupSnap.exists() ? jurySetupSnap.val() : {};
                 const phase     = state.phase     || 'prelim';
-                const finalists = state.finalists  || [];
-                const scores    = state.scores     || {};
+                let   finalists = state.finalists  || [];
+                let   scores    = state.scores     || {};
                 const published = jurySetup.resultsPublished === true;
 
-                if (phase !== 'final' || finalists.length !== 5) {
+                // Fallback: if quizFinalRound has no scores, read from juryMarks/Quiz/jury1
+                // (Smitha may have saved via standard jury sheet path)
+                const j1Data = j1Snap.exists() ? j1Snap.val() : {};
+                const j2Data = j2Snap.exists() ? j2Snap.val() : {};
+                const hasQuizFinalScores = scores && Object.keys(scores).length > 0;
+                const hasJuryMarks = Object.keys(j1Data).length > 0 || Object.keys(j2Data).length > 0;
+
+                if (!hasQuizFinalScores && hasJuryMarks) {
+                    // Build scores from juryMarks — sum all criteria marks per class
+                    const allKeys = new Set([...Object.keys(j1Data), ...Object.keys(j2Data)]);
+                    allKeys.forEach(sk => {
+                        const d1 = j1Data[sk] || {}; const d2 = j2Data[sk] || {};
+                        const m1 = Array.isArray(d1.marks) ? d1.marks : Object.values(d1.marks || {});
+                        const m2 = Array.isArray(d2.marks) ? d2.marks : Object.values(d2.marks || {});
+                        const t1 = m1.reduce((s,v) => s+(parseFloat(v)||0), 0);
+                        const t2 = m2.reduce((s,v) => s+(parseFloat(v)||0), 0);
+                        const avg = (t1 + t2) / (m2.length > 0 ? 2 : 1);
+                        scores[sk] = [avg]; // treat avg as single round score
+                    });
+                }
+
+                function _safeKey(k) { return k.replace(/[.#$\/\[\]]/g, '_'); } // matches quizFinalSaveScores key format
+
+                // Show scores if either: quizFinalRound scores OR juryMarks exist
+                const hasScores = Object.keys(scores).length > 0;
+                if (finalists.length === 0 && !hasScores) {
                     container.innerHTML = `
                     <div style="background:#fff3cd;border-radius:10px;padding:16px;text-align:center;color:#856404">
-                        <strong>⏳ Preliminary stage not completed yet.</strong><br>
-                        <span style="font-size:0.88em">Quiz Master (Smitha) must first select 5 finalist teams and move to the Final Round before scores appear here.</span>
+                        <strong>⏳ No Quiz Final Round scores yet.</strong><br>
+                        <span style="font-size:0.88em">Smitha (Quiz Master) must save scores in the Final Round panel first.</span>
                     </div>`;
                     return;
                 }
+                // Build finalists from score keys if not set
+                if (finalists.length === 0 && hasScores) {
+                    Object.keys(scores).forEach(k => {
+                        const realCls = (window._appClasses || []).find(c => c.replace(/[.#$\/\[\]]/g,'_') === k) || k;
+                        finalists.push({ classYear: realCls, qualifiers: [] });
+                    });
+                }
 
-                // Compute totals
                 const totals = finalists.map(f => {
-                    const sc = scores[f.classYear] || [];
-                    return { classYear: f.classYear, qualifiers: f.qualifiers || [], total: sc.reduce((s,v) => s + (parseFloat(v)||0), 0), sc };
+                    const sk1 = _safeKey(f.classYear);
+                    const sk2 = f.classYear.replace(/[^a-zA-Z0-9]/g,'_');
+                    const sc = scores[sk1] || scores[sk2] || scores[f.classYear] || [];
+                    const scArr = Array.isArray(sc) ? sc : Object.values(sc);
+                    return { classYear: f.classYear, qualifiers: f.qualifiers || [], total: scArr.reduce((s,v) => s+(parseFloat(v)||0), 0), sc: scArr };
                 });
                 totals.sort((a,b) => b.total - a.total);
                 const winner   = totals[0];
@@ -22284,6 +22341,7 @@
         window.loadQuizFinalAdminPanel = loadQuizFinalAdminPanel;
         window.quizAdminPublish        = quizAdminPublish;
         window.quizAdminUnpublish      = quizAdminUnpublish;
+        window.adminSaveAllMarks       = adminSaveAllMarks;
         // ── End Jury Summary Report ──────────────────────────────────────
 
         function publishResults() {
@@ -22773,35 +22831,7 @@
             try {
                 await db.ref('quizFinalRound/scores').set(scores);
 
-                // Compute winner & runner-up from saved scores and push to leaderboard
-                // Winner: +75 pts, Runner-up: +40 pts via customCriteria
-                const totals = finalists.map(f => {
-                    const sc = scores[_safeKey(f.classYear)] || [];
-                    const tot = sc.reduce((s, v) => s + (parseFloat(v) || 0), 0);
-                    return { cls: f.classYear, total: tot };
-                }).filter(t => t.total > 0).sort((a, b) => b.total - a.total);
-
-                if (totals.length >= 1) {
-                    const winCls    = totals[0].cls;
-                    const winKey    = winCls.replace(/[.#$/\[\]]/g, '_');
-                    await db.ref('leaderboardConfig/customCriteria/quiz_final_winner').set({
-                        label: 'Quiz Competition — Final Round Winner',
-                        points: { [winKey]: 75 }
-                    });
-                }
-                if (totals.length >= 2) {
-                    const ruCls  = totals[1].cls;
-                    const ruKey  = ruCls.replace(/[.#$/\[\]]/g, '_');
-                    await db.ref('leaderboardConfig/customCriteria/quiz_final_runnerup').set({
-                        label: 'Quiz Competition — Final Round Runner-up',
-                        points: { [ruKey]: 40 }
-                    });
-                }
-
-                const winnerNote = totals.length >= 1
-                    ? ' | Winner: ' + totals[0].cls + ' (' + totals[0].total.toFixed(1) + ' pts)'
-                    : '';
-                _qfMsg('✅ Scores saved!' + winnerNote, true);
+                _qfMsg('✅ Scores saved! SA can now publish to leaderboard from the Quiz Final Results panel.', true);
             } catch(err) {
                 _qfMsg('❌ Save failed: ' + err.message, false);
             }
@@ -23648,8 +23678,11 @@
             // First, organize marks by class
             document.querySelectorAll('.marks-input').forEach(inp => {
                 inputCount++;
-                const cls = inp.dataset.class;
-                const sanitizedCls = sanitizeKey(cls); // Sanitize class name for Firebase
+                const cls       = inp.dataset.class;     // rowKey e.g. 3rd_B_Com__t1
+                const origClass = inp.dataset.origclass  // real class e.g. "3rd B.Com"
+                               || inp.dataset.originalclass
+                               || cls;
+                const sanitizedCls = sanitizeKey(cls); // Sanitize rowKey for Firebase path
                 const critIndex = parseInt(inp.dataset.criterion);
                 const val = parseFloat(inp.value) || 0;
                 
@@ -23657,7 +23690,7 @@
                     marksData[sanitizedCls] = { 
                         marks: {}, 
                         completed: false,
-                        originalClassName: cls // Store original name
+                        originalClassName: origClass // Store REAL class name, not rowKey
                     };
                 }
                 marksData[sanitizedCls].marks[critIndex] = val;
@@ -23789,8 +23822,11 @@
             
             // First, organize marks by class
             document.querySelectorAll('.marks-input').forEach(inp => {
-                const cls = inp.dataset.class;
-                const sanitizedCls = sanitizeKey(cls); // Sanitize class name
+                const cls       = inp.dataset.class;     // rowKey e.g. 3rd_B_Com__t1
+                const origClass = inp.dataset.origclass  // real class e.g. "3rd B.Com"
+                               || inp.dataset.originalclass
+                               || cls;
+                const sanitizedCls = sanitizeKey(cls); // Sanitize rowKey for Firebase path
                 const critIndex = parseInt(inp.dataset.criterion);
                 const val = parseFloat(inp.value) || 0;
                 
@@ -23798,7 +23834,7 @@
                     marksData[sanitizedCls] = { 
                         marks: {}, 
                         completed: true,
-                        originalClassName: cls
+                        originalClassName: origClass // Store REAL class name, not rowKey
                     };
                 }
                 marksData[sanitizedCls].marks[critIndex] = val;
@@ -23957,38 +23993,72 @@
                 
                 // Load marks from both juries using raw event name
                 console.log('Loading marks from both juries...');
+                const isHWEvent = (event === 'Hand Writing');
+                const isTHEvent = (event === 'Talent Hunt');
                 const fetchList = [
                     db.ref('juryMarks/'+event+'/jury1').once('value'),
-                    db.ref('juryMarks/'+event+'/jury2').once('value')
+                    db.ref('juryMarks/'+event+'/jury2').once('value'),
+                    db.ref('youthfest-enrollments').orderByChild('event').equalTo(event).once('value')  // always fetch for names
                 ];
-                // For Vlog: also fetch social scores and enrollment topics
+                // For Vlog: also fetch social scores
                 if (event === 'Vlog') {
                     fetchList.push(db.ref('vlogChallenge').once('value'));
-                    fetchList.push(db.ref('youthfest-enrollments').orderByChild('event').equalTo('Vlog').once('value'));
                 }
                 Promise.all(fetchList).then((snaps) => {
                     const jury1Marks = snaps[0].val() || {};
                     const jury2Marks = snaps[1].val() || {};
+                    // Build sittingCode map: rowKey → sittingCode
+                    // snaps[2] = enrollments (always), snaps[3] = vlogChallenge (Vlog only)
+                    const enrSnap  = snaps[2] || null;
+                    const scMap    = {};   // rowKey → sitting code (HW/TH)
+                    const namesMap = {};   // sanitizedCls → [name, name, ...] for ALL events
 
-                    // Build vlogSocialMap: originalClassName → best socialScore for that class
+                    const prefix = isHWEvent ? 'HW' : isTHEvent ? 'TH' : '';
+                    const byClass = {};
+                    if (enrSnap && enrSnap.exists()) {
+                        enrSnap.forEach(ch => {
+                            const d = ch.val();
+                            const cls = d.classYear || d.class || '';
+                            if (!byClass[cls]) byClass[cls] = [];
+                            byClass[cls].push(Object.assign({ _key: ch.key }, d));
+                        });
+                    }
+
+                    Object.entries(byClass).sort(([a],[b])=>a.localeCompare(b)).forEach(([cls, members]) => {
+                        const clsKey = cls.replace(/[.\[\]#$\/\s]/g,'_');
+                        // Sitting codes for HW/TH (individual rowKeys)
+                        if (isHWEvent || isTHEvent) {
+                            members.forEach((m, idx) => {
+                                const rowKey = clsKey + '__p' + (idx + 1);
+                                const sc = m.sittingCode ? String(m.sittingCode).padStart(2,'0') : String(idx+1).padStart(2,'0');
+                                scMap[rowKey] = sc;
+                            });
+                        }
+                        // Names map — always build both rowKey AND clsKey entries
+                        // Individual events (HW/TH): each member has own rowKey
+                        if (isHWEvent || isTHEvent) {
+                            members.forEach((m, idx) => {
+                                const rowKey = clsKey + '__p' + (idx + 1);
+                                namesMap[rowKey] = [m.name || m.memberName || ''];
+                            });
+                        }
+                        // All events: also build class-level name list (captain + members)
+                        if (!namesMap[clsKey]) namesMap[clsKey] = [];
+                        members.forEach(m => {
+                            const n = m.name || m.memberName || '';
+                            if (n && !namesMap[clsKey].includes(n)) namesMap[clsKey].push(n);
+                        });
+                    });
+
+                    // Build vlogSocialMap: rowKey → social score (Vlog only)
                     const vlogSocialMap = {};
-                    if (event === 'Vlog' && snaps[2] && snaps[3]) {
-                        // Build topic→socialScore map from vlogChallenge
+                    if (event === 'Vlog' && snaps[3]) {
                         const topicSocial = {};
-                        snaps[2].forEach(ch => {
-                            const v = ch.val();
-                            const k = (v.classYear||'') + '__' + (v.topic||'');
-                            topicSocial[k] = v.socialScore || 0;
-                        });
-                        // Build classYear+teamNum → topic from enrollments, then map rowKey → socialScore
-                        const enrollByClass = {};
                         snaps[3].forEach(ch => {
-                            const e = ch.val();
-                            if (!enrollByClass[e.classYear]) enrollByClass[e.classYear] = [];
-                            enrollByClass[e.classYear].push(e);
+                            const v = ch.val();
+                            topicSocial[(v.classYear||'')+'__'+(v.topic||'')] = v.socialScore || 0;
                         });
-                        // For each class, group into teams and map sanitised rowKey → socialScore
-                        Object.entries(enrollByClass).forEach(([cls, members]) => {
+                        Object.entries(byClass).forEach(([cls, members]) => {
                             const safeKey = cls.replace(/[.\[\]#$\/\s]/g,'_');
                             const teamsMap = {};
                             members.forEach((m, idx) => {
@@ -24004,8 +24074,7 @@
                             }).forEach((tKey, tIdx) => {
                                 const m = teamsMap[tKey];
                                 const rowKey = safeKey + '__t' + (tIdx+1);
-                                const vKey = cls + '__' + (m.topic||'');
-                                vlogSocialMap[rowKey] = topicSocial[vKey] || 0;
+                                vlogSocialMap[rowKey] = topicSocial[cls+'__'+(m.topic||'')] || 0;
                             });
                         });
                     }
@@ -24031,12 +24100,12 @@
                         return;
                     }
 
-                    displayResults(event, jury1Marks, jury2Marks, jury1Name, jury2Name, vlogSocialMap);
+                    displayResults(event, jury1Marks, jury2Marks, jury1Name, jury2Name, vlogSocialMap, scMap, namesMap);
                 });
             });
         }
 
-        function displayResults(event, jury1Marks, jury2Marks, jury1Name, jury2Name, vlogSocialMap) {
+        function displayResults(event, jury1Marks, jury2Marks, jury1Name, jury2Name, vlogSocialMap, scMap, namesMap) {
             // Default names if not provided
             jury1Name = jury1Name || 'Jury 1';
             jury2Name = jury2Name || 'Jury 2';
@@ -24108,7 +24177,9 @@
                     finalPct: finalPct,
                     finalScore: finalScore,
                     jury1Completed: j1 && j1.completed,
-                    jury2Completed: j2 && j2.completed
+                    jury2Completed: j2 && j2.completed,
+                    sittingCode: (scMap && scMap[sanitizedCls]) || null,
+                    names: (namesMap && (namesMap[sanitizedCls] || namesMap[sanitizedCls.replace(/__p\d+$/, '')] || []))
                 });
             });
             
@@ -24116,7 +24187,47 @@
             results.sort((a, b) => b.finalScore - a.finalScore);
             
             // Display results
+            const isQuiz = (event === 'Quiz');
             let html = '<h3 style="color:#c44569;margin-bottom:20px">Results for '+event+'</h3>';
+
+            // For Quiz: show Final Round scores table (5 rounds per team)
+            if (isQuiz) {
+                html += '<div style="font-size:0.82em;color:#555;background:#f3e5f5;border-radius:8px;padding:10px 14px;margin-bottom:12px;border-left:4px solid #6a1b9a">'
+                    + '🧠 <strong>Quiz — Final Round Scores</strong> · 5 rounds · Winner gets +50 pts, Runner-up gets +30 pts on leaderboard'
+                    + '</div>';
+                html += '<div class="table-wrapper"><table><thead><tr>'
+                    + '<th>Rank</th><th>Class</th><th>Qualifiers</th>'
+                    + '<th>R1</th><th>R2</th><th>R3</th><th>R4</th><th>R5</th>'
+                    + '<th>Total</th></tr></thead><tbody>';
+                results.forEach((r, i) => {
+                    const rank  = i + 1;
+                    const badge = rank === 1 ? '<span class="winner-badge">🏆 Winner</span>'
+                                : rank === 2 ? '<span class="runner-badge">🥈 Runner Up</span>' : '';
+                    // r.jury1Total holds the sum of all round scores (written as marks[])
+                    // Recover individual round scores from the raw marks array
+                    const allKeys = new Set([...Object.keys(jury1Marks), ...Object.keys(jury2Marks)]);
+                    let roundScores = [];
+                    allKeys.forEach(sk => {
+                        const d1 = jury1Marks[sk];
+                        if (d1 && d1.originalClassName === r.class && Array.isArray(d1.marks)) {
+                            roundScores = d1.marks;
+                        }
+                    });
+                    html += '<tr class="rank-'+(rank <= 3 ? rank : '')+'">';
+                    html += '<td><strong>'+rank+'</strong></td>';
+                    html += '<td><strong>'+r.class+'</strong> '+badge+'</td>';
+                    html += '<td style="font-size:0.82em;color:#555">'+(r.names&&r.names.length?r.names.join('<br>'):'—')+'</td>';
+                    for (let ri = 0; ri < 5; ri++) {
+                        const v = roundScores[ri] !== undefined ? roundScores[ri] : '—';
+                        html += '<td style="text-align:center">' + v + '</td>';
+                    }
+                    html += '<td><strong style="color:#6a1b9a">'+r.jury1Total.toFixed(1)+'</strong></td>';
+                    html += '</tr>';
+                });
+                html += '</tbody></table></div>';
+                document.getElementById('resultsContainer').innerHTML = html;
+                return;
+            }
 
             // For Vlog: show formula reminder
             if (isVlog) {
@@ -24128,13 +24239,14 @@
             // Show marks detail only for super admin and jury
             if (isSuperAdmin || isJury) {
                 if (isVlog) {
-                    html += '<div class="table-wrapper"><table><thead><tr><th>Rank</th><th>Class/Team</th><th>'+jury1Name+' /50</th><th>'+jury2Name+' /50</th><th>Jury Avg</th><th>Jury %</th><th>Social Score</th><th>Social %</th><th>Final %</th><th>Status</th></tr></thead><tbody>';
+                    html += '<div class="table-wrapper"><table><thead><tr><th>Rank</th><th>Class/Team</th><th>Participants</th><th>'+jury1Name+' /50</th><th>'+jury2Name+' /50</th><th>Jury Avg</th><th>Jury %</th><th>Social Score</th><th>Social %</th><th>Final %</th><th>Status</th></tr></thead><tbody>';
                     results.forEach((r, i) => {
                         const rank = i + 1;
                         const badge = rank === 1 ? '<span class="winner-badge">🏆 Winner</span>' : rank === 2 ? '<span class="runner-badge">🥈 Runner Up</span>' : '';
                         html += '<tr class="rank-'+(rank <= 3 ? rank : '')+'">';
                         html += '<td><strong>'+rank+'</strong></td>';
                         html += '<td><strong>'+r.class+'</strong> '+badge+'</td>';
+                        html += '<td style="font-size:0.82em;color:#555">'+(r.names&&r.names.length?r.names.join('<br>'):'—')+'</td>';
                         html += '<td>'+r.jury1Total.toFixed(1)+(r.jury1Completed ? ' ✓' : '')+'</td>';
                         html += '<td>'+r.jury2Total.toFixed(1)+(r.jury2Completed ? ' ✓' : '')+'</td>';
                         html += '<td>'+r.average.toFixed(1)+'</td>';
@@ -24147,13 +24259,28 @@
                     });
                     html += '</tbody></table></div>';
                 } else {
-                    html += '<div class="table-wrapper"><table><thead><tr><th>Rank</th><th>Class</th><th>'+jury1Name+' Total</th><th>'+jury2Name+' Total</th><th>Average</th><th>Status</th></tr></thead><tbody>';
+                    const isHWRes = (event === 'Hand Writing');
+                    const isTHRes = (event === 'Talent Hunt');
+                    const scPrefix = isHWRes ? 'HW' : isTHRes ? 'TH' : '';
+                    const showSC   = isHWRes || isTHRes;
+                    html += '<div class="table-wrapper"><table><thead><tr><th>Rank</th>'
+                        + (showSC ? '<th>Sitting Code</th>' : '')
+                        + '<th>Class</th><th>Participants</th><th>'+jury1Name+' Total</th><th>'+jury2Name+' Total</th><th>Average</th><th>Status</th></tr></thead><tbody>';
                     results.forEach((r, i) => {
                         const rank = i + 1;
                         const badge = rank === 1 ? '<span class="winner-badge">🏆 Winner</span>' : rank === 2 ? '<span class="runner-badge">🥈 Runner Up</span>' : '';
+                        // Extract sitting code from sanitizedCls key or sittingCode field
+                        let scCell = '';
+                        if (showSC) {
+                            // r.sittingCode is set in results array if available
+                            const sc = r.sittingCode ? scPrefix + '-' + r.sittingCode : '—';
+                            scCell = '<td><span style="background:' + (isHWRes?'#1a237e':'#e65100') + ';color:white;font-weight:900;padding:3px 10px;border-radius:6px;font-size:0.9em;letter-spacing:2px">' + sc + '</span></td>';
+                        }
                         html += '<tr class="rank-'+(rank <= 3 ? rank : '')+'">';
                         html += '<td><strong>'+rank+'</strong></td>';
+                        html += scCell;
                         html += '<td><strong>'+r.class+'</strong> '+badge+'</td>';
+                        html += '<td style="font-size:0.82em;color:#555">'+(r.names&&r.names.length?r.names.join('<br>'):'—')+'</td>';
                         html += '<td>'+r.jury1Total.toFixed(1)+(r.jury1Completed ? ' ✓' : '')+'</td>';
                         html += '<td>'+r.jury2Total.toFixed(1)+(r.jury2Completed ? ' ✓' : '')+'</td>';
                         html += '<td><strong>'+r.average.toFixed(1)+'</strong></td>';
@@ -24172,7 +24299,8 @@
                     if (rank === 2) html += ' <span class="runner-badge">🥈 Runner Up</span>';
                     html += '</h3>';
                     const scoreLabel = isVlog && r.finalPct !== null ? r.finalPct+'%' : r.finalScore.toFixed(1);
-                    html += '<p style="color:#666;margin-top:10px">Final Score: <strong>'+scoreLabel+'</strong></p>';
+                    if (r.names && r.names.length) html += '<p style="color:#555;font-size:0.88em;margin-top:6px">👥 '+r.names.join(', ')+'</p>';
+                    html += '<p style="color:#666;margin-top:6px">Final Score: <strong>'+scoreLabel+'</strong></p>';
                     html += '</div>';
                 });
             }
@@ -24731,7 +24859,7 @@
                     const val = markVal !== undefined && markVal !== null && markVal !== '' ? markVal : '';
                     return '<div style="font-size:11px;color:' + color + ';margin-bottom:2px">'
                         + 'J' + juryNum + ': <input type="number" value="' + val + '" min="0" max="10" step="0.5"'
-                        + ' onchange="adminEditMark(\'' + eventName + '\',' + juryNum + ',\'' + rowKey + '\',' + '%%IDX%%' + ',this.value)"'
+                        + ' oninput="adminEditMark(\'' + eventName + '\',' + juryNum + ',\'' + rowKey + '\',' + '%%IDX%%' + ',this.value)" onchange="adminEditMark(\'' + eventName + '\',' + juryNum + ',\'' + rowKey + '\',' + '%%IDX%%' + ',this.value)"'
                         + ' style="width:45px;padding:2px 4px;border:1.5px solid ' + borderColor + ';border-radius:4px;font-size:11px;text-align:center">'
                         + '</div>';
                 }
@@ -24874,10 +25002,10 @@
                                     const v2 = j2marks[i] !== undefined ? j2marks[i] : '';
                                     html += '<td style="padding:5px 4px;text-align:center;vertical-align:middle">'
                                         + '<div style="font-size:11px;color:#1565c0;margin-bottom:2px">J1: <input type="number" value="' + v1 + '" min="0" max="10" step="0.5"'
-                                        + ' onchange="adminEditMark(\'' + event + '\',1,\'' + rowKey + '\',' + i + ',this.value)"'
+                                        + ' oninput="adminEditMark(\'' + event + '\',1,\'' + rowKey + '\',' + i + ',this.value)" onchange="adminEditMark(\'' + event + '\',1,\'' + rowKey + '\',' + i + ',this.value)"'
                                         + ' style="width:44px;padding:2px 3px;border:1.5px solid #90caf9;border-radius:4px;font-size:11px;text-align:center"></div>'
                                         + '<div style="font-size:11px;color:#880e4f">J2: <input type="number" value="' + v2 + '" min="0" max="10" step="0.5"'
-                                        + ' onchange="adminEditMark(\'' + event + '\',2,\'' + rowKey + '\',' + i + ',this.value)"'
+                                        + ' oninput="adminEditMark(\'' + event + '\',2,\'' + rowKey + '\',' + i + ',this.value)" onchange="adminEditMark(\'' + event + '\',2,\'' + rowKey + '\',' + i + ',this.value)"'
                                         + ' style="width:44px;padding:2px 3px;border:1.5px solid #f48fb1;border-radius:4px;font-size:11px;text-align:center"></div>'
                                         + '</td>';
                                 });
@@ -24894,6 +25022,11 @@
                         });
 
                         html += '</tbody></table></div>';
+                        // Save All button for individual events — manual trigger for cases where onchange doesn't fire (mobile)
+                        html += '<div style="text-align:right;margin-top:10px">';
+                        html += '<button onclick="adminSaveAllMarks()" style="background:linear-gradient(135deg,#1b5e20,#43a047);color:white;border:none;border-radius:8px;padding:8px 20px;font-size:0.85em;font-weight:700;cursor:pointer">💾 Save All Marks</button>';
+                        html += '<span id="adminSaveAllMsg" style="margin-left:10px;font-size:0.82em;color:#1b5e20;font-weight:700;display:none"></span>';
+                        html += '</div>';
 
                     // ════════════════════════════════════════════════════════════════
                     // MULTI-TEAM EVENT (Vlog, Best out of Waste)
@@ -25020,10 +25153,10 @@
                                     const v2 = j2marks[i] !== undefined ? j2marks[i] : '';
                                     html += '<td style="padding:5px 4px;text-align:center;vertical-align:middle">'
                                         + '<div style="font-size:11px;color:#1565c0;margin-bottom:2px">J1: <input type="number" value="' + v1 + '" min="0" max="10" step="0.5"'
-                                        + ' onchange="adminEditMark(\'' + event + '\',1,\'' + rowKey + '\',' + i + ',this.value)"'
+                                        + ' oninput="adminEditMark(\'' + event + '\',1,\'' + rowKey + '\',' + i + ',this.value)" onchange="adminEditMark(\'' + event + '\',1,\'' + rowKey + '\',' + i + ',this.value)"'
                                         + ' style="width:44px;padding:2px 3px;border:1.5px solid #90caf9;border-radius:4px;font-size:11px;text-align:center"></div>'
                                         + '<div style="font-size:11px;color:#880e4f">J2: <input type="number" value="' + v2 + '" min="0" max="10" step="0.5"'
-                                        + ' onchange="adminEditMark(\'' + event + '\',2,\'' + rowKey + '\',' + i + ',this.value)"'
+                                        + ' oninput="adminEditMark(\'' + event + '\',2,\'' + rowKey + '\',' + i + ',this.value)" onchange="adminEditMark(\'' + event + '\',2,\'' + rowKey + '\',' + i + ',this.value)"'
                                         + ' style="width:44px;padding:2px 3px;border:1.5px solid #f48fb1;border-radius:4px;font-size:11px;text-align:center"></div>'
                                         + '</td>';
                                 });
@@ -25044,6 +25177,10 @@
                     // ════════════════════════════════════════════════════════════════
                     // CLASS-BASED EVENT (Nukkad Natak, YouTube Ad, Mime, Group Dance…)
                     // ════════════════════════════════════════════════════════════════
+                        html += '<div style="display:flex;align-items:center;justify-content:flex-end;gap:10px;margin-top:10px;padding:8px 0">';
+                        html += '<span id="adminSaveAllMsg" style="font-size:0.82em;font-weight:700;display:none"></span>';
+                        html += '<button onclick="adminSaveAllMarks()" style="background:linear-gradient(135deg,#1b5e20,#43a047);color:white;border:none;border-radius:8px;padding:8px 22px;font-size:0.88em;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(27,94,32,0.3)">💾 Save All Marks</button>';
+                        html += '</div>';
                     } else {
                         const isNukkad      = event === 'Nukkad Natak';
                         const isYTAd        = event === 'YouTube Advertisement';
@@ -25157,10 +25294,10 @@
                                 const v2 = j2marks[i] !== undefined ? j2marks[i] : '';
                                 html += '<td style="padding:5px 4px;text-align:center;vertical-align:middle">'
                                     + '<div style="font-size:11px;color:#1565c0;margin-bottom:2px">J1: <input type="number" value="' + v1 + '" min="0" max="10" step="0.5"'
-                                    + ' onchange="adminEditMark(\'' + event + '\',1,\'' + clsKey + '\',' + i + ',this.value)"'
+                                    + ' oninput="adminEditMark(\'' + event + '\',1,\'' + clsKey + '\',' + i + ',this.value)" onchange="adminEditMark(\'' + event + '\',1,\'' + clsKey + '\',' + i + ',this.value)"'
                                     + ' style="width:44px;padding:2px 3px;border:1.5px solid #90caf9;border-radius:4px;font-size:11px;text-align:center"></div>'
                                     + '<div style="font-size:11px;color:#880e4f">J2: <input type="number" value="' + v2 + '" min="0" max="10" step="0.5"'
-                                    + ' onchange="adminEditMark(\'' + event + '\',2,\'' + clsKey + '\',' + i + ',this.value)"'
+                                    + ' oninput="adminEditMark(\'' + event + '\',2,\'' + clsKey + '\',' + i + ',this.value)" onchange="adminEditMark(\'' + event + '\',2,\'' + clsKey + '\',' + i + ',this.value)"'
                                     + ' style="width:44px;padding:2px 3px;border:1.5px solid #f48fb1;border-radius:4px;font-size:11px;text-align:center"></div>'
                                     + '</td>';
                             });
@@ -25175,9 +25312,19 @@
                         });
 
                         html += '</tbody></table></div>';
+                        html += '</tbody></table></div>';
+                        html += '<div style="display:flex;align-items:center;justify-content:flex-end;gap:10px;margin-top:10px;padding:8px 0">';
+                        html += '<span id="adminSaveAllMsg" style="font-size:0.82em;font-weight:700;display:none"></span>';
+                        html += '<button onclick="adminSaveAllMarks()" style="background:linear-gradient(135deg,#1b5e20,#43a047);color:white;border:none;border-radius:8px;padding:8px 22px;font-size:0.88em;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(27,94,32,0.3)">💾 Save All Marks</button>';
+                        html += '</div>';
                     }
 
-                    container.innerHTML = html;
+                    // Skip re-render if SA is actively editing a mark input
+                    const activeEl = document.activeElement;
+                    const isEditingMark = activeEl && container.contains(activeEl) && activeEl.tagName === 'INPUT' && activeEl.type === 'number';
+                    if (!isEditingMark) {
+                        container.innerHTML = html;
+                    }
                 }
 
                 // -- Load auxiliary data (Nukkad bonus, YT Ad social, Vlog social) -
@@ -25239,6 +25386,45 @@
             try {
                 await db.ref(`juryMarks/\${event}/jury\${juryNum}/\${safeKey}/marks/\${critIndex}`).set(parseFloat(value) || 0);
             } catch(e) { alert('Save error: ' + e.message); }
+        }
+
+        // Debounced version — fires 600ms after user stops typing (for oninput on mobile)
+        const _adminEditDebounceMap = {};
+        function adminEditMark(event, juryNum, safeKey, critIndex, value) {
+            const key = event + '_' + juryNum + '_' + safeKey + '_' + critIndex;
+            clearTimeout(_adminEditDebounceMap[key]);
+            _adminEditDebounceMap[key] = setTimeout(() => {
+                adminEditMark(event, juryNum, safeKey, critIndex, value);
+            }, 600);
+        }
+
+        async function adminSaveAllMarks() {
+            // Reads ALL J1/J2 inputs currently visible in the SA live monitor and saves them all at once
+            const msgEl = document.getElementById('adminSaveAllMsg');
+            const inputs = document.querySelectorAll('#liveJuryMonitorContainer input[type="number"][onchange*="adminEditMark"]');
+            if (!inputs.length) {
+                if (msgEl) { msgEl.style.display='inline'; msgEl.textContent='⚠️ No inputs found.'; }
+                return;
+            }
+            if (msgEl) { msgEl.style.display='inline'; msgEl.textContent='⏳ Saving…'; }
+            const updates = {};
+            inputs.forEach(inp => {
+                // Parse onchange attr to extract event, juryNum, safeKey, critIndex
+                const m = inp.getAttribute('onchange').match(/adminEditMark\('([^']+)',(\d+),'([^']+)',(\d+)/);
+                if (!m) return;
+                const [, evName, juryNum, safeKey, critIndex] = m;
+                const path = `juryMarks/${evName}/jury${juryNum}/${safeKey}/marks/${critIndex}`;
+                updates[path] = parseFloat(inp.value) || 0;
+            });
+            try {
+                await db.ref().update(updates);
+                if (msgEl) {
+                    msgEl.style.display='inline'; msgEl.textContent='✅ All marks saved!';
+                    setTimeout(() => { msgEl.style.display='none'; }, 3000);
+                }
+            } catch(e) {
+                if (msgEl) { msgEl.style.display='inline'; msgEl.style.color='#c62828'; msgEl.textContent='❌ Error: ' + e.message; }
+            }
         }
 
         // ============================================================
@@ -31179,10 +31365,11 @@ Davan Institute Team`;
                 for (const [evName, setup] of Object.entries(setupSnap.val())) {
                     if (!setup.resultsPublished) continue;
                     const mSnap = await getDb().ref('juryMarks/' + evName).once('value');
-                    if (!mSnap.exists()) continue;
 
-                    const isIndividual  = (setup.eventType === 'individual');
-                    const isMultiteam   = (setup.eventType === 'multiteam');
+                    // Always honour live events config — overrides stale saved eventType in Firebase
+                    const _lbEvCfg = (window._youthfestEvents && window._youthfestEvents[evName]) ? window._youthfestEvents[evName] : {};
+                    const isIndividual  = _lbEvCfg.individual === true || setup.eventType === 'individual';
+                    const isMultiteam   = (_lbEvCfg.multiTeam === true && !_lbEvCfg.individual) || (!_lbEvCfg.individual && setup.eventType === 'multiteam');
                     const isVlogEvent   = (evName === 'Vlog');
                     const j1 = mSnap.val().jury1 || {}, j2 = mSnap.val().jury2 || {};
                     const allK = new Set([...Object.keys(j1), ...Object.keys(j2)]);
@@ -31230,8 +31417,11 @@ Davan Institute Team`;
                         allK.forEach(sk => {
                             const d1 = j1[sk], d2 = j2[sk];
                             let cls = (d1 && d1.originalClassName) || (d2 && d2.originalClassName) || '';
-                            if (!cls) {
-                                const match = sk.match(/^(.+?)__[pt]\d+$/);
+                            // If originalClassName is itself a rowKey (old saved data before fix),
+                            // or is empty — extract real class from the sk pattern
+                            const rowKeyPattern = /^(.+?)__[pt]\d+$/;
+                            if (!cls || rowKeyPattern.test(cls)) {
+                                const match = sk.match(rowKeyPattern);
                                 if (match) {
                                     const sanitisedPrefix = match[1];
                                     cls = LB_CLASSES.find(c => c.replace(/[.\[\]#$\/\s]/g,'_') === sanitisedPrefix) || sanitisedPrefix;
@@ -31264,7 +31454,11 @@ Davan Institute Team`;
                         const evRes = [];
                         allK.forEach(sk => {
                             const d1=j1[sk], d2=j2[sk];
-                            const cls=(d1&&d1.originalClassName)||(d2&&d2.originalClassName)||sk;
+                            let cls=(d1&&d1.originalClassName)||(d2&&d2.originalClassName)||'';
+                            // Fallback: reverse-lookup safeKey against LB_CLASSES
+                            if (!cls || !LB_CLASSES.includes(cls)) {
+                                cls = LB_CLASSES.find(c => c.replace(/[.\[\]#$\/\s]/g,'_') === sk) || cls || sk;
+                            }
                             let t1=0,t2=0;
                             if(d1&&d1.marks)(Array.isArray(d1.marks)?d1.marks:Object.values(d1.marks)).forEach(m=>t1+=(m||0));
                             if(d2&&d2.marks)(Array.isArray(d2.marks)?d2.marks:Object.values(d2.marks)).forEach(m=>t2+=(m||0));
@@ -31773,7 +31967,8 @@ Davan Institute Team`;
                     if (mSnap.exists()) {
                         const j1=mSnap.val().jury1||{}, j2=mSnap.val().jury2||{};
                         const allK=new Set([...Object.keys(j1),...Object.keys(j2)]);
-                        const isIndividualOrMulti = (setup.eventType === 'individual' || setup.eventType === 'multiteam');
+                        const _saEvCfg = (window._youthfestEvents && window._youthfestEvents[evName]) ? window._youthfestEvents[evName] : {};
+                        const isIndividualOrMulti = _saEvCfg.individual === true || _saEvCfg.multiTeam === true || setup.eventType === 'individual' || setup.eventType === 'multiteam';
                         const isVlogEv = (evName === 'Vlog');
 
                         // For Vlog: build rowKey→socialScore map
@@ -31823,7 +32018,8 @@ Davan Institute Team`;
                             const evR=[];
                             allK.forEach(sk=>{
                                 const d1=j1[sk],d2=j2[sk];
-                                const cls=(d1&&d1.originalClassName)||(d2&&d2.originalClassName)||sk;
+                                let cls=(d1&&d1.originalClassName)||(d2&&d2.originalClassName)||'';
+                                if (!cls || !LB_CLASSES.includes(cls)) cls=LB_CLASSES.find(c=>c.replace(/[.\[\]#$\/\s]/g,'_')===sk)||cls||sk;
                                 let t1=0,t2=0;
                                 if(d1&&d1.marks)(Array.isArray(d1.marks)?d1.marks:Object.values(d1.marks)).forEach(m=>t1+=(m||0));
                                 if(d2&&d2.marks)(Array.isArray(d2.marks)?d2.marks:Object.values(d2.marks)).forEach(m=>t2+=(m||0));
@@ -31978,7 +32174,8 @@ Davan Institute Team`;
                     if (!mSnap.exists()) continue;
                     const j1=mSnap.val().jury1||{}, j2=mSnap.val().jury2||{};
                     const allK=new Set([...Object.keys(j1),...Object.keys(j2)]);
-                    const isIndividualOrMulti = (setup.eventType === 'individual' || setup.eventType === 'multiteam');
+                    const _saEvCfg2 = (window._youthfestEvents && window._youthfestEvents[ev]) ? window._youthfestEvents[ev] : {};
+                    const isIndividualOrMulti = _saEvCfg2.individual === true || _saEvCfg2.multiTeam === true || setup.eventType === 'individual' || setup.eventType === 'multiteam';
                     const isVlogEv4 = (ev === 'Vlog');
 
                     // For Vlog: build rowKey→socialScore map
@@ -32006,8 +32203,9 @@ Davan Institute Team`;
                         allK.forEach(sk => {
                             const d1=j1[sk], d2=j2[sk];
                             let cls=(d1&&d1.originalClassName)||(d2&&d2.originalClassName)||'';
-                            if (!cls) {
-                                const m=sk.match(/^(.+?)__[pt]\d+$/);
+                            const rkP=/^(.+?)__[pt]\d+$/;
+                            if (!cls || rkP.test(cls)) {
+                                const m=sk.match(rkP);
                                 if(m) cls=LB_CLASSES.find(c=>c.replace(/[.\[\]#$\/\s]/g,'_')===m[1])||m[1];
                                 else cls=sk;
                             }
@@ -32027,7 +32225,8 @@ Davan Institute Team`;
                         const evR=[];
                         allK.forEach(sk => {
                             const d1=j1[sk], d2=j2[sk];
-                            const cls=(d1&&d1.originalClassName)||(d2&&d2.originalClassName)||sk;
+                            let cls=(d1&&d1.originalClassName)||(d2&&d2.originalClassName)||'';
+                            if (!cls || !LB_CLASSES.includes(cls)) cls=LB_CLASSES.find(c=>c.replace(/[.\[\]#$\/\s]/g,'_')===sk)||cls||sk;
                             let t1=0,t2=0;
                             if(d1&&d1.marks)(Array.isArray(d1.marks)?d1.marks:Object.values(d1.marks)).forEach(m=>t1+=(m||0));
                             if(d2&&d2.marks)(Array.isArray(d2.marks)?d2.marks:Object.values(d2.marks)).forEach(m=>t2+=(m||0));
@@ -43946,7 +44145,7 @@ export default {
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;" id="devTriggerVersion">
-                <strong>Version:</strong> 8.06 — Fix: Vlog inline screenshot Choose File + preview now works — rebuilt using DOM createElement (old inline IIFE string was silently breaking file picker)<strong>Last Updated:</strong> Mar 16, 2026, 01:35 PM IST</p>
+                <strong>Version:</strong> 8.26 — SA Live Monitor: Save All Marks button added to ALL event types (individual, multiteam, class-based); auto-save on input + manual save backup<strong>Last Updated:</strong> Mar 16, 2026, 01:35 PM IST</p>
             <!-- ============================================ -->
             
             <p style="color: #c44569; font-size: 0.85em; font-weight: 600; margin-bottom: 8px;">
@@ -46831,6 +47030,28 @@ function scAdminPing() {
      v8.04 | Mar 16, 2026, 01:35 PM IST | Leaderboard audit: HW/TH/YT Ad publish now mirrors to jurySetup.resultsPublished; Quiz Final Round winner +75/RU +40 auto-written to customCriteria on save; class strength console warning
      v8.05 | Mar 16, 2026, 01:35 PM IST | Fix: Vlog Screenshot 2 upload — case-insensitive class name match; detailed error message shows classes found in Firebase vs expected
      v8.06 | Mar 16, 2026, 01:35 PM IST | Fix: Vlog inline screenshot Choose File + preview rebuilt with DOM createElement — fragile inline IIFE string was silently breaking file picker on mobile
+     v8.07 | Mar 16, 2026, 01:35 PM IST | Nukkad All Classes table: LB Pts column added — shows YT Verified +10, Newspaper +10, Jury avg pts, total per class
+     v8.08 | Mar 16, 2026, 01:35 PM IST | Fix: Case Analysis Results=0 — originalClassName in saveMarks now stores real class name not rowKey; leaderboard engine rowKey fallback hardened; Case Analysis config added multiTeam:true
+     v8.09 | Mar 16, 2026, 01:35 PM IST | Leaderboard engine: all 3 branches hardened with LB_CLASSES reverse-lookup fallback — no class ever gets 0 pts due to missing/wrong originalClassName
+     v8.10 | Mar 16, 2026, 01:35 PM IST | Fix: Leaderboard engine checks live events.multiTeam/individual config FIRST — overrides stale Firebase eventType (root cause of Case Analysis Results=0)
+     v8.11 | Mar 16, 2026, 01:35 PM IST | Fix: "ev is not defined" JS error — SA preview engine used wrong variable name ev instead of evName
+     v8.12 | Mar 16, 2026, 01:35 PM IST | Fix: events const not accessible across script blocks — exposed as window._youthfestEvents; leaderboard multiTeam/individual detection now works correctly
+     v8.13 | Mar 16, 2026, 01:35 PM IST | Debug: console logs added to leaderboard engine — share [LB DEBUG] output to diagnose Results=0
+     v8.14 | Mar 16, 2026, 01:35 PM IST | Debug: logs moved before pub check + per-event resultsPublished logging
+     v8.15 | Mar 16, 2026, 01:35 PM IST | Debug: logs in SA preview Source 3 — shows event/juryMarks/isMultiteam/resP
+     v8.16 | Mar 16, 2026, 01:35 PM IST | Fix: Case Analysis juryMarks uses plain class safeKeys — removed multiTeam flag; class-based branch reverse-lookup resolves 3rd_B_Com → 3rd B.Com correctly
+     v8.17 | Mar 16, 2026, 01:35 PM IST | Removed all [LB DEBUG] console logs — clean for announcement
+     v8.18 | Mar 16, 2026, 01:35 PM IST | SA live monitor: Save All Marks button for individual events; HW/TH Results tab shows sitting code column
+     v8.19 | Mar 16, 2026, 01:35 PM IST | SA live monitor: all inputs now fire oninput (debounced 600ms) + onchange — auto-saves on every keystroke, reliable on mobile
+     v8.20 | Mar 16, 2026, 01:35 PM IST | Fix: SA live monitor auto-save — renderMonitor skips re-render when input has focus; oninput saves directly without debounce
+     v8.21 | Mar 16, 2026, 01:35 PM IST | Results tab: participant names shown for all events; namesMap fixed for individual/class/multiteam; HW/TH sitting code column
+     v8.22 | Mar 16, 2026, 01:35 PM IST | Quiz Final admin panel auto-loads on Jury Summary tab open; shortcut button in Leaderboard Admin → Go to Quiz Final Panel
+     v8.23 | Mar 16, 2026, 01:35 PM IST | Fix: SyntaxError invalid escape in template literal in loadQuizFinalAdminPanel — replaced with safe regex
+     v8.24 | Mar 16, 2026, 01:35 PM IST | Quiz Results tab: shows Final Round 5-round scores table with R1-R5 per class instead of J1/J2/Avg columns
+     v8.25 | Mar 16, 2026, 01:35 PM IST | Fix: Quiz Final admin panel _safeKey mismatch — save used /[.#$/[]\s]/ but lookup used /[^a-zA-Z0-9]/ causing all lookups to fail; unified + triple fallback
+     v8.26 | Mar 16, 2026, 01:35 PM IST | SA Live Monitor: 💾 Save All Marks button on all event types (was individual-only); auto-save on input remains default
+     v8.22 | Mar 16, 2026, 01:35 PM IST | Fix: SA Quiz Final Admin panel reads juryMarks/Quiz as fallback — shows scores regardless of which path Smitha used to save
+     v8.21 | Mar 16, 2026, 01:35 PM IST | Event Results: Participants column added — member names shown for all events in results table
      ═══════════════════════════════════════════════════════════════════ -->
 
 
