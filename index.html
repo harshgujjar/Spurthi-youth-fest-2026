@@ -5189,7 +5189,22 @@
                 </div>
                 <div id="siteSettingsMsg" style="margin-bottom:16px"></div>
 
-                <!-- ── ANNOUNCEMENT BANNER SECTION ── -->
+                <!-- ── ADMIN RESULTS ACCESS TOGGLE ── -->
+                <div style="background:white;border-radius:14px;padding:20px 24px;margin-bottom:20px;box-shadow:0 2px 10px rgba(0,0,0,0.08);border-top:4px solid #6a1b9a">
+                    <h3 style="color:#6a1b9a;margin:0 0 6px;font-size:1.1em">🔐 Admin Results Access</h3>
+                    <p style="color:#888;font-size:0.85em;margin:0 0 16px">Control whether regular admins can see the <strong>Results</strong> tab. When OFF, the tab is completely hidden from admins — only Super Admin can see it.</p>
+                    <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+                        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;background:#f3e5f5;padding:12px 20px;border-radius:12px;border:2px solid #ce93d8;font-weight:700;color:#4a148c;font-size:0.95em">
+                            <div style="position:relative;width:52px;height:28px;flex-shrink:0">
+                                <input type="checkbox" id="adminResultsAccessToggle" onchange="saveAdminResultsAccess()" style="opacity:0;width:0;height:0;position:absolute">
+                                <span id="adminResultsAccessSlider" style="position:absolute;inset:0;background:#ccc;border-radius:28px;transition:0.3s;cursor:pointer"></span>
+                                <span id="adminResultsAccessThumb" style="position:absolute;left:3px;top:3px;width:22px;height:22px;background:white;border-radius:50%;transition:0.3s;pointer-events:none"></span>
+                            </div>
+                            <span id="adminResultsAccessLabel" style="min-width:80px">OFF — Hidden</span>
+                        </label>
+                        <div id="adminResultsAccessStatus" style="font-size:0.85em;color:#888"></div>
+                    </div>
+                </div>
                 <div style="background:white;border-radius:14px;padding:22px 24px;margin-bottom:20px;box-shadow:0 2px 10px rgba(0,0,0,0.08);border-top:4px solid #e8722a">
                     <h3 style="color:#e8722a;margin:0 0 6px;font-size:1.1em">📢 Announcement Banner</h3>
                     <p style="color:#888;font-size:0.85em;margin:0 0 18px">This is the orange banner at the top of the public page. Edit and save to update it instantly for all visitors.</p>
@@ -15309,15 +15324,13 @@
             let onStageAtt     = {};  // { evtSafeKey: { clsKey: { status, markedAt } } }
             let juryAliasMap   = {};  // { evtSafeKey: { clsKey: aliasCode } }
             try {
-                const [enrollSnap, storySnap, attSnap, jurySnap] = await Promise.all([
+                const [enrollSnap, storySnap, jurySnap] = await Promise.all([
                     db.ref('youthfest-enrollments').once('value'),
                     db.ref('groupDance').once('value'),
-                    db.ref('onStageAttendance').once('value'),
                     db.ref('jurySetup').once('value')
                 ]);
                 if (enrollSnap.exists()) enrollSnap.forEach(ch => { allEnrollments.push(Object.assign({ id: ch.key }, ch.val())); });
                 danceStories = storySnap.val() || {};
-                onStageAtt   = attSnap.val()   || {};
                 // Build juryAliasMap from jurySetup classAliases
                 if (jurySnap.exists()) {
                     jurySnap.forEach(evtNode => {
@@ -15331,6 +15344,14 @@
             } catch(e) {
                 list.innerHTML = '<div style="color:#c62828;padding:16px">❌ Error loading enrollments: ' + e.message + '</div>';
                 return;
+            }
+            // onStageAttendance fetched separately — missing Firebase rule won't crash the panel
+            try {
+                const attSnap = await db.ref('onStageAttendance').once('value');
+                onStageAtt = attSnap.val() || {};
+            } catch(e) {
+                console.warn('onStageAttendance: permission denied — attendance data unavailable. Add rule to Firebase.', e.message);
+                onStageAtt = {};
             }
 
             const eventColors = {
@@ -22898,28 +22919,20 @@
         }
 
         function checkResultsPublished() {
-            // For super admin and super jury, always show Results tab
+            // Super admin always sees Results tab
             if (isSuperAdmin) {
                 const rt = document.getElementById('resultsTab');
                 if (rt) rt.style.display = 'block';
                 return;
             }
-            
-            // For regular admin, check if any event has published results
-            db.ref('jurySetup').once('value').then(snap => {
-                let hasPublished = false;
-                if (snap.exists()) {
-                    snap.forEach(eventSnap => {
-                        if (eventSnap.val().resultsPublished === true) {
-                            hasPublished = true;
-                        }
-                    });
-                }
-                
+            // Regular admin: only show Results tab if SA has explicitly granted access
+            db.ref('siteSettings/adminResultsAccess').once('value').then(snap => {
+                const granted = snap.val() === true;
                 const resultsTab = document.getElementById('resultsTab');
-                if (resultsTab) {
-                    resultsTab.style.display = hasPublished ? 'block' : 'none';
-                }
+                if (resultsTab) resultsTab.style.display = granted ? 'block' : 'none';
+            }).catch(() => {
+                const resultsTab = document.getElementById('resultsTab');
+                if (resultsTab) resultsTab.style.display = 'none';
             });
         }
         
@@ -36117,10 +36130,37 @@ Proceed?`)) return;
             // WhatsApp
             const waText = document.getElementById('ssWhatsappText');
             if (waText) waText.value = data.whatsappText || '🎓 Join our exciting Daily Quiz Competition! Answer 2 questions daily and win prizes. Register now and compete for glory!';
+            // Admin Results Access toggle
+            _applyAdminResultsAccessUI(data.adminResultsAccess === true);
             if (msg) msg.innerHTML = '<p style="color:#28a745;background:#d4edda;padding:10px 14px;border-radius:8px;font-weight:600">✅ Settings loaded successfully.</p>';
             setTimeout(() => { if(msg) msg.innerHTML = ''; }, 3000);
         } catch(e) {
             if (msg) msg.innerHTML = '<p style="color:#c62828;background:#fde8e8;padding:10px 14px;border-radius:8px">❌ Error loading settings: ' + e.message + '</p>';
+        }
+    }
+
+    function _applyAdminResultsAccessUI(isOn) {
+        const chk    = document.getElementById('adminResultsAccessToggle');
+        const slider = document.getElementById('adminResultsAccessSlider');
+        const thumb  = document.getElementById('adminResultsAccessThumb');
+        const label  = document.getElementById('adminResultsAccessLabel');
+        if (!chk) return;
+        chk.checked = isOn;
+        if (slider) slider.style.background = isOn ? '#6a1b9a' : '#ccc';
+        if (thumb)  thumb.style.left        = isOn ? '27px' : '3px';
+        if (label)  label.textContent        = isOn ? 'ON — Visible to Admin' : 'OFF — Hidden';
+    }
+
+    async function saveAdminResultsAccess() {
+        const isOn = document.getElementById('adminResultsAccessToggle')?.checked || false;
+        _applyAdminResultsAccessUI(isOn);
+        const statusEl = document.getElementById('adminResultsAccessStatus');
+        if (statusEl) statusEl.textContent = 'Saving…';
+        try {
+            await db.ref('siteSettings/adminResultsAccess').set(isOn);
+            if (statusEl) { statusEl.textContent = isOn ? '✅ Admins can now see Results tab' : '✅ Results tab hidden from admins'; setTimeout(() => { statusEl.textContent = ''; }, 3000); }
+        } catch(e) {
+            if (statusEl) statusEl.textContent = '❌ Error: ' + e.message;
         }
     }
 
@@ -45024,7 +45064,7 @@ export default {
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;" id="devTriggerVersion">
-                <strong>Version:</strong> 8.41 — Force-skip feedback: Ctrl+* on desktop closes popup instantly; triple-tap feedback header on mobile does the same<strong>Last Updated:</strong> Mar 17, 2026, 11:30 AM IST</p>
+                <strong>Version:</strong> 8.42 — Fix #1: onStageAttendance fetched separately so permission error no longer crashes incharge panel; Fix #2: Admin Results tab now gated by SA toggle in Site Settings (siteSettings/adminResultsAccess)<strong>Last Updated:</strong> Mar 17, 2026, 11:30 AM IST</p>
             <!-- ============================================ -->
             
             <p style="color: #c44569; font-size: 0.85em; font-weight: 600; margin-bottom: 8px;">
@@ -47947,6 +47987,7 @@ function scAdminPing() {
      v8.39 | Mar 17, 2026, 11:30 AM IST | Added 🏅 Best Performers tab in Daily Quiz: cumulative list of students with both answers correct, ranked by most days then fastest time; SA can declare winner & runner-up
      v8.40 | Mar 17, 2026, 11:30 AM IST | Event Results panel: added Daily Quiz (best performers + declared winner) and Scavenger Hunt (ranked list + declared winner) as sub-tabs
      v8.41 | Mar 17, 2026, 11:30 AM IST | Force-skip feedback: Ctrl+* on desktop closes popup instantly; triple-tap feedback header on mobile does the same
+     v8.42 | Mar 17, 2026, 11:30 AM IST | Fix #1: onStageAttendance fetched separately so permission error no longer crashes incharge panel; Fix #2: Admin Results tab now gated by SA toggle in Site Settings
      ═══════════════════════════════════════════════════════════════════ -->
 
 
