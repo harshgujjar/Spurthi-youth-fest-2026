@@ -7444,22 +7444,24 @@
 
                     <!-- Social Monitor Panel (only for Chandan G B) -->
                     <div id="chandanSocialPanel" style="display:none">
-                        <div style="background:linear-gradient(135deg,#e8f5e9,#f3e5f5);border-radius:14px;padding:18px;border:2px solid #a5d6a7;margin-bottom:16px">
-                            <h3 style="color:#1b5e20;margin:0 0 6px;font-size:1.05em">📊 Vlog Challenge — Social Score Monitor</h3>
-                            <p style="color:#555;font-size:0.82em;margin:0 0 10px">Enter daily Views, Likes, and Comments for each team from their Instagram Reel insight screenshots.<br>
-                            <strong>Active Period: 02-03-2026 to 07-03-2026</strong> &nbsp;|&nbsp; You can update multiple times — the latest entry is used.</p>
-                            <div id="chandanDateWarning" style="display:none;background:#fff3cd;border-radius:8px;padding:10px 14px;border-left:4px solid #ffc107;font-size:0.85em;color:#856404;margin-bottom:10px"></div>
+                        <div style="background:linear-gradient(135deg,#e8f5e9,#f3e5f5);border-radius:14px;padding:18px;border:2px solid #a5d6a7;margin-bottom:16px;display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:10px">
+                            <div style="flex:1">
+                                <h3 style="color:#1b5e20;margin:0 0 6px;font-size:1.05em">📊 Vlog Challenge — Social Score Monitor</h3>
+                                <p style="color:#555;font-size:0.82em;margin:0 0 10px">Enter daily Views, Likes, and Comments for each team from their Instagram Reel insight screenshots.<br>
+                                <strong>Active Period: 02-03-2026 to 07-03-2026</strong> &nbsp;|&nbsp; You can update multiple times — the latest entry is used.</p>
+                                <div id="chandanDateWarning" style="display:none;background:#fff3cd;border-radius:8px;padding:10px 14px;border-left:4px solid #ffc107;font-size:0.85em;color:#856404;margin-bottom:10px"></div>
+                            </div>
+                            <button onclick="fpToggle('chandanSocialPanel',this)" style="background:#e8f5e9;color:#1b5e20;border:2px solid #a5d6a7;border-radius:8px;padding:5px 14px;font-size:0.8em;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0">▼ Show</button>
                         </div>
-
-                        <!-- Team cards with screenshot + metric entry -->
-                        <div style="display:flex;justify-content:flex-end;gap:8px;margin-bottom:10px">
-                            <button onclick="showVlogWhatsAppSummary()" style="background:#25D366;color:white;border:none;border-radius:8px;padding:6px 14px;font-size:0.82em;font-weight:700;cursor:pointer">📋 WhatsApp Summary</button>
-                            <button class="btn btn-secondary" onclick="loadChandanPanel()" style="font-size:0.85em">🔄 Refresh Teams</button>
+                        <div id="fp_content_chandanSocialPanel" style="display:none">
+                            <div style="display:flex;justify-content:flex-end;gap:8px;margin-bottom:10px">
+                                <button onclick="showVlogWhatsAppSummary()" style="background:#25D366;color:white;border:none;border-radius:8px;padding:6px 14px;font-size:0.82em;font-weight:700;cursor:pointer">📋 WhatsApp Summary</button>
+                                <button class="btn btn-secondary" onclick="loadChandanPanel()" style="font-size:0.85em">🔄 Refresh Teams</button>
+                            </div>
+                            <div id="chandanTeamList" style="display:flex;flex-direction:column;gap:16px">
+                                <div style="text-align:center;color:#aaa;padding:30px">Loading Vlog submissions…</div>
+                            </div>
                         </div>
-                        <div id="chandanTeamList" style="display:flex;flex-direction:column;gap:16px">
-                            <div style="text-align:center;color:#aaa;padding:30px">Loading Vlog submissions…</div>
-                        </div>
-
                     </div>
 
                     <!-- ── Vlog Review & Approval Panel (Chandan G B only) ── -->
@@ -7470,52 +7472,54 @@
                                     <h3 style="color:#6a1b9a;margin:0 0 4px;font-size:1.05em">📹 Vlog Challenge — Review & Approval</h3>
                                     <p style="color:#555;font-size:0.82em;margin:0">All enrolled teams with submission status. Approve or reject each team's reel.</p>
                                 </div>
-                                <div style="display:flex;gap:8px;flex-wrap:wrap">
-                                    <button onclick="cvrRemoveDuplicates()" style="background:#ff6f00;color:white;border:none;border-radius:8px;padding:6px 14px;font-size:0.82em;font-weight:700;cursor:pointer">🧹 Remove Duplicates</button>
-                                    <button id="cvr_btn_enroll" onclick="cvrShowTab('enroll')" style="background:linear-gradient(135deg,#833ab4,#c44569);color:white;border:none;border-radius:8px;padding:6px 14px;font-size:0.82em;font-weight:700;cursor:pointer">📋 Teams & Approval</button>
-                                    <button id="cvr_btn_submit" onclick="cvrShowTab('submit')" style="background:white;color:#833ab4;border:2px solid #833ab4;border-radius:8px;padding:6px 14px;font-size:0.82em;font-weight:700;cursor:pointer">📤 Submissions Detail</button>
-                                    <button onclick="cvrRefresh()" style="background:#9c27b0;color:white;border:none;border-radius:8px;padding:6px 14px;font-size:0.82em;font-weight:700;cursor:pointer">🔄 Refresh</button>
+                                <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+                                    <button onclick="fpToggle('chandanVlogReviewPanel',this)" style="background:#f3e5f5;color:#6a1b9a;border:2px solid #ce93d8;border-radius:8px;padding:5px 14px;font-size:0.8em;font-weight:700;cursor:pointer;white-space:nowrap">▼ Show</button>
                                 </div>
                             </div>
                         </div>
-
-                        <!-- Summary strip ALWAYS visible at top — Point 2 fix -->
-                        <div id="cvr_summaryStrip" style="margin-bottom:16px;background:linear-gradient(135deg,#1a237e,#283593);border-radius:12px;padding:14px 18px">
-                            <div style="color:rgba(255,255,255,0.7);font-weight:800;font-size:0.75em;letter-spacing:1px;text-transform:uppercase;margin-bottom:10px">📹 Vlog Challenge — Overall Summary</div>
-                            <div id="cvr_statsRow" style="display:flex;gap:10px;flex-wrap:wrap">
-                                <div style="color:rgba(255,255,255,0.5);font-size:0.82em">Loading…</div>
+                        <div id="fp_content_chandanVlogReviewPanel" style="display:none">
+                            <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;align-items:center;justify-content:flex-end">
+                                <button onclick="cvrRemoveDuplicates()" style="background:#ff6f00;color:white;border:none;border-radius:8px;padding:6px 14px;font-size:0.82em;font-weight:700;cursor:pointer">🧹 Remove Duplicates</button>
+                                <button id="cvr_btn_enroll" onclick="cvrShowTab('enroll')" style="background:linear-gradient(135deg,#833ab4,#c44569);color:white;border:none;border-radius:8px;padding:6px 14px;font-size:0.82em;font-weight:700;cursor:pointer">📋 Teams & Approval</button>
+                                <button id="cvr_btn_submit" onclick="cvrShowTab('submit')" style="background:white;color:#833ab4;border:2px solid #833ab4;border-radius:8px;padding:6px 14px;font-size:0.82em;font-weight:700;cursor:pointer">📤 Submissions Detail</button>
+                                <button onclick="cvrRefresh()" style="background:#9c27b0;color:white;border:none;border-radius:8px;padding:6px 14px;font-size:0.82em;font-weight:700;cursor:pointer">🔄 Refresh</button>
                             </div>
-                        </div>
-
-                        <!-- Enrollment + Approval sub-panel (default) -->
-                        <div id="cvr_enrollPanel">
-                            <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;align-items:center">
-                                <select id="cvr_classFilter" onchange="cvrLoadEnrollments()" style="padding:7px 12px;border:2px solid #ce93d8;border-radius:8px;font-size:0.85em;outline:none">
-                                    <option value="">All Classes</option>
-                                </select>
-                                <span id="cvr_enrollCount" style="font-size:0.82em;color:#666;font-weight:600"></span>
+                            <!-- Summary strip ALWAYS visible at top — Point 2 fix -->
+                            <div id="cvr_summaryStrip" style="margin-bottom:16px;background:linear-gradient(135deg,#1a237e,#283593);border-radius:12px;padding:14px 18px">
+                                <div style="color:rgba(255,255,255,0.7);font-weight:800;font-size:0.75em;letter-spacing:1px;text-transform:uppercase;margin-bottom:10px">📹 Vlog Challenge — Overall Summary</div>
+                                <div id="cvr_statsRow" style="display:flex;gap:10px;flex-wrap:wrap">
+                                    <div style="color:rgba(255,255,255,0.5);font-size:0.82em">Loading…</div>
+                                </div>
                             </div>
-                            <div id="cvr_enrollContainer">
-                                <div style="text-align:center;color:#aaa;padding:30px">Loading teams…</div>
+                            <!-- Enrollment + Approval sub-panel (default) -->
+                            <div id="cvr_enrollPanel">
+                                <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;align-items:center">
+                                    <select id="cvr_classFilter" onchange="cvrLoadEnrollments()" style="padding:7px 12px;border:2px solid #ce93d8;border-radius:8px;font-size:0.85em;outline:none">
+                                        <option value="">All Classes</option>
+                                    </select>
+                                    <span id="cvr_enrollCount" style="font-size:0.82em;color:#666;font-weight:600"></span>
+                                </div>
+                                <div id="cvr_enrollContainer">
+                                    <div style="text-align:center;color:#aaa;padding:30px">Loading teams…</div>
+                                </div>
                             </div>
-                        </div>
-
-                        <!-- Submission detail sub-panel -->
-                        <div id="cvr_submitPanel" style="display:none">
-                            <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;align-items:center">
-                                <select id="cvr_subClassFilter" onchange="cvrLoadSubmissions()" style="padding:7px 12px;border:2px solid #ce93d8;border-radius:8px;font-size:0.85em;outline:none">
-                                    <option value="">All Classes</option>
-                                </select>
-                                <select id="cvr_subStatusFilter" onchange="cvrLoadSubmissions()" style="padding:7px 12px;border:2px solid #ce93d8;border-radius:8px;font-size:0.85em;outline:none">
-                                    <option value="">All Statuses</option>
-                                    <option value="Pending Review">⏳ Pending</option>
-                                    <option value="Approved">✅ Approved</option>
-                                    <option value="Rejected">❌ Rejected</option>
-                                </select>
-                                <span id="cvr_submitCount" style="font-size:0.82em;color:#666;font-weight:600"></span>
-                            </div>
-                            <div id="cvr_submitContainer">
-                                <div style="text-align:center;color:#aaa;padding:30px">Loading submissions…</div>
+                            <!-- Submission detail sub-panel -->
+                            <div id="cvr_submitPanel" style="display:none">
+                                <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;align-items:center">
+                                    <select id="cvr_subClassFilter" onchange="cvrLoadSubmissions()" style="padding:7px 12px;border:2px solid #ce93d8;border-radius:8px;font-size:0.85em;outline:none">
+                                        <option value="">All Classes</option>
+                                    </select>
+                                    <select id="cvr_subStatusFilter" onchange="cvrLoadSubmissions()" style="padding:7px 12px;border:2px solid #ce93d8;border-radius:8px;font-size:0.85em;outline:none">
+                                        <option value="">All Statuses</option>
+                                        <option value="Pending Review">⏳ Pending</option>
+                                        <option value="Approved">✅ Approved</option>
+                                        <option value="Rejected">❌ Rejected</option>
+                                    </select>
+                                    <span id="cvr_submitCount" style="font-size:0.82em;color:#666;font-weight:600"></span>
+                                </div>
+                                <div id="cvr_submitContainer">
+                                    <div style="text-align:center;color:#aaa;padding:30px">Loading submissions…</div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -7530,60 +7534,55 @@
                                 </div>
                                 <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
                                     <span id="podAutoRefreshBadge" style="background:#e3f2fd;color:#1565c0;border-radius:10px;padding:3px 10px;font-size:0.75em;font-weight:700">🔄 Auto-refresh: ON</span>
-                                    <button onclick="showPodcastWhatsAppSummary()" style="background:#25D366;color:white;border:none;border-radius:8px;padding:6px 14px;font-size:0.82em;font-weight:700;cursor:pointer">📋 WhatsApp Summary</button>
-                                    <button onclick="loadChandanPodcastPanel()" style="background:#1b5e20;color:white;border:none;border-radius:8px;padding:6px 14px;font-size:0.82em;font-weight:700;cursor:pointer">🔄 Refresh Now</button>
+                                    <button onclick="fpToggle('chandanPodcastPanel',this)" style="background:#e8f5e9;color:#1b5e20;border:2px solid #a5d6a7;border-radius:8px;padding:5px 14px;font-size:0.8em;font-weight:700;cursor:pointer;white-space:nowrap">▼ Show</button>
                                 </div>
                             </div>
                         </div>
-                        <div id="chandanPodcastList" style="display:flex;flex-direction:column;gap:12px">
-                            <div style="text-align:center;color:#aaa;padding:30px">Loading podcast enrollments…</div>
+                        <div id="fp_content_chandanPodcastPanel" style="display:none">
+                            <div style="display:flex;justify-content:flex-end;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+                                <button onclick="showPodcastWhatsAppSummary()" style="background:#25D366;color:white;border:none;border-radius:8px;padding:6px 14px;font-size:0.82em;font-weight:700;cursor:pointer">📋 WhatsApp Summary</button>
+                                <button onclick="loadChandanPodcastPanel()" style="background:#1b5e20;color:white;border:none;border-radius:8px;padding:6px 14px;font-size:0.82em;font-weight:700;cursor:pointer">🔄 Refresh Now</button>
+                            </div>
+                            <div id="chandanPodcastList" style="display:flex;flex-direction:column;gap:12px">
+                                <div style="text-align:center;color:#aaa;padding:30px">Loading podcast enrollments…</div>
+                            </div>
                         </div>
                     </div>
 
                     <!-- ── Best Out of Waste — Entry Verification Panel (Shankar B C) ── -->
                     <div id="shankarBowPanel" style="display:none;margin-top:24px">
-                        <div style="background:linear-gradient(135deg,#fff8e1,#e8f5e9);border-radius:14px;padding:18px;border:2px solid #ffe082;margin-bottom:16px">
-                            <h3 style="color:#e65100;margin:0 0 6px;font-size:1.05em">♻️ Best Out of Waste — Entry Verification</h3>
-                            <p style="color:#555;font-size:0.82em;margin:0 0 6px">View all enrolled participants across all classes. Mark who actually showed up on event day as <strong>Present</strong> or <strong>Absent</strong>. Only <strong>Present</strong> entries will be forwarded to the Jury for scoring.</p>
-                            <div style="background:#fff3cd;border-radius:8px;padding:8px 12px;font-size:0.8em;color:#856404;margin-top:8px">
-                                ⚠️ Once marked Present, the entry appears in the Jury sheet automatically. Absent entries are excluded.
+                        <div style="background:linear-gradient(135deg,#fff8e1,#e8f5e9);border-radius:14px;padding:18px;border:2px solid #ffe082;margin-bottom:16px;display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:10px">
+                            <div style="flex:1">
+                                <h3 style="color:#e65100;margin:0 0 6px;font-size:1.05em">♻️ Best Out of Waste — Entry Verification</h3>
+                                <p style="color:#555;font-size:0.82em;margin:0 0 6px">View all enrolled participants across all classes. Mark who actually showed up on event day as <strong>Present</strong> or <strong>Absent</strong>. Only <strong>Present</strong> entries will be forwarded to the Jury for scoring.</p>
+                                <div style="background:#fff3cd;border-radius:8px;padding:8px 12px;font-size:0.8em;color:#856404;margin-top:8px">
+                                    ⚠️ Once marked Present, the entry appears in the Jury sheet automatically. Absent entries are excluded.
+                                </div>
                             </div>
+                            <button onclick="fpToggle('shankarBowPanel',this)" style="background:#fff8e1;color:#e65100;border:2px solid #ffe082;border-radius:8px;padding:5px 14px;font-size:0.8em;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0">▼ Show</button>
                         </div>
-
-                        <!-- Filter bar -->
-                        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px">
-                            <select id="bowClassFilter" onchange="loadShankarBowPanel()" style="padding:8px 12px;border:2px solid #ffe082;border-radius:8px;font-size:0.88em;outline:none;background:white;color:#333;font-weight:600">
-                                <option value="">All Classes</option>
-                            </select>
-                            <select id="bowStatusFilter" onchange="loadShankarBowPanel()" style="padding:8px 12px;border:2px solid #ffe082;border-radius:8px;font-size:0.88em;outline:none;background:white;color:#333;font-weight:600">
-                                <option value="">All Statuses</option>
-                                <option value="present">✅ Present</option>
-                                <option value="absent">❌ Absent</option>
-                                <option value="pending">⏳ Not Marked</option>
-                            </select>
-                            <button class="btn btn-secondary" onclick="loadShankarBowPanel()" style="font-size:0.85em">🔄 Refresh</button>
-                            <span id="bowSummaryBadge" style="background:#e8f5e9;color:#1b5e20;padding:4px 14px;border-radius:20px;font-size:0.82em;font-weight:700;margin-left:auto"></span>
-                        </div>
-
-                        <!-- Stats row -->
-                        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px" id="bowStatsRow">
-                            <div style="background:white;border-radius:10px;padding:12px;text-align:center;border:2px solid #e0e0e0">
-                                <div style="font-size:1.6em;font-weight:900;color:#1565c0" id="bowStatTotal">—</div>
-                                <div style="font-size:0.78em;color:#666;font-weight:600">Total Enrolled</div>
+                        <div id="fp_content_shankarBowPanel" style="display:none">
+                            <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px">
+                                <select id="bowClassFilter" onchange="loadShankarBowPanel()" style="padding:8px 12px;border:2px solid #ffe082;border-radius:8px;font-size:0.88em;outline:none;background:white;color:#333;font-weight:600">
+                                    <option value="">All Classes</option>
+                                </select>
+                                <select id="bowStatusFilter" onchange="loadShankarBowPanel()" style="padding:8px 12px;border:2px solid #ffe082;border-radius:8px;font-size:0.88em;outline:none;background:white;color:#333;font-weight:600">
+                                    <option value="">All Statuses</option>
+                                    <option value="present">✅ Present</option>
+                                    <option value="absent">❌ Absent</option>
+                                    <option value="pending">⏳ Not Marked</option>
+                                </select>
+                                <button class="btn btn-secondary" onclick="loadShankarBowPanel()" style="font-size:0.85em">🔄 Refresh</button>
+                                <span id="bowSummaryBadge" style="background:#e8f5e9;color:#1b5e20;padding:4px 14px;border-radius:20px;font-size:0.82em;font-weight:700;margin-left:auto"></span>
                             </div>
-                            <div style="background:white;border-radius:10px;padding:12px;text-align:center;border:2px solid #a5d6a7">
-                                <div style="font-size:1.6em;font-weight:900;color:#2e7d32" id="bowStatPresent">—</div>
-                                <div style="font-size:0.78em;color:#666;font-weight:600">✅ Present</div>
+                            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px" id="bowStatsRow">
+                                <div style="background:white;border-radius:10px;padding:12px;text-align:center;border:2px solid #e0e0e0"><div style="font-size:1.6em;font-weight:900;color:#1565c0" id="bowStatTotal">—</div><div style="font-size:0.78em;color:#666;font-weight:600">Total Enrolled</div></div>
+                                <div style="background:white;border-radius:10px;padding:12px;text-align:center;border:2px solid #a5d6a7"><div style="font-size:1.6em;font-weight:900;color:#2e7d32" id="bowStatPresent">—</div><div style="font-size:0.78em;color:#666;font-weight:600">✅ Present</div></div>
+                                <div style="background:white;border-radius:10px;padding:12px;text-align:center;border:2px solid #ef9a9a"><div style="font-size:1.6em;font-weight:900;color:#c62828" id="bowStatAbsent">—</div><div style="font-size:0.78em;color:#666;font-weight:600">❌ Absent</div></div>
                             </div>
-                            <div style="background:white;border-radius:10px;padding:12px;text-align:center;border:2px solid #ef9a9a">
-                                <div style="font-size:1.6em;font-weight:900;color:#c62828" id="bowStatAbsent">—</div>
-                                <div style="font-size:0.78em;color:#666;font-weight:600">❌ Absent</div>
+                            <div id="shankarBowList" style="display:flex;flex-direction:column;gap:10px">
+                                <div style="text-align:center;color:#aaa;padding:30px">Loading entries…</div>
                             </div>
-                        </div>
-
-                        <!-- Entries list -->
-                        <div id="shankarBowList" style="display:flex;flex-direction:column;gap:10px">
-                            <div style="text-align:center;color:#aaa;padding:30px">Loading entries…</div>
                         </div>
                     </div>
 
@@ -7591,134 +7590,148 @@
                     <div id="roopaSmitraYtAdPanel" style="display:none;margin-top:24px">
                         <div style="background:linear-gradient(135deg,#fce4ec,#fff3e0);border-radius:14px;padding:18px;border:2px solid #ffcdd2;margin-bottom:16px">
                             <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:10px">
-                                <div>
+                                <div style="flex:1">
                                     <h3 style="color:#c62828;margin:0 0 6px;font-size:1.05em">📺 YouTube Advertisement — Social Score Monitor</h3>
                                     <p style="color:#555;font-size:0.82em;margin:0 0 8px">Check each class's YouTube video and enter the <strong>Views, Likes, and Original Comments</strong> (verify manually — exclude spam/bots). The score is auto-calculated based on the formula set by Super Admin.</p>
                                     <div style="background:#fff3cd;border-radius:8px;padding:8px 12px;font-size:0.8em;color:#856404">
                                         ⚠️ <strong>Important:</strong> Only count <em>genuine original comments</em>. Ignore spam, bot comments, and repeated phrases. Quality over quantity.
                                     </div>
                                 </div>
-                                <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;flex-shrink:0">
-                                    <button onclick="showYtAdWhatsAppSummary()" style="background:#25D366;color:white;border:none;border-radius:8px;padding:6px 14px;font-size:0.82em;font-weight:700;cursor:pointer">📋 WhatsApp Summary</button>
-                                    <button class="btn btn-secondary" onclick="loadYtAdMonitorPanel()" style="font-size:0.85em;white-space:nowrap">🔄 Refresh All Classes</button>
-                                </div>
+                                <button onclick="fpToggle('roopaSmitraYtAdPanel',this)" style="background:#fce4ec;color:#c62828;border:2px solid #ffcdd2;border-radius:8px;padding:5px 14px;font-size:0.8em;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0">▼ Show</button>
                             </div>
                         </div>
-                        <div id="ytAdMonitorList" style="display:flex;flex-direction:column;gap:16px">
-                            <div style="text-align:center;color:#aaa;padding:30px">Loading YouTube Ad submissions…</div>
+                        <div id="fp_content_roopaSmitraYtAdPanel" style="display:none">
+                            <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:flex-end;margin-bottom:12px;flex-shrink:0">
+                                <button onclick="showYtAdWhatsAppSummary()" style="background:#25D366;color:white;border:none;border-radius:8px;padding:6px 14px;font-size:0.82em;font-weight:700;cursor:pointer">📋 WhatsApp Summary</button>
+                                <button class="btn btn-secondary" onclick="loadYtAdMonitorPanel()" style="font-size:0.85em;white-space:nowrap">🔄 Refresh All Classes</button>
+                            </div>
+                            <div id="ytAdMonitorList" style="display:flex;flex-direction:column;gap:16px">
+                                <div style="text-align:center;color:#aaa;padding:30px">Loading YouTube Ad submissions…</div>
+                            </div>
                         </div>
                     </div>
 
                     <!-- ── Nukkad Natak Pre-event Panel (Kotrappa K) ── -->
                     <div id="nukkadPrePanel" style="display:none;margin-top:24px">
-                        <div style="background:linear-gradient(135deg,#e8eaf6,#c5cae9);border-radius:14px;padding:18px;border:2px solid #9fa8da;margin-bottom:16px">
-                            <h3 style="color:#1a237e;margin:0 0 6px;font-size:1.05em">🎭 Nukkad Natak — Pre-Event Panel</h3>
-                            <p style="color:#555;font-size:0.82em;margin:0 0 6px">View all enrolled teams, verify social awareness themes (check for duplicates across all classes), and issue permission slips with date/time clash detection.</p>
+                        <div style="background:linear-gradient(135deg,#e8eaf6,#c5cae9);border-radius:14px;padding:18px;border:2px solid #9fa8da;margin-bottom:16px;display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:10px">
+                            <div style="flex:1">
+                                <h3 style="color:#1a237e;margin:0 0 6px;font-size:1.05em">🎭 Nukkad Natak — Pre-Event Panel</h3>
+                                <p style="color:#555;font-size:0.82em;margin:0 0 6px">View all enrolled teams, verify social awareness themes (check for duplicates across all classes), and issue permission slips with date/time clash detection.</p>
+                            </div>
+                            <button onclick="fpToggle('nukkadPrePanel',this)" style="background:#e8eaf6;color:#1a237e;border:2px solid #9fa8da;border-radius:8px;padding:5px 14px;font-size:0.8em;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0">▼ Show</button>
                         </div>
-                        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px">
-                            <button onclick="loadNukkadPrePanel()" style="background:#3949ab;color:white;border:none;border-radius:8px;padding:8px 16px;font-weight:700;cursor:pointer;font-size:0.85em">🔄 Refresh</button>
-                            <button onclick="loadNukkadOverviewTable()" style="background:#00695c;color:white;border:none;border-radius:8px;padding:8px 16px;font-weight:700;cursor:pointer;font-size:0.85em">📊 Overview Table</button>
-                            <span id="nukkadPreBadge" style="background:#e8eaf6;color:#1a237e;padding:4px 14px;border-radius:20px;font-size:0.82em;font-weight:700;margin-left:auto"></span>
-                        </div>
-                        <!-- All-in-one overview table (Point 5) -->
-                        <div id="nukkadOverviewTable" style="margin-bottom:16px"></div>
-                        <div id="nukkadPreList" style="display:flex;flex-direction:column;gap:12px">
-                            <div style="text-align:center;color:#aaa;padding:30px">Loading Nukkad Natak enrollments…</div>
+                        <div id="fp_content_nukkadPrePanel" style="display:none">
+                            <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px">
+                                <button onclick="loadNukkadPrePanel()" style="background:#3949ab;color:white;border:none;border-radius:8px;padding:8px 16px;font-weight:700;cursor:pointer;font-size:0.85em">🔄 Refresh</button>
+                                <button onclick="loadNukkadOverviewTable()" style="background:#00695c;color:white;border:none;border-radius:8px;padding:8px 16px;font-weight:700;cursor:pointer;font-size:0.85em">📊 Overview Table</button>
+                                <span id="nukkadPreBadge" style="background:#e8eaf6;color:#1a237e;padding:4px 14px;border-radius:20px;font-size:0.82em;font-weight:700;margin-left:auto"></span>
+                            </div>
+                            <div id="nukkadOverviewTable" style="margin-bottom:16px"></div>
+                            <div id="nukkadPreList" style="display:flex;flex-direction:column;gap:12px">
+                                <div style="text-align:center;color:#aaa;padding:30px">Loading Nukkad Natak enrollments…</div>
+                            </div>
                         </div>
                     </div>
 
                     <!-- ── Nukkad Natak Post-event Panel (Shankar B C) ── -->
                     <div id="nukkadPostPanel" style="display:none;margin-top:24px">
-                        <div style="background:linear-gradient(135deg,#fff3e0,#ffe0b2);border-radius:14px;padding:18px;border:2px solid #ffcc80;margin-bottom:16px">
-                            <h3 style="color:#e65100;margin:0 0 6px;font-size:1.05em">🎭 Nukkad Natak — Post-Event Verification</h3>
-                            <p style="color:#555;font-size:0.82em;margin:0 0 6px">Verify YouTube video links and newspaper article photos submitted by each class. Verified submissions earn <strong>+10 pts</strong> each on the leaderboard.</p>
+                        <div style="background:linear-gradient(135deg,#fff3e0,#ffe0b2);border-radius:14px;padding:18px;border:2px solid #ffcc80;margin-bottom:16px;display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:10px">
+                            <div style="flex:1">
+                                <h3 style="color:#e65100;margin:0 0 6px;font-size:1.05em">🎭 Nukkad Natak — Post-Event Verification</h3>
+                                <p style="color:#555;font-size:0.82em;margin:0 0 6px">Verify YouTube video links and newspaper article photos submitted by each class. Verified submissions earn <strong>+10 pts</strong> each on the leaderboard.</p>
+                            </div>
+                            <button onclick="fpToggle('nukkadPostPanel',this)" style="background:#fff3e0;color:#e65100;border:2px solid #ffcc80;border-radius:8px;padding:5px 14px;font-size:0.8em;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0">▼ Show</button>
                         </div>
-                        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px">
-                            <button onclick="loadNukkadPostPanel()" style="background:#e65100;color:white;border:none;border-radius:8px;padding:8px 16px;font-weight:700;cursor:pointer;font-size:0.85em">🔄 Refresh</button>
-                            <span id="nukkadPostBadge" style="background:#fff3e0;color:#e65100;padding:4px 14px;border-radius:20px;font-size:0.82em;font-weight:700;margin-left:auto"></span>
-                        </div>
-                        <div id="nukkadPostList" style="display:flex;flex-direction:column;gap:12px">
-                            <div style="text-align:center;color:#aaa;padding:30px">Loading post-event submissions…</div>
+                        <div id="fp_content_nukkadPostPanel" style="display:none">
+                            <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px">
+                                <button onclick="loadNukkadPostPanel()" style="background:#e65100;color:white;border:none;border-radius:8px;padding:8px 16px;font-weight:700;cursor:pointer;font-size:0.85em">🔄 Refresh</button>
+                                <span id="nukkadPostBadge" style="background:#fff3e0;color:#e65100;padding:4px 14px;border-radius:20px;font-size:0.82em;font-weight:700;margin-left:auto"></span>
+                            </div>
+                            <div id="nukkadPostList" style="display:flex;flex-direction:column;gap:12px">
+                                <div style="text-align:center;color:#aaa;padding:30px">Loading post-event submissions…</div>
+                            </div>
                         </div>
                     </div>
 
                     <!-- ── Handwriting Competition — Attendance Panel (Kotrappa K / Anitha N) ── -->
                     <div id="hwAttendancePanel" style="display:none;margin-top:24px">
-                        <div style="background:linear-gradient(135deg,#e8eaf6,#e3f2fd);border-radius:14px;padding:18px;border:2px solid #9fa8da;margin-bottom:16px">
-                            <h3 style="color:#1a237e;margin:0 0 6px;font-size:1.05em">✍️ Handwriting Competition — Attendance &amp; Sitting Codes</h3>
-                            <p style="color:#555;font-size:0.82em;margin:0 0 6px">View all enrolled participants. Each participant gets a unique 2-letter sitting code. Mark Present or Absent on event day. Codes are sent to Jury automatically.</p>
-                            <div style="background:#e3f2fd;border-radius:8px;padding:8px 12px;font-size:0.8em;color:#1565c0;margin-top:8px">
-                                📅 <strong>Event Date:</strong> <span id="hwEventDateDisplay">Loading…</span> &nbsp;|&nbsp; 🖊️ Duration: 45 minutes
+                        <div style="background:linear-gradient(135deg,#e8eaf6,#e3f2fd);border-radius:14px;padding:18px;border:2px solid #9fa8da;margin-bottom:16px;display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:10px">
+                            <div style="flex:1">
+                                <h3 style="color:#1a237e;margin:0 0 6px;font-size:1.05em">✍️ Handwriting Competition — Attendance &amp; Sitting Codes</h3>
+                                <p style="color:#555;font-size:0.82em;margin:0 0 6px">View all enrolled participants. Each participant gets a unique 2-letter sitting code. Mark Present or Absent on event day. Codes are sent to Jury automatically.</p>
+                                <div style="background:#e3f2fd;border-radius:8px;padding:8px 12px;font-size:0.8em;color:#1565c0;margin-top:8px">
+                                    📅 <strong>Event Date:</strong> <span id="hwEventDateDisplay">Loading…</span> &nbsp;|&nbsp; 🖊️ Duration: 45 minutes
+                                </div>
                             </div>
+                            <button onclick="fpToggle('hwAttendancePanel',this)" style="background:#e8eaf6;color:#1a237e;border:2px solid #9fa8da;border-radius:8px;padding:5px 14px;font-size:0.8em;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0">▼ Show</button>
                         </div>
-                        <!-- Filter bar -->
-                        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px">
-                            <select id="hwClassFilter" onchange="loadHwAttendancePanel()" style="padding:8px 12px;border:2px solid #9fa8da;border-radius:8px;font-size:0.88em;outline:none;background:white;color:#333;font-weight:600">
-                                <option value="">All Classes</option>
-                            </select>
-                            <select id="hwStatusFilter" onchange="loadHwAttendancePanel()" style="padding:8px 12px;border:2px solid #9fa8da;border-radius:8px;font-size:0.88em;outline:none;background:white;color:#333;font-weight:600">
-                                <option value="">All Statuses</option>
-                                <option value="present">✅ Present</option>
-                                <option value="absent">❌ Absent</option>
-                                <option value="pending">⏳ Not Marked</option>
-                            </select>
-                            <button onclick="loadHwAttendancePanel()" style="background:#3949ab;color:white;border:none;border-radius:8px;padding:8px 16px;font-weight:700;cursor:pointer;font-size:0.85em">🔄 Refresh</button>
-                            <span id="hwSummaryBadge" style="background:#e8eaf6;color:#1a237e;padding:4px 14px;border-radius:20px;font-size:0.82em;font-weight:700;margin-left:auto"></span>
-                        </div>
-                        <!-- Stats -->
-                        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px">
-                            <div style="background:white;border-radius:10px;padding:12px;text-align:center;border:2px solid #c5cae9"><div style="font-size:1.6em;font-weight:900;color:#1a237e" id="hwStatTotal">—</div><div style="font-size:0.78em;color:#666;font-weight:600">Total Enrolled</div></div>
-                            <div style="background:white;border-radius:10px;padding:12px;text-align:center;border:2px solid #a5d6a7"><div style="font-size:1.6em;font-weight:900;color:#2e7d32" id="hwStatPresent">—</div><div style="font-size:0.78em;color:#666;font-weight:600">✅ Present</div></div>
-                            <div style="background:white;border-radius:10px;padding:12px;text-align:center;border:2px solid #ef9a9a"><div style="font-size:1.6em;font-weight:900;color:#c62828" id="hwStatAbsent">—</div><div style="font-size:0.78em;color:#666;font-weight:600">❌ Absent</div></div>
-                        </div>
-                        <div id="handwritingList" style="display:flex;flex-direction:column;gap:10px">
-                            <div style="text-align:center;color:#aaa;padding:30px">Loading entries…</div>
+                        <div id="fp_content_hwAttendancePanel" style="display:none">
+                            <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px">
+                                <select id="hwClassFilter" onchange="loadHwAttendancePanel()" style="padding:8px 12px;border:2px solid #9fa8da;border-radius:8px;font-size:0.88em;outline:none;background:white;color:#333;font-weight:600"><option value="">All Classes</option></select>
+                                <select id="hwStatusFilter" onchange="loadHwAttendancePanel()" style="padding:8px 12px;border:2px solid #9fa8da;border-radius:8px;font-size:0.88em;outline:none;background:white;color:#333;font-weight:600">
+                                    <option value="">All Statuses</option>
+                                    <option value="present">✅ Present</option>
+                                    <option value="absent">❌ Absent</option>
+                                    <option value="pending">⏳ Not Marked</option>
+                                </select>
+                                <button onclick="loadHwAttendancePanel()" style="background:#3949ab;color:white;border:none;border-radius:8px;padding:8px 16px;font-weight:700;cursor:pointer;font-size:0.85em">🔄 Refresh</button>
+                                <span id="hwSummaryBadge" style="background:#e8eaf6;color:#1a237e;padding:4px 14px;border-radius:20px;font-size:0.82em;font-weight:700;margin-left:auto"></span>
+                            </div>
+                            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px">
+                                <div style="background:white;border-radius:10px;padding:12px;text-align:center;border:2px solid #c5cae9"><div style="font-size:1.6em;font-weight:900;color:#1a237e" id="hwStatTotal">—</div><div style="font-size:0.78em;color:#666;font-weight:600">Total Enrolled</div></div>
+                                <div style="background:white;border-radius:10px;padding:12px;text-align:center;border:2px solid #a5d6a7"><div style="font-size:1.6em;font-weight:900;color:#2e7d32" id="hwStatPresent">—</div><div style="font-size:0.78em;color:#666;font-weight:600">✅ Present</div></div>
+                                <div style="background:white;border-radius:10px;padding:12px;text-align:center;border:2px solid #ef9a9a"><div style="font-size:1.6em;font-weight:900;color:#c62828" id="hwStatAbsent">—</div><div style="font-size:0.78em;color:#666;font-weight:600">❌ Absent</div></div>
+                            </div>
+                            <div id="handwritingList" style="display:flex;flex-direction:column;gap:10px">
+                                <div style="text-align:center;color:#aaa;padding:30px">Loading entries…</div>
+                            </div>
                         </div>
                     </div>
 
                     <!-- ── Talent Hunt — Attendance Panel (Anitha N / Pooja C) ── -->
                     <div id="thAttendancePanel" style="display:none;margin-top:24px">
-                        <div style="background:linear-gradient(135deg,#fff8e1,#fce4ec);border-radius:14px;padding:18px;border:2px solid #ffcc02;margin-bottom:16px">
-                            <h3 style="color:#e65100;margin:0 0 6px;font-size:1.05em">🎭 Talent Hunt — Attendance &amp; Sitting Codes</h3>
-                            <p style="color:#555;font-size:0.82em;margin:0 0 6px">View all enrolled individual performers. Each gets a unique 2-letter sitting code shared with Jury. Mark Present or Absent on event day.</p>
-                            <div style="background:#fff3cd;border-radius:8px;padding:8px 12px;font-size:0.8em;color:#856404;margin-top:8px">
-                                ⏱️ <strong>Time Limit:</strong> 2 minutes per performance &nbsp;|&nbsp; Max 6 students total from college
+                        <div style="background:linear-gradient(135deg,#fff8e1,#fce4ec);border-radius:14px;padding:18px;border:2px solid #ffcc02;margin-bottom:16px;display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:10px">
+                            <div style="flex:1">
+                                <h3 style="color:#e65100;margin:0 0 6px;font-size:1.05em">🎭 Talent Hunt — Attendance &amp; Sitting Codes</h3>
+                                <p style="color:#555;font-size:0.82em;margin:0 0 6px">View all enrolled individual performers. Each gets a unique 2-letter sitting code shared with Jury. Mark Present or Absent on event day.</p>
+                                <div style="background:#fff3cd;border-radius:8px;padding:8px 12px;font-size:0.8em;color:#856404;margin-top:8px">
+                                    ⏱️ <strong>Time Limit:</strong> 2 minutes per performance &nbsp;|&nbsp; Max 6 students total from college
+                                </div>
                             </div>
+                            <button onclick="fpToggle('thAttendancePanel',this)" style="background:#fff8e1;color:#e65100;border:2px solid #ffcc02;border-radius:8px;padding:5px 14px;font-size:0.8em;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0">▼ Show</button>
                         </div>
-                        <!-- Filter bar -->
-                        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px">
-                            <select id="thClassFilter" onchange="loadThAttendancePanel()" style="padding:8px 12px;border:2px solid #ffcc02;border-radius:8px;font-size:0.88em;outline:none;background:white;color:#333;font-weight:600">
-                                <option value="">All Classes</option>
-                            </select>
-                            <select id="thStatusFilter" onchange="loadThAttendancePanel()" style="padding:8px 12px;border:2px solid #ffcc02;border-radius:8px;font-size:0.88em;outline:none;background:white;color:#333;font-weight:600">
-                                <option value="">All Statuses</option>
-                                <option value="present">✅ Present</option>
-                                <option value="absent">❌ Absent</option>
-                                <option value="pending">⏳ Not Marked</option>
-                            </select>
-                            <select id="thTalentFilter" onchange="loadThAttendancePanel()" style="padding:8px 12px;border:2px solid #ffcc02;border-radius:8px;font-size:0.88em;outline:none;background:white;color:#333;font-weight:600">
-                                <option value="">All Talents</option>
-                                <option value="Singing">🎤 Singing</option>
-                                <option value="Dancing">💃 Dancing</option>
-                                <option value="Acting">🎭 Acting</option>
-                                <option value="Instrument">🎸 Instrument</option>
-                                <option value="Mimicry">😄 Mimicry</option>
-                                <option value="Magic">🎩 Magic</option>
-                                <option value="Stand-up Comedy">😂 Stand-up Comedy</option>
-                                <option value="Other">⭐ Other</option>
-                            </select>
-                            <button onclick="loadThAttendancePanel()" style="background:#e65100;color:white;border:none;border-radius:8px;padding:8px 16px;font-weight:700;cursor:pointer;font-size:0.85em">🔄 Refresh</button>
-                            <button onclick="showThWhatsAppSummary()" style="background:#25D366;color:white;border:none;border-radius:8px;padding:8px 16px;font-weight:700;cursor:pointer;font-size:0.85em">📋 WhatsApp Summary</button>
-                            <span id="thSummaryBadge" style="background:#fff3cd;color:#e65100;padding:4px 14px;border-radius:20px;font-size:0.82em;font-weight:700;margin-left:auto"></span>
-                        </div>
-                        <!-- Stats -->
-                        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px">
-                            <div style="background:white;border-radius:10px;padding:12px;text-align:center;border:2px solid #ffe082"><div style="font-size:1.6em;font-weight:900;color:#e65100" id="thStatTotal">—</div><div style="font-size:0.78em;color:#666;font-weight:600">Total Enrolled</div></div>
-                            <div style="background:white;border-radius:10px;padding:12px;text-align:center;border:2px solid #a5d6a7"><div style="font-size:1.6em;font-weight:900;color:#2e7d32" id="thStatPresent">—</div><div style="font-size:0.78em;color:#666;font-weight:600">✅ Present</div></div>
-                            <div style="background:white;border-radius:10px;padding:12px;text-align:center;border:2px solid #ef9a9a"><div style="font-size:1.6em;font-weight:900;color:#c62828" id="thStatAbsent">—</div><div style="font-size:0.78em;color:#666;font-weight:600">❌ Absent</div></div>
-                        </div>
-                        <div id="talentHuntList" style="display:flex;flex-direction:column;gap:10px">
-                            <div style="text-align:center;color:#aaa;padding:30px">Loading entries…</div>
+                        <div id="fp_content_thAttendancePanel" style="display:none">
+                            <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px">
+                                <select id="thClassFilter" onchange="loadThAttendancePanel()" style="padding:8px 12px;border:2px solid #ffcc02;border-radius:8px;font-size:0.88em;outline:none;background:white;color:#333;font-weight:600"><option value="">All Classes</option></select>
+                                <select id="thStatusFilter" onchange="loadThAttendancePanel()" style="padding:8px 12px;border:2px solid #ffcc02;border-radius:8px;font-size:0.88em;outline:none;background:white;color:#333;font-weight:600">
+                                    <option value="">All Statuses</option>
+                                    <option value="present">✅ Present</option>
+                                    <option value="absent">❌ Absent</option>
+                                    <option value="pending">⏳ Not Marked</option>
+                                </select>
+                                <select id="thTalentFilter" onchange="loadThAttendancePanel()" style="padding:8px 12px;border:2px solid #ffcc02;border-radius:8px;font-size:0.88em;outline:none;background:white;color:#333;font-weight:600">
+                                    <option value="">All Talents</option>
+                                    <option value="Singing">🎤 Singing</option>
+                                    <option value="Dancing">💃 Dancing</option>
+                                    <option value="Acting">🎭 Acting</option>
+                                    <option value="Instrument">🎸 Instrument</option>
+                                    <option value="Mimicry">😄 Mimicry</option>
+                                    <option value="Magic">🎩 Magic</option>
+                                    <option value="Stand-up Comedy">😂 Stand-up Comedy</option>
+                                    <option value="Other">⭐ Other</option>
+                                </select>
+                                <button onclick="loadThAttendancePanel()" style="background:#e65100;color:white;border:none;border-radius:8px;padding:8px 16px;font-weight:700;cursor:pointer;font-size:0.85em">🔄 Refresh</button>
+                                <button onclick="showThWhatsAppSummary()" style="background:#25D366;color:white;border:none;border-radius:8px;padding:8px 16px;font-weight:700;cursor:pointer;font-size:0.85em">📋 WhatsApp Summary</button>
+                                <span id="thSummaryBadge" style="background:#fff3cd;color:#e65100;padding:4px 14px;border-radius:20px;font-size:0.82em;font-weight:700;margin-left:auto"></span>
+                            </div>
+                            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px">
+                                <div style="background:white;border-radius:10px;padding:12px;text-align:center;border:2px solid #ffe082"><div style="font-size:1.6em;font-weight:900;color:#e65100" id="thStatTotal">—</div><div style="font-size:0.78em;color:#666;font-weight:600">Total Enrolled</div></div>
+                                <div style="background:white;border-radius:10px;padding:12px;text-align:center;border:2px solid #a5d6a7"><div style="font-size:1.6em;font-weight:900;color:#2e7d32" id="thStatPresent">—</div><div style="font-size:0.78em;color:#666;font-weight:600">✅ Present</div></div>
+                                <div style="background:white;border-radius:10px;padding:12px;text-align:center;border:2px solid #ef9a9a"><div style="font-size:1.6em;font-weight:900;color:#c62828" id="thStatAbsent">—</div><div style="font-size:0.78em;color:#666;font-weight:600">❌ Absent</div></div>
+                            </div>
+                            <div id="talentHuntList" style="display:flex;flex-direction:column;gap:10px">
+                                <div style="text-align:center;color:#aaa;padding:30px">Loading entries…</div>
+                            </div>
                         </div>
                     </div>
 
@@ -7730,11 +7743,16 @@
                                     <h3 style="color:#880e4f;margin:0 0 4px;font-size:1.05em">💃 Group Dance — Story Submissions</h3>
                                     <p style="color:#555;font-size:0.82em;margin:0">All enrolled classes' dance story submissions. Each class must submit a title and 3–4 line summary of their story-based performance.</p>
                                 </div>
-                                <button onclick="loadDanceInchargePanel()" style="background:#e91e63;color:white;border:none;border-radius:8px;padding:6px 14px;font-size:0.82em;font-weight:700;cursor:pointer">🔄 Refresh</button>
+                                <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+                                    <button onclick="loadDanceInchargePanel()" style="background:#e91e63;color:white;border:none;border-radius:8px;padding:6px 14px;font-size:0.82em;font-weight:700;cursor:pointer">🔄 Refresh</button>
+                                    <button onclick="fpToggle('danceInchargePanel',this)" style="background:#fce4ec;color:#880e4f;border:2px solid #f48fb1;border-radius:8px;padding:5px 14px;font-size:0.8em;font-weight:700;cursor:pointer;white-space:nowrap">▼ Show</button>
+                                </div>
                             </div>
                         </div>
-                        <div id="danceInchargeList" style="display:flex;flex-direction:column;gap:14px">
-                            <div style="text-align:center;color:#aaa;padding:30px">Loading dance story submissions…</div>
+                        <div id="fp_content_danceInchargePanel" style="display:none">
+                            <div id="danceInchargeList" style="display:flex;flex-direction:column;gap:14px">
+                                <div style="text-align:center;color:#aaa;padding:30px">Loading dance story submissions…</div>
+                            </div>
                         </div>
                     </div>
 
@@ -7746,31 +7764,48 @@
                                     <h3 style="color:#4a148c;margin:0 0 4px;font-size:1.05em">🧠 Quiz — Final Round Panel</h3>
                                     <p style="color:#555;font-size:0.82em;margin:0">Select 5 finalist teams, mark 2 qualifiers per team, then score all 5 teams across 5 rounds.</p>
                                 </div>
-                                <button onclick="loadQuizFinalRoundPanel()" style="background:#6a1b9a;color:white;border:none;border-radius:8px;padding:7px 16px;font-size:0.83em;font-weight:700;cursor:pointer">🔄 Reload</button>
+                                <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+                                    <button onclick="loadQuizFinalRoundPanel()" style="background:#6a1b9a;color:white;border:none;border-radius:8px;padding:7px 16px;font-size:0.83em;font-weight:700;cursor:pointer">🔄 Reload</button>
+                                    <button onclick="fpToggle('smithaQuizPanel',this)" style="background:#f3e5f5;color:#4a148c;border:2px solid #ce93d8;border-radius:8px;padding:5px 14px;font-size:0.8em;font-weight:700;cursor:pointer;white-space:nowrap">▼ Show</button>
+                                </div>
                             </div>
                         </div>
-                        <div id="smithaQuizContainer"></div>
+                        <div id="fp_content_smithaQuizPanel" style="display:none">
+                            <div id="smithaQuizContainer"></div>
+                        </div>
                     </div>
 
                     <!-- ── Generic Event Incharge Panel — shown for every faculty who has assigned events ── -->
                     <div id="genericInchargePanel" style="display:none;margin-top:24px">
                         <div style="background:linear-gradient(135deg,#e8f5e9,#e3f2fd);border-radius:14px;padding:18px;border:2px solid #a5d6a7;margin-bottom:16px">
-                            <h3 id="genericInchargePanelTitle" style="color:#1565c0;margin:0 0 6px;font-size:1.05em">📋 Event Incharge Panel</h3>
-                            <p style="color:#555;font-size:0.82em;margin:0">Your assigned events are listed below. Each card shows enrolled participants per class with real-time counts from the database.</p>
+                            <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+                                <div>
+                                    <h3 id="genericInchargePanelTitle" style="color:#1565c0;margin:0 0 6px;font-size:1.05em">📋 Event Incharge Panel</h3>
+                                    <p style="color:#555;font-size:0.82em;margin:0">Your assigned events are listed below. Each card shows enrolled participants per class with real-time counts from the database.</p>
+                                </div>
+                                <button id="genericInchargeToggleBtn" onclick="fpToggle('genericInchargePanel',this)" style="background:#e8f5e9;color:#1565c0;border:2px solid #a5d6a7;border-radius:8px;padding:5px 14px;font-size:0.8em;font-weight:700;cursor:pointer;white-space:nowrap">▲ Hide</button>
+                            </div>
                         </div>
-                        <div id="genericInchargeEventList" style="display:flex;flex-direction:column;gap:16px">
-                            <div style="text-align:center;color:#aaa;padding:30px">Loading your events…</div>
+                        <div id="fp_content_genericInchargePanel" style="display:block">
+                            <div id="genericInchargeEventList" style="display:flex;flex-direction:column;gap:16px">
+                                <div style="text-align:center;color:#aaa;padding:30px">Loading your events…</div>
+                            </div>
                         </div>
                     </div>
 
                     <!-- ── Case Analysis — Team Panel (Dr. Shilpa R Y / Roopa M.C) ── -->
                     <div id="caseNumberPanel" style="display:none;margin-top:24px">
-                        <div style="background:linear-gradient(135deg,#e8eaf6,#ede7f6);border-radius:14px;padding:18px;border:2px solid #9fa8da;margin-bottom:16px">
-                            <h3 style="color:#1a237e;margin:0 0 6px;font-size:1.05em">🧠 Case Analysis — Teams &amp; Case Numbers</h3>
-                            <p style="color:#555;font-size:0.82em;margin:0 0 6px">Each team has 2 members (Captain + Member). Enter the Case Number and mark attendance per team. Case numbers are shown to the Jury.</p>
+                        <div style="background:linear-gradient(135deg,#e8eaf6,#ede7f6);border-radius:14px;padding:18px;border:2px solid #9fa8da;margin-bottom:16px;display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:10px">
+                            <div style="flex:1">
+                                <h3 style="color:#1a237e;margin:0 0 6px;font-size:1.05em">🧠 Case Analysis — Teams &amp; Case Numbers</h3>
+                                <p style="color:#555;font-size:0.82em;margin:0 0 6px">Each team has 2 members (Captain + Member). Enter the Case Number and mark attendance per team. Case numbers are shown to the Jury.</p>
+                            </div>
+                            <button onclick="fpToggle('caseNumberPanel',this)" style="background:#e8eaf6;color:#1a237e;border:2px solid #9fa8da;border-radius:8px;padding:5px 14px;font-size:0.8em;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0">▼ Show</button>
                         </div>
-                        <div id="caseTeamList" style="display:flex;flex-direction:column;gap:10px">
-                            <div style="text-align:center;color:#aaa;padding:30px">⏳ Loading teams…</div>
+                        <div id="fp_content_caseNumberPanel" style="display:none">
+                            <div id="caseTeamList" style="display:flex;flex-direction:column;gap:10px">
+                                <div style="text-align:center;color:#aaa;padding:30px">⏳ Loading teams…</div>
+                            </div>
                         </div>
                     </div>
 
@@ -15306,6 +15341,17 @@
         // -- Generic Event Incharge Panel -----------------------------------------
         // Shows for every faculty who has entries in FACULTY_EVENT_MAP.
         // Displays each assigned event as a card with live enrollment count from Firebase.
+        // ── FACULTY PANEL COLLAPSE TOGGLE ───────────────────────────────
+        const FP_ON_STAGE = ['Mime','Social Awareness Skit','Group Dance','Mad Ads','Ramp Walk'];
+        function fpToggle(panelId, btn) {
+            const content = document.getElementById('fp_content_' + panelId);
+            if (!content) return;
+            const isVisible = content.style.display !== 'none';
+            content.style.display = isVisible ? 'none' : 'block';
+            if (btn) btn.textContent = isVisible ? '▼ Show' : '▲ Hide';
+        }
+        // ────────────────────────────────────────────────────────────────
+
         async function loadGenericInchargePanel(facultyName) {
             const panel  = document.getElementById('genericInchargePanel');
             const list   = document.getElementById('genericInchargeEventList');
@@ -15317,6 +15363,14 @@
 
             if (title) title.textContent = '📋 Event Incharge Panel — ' + facultyName;
             panel.style.display = 'block';
+
+            // Determine default collapsed state: show if ANY assigned event is on-stage
+            const hasOnStage = assignedEvents.some(ev => FP_ON_STAGE.includes(ev));
+            const contentDiv = document.getElementById('fp_content_genericInchargePanel');
+            const toggleBtn  = document.getElementById('genericInchargeToggleBtn');
+            if (contentDiv) contentDiv.style.display = hasOnStage ? 'block' : 'none';
+            if (toggleBtn)  toggleBtn.textContent     = hasOnStage ? '▲ Hide' : '▼ Show';
+
             list.innerHTML = '<div style="text-align:center;color:#aaa;padding:30px">⏳ Loading your events…</div>';
 
             let allEnrollments = [];
@@ -45064,7 +45118,7 @@ export default {
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;" id="devTriggerVersion">
-                <strong>Version:</strong> 8.42 — Fix #1: onStageAttendance fetched separately so permission error no longer crashes incharge panel; Fix #2: Admin Results tab now gated by SA toggle in Site Settings (siteSettings/adminResultsAccess)<strong>Last Updated:</strong> Mar 17, 2026, 11:30 AM IST</p>
+                <strong>Version:</strong> 8.43 — Faculty panels: all default collapsed (▼ Show) except genericInchargePanel for on-stage events (Mime/Skit/Dance/Mad Ads/Ramp Walk) which defaults open (▲ Hide)<strong>Last Updated:</strong> Mar 17, 2026, 11:30 AM IST</p>
             <!-- ============================================ -->
             
             <p style="color: #c44569; font-size: 0.85em; font-weight: 600; margin-bottom: 8px;">
@@ -47988,6 +48042,7 @@ function scAdminPing() {
      v8.40 | Mar 17, 2026, 11:30 AM IST | Event Results panel: added Daily Quiz (best performers + declared winner) and Scavenger Hunt (ranked list + declared winner) as sub-tabs
      v8.41 | Mar 17, 2026, 11:30 AM IST | Force-skip feedback: Ctrl+* on desktop closes popup instantly; triple-tap feedback header on mobile does the same
      v8.42 | Mar 17, 2026, 11:30 AM IST | Fix #1: onStageAttendance fetched separately so permission error no longer crashes incharge panel; Fix #2: Admin Results tab now gated by SA toggle in Site Settings
+     v8.43 | Mar 17, 2026, 11:30 AM IST | Faculty panels: all default collapsed (▼ Show) except genericInchargePanel for on-stage events which defaults open (▲ Hide)
      ═══════════════════════════════════════════════════════════════════ -->
 
 
