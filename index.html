@@ -15821,6 +15821,7 @@
                 const isTHEvent = eventName === 'Talent Hunt';
                 const isBOWMgr  = (eventName === 'Best out of Waste' || eventName === 'Best Out of Waste');
                 const isCaseMgr = (eventName === 'Case Analysis');
+                const isNukkadMgr = (eventName === 'Nukkad Natak');
                 const fetchList = [
                     db.ref('juryMarks/'+eventName+'/jury1').once('value'),
                     db.ref('juryMarks/'+eventName+'/jury2').once('value'),
@@ -15829,12 +15830,24 @@
                     isCaseMgr ? db.ref('caseAnalysis/caseNumbers').once('value') : Promise.resolve(null)
                 ];
                 if (eventName === 'Vlog') fetchList.push(db.ref('vlogChallenge').once('value'));
+                if (isNukkadMgr) fetchList.push(db.ref('nukkadNatak/pre').once('value'));
                 const snaps = await Promise.all(fetchList);
                 const jury1Marks  = snaps[0].val() || {};
                 const jury2Marks  = snaps[1].val() || {};
                 const enrSnap     = snaps[2];
                 const bowMgrSnap  = snaps[3];
                 const caseMgrSnap = snaps[4];
+                const nukkadMgrPreRaw = isNukkadMgr ? ((snaps[5] || snaps[6] || null)) : null;
+                // Normalize nukkadMgrPreData keys
+                const nukkadMgrPreData = {};
+                if (nukkadMgrPreRaw && nukkadMgrPreRaw.exists()) {
+                    nukkadMgrPreRaw.forEach(ch => {
+                        const v = ch.val();
+                        if (!v) return;
+                        nukkadMgrPreData[ch.key] = v;
+                        nukkadMgrPreData[ch.key.replace(/[.\[\]#$\/\s]/g,'_')] = v;
+                    });
+                }
                 // BOW theme map keyed by clsKey
                 const bowMgrTheme = {};
                 if (isBOWMgr && bowMgrSnap && bowMgrSnap.exists()) {
@@ -15876,6 +15889,8 @@
                         if(f.languages)dd.push('✍️ '+f.languages); if(f.theme)dd.push('🎨 '+f.theme);
                         if(bowMgrTheme[clsKey]) dd.push('🎨 ' + bowMgrTheme[clsKey]);
                         if(caseMgrNums[clsKey]) dd.push('📋 Case No: ' + caseMgrNums[clsKey]);
+                        // Nukkad: place of performance
+                        if(isNukkadMgr && nukkadMgrPreData[clsKey] && nukkadMgrPreData[clsKey].place) dd.push('📍 ' + nukkadMgrPreData[clsKey].place);
                         detailsMap[clsKey] = dd.join(' · ');
                     }
                 });
@@ -20217,6 +20232,10 @@
                 if (key === 'leaderboardPublished' && value === true) {
                     await pushNukkadJuryScoresToLeaderboard();
                 }
+                // If unpublishing leaderboard, remove nukkad jury scores from leaderboard
+                if (key === 'leaderboardPublished' && value === false) {
+                    await removeNukkadJuryScoresFromLeaderboard();
+                }
                 loadNukkadSettings();
                 loadNukkadAdminPanel();
             } catch(e) { alert('Error: ' + e.message); }
@@ -20234,10 +20253,25 @@
                 if (avg === null) continue;
                 const finalPts = Math.round(avg); // out of 50 → use as leaderboard pts
                 await db.ref('leaderboardConfig/customCriteria/nukkad_jury_' + clsKey).set({
-                    label: 'Nukkad Natak — Jury Score',
+                    name: 'Nukkad Jury',
                     points: { [clsKey]: finalPts }
                 });
             }
+        }
+
+        async function removeNukkadJuryScoresFromLeaderboard() {
+            // Delete all nukkad_jury_* keys from leaderboardConfig/customCriteria
+            try {
+                const snap = await db.ref('leaderboardConfig/customCriteria').once('value');
+                if (!snap.exists()) return;
+                const deletes = [];
+                snap.forEach(child => {
+                    if (child.key.startsWith('nukkad_jury_')) {
+                        deletes.push(db.ref('leaderboardConfig/customCriteria/' + child.key).remove());
+                    }
+                });
+                await Promise.all(deletes);
+            } catch(e) { console.warn('removeNukkadJuryScores error:', e.message); }
         }
 
         // ══════════════════════════════════════════════════════════════
@@ -20664,6 +20698,7 @@
                 }
 
                 let rows = '';
+
                 classes.forEach((cls, i) => {
                     const data  = byClass[cls];
                     const key   = cls.replace(/[.#$/\[\]]/g,'_');
@@ -22940,7 +22975,8 @@
         };
 
         async function publishResults() {
-            const event = document.getElementById('resultsEventSelect').value;
+            const sel = document.getElementById('resultsEventSelect');
+            const event = sel ? sel.value : '';
             if (!event) { alert('Please select an event first'); return; }
             if (!confirm('Publish results for ' + event + '?\n\nThis will make results visible to all admins and award leaderboard points.')) return;
             try {
@@ -22954,22 +22990,27 @@
                 await Promise.all(writes);
                 alert('✅ Results published for ' + event + '!');
                 updateResultsTabVisibility();
-                loadResultsTab(); // refresh dropdown labels
-            } catch(e) { alert('❌ Error: ' + e.message); }
+                loadResultsTab(event); // pass selected event so dropdown restores it
+            } catch(e) { alert('❌ Error publishing: ' + e.message); }
         }
 
         async function unpublishResults() {
-            const event = document.getElementById('resultsEventSelect').value;
+            const sel = document.getElementById('resultsEventSelect');
+            const event = sel ? sel.value : '';
             if (!event) { alert('Please select an event first'); return; }
             if (!confirm('Unpublish results for ' + event + '?')) return;
             try {
                 const writes = [ db.ref('jurySetup/'+event+'/resultsPublished').set(false) ];
                 (SPECIAL_PUBLISH_PATHS[event] || []).forEach(path => writes.push(db.ref(path).set(false)));
+                // For Nukkad: remove jury scores from leaderboard on unpublish
+                if (event === 'Nukkad Natak' && typeof removeNukkadJuryScoresFromLeaderboard === 'function') {
+                    writes.push(removeNukkadJuryScoresFromLeaderboard());
+                }
                 await Promise.all(writes);
                 alert('📦 Results unpublished for ' + event);
                 updateResultsTabVisibility();
-                loadResultsTab();
-            } catch(e) { alert('❌ Error: ' + e.message); }
+                loadResultsTab(event);
+            } catch(e) { alert('❌ Error unpublishing: ' + e.message); }
         }
 
         function checkResultsPublished() {
@@ -24514,7 +24555,7 @@
         }
 
         // Results Functions
-        function loadResultsTab() {
+        function loadResultsTab(restoreEvent) {
             // Populate event select for results
             const sel = document.getElementById('resultsEventSelect');
             sel.innerHTML = '<option value="">-- Select Event --</option>';
@@ -24547,6 +24588,8 @@
                         opt.textContent = label;
                         sel.appendChild(opt);
                     });
+                    // Restore previously selected event if provided
+                    if (restoreEvent) sel.value = restoreEvent;
                 });
             } else {
                 db.ref('jurySetup').once('value').then(snap => {
@@ -24617,6 +24660,7 @@
                 const isTHEvent   = (event === 'Talent Hunt');
                 const isBOWEvent  = (event === 'Best out of Waste' || event === 'Best Out of Waste');
                 const isCaseEvent = (event === 'Case Analysis');
+                const isNukkadEvent = (event === 'Nukkad Natak');
                 const fetchList = [
                     db.ref('juryMarks/'+event+'/jury1').once('value'),
                     db.ref('juryMarks/'+event+'/jury2').once('value'),
@@ -24628,11 +24672,27 @@
                 if (event === 'Vlog') {
                     fetchList.push(db.ref('vlogChallenge').once('value'));
                 }
+                // For Nukkad: fetch pre data to get place of performance
+                if (isNukkadEvent) {
+                    fetchList.push(db.ref('nukkadNatak/pre').once('value'));
+                }
                 Promise.all(fetchList).then((snaps) => {
                     const jury1Marks  = snaps[0].val() || {};
                     const jury2Marks  = snaps[1].val() || {};
                     const bowRegSnap  = snaps[3];
                     const caseNumSnap = snaps[4];
+                    // Nukkad pre data (index 5 or 6 depending on Vlog)
+                    const nukkadPreSnap = isNukkadEvent ? (snaps[5] || snaps[6] || null) : null;
+                    // Normalize nukkadPreData keys: build both spaced and underscore variants
+                    const nukkadPreData = {};
+                    if (nukkadPreSnap && nukkadPreSnap.exists()) {
+                        nukkadPreSnap.forEach(ch => {
+                            const v = ch.val();
+                            if (!v) return;
+                            nukkadPreData[ch.key] = v; // original key (may have spaces)
+                            nukkadPreData[ch.key.replace(/[.\[\]#$\/\s]/g,'_')] = v; // underscored
+                        });
+                    }
                     // BOW: build theme map keyed by clsKey (one theme per class)
                     const bowThemeMap = {};
                     if (isBOWEvent && bowRegSnap && bowRegSnap.exists()) {
@@ -24715,6 +24775,10 @@
                                     || Object.entries(caseNums).find(([k])=>k.replace(/[^a-zA-Z0-9]/g,'_')===clsKey.replace(/[^a-zA-Z0-9]/g,'_'))?.[1]
                                     || '';
                                 if (cn) det.push('📋 Case No: ' + cn);
+                            }
+                            // Nukkad: place of performance from pre data
+                            if (isNukkadEvent && nukkadPreData[clsKey] && nukkadPreData[clsKey].place) {
+                                det.push('📍 ' + nukkadPreData[clsKey].place);
                             }
                             detailsMap[clsKey] = det.join(' · ');
                         }
@@ -45118,7 +45182,7 @@ export default {
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;" id="devTriggerVersion">
-                <strong>Version:</strong> 8.43 — Faculty panels: all default collapsed (▼ Show) except genericInchargePanel for on-stage events (Mime/Skit/Dance/Mad Ads/Ramp Walk) which defaults open (▲ Hide)<strong>Last Updated:</strong> Mar 17, 2026, 11:30 AM IST</p>
+                <strong>Version:</strong> 8.48 — Fix: Nukkad Results Details now shows 📍 place — nukkadPre keys normalized (spaces→underscores) so lookup matches sanitizedCls correctly<strong>Last Updated:</strong> Mar 17, 2026, 11:30 AM IST</p>
             <!-- ============================================ -->
             
             <p style="color: #c44569; font-size: 0.85em; font-weight: 600; margin-bottom: 8px;">
@@ -48043,6 +48107,11 @@ function scAdminPing() {
      v8.41 | Mar 17, 2026, 11:30 AM IST | Force-skip feedback: Ctrl+* on desktop closes popup instantly; triple-tap feedback header on mobile does the same
      v8.42 | Mar 17, 2026, 11:30 AM IST | Fix #1: onStageAttendance fetched separately so permission error no longer crashes incharge panel; Fix #2: Admin Results tab now gated by SA toggle in Site Settings
      v8.43 | Mar 17, 2026, 11:30 AM IST | Faculty panels: all default collapsed (▼ Show) except genericInchargePanel for on-stage events which defaults open (▲ Hide)
+     v8.44 | Mar 17, 2026, 11:30 AM IST | Fix: Nukkad Leaderboard toggle now works — Publish writes name (not label) to customCriteria; Unpublish deletes all nukkad_jury_* entries from leaderboard
+     v8.45 | Mar 17, 2026, 11:30 AM IST | Nukkad Natak SA table: new Result Place column shows 🥇/🥈/🥉/Nth ranked by jury avg score
+     v8.46 | Mar 17, 2026, 11:30 AM IST | Reverted v8.45 wrong Result Place column; Place column is existing performance venue (pre.place)
+     v8.47 | Mar 17, 2026, 11:30 AM IST | Fix: Nukkad Results Details col shows 📍 place; Publish/Unpublish dropdown restores event; Nukkad unpublish removes jury scores from leaderboard
+     v8.48 | Mar 17, 2026, 11:30 AM IST | Fix: Nukkad Results 📍 place lookup — normalize pre keys (spaces→underscores) so sanitizedCls match works correctly
      ═══════════════════════════════════════════════════════════════════ -->
 
 
