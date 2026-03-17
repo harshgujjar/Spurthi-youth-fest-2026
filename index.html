@@ -3436,7 +3436,7 @@
                 <button class="tab super-admin-only" onclick="showTab('juryLiveMonitor');startLiveJuryMonitor()">📡 Jury Live Monitor</button>
                 <button class="tab super-admin-only" onclick="showTab('caseAnalysisAdmin');loadCaseAnalysisAdmin()" id="caseAnalysisAdminTab">🧠 Case Analysis</button>
                 <button class="tab" onclick="showTab('results')" id="resultsTab">Results</button>
-                <button class="tab" id="managerResultsTab" onclick="showTab('managerResults');loadManagerResults()">📊 Event Results</button>
+                <button class="tab" id="managerResultsTab" onclick="showTab('managerResults');mrShowTab('events',document.getElementById('mrTabEvents'))">📊 Event Results</button>
                 <button class="tab super-admin-only" onclick="showTab('quizManagement')" id="quizManagementTab">📝 Quiz Management</button>
                 <button class="tab super-admin-only" onclick="showTab('leaderboardAdmin')" id="leaderboardAdminTab">🏆 Leaderboard</button>
                 <button class="tab super-admin-only" onclick="showTab('scavengerAdmin')" id="scavengerAdminTab">🗺️ Scavenger Hunt</button>
@@ -3690,23 +3690,92 @@
                     <div id="resultsContainer"></div>
                 </div>
                 
-                <!-- Manager Results Tab — On Stage / Off Stage split -->
+                <!-- Manager Results Tab — sub-tabbed -->
                 <div id="managerResults" class="form-section" style="display:none">
                     <h2 style="color:#c44569;margin-bottom:6px">📊 Event Results</h2>
-                    <p style="color:#888;font-size:0.85em;margin-bottom:20px">Select an event to view published results. Events are divided by stage type.</p>
-                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px" class="vlog-admin-grid">
-                        <!-- On Stage -->
-                        <div style="background:linear-gradient(135deg,#fff3e0,#ffe0b2);border-radius:12px;padding:16px;border:2px solid #ffcc80">
-                            <h3 style="color:#e65100;margin:0 0 12px;font-size:0.95em">🎭 On Stage Events</h3>
-                            <div style="display:flex;flex-direction:column;gap:8px" id="mrOnStageList"></div>
+                    <p style="color:#888;font-size:0.85em;margin-bottom:16px">View published results for all events, daily quiz best performers, and scavenger hunt rankings.</p>
+
+                    <!-- Sub-tabs -->
+                    <div class="tabs" style="margin-bottom:20px">
+                        <button class="tab active" id="mrTabEvents" onclick="mrShowTab('events',this)">🎭 Events</button>
+                        <button class="tab" id="mrTabQuiz" onclick="mrShowTab('quiz',this)">🧠 Daily Quiz</button>
+                        <button class="tab" id="mrTabSH" onclick="mrShowTab('sh',this)">🗺️ Scavenger Hunt</button>
+                    </div>
+
+                    <!-- Events sub-panel -->
+                    <div id="mrPanelEvents">
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px" class="vlog-admin-grid">
+                            <div style="background:linear-gradient(135deg,#fff3e0,#ffe0b2);border-radius:12px;padding:16px;border:2px solid #ffcc80">
+                                <h3 style="color:#e65100;margin:0 0 12px;font-size:0.95em">🎭 On Stage Events</h3>
+                                <div style="display:flex;flex-direction:column;gap:8px" id="mrOnStageList"></div>
+                            </div>
+                            <div style="background:linear-gradient(135deg,#e8f5e9,#c8e6c9);border-radius:12px;padding:16px;border:2px solid #a5d6a7">
+                                <h3 style="color:#1b5e20;margin:0 0 12px;font-size:0.95em">📋 Off Stage Events</h3>
+                                <div style="display:flex;flex-direction:column;gap:8px" id="mrOffStageList"></div>
+                            </div>
                         </div>
-                        <!-- Off Stage -->
-                        <div style="background:linear-gradient(135deg,#e8f5e9,#c8e6c9);border-radius:12px;padding:16px;border:2px solid #a5d6a7">
-                            <h3 style="color:#1b5e20;margin:0 0 12px;font-size:0.95em">📋 Off Stage Events</h3>
-                            <div style="display:flex;flex-direction:column;gap:8px" id="mrOffStageList"></div>
+                        <div id="mrResultsContainer"></div>
+                    </div>
+
+                    <!-- Daily Quiz Best Performers sub-panel -->
+                    <div id="mrPanelQuiz" style="display:none">
+                        <div style="display:flex;gap:10px;align-items:center;margin-bottom:18px;flex-wrap:wrap">
+                            <button onclick="mrLoadQuizBestPerformers()" style="background:linear-gradient(135deg,#6a1b9a,#c44569);color:white;border:none;padding:9px 20px;border-radius:8px;font-weight:700;cursor:pointer;font-size:0.95em">🔄 Refresh</button>
+                            <span id="mrQBPStatus" style="font-size:0.85em;color:#888"></span>
+                        </div>
+                        <!-- Declared banner -->
+                        <div id="mrQBPDeclared" style="display:none;background:linear-gradient(135deg,#1a0030,#3d0060);border-radius:12px;padding:16px 20px;margin-bottom:18px;color:white">
+                            <div style="font-size:0.78em;opacity:0.7;margin-bottom:8px;text-transform:uppercase;letter-spacing:1px">🏅 Declared Best Performers</div>
+                            <div id="mrQBPDeclaredInner" style="display:flex;gap:24px;flex-wrap:wrap"></div>
+                        </div>
+                        <!-- Table -->
+                        <div style="overflow-x:auto">
+                            <table style="width:100%;border-collapse:collapse;font-size:0.92em">
+                                <thead>
+                                    <tr style="background:linear-gradient(135deg,#6a1b9a,#c44569);color:white">
+                                        <th style="padding:10px 12px;text-align:left">#</th>
+                                        <th style="padding:10px 12px;text-align:left">Student Name</th>
+                                        <th style="padding:10px 12px;text-align:left">Class</th>
+                                        <th style="padding:10px 12px;text-align:center">Days Both ✅</th>
+                                        <th style="padding:10px 12px;text-align:center">Total Time</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="mrQBPTableBody">
+                                    <tr><td colspan="5" style="text-align:center;padding:30px;color:#bbb">Click Refresh to load</td></tr>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
-                    <div id="mrResultsContainer"></div>
+
+                    <!-- Scavenger Hunt sub-panel -->
+                    <div id="mrPanelSH" style="display:none">
+                        <div style="display:flex;gap:10px;align-items:center;margin-bottom:18px;flex-wrap:wrap">
+                            <button onclick="mrLoadSHResults()" style="background:linear-gradient(135deg,#6a1b9a,#c44569);color:white;border:none;padding:9px 20px;border-radius:8px;font-weight:700;cursor:pointer;font-size:0.95em">🔄 Refresh</button>
+                            <span id="mrSHStatus" style="font-size:0.85em;color:#888"></span>
+                        </div>
+                        <!-- Declared winner banner -->
+                        <div id="mrSHDeclared" style="display:none;background:linear-gradient(135deg,#ffd700,#ff9800);border-radius:12px;padding:16px 20px;margin-bottom:18px;color:#3d0060">
+                            <div style="font-size:0.78em;opacity:0.7;margin-bottom:8px;text-transform:uppercase;letter-spacing:1px;color:#3d0060">🎖️ Declared Winner</div>
+                            <div id="mrSHDeclaredInner" style="display:flex;gap:24px;flex-wrap:wrap"></div>
+                        </div>
+                        <!-- Table -->
+                        <div style="overflow-x:auto">
+                            <table style="width:100%;border-collapse:collapse;font-size:0.92em">
+                                <thead>
+                                    <tr style="background:linear-gradient(135deg,#3d0060,#6a1b9a);color:white">
+                                        <th style="padding:10px 12px;text-align:center">#</th>
+                                        <th style="padding:10px 12px;text-align:left">Student Name</th>
+                                        <th style="padding:10px 12px;text-align:left">Class</th>
+                                        <th style="padding:10px 12px;text-align:center">Tasks Done</th>
+                                        <th style="padding:10px 12px;text-align:center">Progress</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="mrSHTableBody">
+                                    <tr><td colspan="5" style="text-align:center;padding:30px;color:#bbb">Click Refresh to load</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Quiz Management Tab -->
@@ -15436,6 +15505,186 @@
         const MR_OFF_STAGE = ['Best out of Waste','Case Analysis','Hand Writing','Talent Hunt',
                               'Vlog','YouTube Advertisement','Pod Casting','Nukkad Natak',
                               'Interdisciplinary','Quiz','Best Out of Waste'];
+
+        // ── EVENT RESULTS SUB-TAB SWITCHER ──────────────────────────────
+        function mrShowTab(tab, btn) {
+            // toggle tab buttons
+            document.querySelectorAll('#managerResults .tab').forEach(t => t.classList.remove('active'));
+            if (btn) btn.classList.add('active');
+            // hide all panels
+            ['mrPanelEvents','mrPanelQuiz','mrPanelSH'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.style.display = 'none';
+            });
+            if (tab === 'events') {
+                document.getElementById('mrPanelEvents').style.display = 'block';
+                loadManagerResults();
+            } else if (tab === 'quiz') {
+                document.getElementById('mrPanelQuiz').style.display = 'block';
+                mrLoadQuizBestPerformers();
+            } else if (tab === 'sh') {
+                document.getElementById('mrPanelSH').style.display = 'block';
+                mrLoadSHResults();
+            }
+        }
+
+        async function mrLoadQuizBestPerformers() {
+            const tbody  = document.getElementById('mrQBPTableBody');
+            const status = document.getElementById('mrQBPStatus');
+            if (!tbody) return;
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:24px;color:#aaa">⏳ Loading…</td></tr>';
+            if (status) status.textContent = 'Loading…';
+            try {
+                const db = getDb();
+                const snap = await db.ref('quizSubmissions').once('value');
+                const map = {};
+                if (snap.exists()) {
+                    snap.forEach(dateNode => {
+                        dateNode.forEach(subNode => {
+                            const s = subNode.val();
+                            if (!s || s.score !== 2) return;
+                            const key = (s.studentName||'').trim().toLowerCase() + '||' + (s.studentClass||'').trim().toLowerCase();
+                            if (!map[key]) map[key] = { name:(s.studentName||'').trim(), cls:(s.studentClass||'').trim(), days:0, totalTime:0 };
+                            map[key].days++;
+                            map[key].totalTime += (s.timeTaken || 0);
+                        });
+                    });
+                }
+                const list = Object.values(map).sort((a,b) => b.days - a.days || a.totalTime - b.totalTime);
+
+                // Declared winners
+                const wSnap = await db.ref('quizBestPerformerWinners').once('value');
+                const declared = wSnap.val() || {};
+                const winnerKey = declared.winner   ? (declared.winner.name||'').trim().toLowerCase()+'||'+(declared.winner.cls||'').trim().toLowerCase() : '';
+                const ruKey     = declared.runnerUp ? (declared.runnerUp.name||'').trim().toLowerCase()+'||'+(declared.runnerUp.cls||'').trim().toLowerCase() : '';
+
+                // Banner
+                const declBanner = document.getElementById('mrQBPDeclared');
+                const declInner  = document.getElementById('mrQBPDeclaredInner');
+                if (declared.winner || declared.runnerUp) {
+                    declBanner.style.display = 'block';
+                    let bh = '';
+                    if (declared.winner)   bh += `<div><span style="font-size:1.5em">🥇</span> <strong style="font-size:1.05em">${declared.winner.name}</strong> <span style="opacity:0.75;font-size:0.85em">&nbsp;${declared.winner.cls}</span></div>`;
+                    if (declared.runnerUp) bh += `<div><span style="font-size:1.5em">🥈</span> <strong style="font-size:1.05em">${declared.runnerUp.name}</strong> <span style="opacity:0.75;font-size:0.85em">&nbsp;${declared.runnerUp.cls}</span></div>`;
+                    declInner.innerHTML = bh;
+                } else {
+                    declBanner.style.display = 'none';
+                }
+
+                if (!list.length) {
+                    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:24px;color:#bbb">No students with both answers correct yet.</td></tr>';
+                    if (status) status.textContent = '';
+                    return;
+                }
+
+                const medals = ['🥇','🥈','🥉'];
+                let html = '';
+                list.forEach((s, i) => {
+                    const key = s.name.toLowerCase()+'||'+s.cls.toLowerCase();
+                    const isW  = key === winnerKey;
+                    const isRU = key === ruKey;
+                    const rowBg = isW ? 'background:#fffbea' : isRU ? 'background:#f8f8f8' : (i%2===0?'background:#fafafa':'');
+                    const badge = isW  ? '<span style="background:#ffd700;color:#1a0030;padding:2px 8px;border-radius:10px;font-size:0.75em;font-weight:700;margin-left:6px">🥇 Winner</span>'
+                                : isRU ? '<span style="background:#ccc;color:#333;padding:2px 8px;border-radius:10px;font-size:0.75em;font-weight:700;margin-left:6px">🥈 Runner-Up</span>' : '';
+                    const rank = medals[i] || (i+1);
+                    const mins = Math.floor(s.totalTime/60), secs = s.totalTime%60;
+                    const timeStr = s.totalTime > 0 ? mins+'m '+secs+'s' : '—';
+                    html += `<tr style="${rowBg}">
+                        <td style="padding:10px 12px;color:#888;font-size:0.85em;text-align:left">${rank}</td>
+                        <td style="padding:10px 12px;font-weight:600">${s.name}${badge}</td>
+                        <td style="padding:10px 12px;color:#555;font-size:0.9em">${s.cls}</td>
+                        <td style="padding:10px 12px;text-align:center"><span style="background:#e8f5e9;color:#2e7d32;padding:3px 10px;border-radius:10px;font-weight:700;font-size:0.9em">${s.days}</span></td>
+                        <td style="padding:10px 12px;text-align:center;color:#555;font-size:0.85em">${timeStr}</td>
+                    </tr>`;
+                });
+                tbody.innerHTML = html;
+                if (status) status.textContent = `${list.length} student${list.length!==1?'s':''} found`;
+            } catch(e) {
+                if (tbody) tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:24px;color:#c00">⚠️ ' + e.message + '</td></tr>';
+                if (status) status.textContent = '';
+            }
+        }
+
+        async function mrLoadSHResults() {
+            const tbody  = document.getElementById('mrSHTableBody');
+            const status = document.getElementById('mrSHStatus');
+            if (!tbody) return;
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:24px;color:#aaa">⏳ Loading…</td></tr>';
+            if (status) status.textContent = 'Loading…';
+            try {
+                const db = getDb();
+                const [subSnap, taskSnap, winSnap] = await Promise.all([
+                    db.ref('scavengerHunt/submissions').once('value'),
+                    db.ref('scavengerHunt/tasks').once('value'),
+                    db.ref('scavengerHunt/winner').once('value')
+                ]);
+                const allSubs  = subSnap.val()  || {};
+                const allTasks = taskSnap.val() || {};
+                const totalTasks = Object.keys(allTasks).length;
+                const declared = winSnap.val() || null;
+
+                // Declared banner
+                const declBanner = document.getElementById('mrSHDeclared');
+                const declInner  = document.getElementById('mrSHDeclaredInner');
+                if (declared && (declared.winner || declared.runnerUp)) {
+                    declBanner.style.display = 'block';
+                    let bh = '';
+                    if (declared.winner)   bh += `<div><span style="font-size:1.5em">🥇</span> <strong style="font-size:1.05em">${declared.winner.name}</strong> <span style="opacity:0.7;font-size:0.85em">&nbsp;${declared.winner.cls}</span> <span style="font-size:0.8em">(${declared.winner.approved||0}/${totalTasks} tasks)</span></div>`;
+                    if (declared.runnerUp) bh += `<div><span style="font-size:1.5em">🥈</span> <strong style="font-size:1.05em">${declared.runnerUp.name}</strong> <span style="opacity:0.7;font-size:0.85em">&nbsp;${declared.runnerUp.cls}</span> <span style="font-size:0.8em">(${declared.runnerUp.approved||0}/${totalTasks} tasks)</span></div>`;
+                    declInner.innerHTML = bh;
+                } else {
+                    declBanner.style.display = 'none';
+                }
+
+                // Build participant list
+                const participants = [];
+                Object.entries(allSubs).forEach(([sk, ss]) => {
+                    const first = Object.values(ss)[0] || {};
+                    let approved = 0, lastTime = null;
+                    Object.values(ss).forEach(sub => {
+                        if (sub.status === 'approved') {
+                            approved++;
+                            if (!lastTime || sub.reviewedAt > lastTime) lastTime = sub.reviewedAt;
+                        }
+                    });
+                    participants.push({ name: first.studentName||sk, cls: first.studentClass||'', approved, totalTasks, lastTime: lastTime||'' });
+                });
+                participants.sort((a,b) => b.approved - a.approved || (a.lastTime||'zzz').localeCompare(b.lastTime||'zzz'));
+
+                if (!participants.length) {
+                    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:24px;color:#bbb">No participants yet.</td></tr>';
+                    if (status) status.textContent = '';
+                    return;
+                }
+
+                const medals = ['🥇','🥈','🥉'];
+                const winnerName = declared?.winner?.name || '';
+                const ruName     = declared?.runnerUp?.name || '';
+                let html = '';
+                participants.forEach((p, i) => {
+                    const isW  = p.name === winnerName && winnerName;
+                    const isRU = p.name === ruName && ruName;
+                    const rowBg = isW ? 'background:#fffbea' : isRU ? 'background:#f8f8f8' : (i%2===0?'background:#fafafa':'');
+                    const badge = isW  ? '<span style="background:#ffd700;color:#1a0030;padding:2px 8px;border-radius:10px;font-size:0.75em;font-weight:700;margin-left:6px">🥇 Winner</span>'
+                                : isRU ? '<span style="background:#ccc;color:#333;padding:2px 8px;border-radius:10px;font-size:0.75em;font-weight:700;margin-left:6px">🥈 Runner-Up</span>' : '';
+                    const pct = totalTasks ? Math.round(p.approved/totalTasks*100) : 0;
+                    const rank = medals[i] || (i+1);
+                    html += `<tr style="${rowBg}">
+                        <td style="padding:10px 12px;text-align:center;font-size:1.1em">${rank}</td>
+                        <td style="padding:10px 12px;font-weight:600">${p.name}${badge}</td>
+                        <td style="padding:10px 12px"><span style="background:#f3e5ff;color:#4a148c;padding:2px 8px;border-radius:10px;font-size:0.85em">${p.cls}</span></td>
+                        <td style="padding:10px 12px;text-align:center;font-weight:700;color:${p.approved===p.totalTasks?'#2e7d32':'#555'}">${p.approved}/${totalTasks}</td>
+                        <td style="padding:10px 12px;min-width:130px"><div style="background:#eee;border-radius:6px;height:8px;margin-bottom:3px"><div style="background:${pct>=100?'#4caf50':'#9c27b0'};width:${pct}%;height:8px;border-radius:6px"></div></div><span style="font-size:11px;color:#555">${pct}%</span></td>
+                    </tr>`;
+                });
+                tbody.innerHTML = html;
+                if (status) status.textContent = `${participants.length} participant${participants.length!==1?'s':''} found`;
+            } catch(e) {
+                if (tbody) tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:24px;color:#c00">⚠️ ' + e.message + '</td></tr>';
+                if (status) status.textContent = '';
+            }
+        }
+        // ────────────────────────────────────────────────────────────────
 
         async function loadManagerResults() {
             const onEl  = document.getElementById('mrOnStageList');
@@ -36322,6 +36571,41 @@ Proceed?`)) return;
         }
     }
 
+    // ── FORCE-SKIP FEEDBACK (Ctrl+* on desktop / triple-tap overlay on mobile) ──
+    function forceSkipFeedback() {
+        const overlay = document.getElementById('feedbackPopupOverlay');
+        if (!overlay || overlay.style.display === 'none') return;
+        fbAlreadySubmitted = true; // suppress all future re-shows this session
+        overlay.style.display = 'none';
+        document.body.style.overflow = '';
+    }
+
+    // Desktop: Ctrl + * (Ctrl + Shift + 8)
+    document.addEventListener('keydown', function(e) {
+        if (e.ctrlKey && e.key === '*') {
+            e.preventDefault();
+            forceSkipFeedback();
+        }
+    });
+
+    // Mobile: triple-tap on feedback overlay header within 1.5s
+    (function() {
+        let _fbTapCount = 0, _fbTapTimer = null;
+        document.addEventListener('touchend', function(e) {
+            const overlay = document.getElementById('feedbackPopupOverlay');
+            if (!overlay || overlay.style.display === 'none') return;
+            // Only trigger if tapping inside the overlay header/title area
+            const header = overlay.querySelector('.fb-modal-header');
+            if (!header) return;
+            if (!header.contains(e.target) && e.target !== header) return;
+            _fbTapCount++;
+            clearTimeout(_fbTapTimer);
+            _fbTapTimer = setTimeout(() => { _fbTapCount = 0; }, 1500);
+            if (_fbTapCount >= 3) { _fbTapCount = 0; forceSkipFeedback(); }
+        });
+    })();
+    // ──────────────────────────────────────────────────────────────────
+
     async function submitFeedback() {
         const name = (document.getElementById('fbName')?.value || '').trim();
         const cls  = (document.getElementById('fbClass')?.value || '').trim();
@@ -44740,7 +45024,7 @@ export default {
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;" id="devTriggerVersion">
-                <strong>Version:</strong> 8.39 — Added 🏅 Best Performers tab in Daily Quiz: cumulative list of students with both answers correct, ranked by most days then fastest time; SA can declare winner & runner-up<strong>Last Updated:</strong> Mar 17, 2026, 11:30 AM IST</p>
+                <strong>Version:</strong> 8.41 — Force-skip feedback: Ctrl+* on desktop closes popup instantly; triple-tap feedback header on mobile does the same<strong>Last Updated:</strong> Mar 17, 2026, 11:30 AM IST</p>
             <!-- ============================================ -->
             
             <p style="color: #c44569; font-size: 0.85em; font-weight: 600; margin-bottom: 8px;">
@@ -47661,6 +47945,8 @@ function scAdminPing() {
      v8.22 | Mar 16, 2026, 01:35 PM IST | Fix: SA Quiz Final Admin panel reads juryMarks/Quiz as fallback — shows scores regardless of which path Smitha used to save
      v8.21 | Mar 16, 2026, 01:35 PM IST | Event Results: Participants column added — member names shown for all events in results table
      v8.39 | Mar 17, 2026, 11:30 AM IST | Added 🏅 Best Performers tab in Daily Quiz: cumulative list of students with both answers correct, ranked by most days then fastest time; SA can declare winner & runner-up
+     v8.40 | Mar 17, 2026, 11:30 AM IST | Event Results panel: added Daily Quiz (best performers + declared winner) and Scavenger Hunt (ranked list + declared winner) as sub-tabs
+     v8.41 | Mar 17, 2026, 11:30 AM IST | Force-skip feedback: Ctrl+* on desktop closes popup instantly; triple-tap feedback header on mobile does the same
      ═══════════════════════════════════════════════════════════════════ -->
 
 
