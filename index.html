@@ -15904,7 +15904,7 @@
                     }
                 });
                 const vlogSocialMap = {};
-                displayResults(eventName, jury1Marks, jury2Marks, jury1Name, jury2Name, vlogSocialMap, scMap, namesMap, container, detailsMap);
+                displayResults(eventName, jury1Marks, jury2Marks, jury1Name, jury2Name, vlogSocialMap, scMap, namesMap, container, detailsMap, setup.classAliases || {});
             } catch(e) {
                 if (container) container.innerHTML = '<p style="color:#c62828;padding:20px">❌ ' + e.message + '</p>';
             }
@@ -24661,6 +24661,7 @@
                 const isBOWEvent  = (event === 'Best out of Waste' || event === 'Best Out of Waste');
                 const isCaseEvent = (event === 'Case Analysis');
                 const isNukkadEvent = (event === 'Nukkad Natak');
+                const isPodEvent  = (event === 'Pod Casting');
                 const fetchList = [
                     db.ref('juryMarks/'+event+'/jury1').once('value'),
                     db.ref('juryMarks/'+event+'/jury2').once('value'),
@@ -24668,29 +24669,35 @@
                     isBOWEvent  ? db.ref('bowRegistrations').once('value')        : Promise.resolve(null),
                     isCaseEvent ? db.ref('caseAnalysis/caseNumbers').once('value') : Promise.resolve(null)
                 ];
-                // For Vlog: also fetch social scores
-                if (event === 'Vlog') {
-                    fetchList.push(db.ref('vlogChallenge').once('value'));
-                }
-                // For Nukkad: fetch pre data to get place of performance
-                if (isNukkadEvent) {
-                    fetchList.push(db.ref('nukkadNatak/pre').once('value'));
-                }
+                if (event === 'Vlog') fetchList.push(db.ref('vlogChallenge').once('value'));
+                if (isNukkadEvent)   fetchList.push(db.ref('nukkadNatak/pre').once('value'));
+                if (isPodEvent)      fetchList.push(db.ref('podcastChallenge').once('value'));
                 Promise.all(fetchList).then((snaps) => {
                     const jury1Marks  = snaps[0].val() || {};
                     const jury2Marks  = snaps[1].val() || {};
                     const bowRegSnap  = snaps[3];
                     const caseNumSnap = snaps[4];
-                    // Nukkad pre data (index 5 or 6 depending on Vlog)
-                    const nukkadPreSnap = isNukkadEvent ? (snaps[5] || snaps[6] || null) : null;
-                    // Normalize nukkadPreData keys: build both spaced and underscore variants
+                    const nukkadPreSnap = isNukkadEvent ? (snaps[5] || null) : null;
+                    const podSnapRaw    = isPodEvent    ? (snaps[5] || null) : null;
+                    // Normalize nukkadPreData keys
                     const nukkadPreData = {};
                     if (nukkadPreSnap && nukkadPreSnap.exists()) {
                         nukkadPreSnap.forEach(ch => {
-                            const v = ch.val();
-                            if (!v) return;
-                            nukkadPreData[ch.key] = v; // original key (may have spaces)
-                            nukkadPreData[ch.key.replace(/[.\[\]#$\/\s]/g,'_')] = v; // underscored
+                            const v = ch.val(); if (!v) return;
+                            nukkadPreData[ch.key] = v;
+                            nukkadPreData[ch.key.replace(/[.\[\]#$\/\s]/g,'_')] = v;
+                        });
+                    }
+                    // Build podcast participant map: clsKey → [{name, topic, subtopic}] ordered by enrollment
+                    const podParticipants = {}; // clsKey → array of {name, topic, subtopic}
+                    if (isPodEvent && podSnapRaw && podSnapRaw.exists()) {
+                        podSnapRaw.forEach(ch => {
+                            const d = ch.val(); if (!d) return;
+                            const cls = d.classYear || d.class || '';
+                            if (!cls) return;
+                            const ck = cls.replace(/[.\[\]#$\/\s]/g,'_');
+                            if (!podParticipants[ck]) podParticipants[ck] = [];
+                            podParticipants[ck].push({ name: d.memberName || d.name || '—', topic: d.topic || '', subtopic: d.subtopic || '' });
                         });
                     }
                     // BOW: build theme map keyed by clsKey (one theme per class)
@@ -24735,6 +24742,18 @@
                                 scMap[rowKey] = sc;
                             });
                         }
+                        // Pod Casting: build per-participant namesMap and detailsMap from podcastChallenge
+                        if (isPodEvent) {
+                            const pods = podParticipants[clsKey] || [];
+                            pods.forEach((p, idx) => {
+                                const rowKey = clsKey + '__p' + (idx + 1);
+                                namesMap[rowKey] = [p.name];
+                                const det = [];
+                                if (p.topic)    det.push('🎯 ' + p.topic);
+                                if (p.subtopic) det.push('🔖 ' + p.subtopic);
+                                detailsMap[rowKey] = det.join(' · ');
+                            });
+                        }
                         // Names map — always build both rowKey AND clsKey entries
                         // Individual events (HW/TH): each member has own rowKey
                         if (isHWEvent || isTHEvent) {
@@ -24748,12 +24767,14 @@
                                 detailsMap[rowKey] = det.join(' · ');
                             });
                         }
-                        // All events: also build class-level name list + details
-                        if (!namesMap[clsKey]) namesMap[clsKey] = [];
-                        members.forEach(m => {
-                            const n = m.name || m.memberName || '';
-                            if (n && !namesMap[clsKey].includes(n)) namesMap[clsKey].push(n);
-                        });
+                        // All events: also build class-level name list + details (skip for Pod — already done per-participant)
+                        if (!isPodEvent) {
+                            if (!namesMap[clsKey]) namesMap[clsKey] = [];
+                            members.forEach(m => {
+                                const n = m.name || m.memberName || '';
+                                if (n && !namesMap[clsKey].includes(n)) namesMap[clsKey].push(n);
+                            });
+                        }
                         // Build details string from first member (topic/cause/talent/product etc)
                         if (!detailsMap[clsKey]) {
                             const first = members[0] || {};
@@ -24825,10 +24846,12 @@
                     }
 
                     // Build vlogSocialMap: rowKey → social score (Vlog only)
+                    // snaps[5] = vlogChallenge (pushed for Vlog at index 5)
                     const vlogSocialMap = {};
-                    if (event === 'Vlog' && snaps[3]) {
+                    const vlogChalSnap = (event === 'Vlog') ? (snaps[5] || null) : null;
+                    if (event === 'Vlog' && vlogChalSnap && vlogChalSnap.exists()) {
                         const topicSocial = {};
-                        snaps[3].forEach(ch => {
+                        vlogChalSnap.forEach(ch => {
                             const v = ch.val();
                             topicSocial[(v.classYear||'')+'__'+(v.topic||'')] = v.socialScore || 0;
                         });
@@ -24874,17 +24897,32 @@
                         return;
                     }
 
-                    displayResults(event, jury1Marks, jury2Marks, jury1Name, jury2Name, vlogSocialMap, scMap, namesMap, null, detailsMap);
+                    displayResults(event, jury1Marks, jury2Marks, jury1Name, jury2Name, vlogSocialMap, scMap, namesMap, null, detailsMap, setup.classAliases || {});
                 });
             });
         }
 
-        function displayResults(event, jury1Marks, jury2Marks, jury1Name, jury2Name, vlogSocialMap, scMap, namesMap, _containerArg, detailsMap) {
+        function displayResults(event, jury1Marks, jury2Marks, jury1Name, jury2Name, vlogSocialMap, scMap, namesMap, _containerArg, detailsMap, aliasMap) {
             // Default names if not provided
             jury1Name = jury1Name || 'Jury 1';
             jury2Name = jury2Name || 'Jury 2';
             vlogSocialMap = vlogSocialMap || {};
+            aliasMap = aliasMap || {};
             const isVlog = (event === 'Vlog');
+
+            // Helper: get jury code for a sanitizedCls
+            // For individual events: sanitizedCls = clsKey__p1 → use base clsKey alias + P1
+            // For multiteam: sanitizedCls = clsKey__t1 → use base clsKey alias + Team 1
+            function getJuryCode(sanitizedCls) {
+                const baseKey = sanitizedCls.replace(/__[pt]\d+$/, '');
+                const alias = aliasMap[baseKey] || aliasMap[sanitizedCls] || '';
+                if (!alias) return '';
+                const pMatch = sanitizedCls.match(/__p(\d+)$/);
+                const tMatch = sanitizedCls.match(/__t(\d+)$/);
+                if (pMatch) return alias + ' — P' + pMatch[1];
+                if (tMatch) return alias + ' — T' + tMatch[1];
+                return alias;
+            }
             
             console.log('=== DISPLAY RESULTS DEBUG ===');
             console.log('Jury 1 Marks:', jury1Marks);
@@ -25015,13 +25053,15 @@
             // Show marks detail only for super admin and jury
             if (isSuperAdmin || isJury) {
                 if (isVlog) {
-                    html += '<div class="table-wrapper"><table><thead><tr><th>Rank</th><th>Class/Team</th><th>Participants</th><th>'+jury1Name+' /50</th><th>'+jury2Name+' /50</th><th>Jury Avg</th><th>Jury %</th><th>Social Score</th><th>Social %</th><th>Final %</th><th>Status</th></tr></thead><tbody>';
+                    html += '<div class="table-wrapper"><table><thead><tr><th>Rank</th><th>Class/Team</th><th>Jury Code</th><th>Participants</th><th>'+jury1Name+' /50</th><th>'+jury2Name+' /50</th><th>Jury Avg</th><th>Jury %</th><th>Social Score</th><th>Social %</th><th>Final %</th><th>Status</th></tr></thead><tbody>';
                     results.forEach((r, i) => {
                         const rank = i + 1;
                         const badge = rank === 1 ? '<span class="winner-badge">🏆 Winner</span>' : rank === 2 ? '<span class="runner-badge">🥈 Runner Up</span>' : '';
+                        const juryCode = getJuryCode(r.sanitizedCls);
                         html += '<tr class="rank-'+(rank <= 3 ? rank : '')+'">';
                         html += '<td><strong>'+rank+'</strong></td>';
                         html += '<td><strong>'+r.class+'</strong> '+badge+'</td>';
+                        html += '<td>'+(juryCode ? '<span style="background:#1a237e;color:white;padding:2px 10px;border-radius:6px;font-weight:700;font-size:0.85em">'+juryCode+'</span>' : '<span style="color:#bbb">—</span>')+'</td>';
                         html += '<td style="font-size:0.82em;color:#555">'+(r.names&&r.names.length?r.names.join('<br>'):'—')+'</td>';
                         html += '<td>'+r.jury1Total.toFixed(1)+(r.jury1Completed ? ' ✓' : '')+'</td>';
                         html += '<td>'+r.jury2Total.toFixed(1)+(r.jury2Completed ? ' ✓' : '')+'</td>';
@@ -25041,20 +25081,26 @@
                     const showSC   = isHWRes || isTHRes;
                     html += '<div class="table-wrapper"><table><thead><tr><th>Rank</th>'
                         + (showSC ? '<th>Sitting Code</th>' : '')
+                        + '<th>Jury Code</th>'
                         + '<th>Class</th><th>Participants</th><th>Details</th><th>'+jury1Name+' Total</th><th>'+jury2Name+' Total</th><th>Average</th><th>Status</th></tr></thead><tbody>';
                     results.forEach((r, i) => {
                         const rank = i + 1;
                         const badge = rank === 1 ? '<span class="winner-badge">🏆 Winner</span>' : rank === 2 ? '<span class="runner-badge">🥈 Runner Up</span>' : '';
-                        // Extract sitting code from sanitizedCls key or sittingCode field
+                        // Sitting code cell (HW/TH only)
                         let scCell = '';
                         if (showSC) {
-                            // r.sittingCode is set in results array if available
                             const sc = r.sittingCode ? scPrefix + '-' + r.sittingCode : '—';
                             scCell = '<td><span style="background:' + (isHWRes?'#1a237e':'#e65100') + ';color:white;font-weight:900;padding:3px 10px;border-radius:6px;font-size:0.9em;letter-spacing:2px">' + sc + '</span></td>';
                         }
+                        // Jury code cell (from classAliases)
+                        const juryCode = getJuryCode(r.sanitizedCls);
+                        const juryCodeCell = juryCode
+                            ? '<td><span style="background:#1a237e;color:white;padding:2px 10px;border-radius:6px;font-weight:700;font-size:0.85em">' + juryCode + '</span></td>'
+                            : '<td><span style="color:#bbb">—</span></td>';
                         html += '<tr class="rank-'+(rank <= 3 ? rank : '')+'">';
                         html += '<td><strong>'+rank+'</strong></td>';
                         html += scCell;
+                        html += juryCodeCell;
                         html += '<td><strong>'+r.class+'</strong> '+badge+'</td>';
                         html += '<td style="font-size:0.82em;color:#555">'+(r.names&&r.names.length?r.names.join('<br>'):'—')+'</td>';
                         // Details: topic / cause / talent / product etc from detailsMap
@@ -45182,7 +45228,7 @@ export default {
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;" id="devTriggerVersion">
-                <strong>Version:</strong> 8.48 — Fix: Nukkad Results Details now shows 📍 place — nukkadPre keys normalized (spaces→underscores) so lookup matches sanitizedCls correctly<strong>Last Updated:</strong> Mar 17, 2026, 11:30 AM IST</p>
+                <strong>Version:</strong> 8.51 — Results table: Jury Code column added (from classAliases) for all events — shows the code name jury saw during scoring<strong>Last Updated:</strong> Mar 18, 2026, 11:30 AM IST</p>
             <!-- ============================================ -->
             
             <p style="color: #c44569; font-size: 0.85em; font-weight: 600; margin-bottom: 8px;">
@@ -48112,6 +48158,9 @@ function scAdminPing() {
      v8.46 | Mar 17, 2026, 11:30 AM IST | Reverted v8.45 wrong Result Place column; Place column is existing performance venue (pre.place)
      v8.47 | Mar 17, 2026, 11:30 AM IST | Fix: Nukkad Results Details col shows 📍 place; Publish/Unpublish dropdown restores event; Nukkad unpublish removes jury scores from leaderboard
      v8.48 | Mar 17, 2026, 11:30 AM IST | Fix: Nukkad Results 📍 place lookup — normalize pre keys (spaces→underscores) so sanitizedCls match works correctly
+     v8.49 | Mar 18, 2026, 11:30 AM IST | Fix: Pod Casting Results shows one row per participant with correct name+topic from podcastChallenge, not all class members
+     v8.50 | Mar 18, 2026, 11:30 AM IST | Fix: Vlog Results social scores were always 0 — vlogChallenge snap read from wrong index snaps[3] corrected to snaps[5]
+     v8.51 | Mar 18, 2026, 11:30 AM IST | Results table: Jury Code column added (from classAliases) — shows the code name jury saw during scoring, for all events
      ═══════════════════════════════════════════════════════════════════ -->
 
 
