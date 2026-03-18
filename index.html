@@ -24451,11 +24451,11 @@
             
             // First, organize marks by class
             document.querySelectorAll('.marks-input').forEach(inp => {
-                const cls       = inp.dataset.class;     // rowKey e.g. 3rd_B_Com__t1
-                const origClass = inp.dataset.origclass  // real class e.g. "3rd B.Com"
+                const cls       = inp.dataset.class;
+                const origClass = inp.dataset.origclass
                                || inp.dataset.originalclass
                                || cls;
-                const sanitizedCls = sanitizeKey(cls); // Sanitize rowKey for Firebase path
+                const sanitizedCls = sanitizeKey(cls);
                 const critIndex = parseInt(inp.dataset.criterion);
                 const val = parseFloat(inp.value) || 0;
                 
@@ -24463,23 +24463,20 @@
                     marksData[sanitizedCls] = { 
                         marks: {}, 
                         completed: true,
-                        originalClassName: origClass // Store REAL class name, not rowKey
+                        originalClassName: origClass
                     };
                 }
                 marksData[sanitizedCls].marks[critIndex] = val;
             });
             
-            // Convert marks object to array to ensure proper structure
+            // Convert marks object to array
             Object.keys(marksData).forEach(cls => {
                 const marksObj = marksData[cls].marks;
                 const marksArray = [];
                 const maxIndex = Math.max(...Object.keys(marksObj).map(k => parseInt(k)));
-                
-                // Fill array with all marks
                 for (let i = 0; i <= maxIndex; i++) {
                     marksArray[i] = marksObj[i] !== undefined ? marksObj[i] : 0;
                 }
-                
                 marksData[cls].marks = marksArray;
             });
             
@@ -24487,57 +24484,163 @@
             
             db.ref(dbPath).set(marksData).then(async () => {
                 showJuryMessage('Evaluation marked as completed!', 'success');
-                // Reveal real class names and show rankings
                 try {
                     const setupSnap = await db.ref('jurySetup/' + juryEvent).once('value');
                     const setup = setupSnap.val() || {};
-                    const aliasMap = setup.classAliases || {};
-                    // Build reverse: safeKey -> real class
-                    const realClasses = {};
-                    all.filter(e => e.event === juryEvent).forEach(e => {
-                        const sk = e.classYear.replace(/[.\[\]#$\/\s]/g, '_');
-                        realClasses[sk] = e.classYear;
-                    });
-                    // Tally totals from submitted marksData (include social score from total cell)
+                    const aliasMap   = setup.classAliases || {};
+                    const criteria   = setup.criteria || [];
+                    const isPodEvent = (juryEvent === 'Pod Casting');
+                    const isNukkad   = (juryEvent === 'Nukkad Natak');
+
+                    // Fetch enrollments + extra data in parallel
+                    const fetchArr = [
+                        db.ref('youthfest-enrollments').orderByChild('event').equalTo(juryEvent).once('value')
+                    ];
+                    if (isPodEvent) fetchArr.push(db.ref('podcastChallenge').once('value'));
+                    if (isNukkad)   fetchArr.push(db.ref('nukkadNatak/pre').once('value'));
+                    const fetched = await Promise.all(fetchArr);
+
+                    // Build namesMap and detailsMap
+                    const namesMap   = {};
+                    const detailsMap = {};
+
+                    if (isPodEvent && fetched[1] && fetched[1].exists()) {
+                        // Pod Casting: per-participant from podcastChallenge
+                        const byClass = {};
+                        fetched[1].forEach(ch => {
+                            const d = ch.val(); if (!d) return;
+                            const cls = d.classYear || d.class || '';
+                            const ck  = cls.replace(/[.\[\]#$\/\s]/g,'_');
+                            if (!byClass[ck]) byClass[ck] = [];
+                            byClass[ck].push(d);
+                        });
+                        Object.entries(byClass).forEach(([ck, arr]) => {
+                            arr.forEach((d, idx) => {
+                                const rk = ck + '__p' + (idx+1);
+                                namesMap[rk]   = [d.memberName || d.name || '—'];
+                                const det = [];
+                                if (d.topic)    det.push('🎯 ' + d.topic);
+                                if (d.subtopic) det.push('🔖 ' + d.subtopic);
+                                detailsMap[rk] = det.join(' · ');
+                            });
+                        });
+                    } else if (fetched[0] && fetched[0].exists()) {
+                        // All other events: from youthfest-enrollments
+                        const byClass = {};
+                        fetched[0].forEach(ch => {
+                            const d   = ch.val();
+                            const cls = d.classYear || d.class || '';
+                            const ck  = cls.replace(/[.\[\]#$\/\s]/g,'_');
+                            if (!byClass[ck]) byClass[ck] = [];
+                            byClass[ck].push(d);
+                        });
+                        // Nukkad pre data for place
+                        const nukkadPre = {};
+                        if (isNukkad && fetched[1] && fetched[1].exists()) {
+                            fetched[1].forEach(ch => {
+                                const v = ch.val(); if (!v) return;
+                                nukkadPre[ch.key] = v;
+                                nukkadPre[ch.key.replace(/[.\[\]#$\/\s]/g,'_')] = v;
+                            });
+                        }
+                        Object.entries(byClass).forEach(([ck, members]) => {
+                            // Class-level names
+                            namesMap[ck] = members.map(m => m.name || m.memberName || '').filter(Boolean);
+                            // Class-level details
+                            const f = members[0] || {}, det = [];
+                            if (f.topic)      det.push('🎯 ' + f.topic);
+                            if (f.cause)      det.push('💡 ' + f.cause);
+                            if (f.talentType) det.push('🎤 ' + f.talentType);
+                            if (f.languages)  det.push('✍️ ' + f.languages);
+                            if (f.theme)      det.push('🎨 ' + f.theme);
+                            if (isNukkad && nukkadPre[ck] && nukkadPre[ck].place) det.push('📍 ' + nukkadPre[ck].place);
+                            detailsMap[ck] = det.join(' · ');
+                            // Multi-team: copy to __t rowKeys
+                            for (let t = 1; t <= 5; t++) {
+                                const rk = ck + '__t' + t;
+                                if (!namesMap[rk])   namesMap[rk]   = namesMap[ck];
+                                if (!detailsMap[rk]) detailsMap[rk] = detailsMap[ck];
+                            }
+                            // Individual (__p rowKeys)
+                            members.forEach((m, idx) => {
+                                const rk = ck + '__p' + (idx+1);
+                                namesMap[rk]   = [m.name || m.memberName || ''];
+                                const pd = [];
+                                if (m.talentType) pd.push('🎤 ' + m.talentType);
+                                if (m.languages)  pd.push('✍️ ' + m.languages);
+                                if (m.topic)      pd.push('🎯 ' + m.topic);
+                                detailsMap[rk] = pd.join(' · ');
+                            });
+                        });
+                    }
+
+                    // Build totals with full data
                     const totals = [];
                     Object.entries(marksData).forEach(([sk, d]) => {
-                        const juryTotal = (d.marks || []).reduce((s, v) => s + (parseFloat(v)||0), 0);
-                        // Read social score stored in the total cell's data-social attribute
+                        const marks     = d.marks || [];
+                        const juryTotal = marks.reduce((s, v) => s + (parseFloat(v)||0), 0);
                         const totalCell = document.getElementById('total-' + sk);
-                        const social = totalCell ? (parseFloat(totalCell.dataset.social) || 0) : 0;
-                        const total = juryTotal + social;
-                        const alias = aliasMap[sk] || sk;
-                        const real = realClasses[sk] || sk;
-                        totals.push({ sk, alias, real, total });
+                        const social    = totalCell ? (parseFloat(totalCell.dataset.social) || 0) : 0;
+                        const total     = juryTotal + social;
+                        const baseSk    = sk.replace(/__[pt]\d+$/, '');
+                        const alias     = aliasMap[baseSk] || aliasMap[sk] || sk;
+                        const pMatch    = sk.match(/__p(\d+)$/);
+                        const tMatch    = sk.match(/__t(\d+)$/);
+                        const codeLabel = alias + (pMatch ? ' — P'+pMatch[1] : tMatch ? ' — T'+tMatch[1] : '');
+                        const real      = d.originalClassName || sk.replace(/_/g,' ');
+                        const names     = namesMap[sk] || namesMap[baseSk] || [];
+                        const details   = detailsMap[sk] || detailsMap[baseSk] || '';
+                        totals.push({ sk, codeLabel, real, marks, juryTotal, social, total, names, details });
                     });
                     totals.sort((a, b) => b.total - a.total);
-                    // Show ranked results table in jury sheet container
+
+                    // Build full results table
+                    const medals = ['🥇','🥈','🥉'];
+                    const criteriaHeaders = criteria.length
+                        ? criteria.map(c => '<th style="font-size:0.78em;background:#283593;color:white;white-space:nowrap">' + c + '</th>').join('')
+                        : '';
+
                     let rHtml = '<div style="background:linear-gradient(135deg,#1b5e20,#388e3c);border-radius:12px;padding:16px 18px;margin-bottom:16px">'
-                        + '<h3 style="color:white;margin:0 0 4px;font-size:1.05em">✅ Evaluation Complete — Results</h3>'
-                        + '<p style="color:rgba(255,255,255,0.8);margin:0;font-size:0.82em">Real class names are now revealed.</p>'
+                        + '<h3 style="color:white;margin:0 0 4px;font-size:1.05em">✅ Evaluation Complete — Full Summary</h3>'
+                        + '<p style="color:rgba(255,255,255,0.8);margin:0;font-size:0.82em">Real class names revealed. All scores shown below.</p>'
                         + '</div>';
+
                     rHtml += '<div class="table-wrapper"><table><thead><tr>'
-                        + '<th>Rank</th><th>Code</th><th>Class</th><th>Score</th><th>Medal</th>'
+                        + '<th>Rank</th>'
+                        + '<th>Jury Code</th>'
+                        + '<th>Class</th>'
+                        + '<th>Participants</th>'
+                        + '<th>Details</th>'
+                        + criteriaHeaders
+                        + '<th>Total</th>'
+                        + '<th>Medal</th>'
                         + '</tr></thead><tbody>';
+
                     totals.forEach((t, i) => {
                         const rank   = i + 1;
-                        const medal  = rank === 1 ? '🥇 Winner' : rank === 2 ? '🥈 Runner-Up' : rank === 3 ? '🥉 3rd' : '';
-                        const rowBg  = rank === 1 ? '#fffde7' : rank === 2 ? '#f3f3f3' : 'white';
-                        rHtml += '<tr style="background:' + rowBg + '">'
-                            + '<td style="text-align:center;font-weight:800;color:#6a1b9a">' + rank + '</td>'
-                            + '<td><span style="background:#4a148c;color:white;padding:3px 10px;border-radius:6px;font-size:0.85em;font-weight:700">' + t.alias + '</span></td>'
-                            + '<td style="font-weight:700;color:#333">' + t.real + '</td>'
-                            + '<td style="text-align:center;font-weight:800;color:#1b5e20;font-size:1.05em">' + t.total.toFixed(1) + '</td>'
-                            + '<td style="text-align:center">' + medal + '</td>'
+                        const medal  = medals[i] ? medals[i] + (rank===1?' Winner':rank===2?' Runner-Up':' 3rd') : '';
+                        const rowBg  = rank===1?'background:#fffde7':rank===2?'background:#f5f5f5':rank===3?'background:#fff5f0':'';
+                        const critCells = criteria.length
+                            ? t.marks.map((v, ci) => '<td style="text-align:center;font-weight:700;color:#1565c0">' + (v||0) + '</td>').join('')
+                            : '';
+                        rHtml += '<tr style="' + rowBg + '">'
+                            + '<td style="text-align:center;font-weight:800;color:#6a1b9a;font-size:1.1em">' + rank + '</td>'
+                            + '<td><span style="background:#1a237e;color:white;padding:2px 10px;border-radius:6px;font-weight:700;font-size:0.82em">' + t.codeLabel + '</span></td>'
+                            + '<td style="font-weight:700;color:#1565c0;font-size:0.88em">' + t.real + '</td>'
+                            + '<td style="font-size:0.8em;color:#555;line-height:1.6">' + (t.names.length ? t.names.join('<br>') : '—') + '</td>'
+                            + '<td style="font-size:0.78em;color:#555">' + (t.details || '<span style="color:#bbb">—</span>') + '</td>'
+                            + critCells
+                            + '<td style="text-align:center;font-weight:900;color:#1b5e20;font-size:1.1em">' + t.juryTotal.toFixed(1) + '</td>'
+                            + '<td style="text-align:center;font-size:1.2em">' + medal + '</td>'
                             + '</tr>';
                     });
                     rHtml += '</tbody></table></div>';
-                    // Render results in jurySheetContainer
+
                     const jsc = document.getElementById('jurySheetContainer');
                     if (jsc) jsc.innerHTML = rHtml;
-                    // Hide save/complete buttons — already done
-                    showJuryMessage('✅ Evaluation complete! Results revealed above.', 'success');
+                    showJuryMessage('✅ Evaluation complete! Full results revealed above.', 'success');
                 } catch(e) {
+                    console.error('markAsCompleted reveal error:', e);
                     alert('Evaluation marked as completed! Your marks are now final.');
                 }
             }).catch(err => {
@@ -45228,7 +45331,7 @@ export default {
             <!-- SUPER ADMIN: UPDATE VERSION AND DATE HERE    -->
             <!-- ============================================ -->
             <p style="color: #666; font-size: 0.85em; margin-bottom: 8px;" id="devTriggerVersion">
-                <strong>Version:</strong> 8.51 — Results table: Jury Code column added (from classAliases) for all events — shows the code name jury saw during scoring<strong>Last Updated:</strong> Mar 18, 2026, 11:30 AM IST</p>
+                <strong>Version:</strong> 8.52 — Mark as Completed: jury now sees full summary table with Jury Code, Class, Participants, Details, per-criterion marks, total and medal<strong>Last Updated:</strong> Mar 18, 2026, 11:30 AM IST</p>
             <!-- ============================================ -->
             
             <p style="color: #c44569; font-size: 0.85em; font-weight: 600; margin-bottom: 8px;">
@@ -48161,6 +48264,7 @@ function scAdminPing() {
      v8.49 | Mar 18, 2026, 11:30 AM IST | Fix: Pod Casting Results shows one row per participant with correct name+topic from podcastChallenge, not all class members
      v8.50 | Mar 18, 2026, 11:30 AM IST | Fix: Vlog Results social scores were always 0 — vlogChallenge snap read from wrong index snaps[3] corrected to snaps[5]
      v8.51 | Mar 18, 2026, 11:30 AM IST | Results table: Jury Code column added (from classAliases) — shows the code name jury saw during scoring, for all events
+     v8.52 | Mar 18, 2026, 11:30 AM IST | Mark as Completed: jury now sees full summary — Jury Code, Class, Participants, Details, per-criterion marks, total, medal
      ═══════════════════════════════════════════════════════════════════ -->
 
 
